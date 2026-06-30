@@ -1,0 +1,128 @@
+@use "../styles/variables" as *;
+
+.page {
+  padding-block: clamp(2.5rem, 6vh, 4rem);
+  min-height: calc(100dvh - $header-height);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: $gray-500;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex-shrink: 0;
+  border-radius: $radius-full;
+  background: $primary;
+  color: #06120d;
+  font-family: $font-display;
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+
+.name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.email {
+  font-size: 0.9375rem;
+  color: $gray-400;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: $radius-xl;
+  background: $surface;
+  border: 1px solid rgba($white, 0.06);
+  transition: border-color $transition-fast, background $transition-fast;
+
+  &:hover {
+    border-color: rgba($primary, 0.3);
+    background: $surface-raised;
+  }
+}
+
+.cardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: $radius-md;
+  background: rgba($primary, 0.1);
+  color: $primary;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+.cardTitle {
+  font-family: $font-display;
+  font-size: 1rem;
+  font-weight: 700;
+  color: $white;
+  margin-bottom: 0.25rem;
+}
+
+.cardText {
+  font-size: 0.875rem;
+  color: $gray-400;
+  line-height: 1.5;
+}
+
+.signOut {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.75rem;
+  padding-inline: 1.375rem;
+  border-radius: $radius-md;
+  background: rgba($white, 0.05);
+  border: 1px solid rgba($white, 0.1);
+  color: $gray-300;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background $transition-fast, border-color $transition-fast, color $transition-fast;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &:hover {
+    background: rgba(#f87171, 0.1);
+    border-color: rgba(#f87171, 0.3);
+    color: #fca5a5;
+  }
+}
