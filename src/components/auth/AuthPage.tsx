@@ -22,6 +22,13 @@ export default function AuthPage(props: AuthPageProps) {
   const [showSignupPassword, setShowSignupPassword] = createSignal(false);
   const [error, setError] = createSignal<string>();
   const [loading, setLoading] = createSignal(false);
+  const [resetOpen, setResetOpen] = createSignal(false);
+  const [resetEmail, setResetEmail] = createSignal("");
+  const [resetStatus, setResetStatus] = createSignal<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [resetMessage, setResetMessage] = createSignal("");
+  let resetEmailInput: HTMLInputElement | undefined;
 
   const switchMode = (nextMode: AuthMode, event: MouseEvent) => {
     event.preventDefault();
@@ -88,14 +95,60 @@ export default function AuthPage(props: AuthPageProps) {
     window.location.assign("/account");
   };
 
+  const openPasswordReset = () => {
+    setResetEmail(loginEmail());
+    setResetStatus("idle");
+    setResetMessage("");
+    setResetOpen(true);
+    requestAnimationFrame(() => resetEmailInput?.focus());
+  };
+
+  const closePasswordReset = () => {
+    if (resetStatus() === "loading") return;
+    setResetOpen(false);
+  };
+
+  const submitPasswordReset = async (event: SubmitEvent) => {
+    event.preventDefault();
+    setResetStatus("loading");
+    setResetMessage("");
+
+    const { error: resetError } = await authClient.requestPasswordReset({
+      email: resetEmail(),
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (resetError) {
+      setResetStatus("error");
+      setResetMessage(
+        resetError.message ??
+          "We couldn't send the reset email. Please try again.",
+      );
+      return;
+    }
+
+    setResetStatus("success");
+    setResetMessage(
+      "If an account exists for that email, a reset link is on its way.",
+    );
+  };
+
   onMount(() => {
     const handleHistory = () => {
       setMode(window.location.pathname === "/signup" ? "signup" : "login");
       setError(undefined);
     };
 
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && resetOpen()) closePasswordReset();
+    };
+
     window.addEventListener("popstate", handleHistory);
-    onCleanup(() => window.removeEventListener("popstate", handleHistory));
+    window.addEventListener("keydown", handleKeydown);
+    onCleanup(() => {
+      window.removeEventListener("popstate", handleHistory);
+      window.removeEventListener("keydown", handleKeydown);
+    });
   });
 
   return (
@@ -117,7 +170,10 @@ export default function AuthPage(props: AuthPageProps) {
         aria-hidden={mode() !== "signup"}
         inert={mode() !== "signup"}
       >
-        <div class={styles.formInner}>
+        <div
+          class={styles.formInner}
+          classList={{ [styles.formInnerActive]: mode() === "signup" }}
+        >
           <A href="/" class={styles.logo}>
             TCG<span class={styles.logoAccent}>Haven</span>
           </A>
@@ -241,7 +297,10 @@ export default function AuthPage(props: AuthPageProps) {
         aria-hidden={mode() !== "login"}
         inert={mode() !== "login"}
       >
-        <div class={styles.formInner}>
+        <div
+          class={styles.formInner}
+          classList={{ [styles.formInnerActive]: mode() === "login" }}
+        >
           <A href="/" class={styles.logo}>
             TCG<span class={styles.logoAccent}>Haven</span>
           </A>
@@ -274,9 +333,18 @@ export default function AuthPage(props: AuthPageProps) {
             </div>
 
             <div class={styles.field}>
-              <label class={styles.label} for="login-password">
-                Password
-              </label>
+              <div class={styles.fieldLabelRow}>
+                <label class={styles.label} for="login-password">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  class={styles.forgotPassword}
+                  onClick={openPasswordReset}
+                >
+                  Forgot password?
+                </button>
+              </div>
               <div class={`${styles.inputWrap} ${styles.passwordRow}`}>
                 <input
                   id="login-password"
@@ -322,53 +390,13 @@ export default function AuthPage(props: AuthPageProps) {
         <div class={styles.brandMesh} />
         <div class={styles.brandMeshGlow} />
 
-        <div>
+        <div class={styles.brandIntro}>
           <h2 class={styles.brandHeadline}>Your collection has a home.</h2>
           <p class={styles.brandSub}>
             Honest grading, real stock, and every order kept together in one
             account.
           </p>
         </div>
-
-        <svg
-          class={styles.brandMotif}
-          viewBox="0 0 360 230"
-          fill="none"
-          aria-hidden="true"
-        >
-          <rect
-            x="183"
-            y="24"
-            width="118"
-            height="165"
-            rx="12"
-            transform="rotate(12 242 106.5)"
-            stroke="#F9FAFB"
-            stroke-opacity="0.18"
-            stroke-width="1.5"
-          />
-          <rect
-            x="121"
-            y="21"
-            width="118"
-            height="165"
-            rx="12"
-            stroke="#FBBF24"
-            stroke-opacity="0.48"
-            stroke-width="2"
-          />
-          <rect
-            x="59"
-            y="24"
-            width="118"
-            height="165"
-            rx="12"
-            transform="rotate(-12 118 106.5)"
-            stroke="#10B981"
-            stroke-opacity="0.68"
-            stroke-width="2"
-          />
-        </svg>
 
         <div class={styles.benefits}>
           <span class={styles.benefitItem}>
@@ -428,6 +456,90 @@ export default function AuthPage(props: AuthPageProps) {
           </a>
         </nav>
       </section>
+
+      <Show when={resetOpen()}>
+        <div
+          class={styles.modalBackdrop}
+          onClick={event => {
+            if (event.target === event.currentTarget) closePasswordReset();
+          }}
+        >
+          <section
+            class={styles.resetDialog}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-password-title"
+          >
+            <button
+              type="button"
+              class={styles.dialogClose}
+              aria-label="Close password recovery"
+              onClick={closePasswordReset}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m6 6 12 12M18 6 6 18" />
+              </svg>
+            </button>
+
+            <p class={styles.dialogKicker}>Account recovery</p>
+            <h2 id="reset-password-title">Reset your password</h2>
+            <p class={styles.dialogCopy}>
+              Enter the email linked to your account. We’ll send you a secure
+              reset link.
+            </p>
+
+            <Show
+              when={resetStatus() !== "success"}
+              fallback={
+                <div class={styles.resetSuccess} role="status">
+                  <CheckIcon />
+                  <span>{resetMessage()}</span>
+                </div>
+              }
+            >
+              <form class={styles.resetForm} onSubmit={submitPasswordReset}>
+                <label class={styles.label} for="reset-email">
+                  Email
+                </label>
+                <div class={styles.inputWrap}>
+                  <input
+                    ref={resetEmailInput}
+                    id="reset-email"
+                    type="email"
+                    class={styles.input}
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    required
+                    value={resetEmail()}
+                    onInput={event =>
+                      setResetEmail(event.currentTarget.value)
+                    }
+                  />
+                </div>
+
+                <Show when={resetStatus() === "error"}>
+                  <p class={styles.resetError} role="alert">
+                    {resetMessage()}
+                  </p>
+                </Show>
+
+                <button
+                  type="submit"
+                  class={styles.submit}
+                  disabled={resetStatus() === "loading"}
+                >
+                  <Show when={resetStatus() === "loading"}>
+                    <span class={styles.spinner} />
+                  </Show>
+                  {resetStatus() === "loading"
+                    ? "Sending reset link…"
+                    : "Send reset link"}
+                </button>
+              </form>
+            </Show>
+          </section>
+        </div>
+      </Show>
     </main>
   );
 }

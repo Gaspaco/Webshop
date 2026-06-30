@@ -74,10 +74,37 @@
   align-self: center;
   pointer-events: none;
   opacity: 0.85;
+  animation: brandMotifIn 780ms cubic-bezier(0.22, 1, 0.36, 1) 280ms both;
 
   @media (max-width: $bp-lg) {
     width: min(29rem, 118%);
     margin-top: 1.75rem;
+  }
+}
+
+@keyframes brandMotifIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 0.85;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.brandIntro {
+  animation: brandFadeUp 700ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+
+@keyframes brandFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -107,6 +134,7 @@
   padding-top: 2rem;
   position: relative;
   z-index: 1;
+  animation: brandFadeUp 700ms cubic-bezier(0.22, 1, 0.36, 1) 460ms both;
 }
 
 .benefitItem {
@@ -208,6 +236,27 @@
 .formInner {
   width: 100%;
   max-width: 46rem;
+  opacity: 0;
+}
+
+// Fades the form content in once its panel is uncovered by the
+// sliding brand panel, in sync on both the login and signup side.
+.formInnerActive {
+  animation: formFadeIn 900ms cubic-bezier(0.22, 1, 0.36, 1) 380ms both;
+}
+
+@keyframes formFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .logo {
@@ -260,6 +309,29 @@
   font-size: 0.8125rem;
   font-weight: 600;
   color: $gray-400;
+}
+
+.fieldLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.forgotPassword {
+  color: $primary-light;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $white;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 3px;
+  }
 }
 
 .inputWrap {
@@ -417,12 +489,157 @@
   }
 }
 
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(#050706, 0.78);
+  animation: backdropIn 180ms ease-out both;
+}
+
+.resetDialog {
+  position: relative;
+  z-index: $z-modal;
+  width: min(28rem, 100%);
+  padding: clamp(1.5rem, 5vw, 2.25rem);
+  border-radius: $radius-xl;
+  background: $surface-raised;
+  box-shadow: 0 8px 0 rgba(#000, 0.22);
+  animation: dialogIn 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  h2 {
+    margin-top: 0.45rem;
+    padding-right: 2rem;
+    font-size: clamp(1.6rem, 5vw, 2rem);
+    letter-spacing: -0.03em;
+  }
+}
+
+.dialogClose {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: $radius-md;
+  color: $gray-400;
+  transition:
+    color $transition-fast,
+    background $transition-fast;
+
+  &:hover {
+    color: $white;
+    background: rgba($white, 0.07);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
+
+  svg {
+    width: 1.15rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+}
+
+.dialogKicker {
+  color: $primary-light;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.dialogCopy {
+  max-width: 38ch;
+  margin-top: 0.75rem;
+  color: $gray-400;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.resetForm {
+  margin-top: 1.5rem;
+
+  .inputWrap {
+    margin-top: 0.4rem;
+  }
+
+  .submit {
+    width: 100%;
+    margin-top: 1.35rem;
+  }
+}
+
+.resetError {
+  margin-top: 0.75rem;
+  color: #fca5a5;
+  font-size: 0.82rem;
+}
+
+.resetSuccess {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: $radius-md;
+  background: rgba($primary, 0.1);
+  color: $gray-200;
+  font-size: 0.9rem;
+  line-height: 1.55;
+
+  svg {
+    width: 1.15rem;
+    flex: 0 0 auto;
+    color: $primary-light;
+  }
+}
+
+@keyframes backdropIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spinner {
     animation: none;
   }
   .inputWrap::after {
     transition: none;
+  }
+  .modalBackdrop,
+  .resetDialog {
+    animation: none;
+  }
+  .formInner {
+    opacity: 1;
+  }
+  .formInnerActive {
+    animation: none;
+  }
+  .brandIntro,
+  .benefits {
+    animation: none;
+  }
+  .brandMotif {
+    animation: none;
+    opacity: 0.85;
   }
 }
 
