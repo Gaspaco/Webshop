@@ -41,8 +41,8 @@ export default function Cart() {
           <div class={styles.layout}>
             <div class={styles.list}>
               <For each={cart.items()}>
-                {item => (
-                  <div class={styles.row}>
+                {(item, index) => (
+                  <div class={styles.row} style={{ "--row-index": index() }}>
                     <span class={styles.thumb}>
                       <img src={item.image} alt="" draggable={false} />
                     </span>
