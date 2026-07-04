@@ -1,8 +1,16 @@
 import { Title } from "@solidjs/meta";
-import Hero from "~/components/Hero";
-import NewArrivals from "~/components/NewArrivals";
-import ProductSection, { type SectionProduct } from "~/components/ProductSection";
-import ShopByGame from "~/components/ShopByGame";
+import Hero from "~/components/home/Hero";
+import ShopByGame from "~/components/home/ShopByGame";
+import ProductSection, { type SectionProduct } from "~/components/product/ProductSection";
+
+const NEW_ARRIVALS: SectionProduct[] = [
+  { id: "palkia-v-astral", name: "Palkia V", set: "Astral Radiance", image: "/images/cards/palkia.png", priceCents: 3495, href: "/products", badge: "New" },
+  { id: "venusaur-base", name: "Venusaur", set: "Base Set", image: "/images/cards/venusaur.png", priceCents: 6995, href: "/products" },
+  { id: "rayquaza-vmax-st", name: "Rayquaza VMAX", set: "Silver Tempest", image: "/images/cards/rayquaza.png", priceCents: 15995, href: "/products", badge: "New" },
+  { id: "blastoise-base", name: "Blastoise", set: "Base Set", image: "/images/cards/blastoise.png", priceCents: 11995, href: "/products" },
+  { id: "mewtwo-base", name: "Mewtwo", set: "Base Set", image: "/images/cards/mewtwo.png", priceCents: 8995, href: "/products" },
+  { id: "charizard-base", name: "Charizard", set: "Base Set", image: "/images/cards/charizard.png", priceCents: 24995, href: "/products", badge: "Vintage" },
+];
 
 const BESTSELLERS: SectionProduct[] = [
   { id: "chaos-origins-box", name: "Chaos Origins Booster Box", theme: "pokemon", priceRangeCents: [595, 12995], href: "/products" },
@@ -40,7 +48,7 @@ export default function Home() {
       <Title>TCGHaven — Your Favorite Card Store, Online</Title>
       <Hero />
       <ShopByGame />
-      <NewArrivals />
+      <ProductSection heading="New arrivals" sub="Fresh stock, added this week." products={NEW_ARRIVALS} />
       <ProductSection heading="Bestsellers" sub="What everyone's buying right now." products={BESTSELLERS} />
       <ProductSection heading="Random picks" sub="A few surprises worth a look." products={RANDOM_PICKS} />
       <ProductSection heading="Preorders" sub="Reserve yours before they land." products={PREORDERS} />
