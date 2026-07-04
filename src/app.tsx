@@ -3,6 +3,7 @@ import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import { Suspense } from "solid-js";
+import Footer from "~/components/layout/Footer";
 import Navbar from "~/components/layout/Navbar";
 import { CartProvider } from "~/lib/cart";
 import "./app.scss";
@@ -26,6 +27,7 @@ export default function App() {
               <Title>My Little TCG Haven</Title>
               <Navbar />
               <Suspense>{props.children}</Suspense>
+              <Footer />
             </MetaProvider>
           )}
         >
