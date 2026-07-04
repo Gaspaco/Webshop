@@ -2,7 +2,7 @@ import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
 import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { authClient } from "~/lib/auth-client";
-import styles from "~/routes/auth.module.scss";
+import styles from "./AuthPage.module.scss";
 
 type AuthMode = "login" | "signup";
 
