@@ -27,7 +27,7 @@ export default function Account() {
   return (
     <main class={styles.page}>
       <div class="container">
-        <Title>Your account — TCGHaven</Title>
+        <Title>Your account | TCGHaven</Title>
 
         <Show when={!session().isPending && session().data} fallback={<div class={styles.loading}>Loading…</div>}>
           {data => (

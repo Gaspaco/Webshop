@@ -10,7 +10,7 @@ export default function Cart() {
   return (
     <main class={styles.page}>
       <div class="container">
-        <Title>Cart — TCGHaven</Title>
+        <Title>Cart | TCGHaven</Title>
         <h1 class={styles.heading}>Your cart</h1>
 
         <Show

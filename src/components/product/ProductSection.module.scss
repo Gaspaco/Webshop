@@ -1,7 +1,12 @@
 @use "../../styles/variables" as *;
 
 .section {
-  padding-block: clamp(1rem, 3vh, 2rem) clamp(2.5rem, 6vh, 4.5rem);
+  padding-block: clamp(1.5rem, 3.5vh, 2.5rem) clamp(3rem, 7vh, 5rem);
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
 }
 
 .header {
@@ -9,7 +14,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: clamp(1.5rem, 3vh, 2rem);
+  margin-bottom: clamp(1.75rem, 3.5vh, 2.5rem);
 }
 
 .headerActions {
@@ -55,16 +60,16 @@
 }
 
 .heading {
-  font-size: clamp(1.5rem, 2.6vw, 2.125rem);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   color: $white;
 }
 
 .sub {
-  margin-top: 0.375rem;
+  margin-top: 0.5rem;
   color: $gray-400;
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 .viewAll {
@@ -95,14 +100,12 @@
 
 .track {
   display: flex;
-  gap: 1.25rem;
+  gap: 1.5rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-bottom: 0.25rem;
-  margin: 0 -#{$container-padding};
-  padding-inline: $container-padding;
 
   &::-webkit-scrollbar {
     display: none;
@@ -113,23 +116,21 @@
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
-  width: clamp(10.5rem, 21vw, 13rem);
+  width: clamp(15rem, 18vw, 20.5rem);
   scroll-snap-align: start;
-  border-radius: $radius-xl;
+  border-radius: 0;
   background: $surface;
   border: 1px solid rgba($white, 0.06);
   overflow: hidden;
-  transition: border-color $transition-base, transform $transition-base;
+  transition: border-color $transition-base;
 
   &:hover {
     border-color: rgba($primary, 0.3);
-    transform: translateY(-3px);
-
-    .cardMedia img,
-    .cardMedia .boxArt {
-      transform: scale(1.05);
-    }
   }
+}
+
+.cardFill {
+  width: 100%;
 }
 
 .cardMedia {
@@ -143,12 +144,11 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
 // Stylized sealed-product mockup used when there's no real box
-// photography — an honest placeholder rather than a mismatched card photo.
+// photography, an honest placeholder rather than a mismatched card photo.
 .boxArt {
   display: flex;
   flex-direction: column;
@@ -159,23 +159,22 @@
   height: 100%;
   padding: 1rem;
   text-align: center;
-  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .boxIcon {
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 3.5rem;
+  height: 3.5rem;
   color: $white;
   opacity: 0.9;
 }
 
 .boxLabel {
   font-family: $font-display;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1.3;
   color: rgba($white, 0.9);
-  max-width: 12ch;
+  max-width: 14ch;
 }
 
 .pokemon {
@@ -211,26 +210,26 @@
 .cardBody {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: 0.875rem;
+  padding: 1.25rem;
 }
 
 .cardInfo {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.3125rem;
 }
 
 .cardName {
   font-family: $font-display;
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   color: $white;
   letter-spacing: -0.01em;
 }
 
 .cardSet {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: $gray-500;
 }
 
@@ -240,8 +239,8 @@
   margin-top: 0.125rem;
 
   svg {
-    width: 0.8125rem;
-    height: 0.8125rem;
+    width: 0.9375rem;
+    height: 0.9375rem;
     fill: rgba($white, 0.16);
   }
 }
@@ -259,7 +258,7 @@
 
 .cardPrice {
   font-family: $font-display;
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: $primary;
   line-height: 1.2;
@@ -269,18 +268,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.125rem;
-  height: 2.125rem;
+  width: 2.375rem;
+  height: 2.375rem;
   flex-shrink: 0;
   border-radius: $radius-full;
   background: rgba($white, 0.06);
   border: 1px solid rgba($white, 0.1);
   color: $gray-300;
-  transition: background $transition-base, border-color $transition-base, color $transition-fast, transform 160ms ease-out;
+  opacity: 0;
+  transform: scale(0.6);
+  pointer-events: none;
+  transition: background $transition-base, border-color $transition-base, color $transition-fast,
+    opacity 320ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   svg {
-    width: 0.9375rem;
-    height: 0.9375rem;
+    width: 1.0625rem;
+    height: 1.0625rem;
   }
 
   &:hover {
@@ -290,7 +293,18 @@
   }
 
   &:active {
-    transform: scale(0.9);
+    transform: scale(0.85);
+  }
+}
+
+.card:hover .addBtn,
+.card:focus-within .addBtn {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+
+  &:active {
+    transform: scale(0.85);
   }
 }
 

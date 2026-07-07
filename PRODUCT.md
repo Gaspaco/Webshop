@@ -14,7 +14,7 @@ TCGHaven is an online trading card game shop selling singles, sealed products, a
 
 ## Brand Personality
 
-Friendly, playful, reliable. The shop feels like walking into your favorite local card store — welcoming, a little fun, but you trust them to grade and ship properly. The voice is warm and direct, never corporate.
+Friendly, playful, reliable. The shop feels like walking into your favorite local card store: welcoming, a little fun, but you trust them to grade and ship properly. The voice is warm and direct, never corporate.
 
 ## Anti-references
 

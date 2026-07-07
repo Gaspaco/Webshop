@@ -1,0 +1,87 @@
+@use "../../styles/variables" as *;
+
+.page {
+  min-height: calc(100dvh - $header-height);
+  padding-bottom: clamp(3rem, 7vh, 5rem);
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+// ---------- Banner ----------
+
+.banner {
+  padding-block: clamp(2.5rem, 6vh, 4rem) clamp(2rem, 5vh, 3rem);
+  margin-bottom: clamp(2rem, 5vh, 3rem);
+  border-bottom: 1px solid rgba($white, 0.06);
+}
+
+.pokemon {
+  background: linear-gradient(155deg, #062a1d 0%, #0c0f0d 75%);
+}
+
+.yugioh {
+  background:
+    radial-gradient(ellipse 80% 60% at 100% 0%, rgba(#7c3aed, 0.3) 0%, transparent 65%),
+    linear-gradient(155deg, #1a1030 0%, #0c0f0d 75%);
+}
+
+.magic {
+  background:
+    radial-gradient(ellipse 70% 55% at 0% 100%, rgba($accent-gold, 0.2) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(#b91c1c, 0.25) 0%, transparent 65%),
+    linear-gradient(155deg, #1c1207 0%, #0c0f0d 75%);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.8438rem;
+  color: $gray-500;
+
+  a {
+    color: $gray-400;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: $primary-light;
+    }
+  }
+}
+
+.heading {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: $white;
+  margin-bottom: 0.5rem;
+}
+
+.sub {
+  max-width: 48ch;
+  color: $gray-300;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.count {
+  font-family: $font-display;
+  font-size: 0.8438rem;
+  font-weight: 700;
+  color: $primary-light;
+}
+
+.backLink {
+  display: inline-flex;
+  color: $primary-light;
+  margin-top: 1rem;
+
+  &:hover {
+    color: $primary;
+  }
+}

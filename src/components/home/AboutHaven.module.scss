@@ -1,0 +1,167 @@
+@use "../../styles/variables" as *;
+
+.section {
+  padding-block: clamp(1.5rem, 3.5vh, 2.5rem) clamp(3rem, 7vh, 5rem);
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+.panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr);
+  overflow: hidden;
+  border-radius: $radius-xl;
+  border: 1px solid rgba($primary, 0.2);
+  background: $surface;
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ---------- Left: full-bleed framed image ----------
+
+.frame {
+  position: relative;
+  min-height: clamp(20rem, 32vw, 30rem);
+  overflow: hidden;
+  background: $surface-raised;
+
+  @media (max-width: $bp-lg) {
+    min-height: 18rem;
+  }
+}
+
+.frameArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  user-select: none;
+}
+
+.frameScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 55%,
+    rgba($surface, 0.5) 85%,
+    $surface 100%
+  );
+
+  @media (max-width: $bp-lg) {
+    background: linear-gradient(0deg, $surface 0%, rgba($surface, 0.3) 35%, transparent 60%);
+  }
+}
+
+// ---------- Right: copy ----------
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(2rem, 4vw, 3.5rem);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  padding: 0.3125rem 0.75rem;
+  margin-bottom: 1.25rem;
+  border-radius: $radius-full;
+  background: rgba($primary, 0.14);
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.heading {
+  font-size: clamp(1.75rem, 2.8vw, 2.375rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: $white;
+  max-width: 16ch;
+  margin-bottom: 1rem;
+}
+
+.blurb {
+  max-width: 40ch;
+  color: $gray-400;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.statRow {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba($white, 0.08);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.statNumber {
+  font-family: $font-display;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: $white;
+}
+
+.statLabel {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: $gray-500;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: fit-content;
+  height: 3rem;
+  padding-inline: 1.75rem;
+  border-radius: $radius-md;
+  background: $primary;
+  color: #06120d;
+  font-family: $font-display;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  transition: background $transition-base, transform $transition-base;
+
+  svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    transition: transform $transition-fast;
+  }
+
+  &:hover {
+    background: $primary-light;
+    transform: translateY(-2px);
+
+    svg {
+      transform: translateX(3px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 3px solid $accent-gold;
+    outline-offset: 3px;
+  }
+}

@@ -1,0 +1,30 @@
+@use "../../styles/variables" as *;
+
+.page {
+  min-height: calc(100dvh - $header-height);
+  padding-block: clamp(2rem, 5vh, 3.5rem) clamp(1rem, 2vh, 2rem);
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+.header {
+  margin-bottom: clamp(1rem, 2vh, 1.5rem);
+}
+
+.heading {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: $white;
+  margin-bottom: 0.5rem;
+}
+
+.sub {
+  max-width: 48ch;
+  color: $gray-400;
+  font-size: 1rem;
+  line-height: 1.6;
+}

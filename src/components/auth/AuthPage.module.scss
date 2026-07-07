@@ -1,4 +1,4 @@
-@use "../styles/variables" as *;
+@use "../../styles/variables" as *;
 
 .page {
   position: relative;
@@ -44,7 +44,7 @@
   transform: translateX(100%);
 }
 
-// Holographic gradient mesh — emerald, gold, and a violet whisper,
+// Holographic gradient mesh with emerald, gold, and a violet whisper,
 // echoing foil-card packaging without using a literal photo.
 .brandMesh {
   position: absolute;

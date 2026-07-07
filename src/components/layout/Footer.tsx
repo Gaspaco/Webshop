@@ -4,7 +4,7 @@ import styles from "./Footer.module.scss";
 export default function Footer() {
   return (
     <footer class={styles.footer}>
-      <div class={`container ${styles.top}`}>
+      <div class={`${styles.wide} ${styles.top}`}>
         <div class={styles.brandCol}>
           <A href="/" class={styles.logo}>
             <span class={styles.logoMark}>
@@ -65,7 +65,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div class={`container ${styles.bottom}`}>
+      <div class={`${styles.wide} ${styles.bottom}`}>
         <p>© {new Date().getFullYear()} My Little TCG Haven. All rights reserved.</p>
         <div class={styles.bottomLinks}>
           <A href="/privacy">Privacy</A>
