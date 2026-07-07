@@ -161,8 +161,8 @@ export default function AuthPage(props: AuthPageProps) {
     >
       <Title>
         {mode() === "login"
-          ? "Sign in — TCGHaven"
-          : "Create an account — TCGHaven"}
+          ? "Sign in | TCGHaven"
+          : "Create an account | TCGHaven"}
       </Title>
 
       <section

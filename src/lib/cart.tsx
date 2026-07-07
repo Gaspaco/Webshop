@@ -2,6 +2,7 @@ import {
   createContext,
   createEffect,
   createSignal,
+  onMount,
   useContext,
   type ParentProps,
 } from "solid-js";
@@ -26,8 +27,7 @@ type CartContextValue = {
 
 const STORAGE_KEY = "tcghaven_cart";
 
-function loadInitial(): CartItem[] {
-  if (typeof window === "undefined") return [];
+function loadStored(): CartItem[] {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as CartItem[]) : [];
@@ -39,11 +39,21 @@ function loadInitial(): CartItem[] {
 const CartContext = createContext<CartContextValue>();
 
 export function CartProvider(props: ParentProps) {
-  const [items, setItems] = createSignal<CartItem[]>(loadInitial());
+  // Always start empty so the server-rendered markup and the client's
+  // first hydration pass match exactly. Stored items are loaded after
+  // mount (client-only), then persisted back on every change.
+  const [items, setItems] = createSignal<CartItem[]>([]);
+  let hydrated = false;
+
+  onMount(() => {
+    setItems(loadStored());
+    hydrated = true;
+  });
 
   createEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items()));
+    const current = items();
+    if (!hydrated) return;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
   });
 
   const addItem: CartContextValue["addItem"] = (item, quantity = 1) => {

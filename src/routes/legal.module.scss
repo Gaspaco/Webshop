@@ -1,0 +1,320 @@
+@use "../styles/variables" as *;
+
+.page {
+  padding-block: clamp(2rem, 5vh, 3.5rem) clamp(3rem, 7vh, 5rem);
+  min-height: calc(100dvh - $header-height);
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+// ---------- Header ----------
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: clamp(2rem, 4vh, 3rem);
+  padding-bottom: clamp(2rem, 4vh, 2.5rem);
+  border-bottom: 1px solid rgba($white, 0.08);
+}
+
+.headerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  flex-shrink: 0;
+  border-radius: $radius-lg;
+  background: rgba($primary, 0.12);
+  border: 1px solid rgba($primary, 0.28);
+  color: $primary-light;
+
+  svg {
+    width: 1.625rem;
+    height: 1.625rem;
+  }
+}
+
+.heading {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: $white;
+}
+
+.updated {
+  margin-top: 0.25rem;
+  font-size: 0.8438rem;
+  color: $gray-500;
+}
+
+// ---------- Three-zone layout ----------
+// TOC rail | prose | summary rail. justify-content: space-between
+// distributes leftover width between the zones instead of dumping
+// it all on the right side.
+
+.layout {
+  display: grid;
+  grid-template-columns: 18rem minmax(0, 46rem) 19rem;
+  justify-content: space-between;
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: start;
+
+  @media (max-width: 1280px) {
+    grid-template-columns: 18rem minmax(0, 1fr);
+
+    .aside {
+      display: none;
+    }
+  }
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+}
+
+// ---------- Sidebar TOC ----------
+
+.toc {
+  position: sticky;
+  top: calc($header-height + 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 1.25rem;
+  border-radius: $radius-lg;
+  background: $surface;
+  border: 1px solid rgba($white, 0.06);
+
+  @media (max-width: $bp-lg) {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+.tocLabel {
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: $gray-500;
+  margin-bottom: 0.5rem;
+
+  @media (max-width: $bp-lg) {
+    display: none;
+  }
+}
+
+.tocLink {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: $radius-sm;
+  font-size: 0.8438rem;
+  color: $gray-400;
+  line-height: 1.4;
+  transition: background $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: rgba($white, 0.05);
+    color: $white;
+  }
+
+  @media (max-width: $bp-lg) {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid rgba($white, 0.08);
+    border-radius: $radius-full;
+  }
+}
+
+.tocNum {
+  flex-shrink: 0;
+  font-family: $font-display;
+  font-weight: 700;
+  color: $primary;
+  font-size: 0.75rem;
+
+  @media (max-width: $bp-lg) {
+    display: none;
+  }
+}
+
+// ---------- Content ----------
+
+.section {
+  scroll-margin-top: calc($header-height + 1.5rem);
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba($white, 0.06);
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-family: $font-display;
+  font-size: 1.1875rem;
+  font-weight: 700;
+  color: $white;
+  margin-bottom: 0.875rem;
+}
+
+.sectionNum {
+  flex-shrink: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: $primary;
+}
+
+.section p {
+  color: $gray-400;
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  margin-bottom: 0.875rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.section ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin: 0.875rem 0 0.875rem 0;
+  color: $gray-400;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.section li {
+  position: relative;
+  padding-left: 1.25rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    width: 0.3125rem;
+    height: 0.3125rem;
+    border-radius: 50%;
+    background: $primary;
+  }
+}
+
+.section a {
+  color: $primary-light;
+
+  &:hover {
+    color: $primary;
+  }
+}
+
+.section strong {
+  color: $white;
+  font-weight: 700;
+}
+
+// ---------- Right rail: summary + contact ----------
+
+.aside {
+  position: sticky;
+  top: calc($header-height + 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.asideCard {
+  padding: 1.375rem;
+  border-radius: $radius-lg;
+  border: 1px solid rgba($primary, 0.24);
+  background:
+    radial-gradient(ellipse 90% 80% at 100% 0%, rgba($primary, 0.12) 0%, transparent 60%),
+    $surface;
+}
+
+.asideTitle {
+  font-family: $font-display;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: $white;
+  margin-bottom: 1rem;
+}
+
+.asideList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.asideItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  font-size: 0.8438rem;
+  line-height: 1.55;
+  color: $gray-300;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+    color: $primary;
+  }
+}
+
+.asideContact {
+  padding: 1.375rem;
+  border-radius: $radius-lg;
+  border: 1px solid rgba($white, 0.07);
+  background: $surface;
+
+  p {
+    font-size: 0.8438rem;
+    line-height: 1.6;
+    color: $gray-400;
+    margin-bottom: 1rem;
+  }
+}
+
+.asideCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $primary-light;
+  transition: color $transition-fast;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform $transition-fast;
+  }
+
+  &:hover {
+    color: $primary;
+
+    svg {
+      transform: translateX(3px);
+    }
+  }
+}
