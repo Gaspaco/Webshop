@@ -1,8 +1,8 @@
 import { MetaProvider, Title } from "@solidjs/meta";
-import { Router } from "@solidjs/router";
+import { Router, useLocation } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
-import { Suspense } from "solid-js";
+import { Suspense, type ParentProps } from "solid-js";
 import Footer from "~/components/layout/Footer";
 import Navbar from "~/components/layout/Navbar";
 import { CartProvider } from "~/lib/cart";
@@ -22,18 +22,26 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <Router
-          root={props => (
-            <MetaProvider>
-              <Title>My Little TCG Haven</Title>
-              <Navbar />
-              <Suspense>{props.children}</Suspense>
-              <Footer />
-            </MetaProvider>
-          )}
+          root={props => <AppShell>{props.children}</AppShell>}
         >
           <FileRoutes />
         </Router>
       </CartProvider>
     </QueryClientProvider>
+  );
+}
+
+function AppShell(props: ParentProps) {
+  const location = useLocation();
+  const isAuthRoute = () =>
+    ["/login", "/signup", "/reset-password"].includes(location.pathname);
+
+  return (
+    <MetaProvider>
+      <Title>My Little TCG Haven</Title>
+      <Navbar />
+      <Suspense>{props.children}</Suspense>
+      {!isAuthRoute() && <Footer />}
+    </MetaProvider>
   );
 }

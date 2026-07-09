@@ -4,11 +4,13 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-height: calc(100dvh - $header-height);
-  overflow: clip;
+  height: calc(100dvh - $header-height);
+  min-height: 34rem;
+  overflow: hidden;
 
   @media (max-width: $bp-lg) {
     grid-template-columns: 1fr;
+    min-height: calc(100dvh - $header-height);
   }
 }
 
@@ -30,13 +32,7 @@
   will-change: transform;
 
   @media (max-width: $bp-lg) {
-    position: relative;
-    inset: auto;
-    grid-column: 1;
-    grid-row: 1;
-    width: auto;
-    min-height: 22rem;
-    transform: none !important;
+    display: none;
   }
 }
 
@@ -203,7 +199,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(1.5rem, 3vw, 3rem);
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(0.875rem, 1.4vw, 1.5rem);
   background: $background;
 }
 
@@ -221,7 +219,7 @@
 
   @media (max-width: $bp-lg) {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 1;
     display: none;
   }
 }
@@ -235,8 +233,18 @@
 
 .formInner {
   width: 100%;
-  max-width: 46rem;
+  max-width: 49rem;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   opacity: 0;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
 }
 
 // Fades the form content in once its panel is uncovered by the
@@ -264,7 +272,7 @@
   align-items: center;
   gap: 0.5rem;
   font-family: $font-display;
-  font-size: 1rem;
+  font-size: clamp(1rem, 1.2vw, 1.125rem);
   font-weight: 800;
   color: $gray-400;
   letter-spacing: -0.01em;
@@ -279,8 +287,8 @@
 }
 
 .title {
-  margin-top: 1.75rem;
-  font-size: clamp(1.5rem, 2.2vw, 1.875rem);
+  margin-top: clamp(1rem, 2.2vh, 1.5rem);
+  font-size: clamp(1.65rem, 2.4vw, 2.15rem);
   font-weight: 800;
   letter-spacing: -0.025em;
 }
@@ -295,8 +303,8 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 2rem;
+  gap: clamp(0.8rem, 1.8vh, 1.2rem);
+  margin-top: clamp(1.15rem, 2.4vh, 1.75rem);
 }
 
 .field {
@@ -357,7 +365,7 @@
 
 .input {
   width: 100%;
-  height: 2.75rem;
+  height: clamp(2.35rem, 5.5vh, 2.75rem);
   padding-inline: 0;
   border: none;
   border-bottom: 1.5px solid rgba($white, 0.14);
@@ -391,7 +399,7 @@
   align-items: center;
   justify-content: center;
   width: 2.25rem;
-  height: 2.75rem;
+  height: clamp(2.35rem, 5.5vh, 2.75rem);
   color: $gray-500;
   transition: color $transition-fast;
 
@@ -435,7 +443,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  height: 2.875rem;
+  height: clamp(2.5rem, 5.8vh, 2.875rem);
   margin-top: 0.25rem;
   border-radius: $radius-md;
   background: $primary;
@@ -475,7 +483,7 @@
 }
 
 .switchLine {
-  margin-top: 2rem;
+  margin-top: clamp(1rem, 2.3vh, 1.5rem);
   font-size: 0.875rem;
   color: $gray-400;
 }

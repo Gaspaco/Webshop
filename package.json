@@ -2,11 +2,13 @@
   "name": "my-little-tcg-haven",
   "type": "module",
   "scripts": {
+    "preinstall": "node scripts/verify-npm-registry.mjs",
     "dev": "vinxi dev",
     "build": "vinxi build",
     "start": "vinxi start",
     "preview": "vinxi preview",
     "typecheck": "tsc --noEmit",
+    "security:check": "npm audit --audit-level=high && npm ls esbuild brace-expansion",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -38,6 +40,8 @@
     "typescript": "^5.9.3"
   },
   "overrides": {
-    "h3": "^1.15.11"
+    "h3": "^1.15.11",
+    "esbuild": "0.28.1",
+    "brace-expansion": "5.0.7"
   }
 }
