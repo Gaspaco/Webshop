@@ -17,13 +17,13 @@ export default function AboutHaven() {
           </div>
 
           <div class={styles.copy}>
-            <span class={styles.eyebrow}>Our story</span>
-            <h2 class={styles.heading}>Built by collectors, for collectors.</h2>
+            <span class={styles.eyebrow}>The person behind it</span>
+            <h2 class={styles.heading}>Built by one collector, for collectors.</h2>
             <p class={styles.blurb}>
-              My Little TCG Haven started with one card, then a shoebox, then a
-              spare room that ran out of shelves. We grade every card
-              ourselves and keep stock counts honest, so what you see is what
-              lands on your doorstep.
+              My Little TCG Haven is a one-person shop, run by Alex. It started
+              with a single card, then a shoebox, then a spare room that ran out
+              of shelves. Alex grades every card by hand and keeps stock counts
+              honest, so what you see is exactly what lands on your doorstep.
             </p>
 
             <div class={styles.statRow}>

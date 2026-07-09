@@ -14,7 +14,7 @@ npm run db:migrate
 npm run dev
 ```
 
-Set a unique `BETTER_AUTH_SECRET` of at least 32 characters in `.env`.
+Set a unique `BETTER_AUTH_SECRET` of at least 48 characters in `.env`.
 Use a Mollie test key (`test_...`) while developing.
 
 ## Database
@@ -46,4 +46,5 @@ Schema: `src/db/schema.ts`
 ```bash
 npm run typecheck
 npm run build
+npm run security:check
 ```
