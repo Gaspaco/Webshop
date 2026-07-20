@@ -1,31 +1,36 @@
 import { Title } from "@solidjs/meta";
 import { createMemo, createSignal, For, Show } from "solid-js";
-import { useCart } from "~/lib/cart";
 import ProductCard, { type SectionProduct } from "~/components/product/ProductCard";
 import { CATEGORY_LIST } from "~/lib/categories";
+import { useCart } from "~/lib/cart";
 import styles from "./index.module.scss";
 
 type ShopProduct = SectionProduct & { game: string; gameName: string };
 
-const ALL: ShopProduct[] = CATEGORY_LIST.flatMap(cat =>
-  cat.products.map(p => ({ ...p, game: cat.slug, gameName: cat.name })),
+const ALL: ShopProduct[] = CATEGORY_LIST.flatMap(category =>
+  category.products.map(product => ({
+    ...product,
+    game: category.slug,
+    gameName: category.name,
+    theme: product.theme ?? category.theme,
+  })),
 );
 
 const GAME_OPTIONS = [
   { key: "all", label: "All games" },
-  ...CATEGORY_LIST.map(cat => ({ key: cat.slug, label: cat.name })),
+  ...CATEGORY_LIST.map(category => ({ key: category.slug, label: category.name })),
 ];
 
 const TYPE_OPTIONS = [
   { key: "all", label: "Everything" },
   { key: "single", label: "Singles" },
-  { key: "sealed", label: "Sealed & decks" },
+  { key: "sealed", label: "Sealed" },
 ];
 
 const PRICE_OPTIONS = [
   { key: "all", label: "Any price" },
   { key: "under25", label: "Under €25" },
-  { key: "25to100", label: "€25 – €100" },
+  { key: "25to100", label: "€25 to €100" },
   { key: "over100", label: "€100 and up" },
 ];
 
@@ -48,22 +53,26 @@ function priceBucket(product: ShopProduct) {
 
 export default function Products() {
   const cart = useCart();
+  const [search, setSearch] = createSignal("");
   const [game, setGame] = createSignal("all");
   const [type, setType] = createSignal("all");
   const [price, setPrice] = createSignal("all");
   const [sort, setSort] = createSignal<SortKey>("featured");
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
 
-  const gameCount = (key: string) =>
-    key === "all" ? ALL.length : ALL.filter(p => p.game === key).length;
-
   const visible = createMemo(() => {
+    const query = search().trim().toLocaleLowerCase();
     const list = ALL.filter(
-      p =>
-        (game() === "all" || p.game === game()) &&
-        (type() === "all" || typeOf(p) === type()) &&
-        (price() === "all" || priceBucket(p) === price()),
+      product =>
+        (!query ||
+          product.name.toLocaleLowerCase().includes(query) ||
+          product.set?.toLocaleLowerCase().includes(query) ||
+          product.gameName.toLocaleLowerCase().includes(query)) &&
+        (game() === "all" || product.game === game()) &&
+        (type() === "all" || typeOf(product) === type()) &&
+        (price() === "all" || priceBucket(product) === price()),
     );
+
     switch (sort()) {
       case "price-asc":
         return list.sort((a, b) => priceOf(a) - priceOf(b));
@@ -76,9 +85,11 @@ export default function Products() {
     }
   });
 
-  const hasFilters = () => game() !== "all" || type() !== "all" || price() !== "all";
+  const hasFilters = () =>
+    search().trim() !== "" || game() !== "all" || type() !== "all" || price() !== "all";
 
   const clearFilters = () => {
+    setSearch("");
     setGame("all");
     setType("all");
     setPrice("all");
@@ -86,16 +97,18 @@ export default function Products() {
 
   const addToCart = (product: SectionProduct) => {
     if (product.priceRangeCents || product.priceCents === undefined) return;
+
     cart.addItem({
       id: product.id,
       name: product.set ? `${product.name} · ${product.set}` : product.name,
       image: product.image ?? "/images/logo-mark.png",
       priceCents: product.priceCents,
     });
-    setJustAdded(prev => new Set(prev).add(product.id));
+
+    setJustAdded(previous => new Set(previous).add(product.id));
     setTimeout(() => {
-      setJustAdded(prev => {
-        const next = new Set(prev);
+      setJustAdded(previous => {
+        const next = new Set(previous);
         next.delete(product.id);
         return next;
       });
@@ -108,129 +121,125 @@ export default function Products() {
 
       <div class={styles.wide}>
         <header class={styles.header}>
-          <h1 class={styles.heading}>Shop everything</h1>
-          <p class={styles.sub}>
-            The full shelf: every game, every set. Narrow it down on the left,
-            then sort by what matters to you.
-          </p>
+          <div class={styles.headerCopy}>
+            <h1>Shop</h1>
+            <p>Browse singles, sealed products, and decks across every game we carry.</p>
+          </div>
+
+          <div class={styles.inventoryNote}>
+            <strong>{ALL.length}</strong>
+            <span>products available</span>
+          </div>
         </header>
 
-        <div class={styles.layout}>
-          <aside class={styles.sidebar}>
-            <div class={styles.sidebarHead}>
-              <span class={styles.sidebarTitle}>Filters</span>
-              <Show when={hasFilters()}>
-                <button type="button" class={styles.clearBtn} onClick={clearFilters}>
-                  Clear all
-                </button>
-              </Show>
-            </div>
+        <section class={styles.filters} aria-label="Shop filters">
+          <div class={styles.filterTop}>
+            <label class={styles.searchField}>
+              <span class={styles.srOnly}>Search cards and sets</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-4-4" />
+              </svg>
+              <input
+                type="search"
+                value={search()}
+                onInput={event => setSearch(event.currentTarget.value)}
+                placeholder="Search cards, sets, or games"
+              />
+            </label>
 
-            <div class={styles.filterGroup}>
-              <span class={styles.groupTitle}>Game</span>
+            <nav class={styles.gameOptions} aria-label="Filter by game">
               <For each={GAME_OPTIONS}>
-                {opt => (
+                {option => (
                   <button
                     type="button"
-                    class={styles.option}
-                    classList={{ [styles.optionActive]: game() === opt.key }}
-                    aria-pressed={game() === opt.key}
-                    onClick={() => setGame(opt.key)}
+                    class={styles.gameOption}
+                    classList={{ [styles.gameOptionActive]: game() === option.key }}
+                    aria-pressed={game() === option.key}
+                    onClick={() => setGame(option.key)}
                   >
-                    <span>{opt.label}</span>
-                    <span class={styles.optionCount}>{gameCount(opt.key)}</span>
+                    {option.label}
                   </button>
                 )}
               </For>
-            </div>
+            </nav>
+          </div>
 
-            <div class={styles.filterGroup}>
-              <span class={styles.groupTitle}>Type</span>
+          <div class={styles.filterBottom}>
+            <div class={styles.typeOptions} aria-label="Filter by product type">
               <For each={TYPE_OPTIONS}>
-                {opt => (
+                {option => (
                   <button
                     type="button"
-                    class={styles.option}
-                    classList={{ [styles.optionActive]: type() === opt.key }}
-                    aria-pressed={type() === opt.key}
-                    onClick={() => setType(opt.key)}
+                    class={styles.typeOption}
+                    classList={{ [styles.typeOptionActive]: type() === option.key }}
+                    aria-pressed={type() === option.key}
+                    onClick={() => setType(option.key)}
                   >
-                    <span>{opt.label}</span>
+                    {option.label}
                   </button>
                 )}
               </For>
             </div>
 
-            <div class={styles.filterGroup}>
-              <span class={styles.groupTitle}>Price</span>
-              <For each={PRICE_OPTIONS}>
-                {opt => (
-                  <button
-                    type="button"
-                    class={styles.option}
-                    classList={{ [styles.optionActive]: price() === opt.key }}
-                    aria-pressed={price() === opt.key}
-                    onClick={() => setPrice(opt.key)}
-                  >
-                    <span>{opt.label}</span>
-                  </button>
-                )}
-              </For>
-            </div>
-          </aside>
+            <div class={styles.selects}>
+              <label>
+                <span>Price</span>
+                <select value={price()} onChange={event => setPrice(event.currentTarget.value)}>
+                  <For each={PRICE_OPTIONS}>{option => <option value={option.key}>{option.label}</option>}</For>
+                </select>
+              </label>
 
-          <div class={styles.main}>
-            <div class={styles.toolbar}>
-              <p class={styles.resultCount}>
-                <strong>{visible().length}</strong>
-                {visible().length === 1 ? " product" : " products"}
-                <Show when={hasFilters()}>
-                  <span class={styles.resultTotal}> of {ALL.length}</span>
-                </Show>
-              </p>
-
-              <label class={styles.sortLabel}>
-                Sort
-                <select
-                  class={styles.sortSelect}
-                  value={sort()}
-                  onChange={e => setSort(e.currentTarget.value as SortKey)}
-                >
+              <label>
+                <span>Sort</span>
+                <select value={sort()} onChange={event => setSort(event.currentTarget.value as SortKey)}>
                   <option value="featured">Featured</option>
                   <option value="price-asc">Price: low to high</option>
                   <option value="price-desc">Price: high to low</option>
-                  <option value="name">Name A–Z</option>
+                  <option value="name">Name: A to Z</option>
                 </select>
               </label>
             </div>
-
-            <Show
-              when={visible().length}
-              fallback={
-                <div class={styles.empty}>
-                  <p class={styles.emptyTitle}>No matches</p>
-                  <p class={styles.emptyText}>Nothing fits those filters yet.</p>
-                  <button type="button" class={styles.emptyBtn} onClick={clearFilters}>
-                    Clear filters
-                  </button>
-                </div>
-              }
-            >
-              <div class={styles.grid}>
-                <For each={visible()}>
-                  {product => (
-                    <ProductCard
-                      product={product}
-                      isJustAdded={() => justAdded().has(product.id)}
-                      onAdd={addToCart}
-                      fill
-                    />
-                  )}
-                </For>
-              </div>
-            </Show>
           </div>
+        </section>
+
+        <div class={styles.catalogHead}>
+          <p aria-live="polite">
+            <strong>{visible().length}</strong> {visible().length === 1 ? "product" : "products"}
+          </p>
+          <Show when={hasFilters()}>
+            <button type="button" onClick={clearFilters}>Reset filters</button>
+          </Show>
         </div>
+
+        <Show
+          when={visible().length}
+          fallback={
+            <div class={styles.empty}>
+              <p class={styles.emptyTitle}>No products found</p>
+              <p>Try another search or reset the filters.</p>
+              <button type="button" onClick={clearFilters}>Reset filters</button>
+            </div>
+          }
+        >
+          <div class={styles.grid}>
+            <For each={visible()}>
+              {(product, index) => (
+                <div
+                  class={styles.gridItem}
+                  style={`--card-index: ${Math.min(index(), 6)}`}
+                >
+                  <ProductCard
+                    product={product}
+                    isJustAdded={() => justAdded().has(product.id)}
+                    onAdd={addToCart}
+                    fill
+                  />
+                </div>
+              )}
+            </For>
+          </div>
+        </Show>
       </div>
     </main>
   );

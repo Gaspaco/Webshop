@@ -57,7 +57,12 @@ export default function ProductCard(props: ProductCardProps) {
   const p = props.product;
 
   return (
-    <article class={styles.card} classList={{ [styles.cardFill]: props.fill }}>
+    <article
+      class={styles.card}
+      classList={{
+        [styles.cardFill]: props.fill,
+      }}
+    >
       <A href={p.href} class={styles.cardMedia}>
         <Show when={p.image} fallback={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}>
           <img src={p.image} alt={p.set ? `${p.name}, ${p.set}` : p.name} draggable={false} loading="lazy" />

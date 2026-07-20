@@ -237,14 +237,6 @@
 
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.5rem;
-
-  @media (max-width: $bp-lg) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (max-width: $bp-sm) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, #{$product-card-min}), 1fr));
+  gap: $product-card-gap;
 }

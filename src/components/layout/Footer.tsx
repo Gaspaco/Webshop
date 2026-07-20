@@ -46,6 +46,7 @@ export default function Footer() {
           <A href="/categories/pokemon">Pokémon</A>
           <A href="/categories/yugioh">Yu-Gi-Oh!</A>
           <A href="/categories/magic">Magic: The Gathering</A>
+          <A href="/the-vault">The Vault</A>
           <A href="/products">All products</A>
         </div>
 
@@ -59,7 +60,7 @@ export default function Footer() {
 
         <div class={styles.linkCol}>
           <h3 class={styles.linkHeading}>Company</h3>
-          <A href="/about">About</A>
+          <A href="/about">About us</A>
           <A href="/contact">Contact</A>
           <A href="/shipping">Shipping & returns</A>
         </div>

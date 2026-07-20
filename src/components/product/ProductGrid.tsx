@@ -1,7 +1,6 @@
-import { A } from "@solidjs/router";
-import { createMemo, createSignal, For, Show } from "solid-js";
-import { formatPrice, useCart } from "~/lib/cart";
-import { BoxArt, Stars, type SectionProduct } from "./ProductCard";
+import { createMemo, createSignal, For } from "solid-js";
+import { useCart } from "~/lib/cart";
+import ProductCard, { type SectionProduct } from "./ProductCard";
 import styles from "./ProductGrid.module.scss";
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "name";
@@ -69,64 +68,12 @@ export default function ProductGrid(props: { products: SectionProduct[] }) {
       <div class={styles.grid}>
         <For each={sorted()}>
           {product => (
-            <article class={styles.card}>
-              <A href={product.href} class={styles.media}>
-                <Show
-                  when={product.image}
-                  fallback={<BoxArt theme={product.theme ?? "pokemon"} label={product.set ?? product.name} />}
-                >
-                  <img src={product.image} alt={product.set ? `${product.name}, ${product.set}` : product.name} draggable={false} loading="lazy" />
-                </Show>
-                <Show when={product.badge}>
-                  <span class={styles.badge}>{product.badge}</span>
-                </Show>
-              </A>
-
-              <div class={styles.body}>
-                <A href={product.href} class={styles.info}>
-                  <span class={styles.name}>{product.name}</span>
-                  <Show when={product.set}>
-                    <span class={styles.set}>{product.set}</span>
-                  </Show>
-                  <Show when={product.rating}>
-                    <Stars rating={product.rating!} />
-                  </Show>
-                </A>
-
-                <div class={styles.priceRow}>
-                  <span class={styles.price}>
-                    <Show
-                      when={!product.priceRangeCents}
-                      fallback={
-                        <>
-                          {formatPrice(product.priceRangeCents![0])} – {formatPrice(product.priceRangeCents![1])}
-                        </>
-                      }
-                    >
-                      {formatPrice(product.priceCents ?? 0)}
-                    </Show>
-                  </span>
-                </div>
-
-                <Show
-                  when={!product.priceRangeCents}
-                  fallback={
-                    <A href={product.href} class={styles.addBtn}>
-                      View options
-                    </A>
-                  }
-                >
-                  <button
-                    type="button"
-                    class={styles.addBtn}
-                    classList={{ [styles.addBtnDone]: justAdded().has(product.id) }}
-                    onClick={() => addToCart(product)}
-                  >
-                    {justAdded().has(product.id) ? "Added" : "Add to cart"}
-                  </button>
-                </Show>
-              </div>
-            </article>
+            <ProductCard
+              product={product}
+              isJustAdded={() => justAdded().has(product.id)}
+              onAdd={addToCart}
+              fill
+            />
           )}
         </For>
       </div>
