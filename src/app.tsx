@@ -2,7 +2,7 @@ import { MetaProvider, Title } from "@solidjs/meta";
 import { Router, useLocation } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
-import { Suspense, type ParentProps } from "solid-js";
+import { Show, Suspense, type ParentProps } from "solid-js";
 import Footer from "~/components/layout/Footer";
 import Navbar from "~/components/layout/Navbar";
 import { CartProvider } from "~/lib/cart";
@@ -40,7 +40,13 @@ function AppShell(props: ParentProps) {
     <MetaProvider>
       <Title>My Little TCG Haven</Title>
       <Navbar />
-      <Suspense>{props.children}</Suspense>
+      <Suspense>
+        {/* Keyed on pathname so the wrapper remounts per navigation,
+            replaying the enter animation on every page change. */}
+        <Show when={location.pathname} keyed>
+          {_ => <div class="route-enter">{props.children}</div>}
+        </Show>
+      </Suspense>
       {!isAuthRoute() && <Footer />}
     </MetaProvider>
   );

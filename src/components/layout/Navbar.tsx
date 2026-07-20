@@ -62,9 +62,10 @@ export default function Navbar() {
 
         <nav>
           <ul class={styles.nav}>
+            <li><A href="/" class={styles.navLink}>Home</A></li>
             <li><A href="/products" class={styles.navLink}>Shop</A></li>
             <li><A href="/categories" class={styles.navLink}>Categories</A></li>
-            <li><A href="/about" class={styles.navLink}>About</A></li>
+            <li><A href="/the-vault" class={styles.navLink}>The Vault</A></li>
           </ul>
         </nav>
 

@@ -40,6 +40,12 @@ export default defineConfig({
   serialization: {
     mode: "json",
   },
+  vite: {
+    // esbuild can't down-transpile Solid's destructuring to Vite's default
+    // legacy browser target; keep the target modern so it doesn't try.
+    build: { target: "esnext" },
+    optimizeDeps: { esbuildOptions: { target: "esnext" } },
+  },
   server: {
     routeRules: {
       "/**": {

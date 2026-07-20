@@ -1,0 +1,168 @@
+@use "../styles/variables" as *;
+
+.page {
+  min-height: calc(100dvh - $header-height);
+  padding-block: clamp(2.5rem, 6vh, 4.5rem) clamp(3.5rem, 8vh, 6rem);
+  padding-inline: 0.5rem;
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: clamp(2rem, 5vh, 3.5rem);
+  border-bottom: 1px solid rgba($white, 0.08);
+
+  @media (max-width: $bp-md) {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.headerCopy {
+  max-width: 46rem;
+}
+
+.heading {
+  color: $white;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-wrap: balance;
+}
+
+.sub {
+  max-width: 60ch;
+  margin-top: 1.25rem;
+  color: $gray-300;
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+.shopAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  min-height: 2.75rem;
+  padding-inline: 1rem;
+  border-radius: $radius-md;
+  background: $primary;
+  color: $background;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 800;
+  transition: background $transition-fast, transform $transition-fast;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform $transition-fast;
+  }
+
+  &:hover {
+    background: $primary-light;
+    transform: translateY(-1px);
+
+    svg {
+      transform: translateX(3px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 3px;
+  }
+}
+
+.catalogHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block: 1.75rem;
+  color: $gray-400;
+  font-size: 0.875rem;
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+  }
+
+  span {
+    color: $gray-300;
+    font-weight: 600;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, #{$product-card-min}), 1fr));
+  gap: $product-card-gap;
+}
+
+.vaultCard {
+  min-width: 0;
+}
+
+.vaultMark {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4rem;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 2px solid $primary-dark;
+  background: $gray-100;
+}
+
+.vaultNumber {
+  color: $gray-700;
+  font-family: $font-display;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.score {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: $gray-900;
+
+  span {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1.15;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: $primary-dark;
+    font-family: $font-display;
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shopAll,
+  .shopAll svg {
+    transition: none;
+  }
+
+  .shopAll:hover,
+  .shopAll:hover svg {
+    transform: none;
+  }
+}
