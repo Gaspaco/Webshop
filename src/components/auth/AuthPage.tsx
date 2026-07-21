@@ -55,9 +55,22 @@ export default function AuthPage(props: AuthPageProps) {
     setLoading(false);
 
     if (authError) {
+      if (
+        authError.status === 403 ||
+        authError.code === "EMAIL_NOT_VERIFIED"
+      ) {
+        window.sessionStorage.setItem(
+          "tcghaven.pending-verification-email",
+          loginEmail(),
+        );
+        window.location.assign("/verify-email");
+        return;
+      }
+
       setError(
-        authError.message ??
-          "Couldn't sign you in. Check your details and try again.",
+        authError.status === 429
+          ? "Too many sign-in attempts. Wait a minute and try again."
+          : "Email or password is incorrect.",
       );
       return;
     }
@@ -76,19 +89,30 @@ export default function AuthPage(props: AuthPageProps) {
 
     setLoading(true);
 
-    const { error: authError } = await authClient.signUp.email({
+    const { data: authData, error: authError } = await authClient.signUp.email({
       name: name(),
       email: signupEmail(),
       password: signupPassword(),
+      callbackURL: "/verify-email?verified=true",
     });
 
     setLoading(false);
 
     if (authError) {
       setError(
-        authError.message ??
-          "Couldn't create your account. Please try again.",
+        authError.status === 429
+          ? "Too many account requests. Wait a few minutes and try again."
+          : "We couldn't create an account with those details.",
       );
+      return;
+    }
+
+    if (!authData?.token) {
+      window.sessionStorage.setItem(
+        "tcghaven.pending-verification-email",
+        signupEmail(),
+      );
+      window.location.assign("/verify-email");
       return;
     }
 
@@ -121,8 +145,9 @@ export default function AuthPage(props: AuthPageProps) {
     if (resetError) {
       setResetStatus("error");
       setResetMessage(
-        resetError.message ??
-          "We couldn't send the reset email. Please try again.",
+        resetError.status === 429
+          ? "Too many requests. Wait a few minutes before trying again."
+          : "We couldn't send the reset email. Please try again.",
       );
       return;
     }
@@ -198,6 +223,7 @@ export default function AuthPage(props: AuthPageProps) {
                   placeholder="Jamie Verhoeven"
                   autocomplete="name"
                   required
+                  maxlength={80}
                   disabled={mode() !== "signup"}
                   value={name()}
                   onInput={event => setName(event.currentTarget.value)}
@@ -217,6 +243,7 @@ export default function AuthPage(props: AuthPageProps) {
                   placeholder="you@example.com"
                   autocomplete="email"
                   required
+                  maxlength={254}
                   disabled={mode() !== "signup"}
                   value={signupEmail()}
                   onInput={event => setSignupEmail(event.currentTarget.value)}
@@ -236,7 +263,8 @@ export default function AuthPage(props: AuthPageProps) {
                   placeholder="••••••••"
                   autocomplete="new-password"
                   required
-                  minlength={8}
+                  minlength={12}
+                  maxlength={128}
                   disabled={mode() !== "signup"}
                   value={signupPassword()}
                   onInput={event => setSignupPassword(event.currentTarget.value)}
@@ -247,7 +275,7 @@ export default function AuthPage(props: AuthPageProps) {
                   onToggle={() => setShowSignupPassword(value => !value)}
                 />
               </div>
-              <span class={styles.hint}>At least 8 characters.</span>
+              <span class={styles.hint}>Use at least 12 characters.</span>
             </div>
 
             <div class={styles.field}>
@@ -262,7 +290,8 @@ export default function AuthPage(props: AuthPageProps) {
                   placeholder="••••••••"
                   autocomplete="new-password"
                   required
-                  minlength={8}
+                  minlength={12}
+                  maxlength={128}
                   disabled={mode() !== "signup"}
                   value={confirmPassword()}
                   onInput={event =>
@@ -325,6 +354,7 @@ export default function AuthPage(props: AuthPageProps) {
                   placeholder="you@example.com"
                   autocomplete="email"
                   required
+                  maxlength={254}
                   disabled={mode() !== "login"}
                   value={loginEmail()}
                   onInput={event => setLoginEmail(event.currentTarget.value)}
@@ -354,6 +384,7 @@ export default function AuthPage(props: AuthPageProps) {
                   autocomplete="current-password"
                   required
                   minlength={8}
+                  maxlength={128}
                   disabled={mode() !== "login"}
                   value={loginPassword()}
                   onInput={event => setLoginPassword(event.currentTarget.value)}
@@ -510,6 +541,7 @@ export default function AuthPage(props: AuthPageProps) {
                     placeholder="you@example.com"
                     autocomplete="email"
                     required
+                    maxlength={254}
                     value={resetEmail()}
                     onInput={event =>
                       setResetEmail(event.currentTarget.value)

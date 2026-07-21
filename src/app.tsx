@@ -34,7 +34,9 @@ export default function App() {
 function AppShell(props: ParentProps) {
   const location = useLocation();
   const isAuthRoute = () =>
-    ["/login", "/signup", "/reset-password"].includes(location.pathname);
+    ["/login", "/signup", "/verify-email", "/reset-password"].includes(
+      location.pathname,
+    );
 
   return (
     <MetaProvider>

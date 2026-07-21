@@ -106,13 +106,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/auth-client.ts:1"
     },
     {
-      "id": "file::schema",
-      "label": "schema.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/db/schema.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/db/schema.ts:1"
-    },
-    {
       "id": "file::login",
       "label": "login.tsx",
       "fileType": "code",
@@ -174,69 +167,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/NewArrivals.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/NewArrivals.tsx:29"
-    },
-    {
-      "id": "file::authpage",
-      "label": "AuthPage.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:1"
-    },
-    {
-      "id": "AuthPage::switchmode",
-      "label": "switchMode",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:33"
-    },
-    {
-      "id": "AuthPage::submitlogin",
-      "label": "submitLogin",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:45"
-    },
-    {
-      "id": "AuthPage::submitsignup",
-      "label": "submitSignup",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:68"
-    },
-    {
-      "id": "AuthPage::openpasswordreset",
-      "label": "openPasswordReset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:98"
-    },
-    {
-      "id": "AuthPage::closepasswordreset",
-      "label": "closePasswordReset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:106"
-    },
-    {
-      "id": "AuthPage::submitpasswordreset",
-      "label": "submitPasswordReset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:111"
-    },
-    {
-      "id": "AuthPage::handlehistory",
-      "label": "handleHistory",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:137"
-    },
-    {
-      "id": "AuthPage::handlekeydown",
-      "label": "handleKeydown",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:142"
     },
     {
       "id": "file::cart",
@@ -412,48 +342,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx:4"
-    },
-    {
-      "id": "file::auth",
-      "label": "auth.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts:1"
-    },
-    {
-      "id": "file::env_server",
-      "label": "env.server.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:1"
-    },
-    {
-      "id": "env.server::requireshttps",
-      "label": "requiresHttps",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:3"
-    },
-    {
-      "id": "env.server::getdatabaseenv",
-      "label": "getDatabaseEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:21"
-    },
-    {
-      "id": "env.server::getauthenv",
-      "label": "getAuthEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:22"
-    },
-    {
-      "id": "env.server::getmollieenv",
-      "label": "getMollieEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:23"
     },
     {
       "id": "file::about",
@@ -673,27 +561,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/new-arrivals.tsx:15"
     },
     {
-      "id": "file::app_config",
-      "label": "app.config.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/app.config.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/app.config.ts:1"
-    },
-    {
-      "id": "file::app",
-      "label": "app.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/app.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/app.tsx:1"
-    },
-    {
-      "id": "app::isauthroute",
-      "label": "isAuthRoute",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/app.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/app.tsx:36"
-    },
-    {
       "id": "file::footer",
       "label": "Footer.tsx",
       "fileType": "code",
@@ -776,13 +643,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:31"
-    },
-    {
-      "id": "file::index",
-      "label": "index.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx:1"
     },
     {
       "id": "index::priceof",
@@ -888,6 +748,237 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:95"
+    },
+    {
+      "id": "file::app_config",
+      "label": "app.config.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/app.config.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/app.config.ts:1"
+    },
+    {
+      "id": "file::app",
+      "label": "app.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/app.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/app.tsx:1"
+    },
+    {
+      "id": "app::isauthroute",
+      "label": "isAuthRoute",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/app.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/app.tsx:36"
+    },
+    {
+      "id": "file::authpage",
+      "label": "AuthPage.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:1"
+    },
+    {
+      "id": "AuthPage::switchmode",
+      "label": "switchMode",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:33"
+    },
+    {
+      "id": "AuthPage::submitlogin",
+      "label": "submitLogin",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:45"
+    },
+    {
+      "id": "AuthPage::submitsignup",
+      "label": "submitSignup",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:81"
+    },
+    {
+      "id": "AuthPage::openpasswordreset",
+      "label": "openPasswordReset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:122"
+    },
+    {
+      "id": "AuthPage::closepasswordreset",
+      "label": "closePasswordReset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:130"
+    },
+    {
+      "id": "AuthPage::submitpasswordreset",
+      "label": "submitPasswordReset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:135"
+    },
+    {
+      "id": "AuthPage::handlehistory",
+      "label": "handleHistory",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:162"
+    },
+    {
+      "id": "AuthPage::handlekeydown",
+      "label": "handleKeydown",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:167"
+    },
+    {
+      "id": "file::index",
+      "label": "index.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/db/index.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/db/index.ts:1"
+    },
+    {
+      "id": "file::schema",
+      "label": "schema.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/db/schema.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/db/schema.ts:1"
+    },
+    {
+      "id": "file::auth",
+      "label": "auth.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts:1"
+    },
+    {
+      "id": "file::env_server",
+      "label": "env.server.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:1"
+    },
+    {
+      "id": "env.server::requireshttps",
+      "label": "requiresHttps",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:3"
+    },
+    {
+      "id": "env.server::getdatabaseenv",
+      "label": "getDatabaseEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:36"
+    },
+    {
+      "id": "env.server::getauthenv",
+      "label": "getAuthEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:37"
+    },
+    {
+      "id": "env.server::getemailenv",
+      "label": "getEmailEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:38"
+    },
+    {
+      "id": "env.server::getmollieenv",
+      "label": "getMollieEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:47"
+    },
+    {
+      "id": "file::authflowshell",
+      "label": "AuthFlowShell.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthFlowShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthFlowShell.tsx:1"
+    },
+    {
+      "id": "file::email_server",
+      "label": "email.server.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:1"
+    },
+    {
+      "id": "email.server::escapehtml",
+      "label": "escapeHtml",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:11"
+    },
+    {
+      "id": "email.server::tokenfingerprint",
+      "label": "tokenFingerprint",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:23"
+    },
+    {
+      "id": "email_server::sendauthemail",
+      "label": "sendAuthEmail",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:34"
+    },
+    {
+      "id": "email.server::authemailhtml",
+      "label": "authEmailHtml",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:59"
+    },
+    {
+      "id": "email.server::sendverificationemail",
+      "label": "sendVerificationEmail",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:79"
+    },
+    {
+      "id": "email.server::sendpasswordresetemail",
+      "label": "sendPasswordResetEmail",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:97"
+    },
+    {
+      "id": "file::verify_email",
+      "label": "verify-email.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx:1"
+    },
+    {
+      "id": "verify-email::verified",
+      "label": "verified",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx:20"
+    },
+    {
+      "id": "verify-email::verificationerror",
+      "label": "verificationError",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx:21"
+    },
+    {
+      "id": "verify-email::resend",
+      "label": "resend",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx:32"
     }
   ],
   "edges": [
@@ -988,78 +1079,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/NewArrivals.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/NewArrivals.tsx:29",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::switchmode",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:33",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::submitlogin",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:45",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::submitsignup",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:68",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::openpasswordreset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:98",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::closepasswordreset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:106",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::submitpasswordreset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:111",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::handlehistory",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:137",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::handlekeydown",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:142",
       "weight": 1
     },
     {
@@ -1195,42 +1214,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx:4",
-      "weight": 1
-    },
-    {
-      "source": "file::env_server",
-      "target": "env.server::requireshttps",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:3",
-      "weight": 1
-    },
-    {
-      "source": "file::env_server",
-      "target": "env.server::getdatabaseenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:21",
-      "weight": 1
-    },
-    {
-      "source": "file::env_server",
-      "target": "env.server::getauthenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:22",
-      "weight": 1
-    },
-    {
-      "source": "file::env_server",
-      "target": "env.server::getmollieenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:23",
       "weight": 1
     },
     {
@@ -1432,15 +1415,6 @@
       "weight": 1
     },
     {
-      "source": "file::app",
-      "target": "app::isauthroute",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/app.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/app.tsx:36",
-      "weight": 1
-    },
-    {
       "source": "file::footer",
       "target": "footer::footer",
       "relation": "contains",
@@ -1610,12 +1584,219 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:95",
       "weight": 1
+    },
+    {
+      "source": "file::app",
+      "target": "app::isauthroute",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/app.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/app.tsx:36",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::switchmode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:33",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::submitlogin",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:45",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::submitsignup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:81",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::openpasswordreset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:122",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::closepasswordreset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:130",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::submitpasswordreset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:135",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::handlehistory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:162",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::handlekeydown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:167",
+      "weight": 1
+    },
+    {
+      "source": "file::env_server",
+      "target": "env.server::requireshttps",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:3",
+      "weight": 1
+    },
+    {
+      "source": "file::env_server",
+      "target": "env.server::getdatabaseenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:36",
+      "weight": 1
+    },
+    {
+      "source": "file::env_server",
+      "target": "env.server::getauthenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:37",
+      "weight": 1
+    },
+    {
+      "source": "file::env_server",
+      "target": "env.server::getemailenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:38",
+      "weight": 1
+    },
+    {
+      "source": "file::env_server",
+      "target": "env.server::getmollieenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:47",
+      "weight": 1
+    },
+    {
+      "source": "file::email_server",
+      "target": "email.server::escapehtml",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:11",
+      "weight": 1
+    },
+    {
+      "source": "file::email_server",
+      "target": "email.server::tokenfingerprint",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:23",
+      "weight": 1
+    },
+    {
+      "source": "file::email_server",
+      "target": "email_server::sendauthemail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:34",
+      "weight": 1
+    },
+    {
+      "source": "file::email_server",
+      "target": "email.server::authemailhtml",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:59",
+      "weight": 1
+    },
+    {
+      "source": "file::email_server",
+      "target": "email.server::sendverificationemail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:79",
+      "weight": 1
+    },
+    {
+      "source": "file::email_server",
+      "target": "email.server::sendpasswordresetemail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/email.server.ts:97",
+      "weight": 1
+    },
+    {
+      "source": "file::verify_email",
+      "target": "verify-email::verified",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx:20",
+      "weight": 1
+    },
+    {
+      "source": "file::verify_email",
+      "target": "verify-email::verificationerror",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx:21",
+      "weight": 1
+    },
+    {
+      "source": "file::verify_email",
+      "target": "verify-email::resend",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx:32",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 50,
-    "nodes": 127,
-    "edges": 80,
-    "builtAt": "2026-07-21T10:52:26.536Z"
+    "files": 54,
+    "nodes": 140,
+    "edges": 90,
+    "builtAt": "2026-07-21T15:31:40.812Z"
   }
 }

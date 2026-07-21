@@ -1,4 +1,5 @@
 import {
+  bigint,
   boolean,
   index,
   integer,
@@ -97,6 +98,16 @@ export const verification = pgTable(
     ...timestamps,
   },
   table => [index("verification_identifier_idx").on(table.identifier)],
+);
+
+export const rateLimit = pgTable(
+  "rate_limit",
+  {
+    key: text("key").primaryKey(),
+    count: integer("count").notNull(),
+    lastRequest: bigint("last_request", { mode: "number" }).notNull(),
+  },
+  table => [index("rate_limit_last_request_idx").on(table.lastRequest)],
 );
 
 // Store catalog
