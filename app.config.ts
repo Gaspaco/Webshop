@@ -36,6 +36,12 @@ const noStoreHeaders = {
   "Cache-Control": "no-store, max-age=0",
 };
 
+const privateAuthHeaders = {
+  ...noStoreHeaders,
+  "Cache-Control": "private, no-store, max-age=0",
+  "Referrer-Policy": "no-referrer",
+};
+
 export default defineConfig({
   serialization: {
     mode: "json",
@@ -47,12 +53,31 @@ export default defineConfig({
     optimizeDeps: { esbuildOptions: { target: "esnext" } },
   },
   server: {
+    preset: process.env.VERCEL ? "vercel" : undefined,
     routeRules: {
       "/**": {
         headers: securityHeaders,
       },
       "/api/**": {
         headers: noStoreHeaders,
+      },
+      "/api/auth/**": {
+        headers: privateAuthHeaders,
+      },
+      "/login": {
+        headers: privateAuthHeaders,
+      },
+      "/signup": {
+        headers: privateAuthHeaders,
+      },
+      "/verify-email": {
+        headers: privateAuthHeaders,
+      },
+      "/reset-password": {
+        headers: privateAuthHeaders,
+      },
+      "/account": {
+        headers: privateAuthHeaders,
       },
     },
   },

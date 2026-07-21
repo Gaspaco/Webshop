@@ -7,7 +7,9 @@ const connectionString =
   "postgresql://postgres:postgres@localhost:5432/my_little_tcg_haven";
 
 const client = postgres(connectionString, {
-  max: process.env.NODE_ENV === "production" ? 10 : 1,
+  // Better Auth can issue nested session queries, so Vercel needs two pooled
+  // connections to avoid deadlocking while still keeping serverless usage low.
+  max: process.env.VERCEL ? 2 : process.env.NODE_ENV === "production" ? 10 : 1,
   prepare: false,
 });
 

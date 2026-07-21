@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": [
+    "sfo1"
+  ],
+  "services": {
+    "web": {
+      "root": ".",
+      "framework": "solidstart-1",
+      "buildCommand": "npm run build"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "web"
+      }
+    }
+  ]
+}
