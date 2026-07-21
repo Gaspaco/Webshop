@@ -2,7 +2,7 @@
 
 .page {
   min-height: calc(100dvh - $header-height);
-  padding-block: clamp(2.5rem, 6vh, 4.5rem) clamp(3.5rem, 8vh, 6rem);
+  padding-block: 1rem clamp(4rem, 8vh, 7rem);
   padding-inline: 0.5rem;
 }
 
@@ -16,8 +16,12 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 2rem;
-  padding-bottom: clamp(2rem, 5vh, 3.5rem);
-  border-bottom: 1px solid rgba($white, 0.08);
+  min-height: clamp(20rem, 38vh, 29rem);
+  padding: clamp(2rem, 5vw, 5rem);
+  border-block: 1px solid rgba($white, 0.12);
+  background:
+    radial-gradient(circle at 72% 48%, rgba($primary, 0.2), transparent 0 18%, transparent 48%),
+    #111512;
 
   @media (max-width: $bp-md) {
     align-items: flex-start;
@@ -31,10 +35,10 @@
 
 .heading {
   color: $white;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1;
+  font-size: clamp(4rem, 9vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
   text-wrap: balance;
 }
 
@@ -88,7 +92,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-block: 1.75rem;
+  min-height: 5rem;
+  margin-block: 0 1.75rem;
+  padding-inline: 1rem;
+  border-bottom: 1px solid rgba($white, 0.1);
   color: $gray-400;
   font-size: 0.875rem;
 
