@@ -133,7 +133,7 @@ export default function Terms() {
                 Shipping & delivery
               </h2>
               <p>
-                Orders ship from the Netherlands, typically within 1–2
+                Orders ship from the Netherlands, typically within 1 to 2
                 business days of payment confirmation. Delivery times vary
                 by destination and carrier. Risk of loss passes to you once
                 the order is handed to the carrier, though we'll always help
@@ -247,7 +247,7 @@ export default function Terms() {
                   each={[
                     "14-day EU right of withdrawal on unopened items",
                     "Cards graded honestly and photographed before shipping",
-                    "Ships from the Netherlands within 1–2 business days",
+                    "Ships from the Netherlands within 1 to 2 business days",
                     "Prices in EUR, VAT included, paid securely via Mollie",
                   ]}
                 >

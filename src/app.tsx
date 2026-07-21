@@ -4,9 +4,12 @@ import { FileRoutes } from "@solidjs/start/router";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import { Show, Suspense, type ParentProps } from "solid-js";
 import Footer from "~/components/layout/Footer";
+import LoadingScreen from "~/components/layout/LoadingScreen";
 import Navbar from "~/components/layout/Navbar";
 import { CartProvider } from "~/lib/cart";
 import "./app.scss";
+
+const LOADER_SESSION_KEY = "tcg-haven-loader-seen";
 
 export default function App() {
   const queryClient = new QueryClient({
@@ -41,6 +44,10 @@ function AppShell(props: ParentProps) {
   return (
     <MetaProvider>
       <Title>My Little TCG Haven</Title>
+      <script
+        innerHTML={`try{if(sessionStorage.getItem("${LOADER_SESSION_KEY}")==="true"){document.documentElement.classList.add("loader-seen")}}catch{}`}
+      />
+      <LoadingScreen />
       <Navbar />
       <Suspense>
         {/* Keyed on pathname so the wrapper remounts per navigation,

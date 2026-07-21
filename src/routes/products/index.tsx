@@ -126,9 +126,8 @@ export default function Products() {
             <p>Browse singles, sealed products, and decks across every game we carry.</p>
           </div>
 
-          <div class={styles.inventoryNote}>
-            <strong>{ALL.length}</strong>
-            <span>products available</span>
+          <div class={styles.inventoryCount} aria-label="26 products available">
+            26
           </div>
         </header>
 
@@ -203,14 +202,11 @@ export default function Products() {
           </div>
         </section>
 
-        <div class={styles.catalogHead}>
-          <p aria-live="polite">
-            <strong>{visible().length}</strong> {visible().length === 1 ? "product" : "products"}
-          </p>
-          <Show when={hasFilters()}>
+        <Show when={hasFilters()}>
+          <div class={styles.catalogHead}>
             <button type="button" onClick={clearFilters}>Reset filters</button>
-          </Show>
-        </div>
+          </div>
+        </Show>
 
         <Show
           when={visible().length}

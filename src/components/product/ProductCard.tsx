@@ -89,7 +89,7 @@ export default function ProductCard(props: ProductCardProps) {
               when={!p.priceRangeCents}
               fallback={
                 <>
-                  {formatPrice(p.priceRangeCents![0])} – {formatPrice(p.priceRangeCents![1])}
+                  {formatPrice(p.priceRangeCents![0])} to {formatPrice(p.priceRangeCents![1])}
                 </>
               }
             >
