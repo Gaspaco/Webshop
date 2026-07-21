@@ -60,7 +60,7 @@ export default function ProductGrid(props: { products: SectionProduct[] }) {
             <option value="featured">Featured</option>
             <option value="price-asc">Price: low to high</option>
             <option value="price-desc">Price: high to low</option>
-            <option value="name">Name A–Z</option>
+            <option value="name">Name: A to Z</option>
           </select>
         </label>
       </div>

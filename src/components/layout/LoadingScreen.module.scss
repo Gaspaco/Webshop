@@ -1,0 +1,358 @@
+@use "../../styles/variables" as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-tooltip + 100;
+  overflow: hidden;
+  color: $white;
+  isolation: isolate;
+}
+
+:global(html.loader-seen) .overlay {
+  display: none;
+}
+
+.panel {
+  position: absolute;
+  z-index: -2;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: #09120f;
+  transition: transform 1100ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.panelLeft {
+  left: 0;
+}
+
+.panelRight {
+  right: 0;
+  border-left: 1px solid rgba($white, 0.045);
+}
+
+.leaving {
+  pointer-events: none;
+}
+
+.leaving .panelLeft {
+  transform: translateX(-100%);
+}
+
+.leaving .panelRight {
+  transform: translateX(100%);
+}
+
+.topline {
+  position: absolute;
+  z-index: 5;
+  top: clamp(1.25rem, 3vw, 2.5rem);
+  left: clamp(1.25rem, 4vw, 3.5rem);
+  right: clamp(1.25rem, 4vw, 3.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: $font-display;
+  transition:
+    opacity 420ms ease,
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brand {
+  color: $white;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+
+  span {
+    color: $primary-light;
+  }
+}
+
+.edition,
+.index,
+.subline,
+.loadingLabel,
+.cardNumber,
+.cardDetails {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.edition {
+  color: rgba($white, 0.46);
+}
+
+.content {
+  position: absolute;
+  inset: 0;
+  transition:
+    opacity 480ms ease,
+    transform 850ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.leaving .content,
+.leaving .topline {
+  opacity: 0;
+}
+
+.leaving .content {
+  transform: scale(1.012);
+}
+
+.leaving .topline {
+  transform: translateY(-0.75rem);
+}
+
+.composition {
+  display: grid;
+  width: min(80rem, calc(100% - 5rem));
+  height: 100%;
+  margin-inline: auto;
+  grid-template-columns: minmax(18rem, 0.82fr) minmax(19rem, 1fr);
+  align-items: center;
+  gap: clamp(3rem, 9vw, 9rem);
+}
+
+.intro {
+  max-width: 31rem;
+}
+
+.index,
+.subline {
+  color: rgba($white, 0.45);
+}
+
+.statement {
+  max-width: 9ch;
+  margin-block: 1.25rem 1.75rem;
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(2.75rem, 5.2vw, 5.25rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+}
+
+.cardStage {
+  position: relative;
+  width: min(19rem, 26vw);
+  justify-self: center;
+}
+
+.cardStage::before {
+  position: absolute;
+  inset: -2rem;
+  border: 1px solid rgba($white, 0.07);
+  content: "";
+}
+
+.cardNumber {
+  position: absolute;
+  top: -3.7rem;
+  left: -2rem;
+  color: rgba($white, 0.4);
+}
+
+.cardShell {
+  position: relative;
+  aspect-ratio: 0.716;
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.34);
+}
+
+.cardGhost,
+.cardReveal,
+.cardReveal img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cardGhost {
+  opacity: 0;
+  filter: grayscale(1) contrast(0.78);
+  transition: opacity 520ms ease;
+}
+
+.cardReveal {
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    clip-path 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 520ms ease;
+  will-change: clip-path;
+}
+
+.cardGhost.activeCard {
+  opacity: 0.18;
+}
+
+.cardReveal.activeCard {
+  opacity: 1;
+}
+
+.revealLine {
+  position: absolute;
+  right: -0.5rem;
+  left: -0.5rem;
+  height: 1px;
+  background: rgba($primary-light, 0.72);
+  box-shadow: 0 0 1rem rgba($primary-light, 0.22);
+  transform: translateY(-1px);
+  transition: top 240ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.cardDetails {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  color: rgba($white, 0.72);
+}
+
+.cardDetails span:last-child {
+  color: rgba($white, 0.34);
+  text-align: right;
+}
+
+.readout {
+  position: absolute;
+  z-index: 5;
+  right: clamp(1.25rem, 4vw, 3.5rem);
+  bottom: clamp(1.6rem, 3vw, 2.5rem);
+  left: clamp(1.25rem, 4vw, 3.5rem);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  pointer-events: none;
+}
+
+.loadingLabel {
+  color: rgba($white, 0.44);
+  padding-bottom: 0.3rem;
+}
+
+.count {
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(2.75rem, 6vw, 4.5rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  line-height: 0.78;
+
+  small {
+    margin-left: 0.18em;
+    color: $primary-light;
+    font-size: 0.2em;
+    letter-spacing: 0;
+  }
+}
+
+.progress {
+  position: absolute;
+  z-index: 6;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: rgba($white, 0.06);
+  transition: opacity 320ms ease;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: $primary-light;
+  transition: width 240ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.leaving .progress {
+  opacity: 0;
+}
+
+@media (max-width: $bp-md) {
+  .topline {
+    align-items: flex-start;
+  }
+
+  .edition {
+    max-width: 14ch;
+    text-align: right;
+  }
+
+  .composition {
+    width: calc(100% - 2.5rem);
+    padding-block: 5.5rem 6rem;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .intro {
+    align-self: end;
+  }
+
+  .statement {
+    max-width: 12ch;
+    margin-block: 0.65rem 0.8rem;
+    font-size: clamp(2rem, 10.5vw, 3.25rem);
+  }
+
+  .subline {
+    display: none;
+  }
+
+  .cardStage {
+    width: min(10.5rem, 40vw);
+    align-self: center;
+  }
+
+  .cardStage::before {
+    inset: -1rem;
+  }
+
+  .cardNumber {
+    top: -2.2rem;
+    left: -1rem;
+  }
+
+  .cardDetails {
+    margin-top: 1.75rem;
+    font-size: 0.55rem;
+  }
+
+  .readout {
+    bottom: 1.4rem;
+  }
+
+  .loadingLabel {
+    max-width: 11ch;
+  }
+}
+
+@media (max-height: 650px) and (min-width: $bp-md) {
+  .cardStage {
+    width: min(14rem, 22vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardReveal,
+  .revealLine,
+  .panel,
+  .content,
+  .topline,
+  .progress {
+    transition-duration: 0.01ms;
+  }
+}

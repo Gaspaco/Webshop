@@ -48,28 +48,21 @@
   }
 }
 
-.inventoryNote {
+.inventoryCount {
   display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
   align-self: stretch;
   flex-shrink: 0;
-  flex-direction: column;
   align-items: flex-end;
   justify-content: flex-end;
-  min-width: 14rem;
+  min-width: 10rem;
   padding-left: clamp(1.5rem, 4vw, 4rem);
   border-left: 1px solid rgba($white, 0.12);
-  color: $gray-500;
-  font-size: 0.8125rem;
-
-  strong {
-    color: $primary-light;
-    font-family: $font-display;
-    font-size: clamp(3rem, 5vw, 5rem);
-    letter-spacing: -0.04em;
-    line-height: 0.9;
-  }
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: clamp(3rem, 5vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
 }
 
 .filters {
@@ -238,16 +231,9 @@
 .catalogHead {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
   min-height: 5.25rem;
-  color: $gray-500;
-  font-size: 0.875rem;
-
-  strong {
-    color: $white;
-    font-family: $font-display;
-  }
 
   button {
     color: $primary-light;
@@ -386,9 +372,8 @@
     gap: 1.25rem;
   }
 
-  .inventoryNote {
+  .inventoryCount {
     align-self: flex-start;
-    align-items: flex-start;
     min-width: 0;
     padding-left: 0;
     border-left: 0;
