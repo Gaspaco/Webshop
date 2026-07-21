@@ -36,6 +36,10 @@ export const auth = betterAuth({
     },
   },
   advanced: {
+    // Better Auth must emit UUIDs because the auth tables use PostgreSQL uuid columns.
+    database: {
+      generateId: "uuid",
+    },
     useSecureCookies: isProduction,
     disableCSRFCheck: false,
     disableOriginCheck: false,
