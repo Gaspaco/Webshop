@@ -6,6 +6,9 @@ import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories
 import { formatPrice, useCart } from "~/lib/cart";
 import styles from "./[id].module.scss";
 
+// Replace this id with the shop's own inspection video when it is ready.
+const VIDEO_ID = "aqz-KE-bpKQ";
+
 function describe(product: ShopProduct) {
   if (product.priceRangeCents) {
     return `A factory-sealed ${product.gameName} release, stored carefully and shipped tracked from the Netherlands.`;
@@ -137,36 +140,54 @@ export default function ProductDetail() {
               <span>{item().name}</span>
             </nav>
 
-            <section class={styles.hero}>
-              <div class={`${styles.stage} ${styles[item().theme]}`}>
-                <div class={styles.stageTop}>
-                  <span>{item().badge ?? conditionFor(item())}</span>
-                  <span>{item().image ? "Exact item pictured" : "Product preview"}</span>
-                </div>
-
-                <div class={styles.productMedia}>
-                  <Show
-                    when={item().image}
-                    fallback={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
-                  >
-                    <img
-                      src={item().image}
-                      alt={item().set ? `${item().name}, ${item().set}` : item().name}
-                      draggable={false}
-                    />
-                  </Show>
-                </div>
-
-                <div class={styles.stageBottom} aria-label="Product highlights">
-                  <span>{conditionFor(item())}</span>
-                  <span>English</span>
-                  <span>Ships tracked</span>
-                </div>
+            <section class={`${styles.hero} ${styles[item().theme]}`}>
+              <div class={styles.heroTopline}>
+                <A href={`/categories/${item().game}`} class={styles.gameLink}>
+                  {item().gameName}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </A>
+                <span>{item().image ? "Exact item photographed" : "Product preview"}</span>
               </div>
 
-              <aside class={styles.purchase}>
+              <div class={styles.heroGrid}>
+                <div class={styles.stage}>
+                  <div class={styles.titleBlock}>
+                    <Show when={item().set}>
+                      <p class={styles.setName}>{item().set}</p>
+                    </Show>
+                    <h1>{item().name}</h1>
+                  </div>
+
+                  <div class={styles.productMedia}>
+                    <span class={styles.mediaIndex} aria-hidden="true">MLTH / 001</span>
+                    <Show
+                      when={item().image}
+                      fallback={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
+                    >
+                      <img
+                        src={item().image}
+                        alt={item().set ? `${item().name}, ${item().set}` : item().name}
+                        draggable={false}
+                      />
+                    </Show>
+                    <span class={styles.mediaNote}>{item().badge ?? conditionFor(item())}</span>
+                  </div>
+
+                  <div class={styles.stageFacts} aria-label="Product highlights">
+                    <span>{conditionFor(item())}</span>
+                    <span>English</span>
+                    <span>Ships from NL</span>
+                  </div>
+                </div>
+
+                <aside class={styles.purchase}>
                 <div class={styles.purchaseTopline}>
-                  <A href={`/categories/${item().game}`}>{item().gameName}</A>
+                  <div class={styles.ratingRow}>
+                    <Stars rating={item().rating ?? 5} />
+                    <span>{(item().rating ?? 5).toFixed(1)} collector rating</span>
+                  </div>
                   <button
                     type="button"
                     class={styles.saveButton}
@@ -179,16 +200,6 @@ export default function ProductDetail() {
                       <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
                     </svg>
                   </button>
-                </div>
-
-                <h1>{item().name}</h1>
-                <Show when={item().set}>
-                  <p class={styles.setName}>{item().set}</p>
-                </Show>
-
-                <div class={styles.ratingRow}>
-                  <Stars rating={item().rating ?? 5} />
-                  <span>Collector rating {(item().rating ?? 5).toFixed(1)}</span>
                 </div>
 
                 <p class={styles.price}>
@@ -270,12 +281,21 @@ export default function ProductDetail() {
                     <strong>Within 1 business day</strong>
                   </div>
                 </div>
-              </aside>
+                </aside>
+              </div>
+
+              <a href="#product-story" class={styles.scrollCue}>
+                Explore the card
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 4v16M6 14l6 6 6-6" />
+                </svg>
+              </a>
             </section>
 
-            <section class={styles.detailsSection}>
+            <section class={styles.detailsSection} id="product-story">
               <div class={styles.detailsIntro}>
-                <h2>Know exactly what you are buying.</h2>
+                <span class={styles.sectionLabel}>The card</span>
+                <h2>Every detail, shown clearly.</h2>
                 <p>{describe(item())}</p>
                 <p>
                   {item().priceRangeCents
@@ -292,6 +312,26 @@ export default function ProductDetail() {
                 <div><dt>Language</dt><dd>English</dd></div>
                 <div><dt>Ships from</dt><dd>Netherlands</dd></div>
               </dl>
+            </section>
+
+            <section class={styles.videoSection}>
+              <div class={styles.videoCopy}>
+                <span class={styles.sectionLabel}>Closer look</span>
+                <h2>Inspect it before it reaches your collection.</h2>
+                <p>
+                  Check the surface, corners, centering, and finish at a larger scale before buying.
+                </p>
+              </div>
+
+              <div class={styles.videoFrame}>
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}`}
+                  title={`${item().name} product video`}
+                  loading="lazy"
+                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                />
+              </div>
             </section>
 
             <section class={styles.serviceBand} aria-label="Service information">

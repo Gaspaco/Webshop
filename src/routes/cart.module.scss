@@ -6,10 +6,16 @@
 }
 
 .heading {
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(12rem, 26vh, 18rem);
+  padding: clamp(2rem, 5vw, 4rem);
+  border-block: 1px solid rgba($white, 0.12);
+  background: #111512;
+  font-size: clamp(3.5rem, 8vw, 6rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  margin-bottom: clamp(1.5rem, 3vh, 2.5rem);
+  margin-bottom: clamp(2rem, 5vh, 4rem);
   animation: cartFadeUp 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -43,9 +49,10 @@
   align-items: flex-start;
   gap: 1rem;
   padding: clamp(2.5rem, 5vw, 4rem);
-  border-radius: $radius-xl;
-  background: $surface;
-  border: 1px solid rgba($white, 0.06);
+  min-height: 28rem;
+  border-radius: 0;
+  background: #0a0b0a;
+  border-block: 1px solid rgba($white, 0.12);
   grid-column: 1 / -1;
   animation: cartFadeUp 620ms cubic-bezier(0.22, 1, 0.36, 1) 70ms both;
 }
@@ -103,9 +110,9 @@
 .list {
   display: flex;
   flex-direction: column;
-  border-radius: $radius-xl;
-  background: $surface;
-  border: 1px solid rgba($white, 0.06);
+  border-radius: 0;
+  background: #0a0b0a;
+  border: 1px solid rgba($white, 0.12);
   overflow: hidden;
   animation: cartFadeUp 620ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
 }
@@ -250,9 +257,9 @@
   flex-direction: column;
   gap: 1.25rem;
   padding: clamp(1.5rem, 2.5vw, 2rem);
-  border-radius: $radius-xl;
-  background: $surface;
-  border: 1px solid rgba($white, 0.06);
+  border-radius: 0;
+  background: #111512;
+  border: 1px solid rgba($white, 0.12);
   position: sticky;
   top: calc($header-height + 1.5rem);
   animation: cartFadeUp 620ms cubic-bezier(0.22, 1, 0.36, 1) 170ms both;

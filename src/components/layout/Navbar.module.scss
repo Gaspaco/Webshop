@@ -5,8 +5,9 @@
   top: 0;
   z-index: $z-sticky;
   height: $header-height;
-  background: $background;
-  border-bottom: 1px solid rgba($white, 0.05);
+  background: rgba($background, 0.96);
+  border-bottom: 1px solid rgba($white, 0.1);
+  backdrop-filter: blur(14px);
 }
 
 .inner {
@@ -69,7 +70,7 @@
 
 .navLink {
   padding: 0.625rem 1.125rem;
-  border-radius: $radius-md;
+  border-radius: 0;
   font-family: $font-body;
   font-size: 1.0625rem;
   font-weight: 600;
@@ -78,7 +79,8 @@
 
   &:hover {
     color: $white;
-    background: rgba($white, 0.04);
+    background: transparent;
+    box-shadow: inset 0 -2px 0 $primary;
   }
 }
 
