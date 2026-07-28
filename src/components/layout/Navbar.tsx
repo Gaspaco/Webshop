@@ -109,7 +109,11 @@ export default function Navbar() {
             </button>
           </form>
 
-          <A href="/wishlist" class={styles.iconBtn} aria-label="Wishlist">
+          <A
+            href="/wishlist"
+            class={`${styles.iconBtn} ${styles.wishlistBtn}`}
+            aria-label="Wishlist"
+          >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 20s-7.5-4.6-10-9.3C.4 7.1 2 3.5 5.6 3a5 5 0 0 1 6.4 2.2A5 5 0 0 1 18.4 3c3.6.5 5.2 4.1 3.6 7.7C19.5 15.4 12 20 12 20Z" />
             </svg>

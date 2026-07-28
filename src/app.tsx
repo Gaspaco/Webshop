@@ -40,8 +40,8 @@ function AppShell(props: ParentProps) {
     ["/login", "/signup", "/verify-email", "/reset-password"].includes(
       location.pathname,
     );
-  const hidesFooter = () =>
-    isAuthRoute() || location.pathname === "/account";
+  const isDashboard = () => location.pathname === "/account";
+  const chromeless = () => isAuthRoute() || isDashboard();
 
   return (
     <MetaProvider>
@@ -50,7 +50,7 @@ function AppShell(props: ParentProps) {
         innerHTML={`try{if(sessionStorage.getItem("${LOADER_SESSION_KEY}")==="true"){document.documentElement.classList.add("loader-seen")}}catch{}`}
       />
       <LoadingScreen />
-      <Navbar />
+      {!chromeless() && <Navbar />}
       <Suspense>
         {/* Keyed on pathname so the wrapper remounts per navigation,
             replaying the enter animation on every page change. */}
@@ -58,7 +58,7 @@ function AppShell(props: ParentProps) {
           {_ => <div class="route-enter">{props.children}</div>}
         </Show>
       </Suspense>
-      {!hidesFooter() && <Footer />}
+      {!chromeless() && <Footer />}
     </MetaProvider>
   );
 }

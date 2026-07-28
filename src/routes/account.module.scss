@@ -1,23 +1,23 @@
 @use "../styles/variables" as *;
 
 .page {
-  min-height: calc(100dvh - $header-height);
+  min-height: 100dvh;
   background: #0d0f0e;
 }
 
 .account {
   display: grid;
   width: 100%;
-  height: calc(100dvh - $header-height);
+  height: 100dvh;
   min-height: 42rem;
   overflow: hidden;
-  grid-template-columns: 17.5rem minmax(0, 1fr);
+  grid-template-columns: 18rem minmax(0, 1fr);
   background: #0d0f0e;
 }
 
 .loading {
   display: flex;
-  min-height: calc(100dvh - $header-height);
+  min-height: 100dvh;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
@@ -58,11 +58,53 @@
   background: #090c0a;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 4.5rem;
+  padding-inline: 1.5rem;
+  border-bottom: 1px solid rgba($white, 0.08);
+  transition: opacity $transition-fast;
+}
+
+.brand:hover {
+  opacity: 0.82;
+}
+
+.brandMark {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.5rem;
+  background: $primary;
+}
+
+.brandMark img {
+  width: 1.35rem;
+  height: auto;
+}
+
+.brandName {
+  font-family: $font-display;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: $primary;
+}
+
+.brandName span {
+  margin-left: 0.08em;
+  color: $primary;
+}
+
 .identity {
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  min-height: 7.5rem;
+  min-height: 6.5rem;
   padding: 1.5rem;
   border-bottom: 1px solid rgba($white, 0.08);
 }
@@ -79,6 +121,13 @@
   font-family: $font-body;
   font-size: 0.85rem;
   font-weight: 800;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .identity div {
@@ -230,11 +279,12 @@
 }
 
 .sectionHeader h1 {
-  font-family: $font-body;
-  font-size: 2rem;
-  font-weight: 750;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(1.9rem, 3vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
 }
 
 .sectionHeader p {
@@ -696,6 +746,114 @@
   border-bottom: 1px solid rgba($white, 0.08);
 }
 
+.profileImageEditor {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba($white, 0.08);
+}
+
+.profileImagePreview {
+  display: grid;
+  width: 5rem;
+  height: 5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: rgba($primary, 0.14);
+  color: $primary-light;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.profileImagePreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profileImageDetails {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.profileImageDetails > strong {
+  color: $white;
+  font-size: 0.8rem;
+}
+
+.profileImageDetails > span {
+  margin-top: 0.2rem;
+  color: $gray-500;
+  font-size: 0.67rem;
+}
+
+.profileImageActions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.profileImageActions label,
+.profileImageActions button {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 0.8rem;
+  border-radius: 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 750;
+  transition:
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.profileImageActions label {
+  background: $primary;
+  color: #06120d;
+  cursor: pointer;
+}
+
+.profileImageActions label:hover {
+  background: $primary-light;
+}
+
+.profileImageActions label:focus-within {
+  outline: 2px solid $primary-light;
+  outline-offset: 2px;
+}
+
+.profileImageActions label input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.profileImageActions button {
+  color: $gray-400;
+}
+
+.profileImageActions button:hover {
+  background: rgba(#f87171, 0.08);
+  color: #fca5a5;
+}
+
+.profileImageActions label:has(input:disabled),
+.profileImageActions button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
 .field {
   display: flex;
   margin-bottom: 1rem;
@@ -889,7 +1047,7 @@
     display: block;
     width: 100%;
     height: auto;
-    min-height: calc(100dvh - $header-height);
+    min-height: 100dvh;
     overflow: visible;
   }
 
