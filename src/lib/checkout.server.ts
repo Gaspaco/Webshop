@@ -98,7 +98,7 @@ export function calculateTrustedCheckout(input: unknown) {
   };
 }
 
-export async function createCheckoutPayment(input: unknown) {
+export async function createCheckoutPayment(input: unknown, userId?: string) {
   const checkout = calculateTrustedCheckout(input);
   const orderNumber = makeOrderNumber();
   const address = {
@@ -115,6 +115,7 @@ export async function createCheckoutPayment(input: unknown) {
       .insert(orders)
       .values({
         orderNumber,
+        userId: userId ?? null,
         email: checkout.customer.email,
         status: "pending",
         currency: "EUR",

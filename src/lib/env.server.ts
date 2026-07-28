@@ -1,5 +1,24 @@
 import { z } from "zod";
 
+if (process.env.NODE_ENV !== "production") {
+  for (const path of [".env.development.local", ".env.local"]) {
+    try {
+      process.loadEnvFile(path);
+    } catch {
+      // Local environment files are optional outside developer machines.
+    }
+  }
+
+  // Railway's DATABASE_URL uses its private network and cannot be reached from
+  // a developer machine. Prefer the public proxy URL when Railway provides it.
+  if (process.env.DATABASE_PUBLIC_URL) {
+    process.env.DATABASE_URL = process.env.DATABASE_PUBLIC_URL;
+  }
+
+  process.env.BETTER_AUTH_URL = "http://localhost:3000";
+  process.env.PUBLIC_APP_URL = "http://localhost:3000";
+}
+
 const requiresHttps = (value: string) =>
   process.env.NODE_ENV !== "production" || new URL(value).protocol === "https:";
 
@@ -33,7 +52,11 @@ const mollieSchema = z.object({
   MOLLIE_API_KEY: z.string().min(1).max(256),
 });
 
-export const getDatabaseEnv = () => databaseSchema.parse(process.env);
+export const getDatabaseEnv = () =>
+  databaseSchema.parse({
+    DATABASE_URL:
+      process.env.DATABASE_PUBLIC_URL ?? process.env.DATABASE_URL,
+  });
 export const getAuthEnv = () => authSchema.parse(process.env);
 export const getEmailEnv = () => {
   const parsed = emailSchema.parse(process.env);

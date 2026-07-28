@@ -1,6 +1,7 @@
 {
   "name": "my-little-tcg-haven",
   "type": "module",
+  "packageManager": "bun@1.3.11",
   "scripts": {
     "preinstall": "node scripts/verify-npm-registry.mjs",
     "dev": "vinxi dev",
@@ -15,6 +16,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@better-auth/infra": "0.3.7",
     "@mollie/api-client": "^4.6.0",
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.15.0",
@@ -24,6 +26,7 @@
     "better-auth": "^1.6.23",
     "drizzle-orm": "^0.45.2",
     "gsap": "^3.15.0",
+    "pg": "8.22.0",
     "postgres": "^3.4.9",
     "sass": "^1.101.0",
     "solid-js": "^1.9.5",
