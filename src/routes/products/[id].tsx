@@ -1,7 +1,8 @@
 import { Title } from "@solidjs/meta";
 import { A, useParams } from "@solidjs/router";
-import { createSignal, For, Show } from "solid-js";
+import { createResource, createSignal, For, Show } from "solid-js";
 import ProductCard, { BoxArt, Stars, type SectionProduct } from "~/components/product/ProductCard";
+import { fetchDatabaseCatalog } from "~/lib/catalog";
 import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories";
 import { formatPrice, useCart } from "~/lib/cart";
 import styles from "./[id].module.scss";
@@ -10,6 +11,7 @@ import styles from "./[id].module.scss";
 const VIDEO_ID = "aqz-KE-bpKQ";
 
 function describe(product: ShopProduct) {
+  if (product.description) return product.description;
   if (product.priceRangeCents) {
     return `A factory-sealed ${product.gameName} release, stored carefully and shipped tracked from the Netherlands.`;
   }
@@ -18,7 +20,12 @@ function describe(product: ShopProduct) {
 }
 
 function conditionFor(product: ShopProduct) {
-  return product.priceRangeCents ? "Factory sealed" : "Near Mint";
+  return product.condition ??
+    (product.priceRangeCents || product.productType === "sealed"
+      ? "Factory sealed"
+      : product.productType === "graded"
+        ? "Professionally graded"
+        : "Near Mint");
 }
 
 const SERVICE_NOTES = [
@@ -69,7 +76,11 @@ const SERVICE_NOTES = [
 export default function ProductDetail() {
   const params = useParams();
   const cart = useCart();
-  const product = () => findProduct(params.id ?? "");
+  const [databaseProduct] = createResource(
+    () => params.id,
+    async id => (await fetchDatabaseCatalog(id))[0],
+  );
+  const product = () => findProduct(params.id ?? "") ?? databaseProduct();
 
   const [quantity, setQuantity] = createSignal(1);
   const [added, setAdded] = createSignal(false);
@@ -177,7 +188,7 @@ export default function ProductDetail() {
 
                   <div class={styles.stageFacts} aria-label="Product highlights">
                     <span>{conditionFor(item())}</span>
-                    <span>English</span>
+                    <span>{item().language ?? "English"}</span>
                     <span>Ships from NL</span>
                   </div>
                 </div>
@@ -213,7 +224,11 @@ export default function ProductDetail() {
 
                 <div class={styles.stockLine}>
                   <span />
-                  {item().priceRangeCents ? "Available in multiple formats" : "In stock, ready to ship"}
+                  {item().priceRangeCents
+                    ? "Available in multiple formats"
+                    : item().stock === 0
+                      ? "Currently out of stock"
+                      : "In stock, ready to ship"}
                 </div>
 
                 <p class={styles.description}>{describe(item())}</p>
@@ -251,6 +266,7 @@ export default function ProductDetail() {
                       type="button"
                       class={styles.primaryButton}
                       classList={{ [styles.primaryButtonDone]: added() }}
+                      disabled={item().stock === 0}
                       onClick={() => addMain(item())}
                     >
                       <Show
@@ -307,9 +323,9 @@ export default function ProductDetail() {
               <dl class={styles.specifications}>
                 <div><dt>Game</dt><dd>{item().gameName}</dd></div>
                 <div><dt>Set</dt><dd>{item().set ?? "Various"}</dd></div>
-                <div><dt>Product type</dt><dd>{item().priceRangeCents ? "Sealed product" : "Single card"}</dd></div>
+                <div><dt>Product type</dt><dd>{item().productType ? item().productType : item().priceRangeCents ? "Sealed product" : "Single card"}</dd></div>
                 <div><dt>Condition</dt><dd>{conditionFor(item())}</dd></div>
-                <div><dt>Language</dt><dd>English</dd></div>
+                <div><dt>Language</dt><dd>{item().language ?? "English"}</dd></div>
                 <div><dt>Ships from</dt><dd>Netherlands</dd></div>
               </dl>
             </section>

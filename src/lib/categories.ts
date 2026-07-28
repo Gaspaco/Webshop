@@ -73,6 +73,13 @@ export type ShopProduct = SectionProduct & {
   game: string;
   gameName: string;
   theme: BoxTheme;
+  description?: string;
+  productType?: string;
+  condition?: string;
+  language?: string;
+  stock?: number;
+  variantId?: string;
+  sku?: string;
 };
 
 export const ALL_PRODUCTS: ShopProduct[] = CATEGORY_LIST.flatMap(cat =>

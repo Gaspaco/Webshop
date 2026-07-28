@@ -46,7 +46,10 @@ function AppShell(props: ParentProps) {
     ].includes(
       location.pathname,
     );
-  const isDashboard = () => location.pathname === "/account";
+  const isDashboard = () =>
+    location.pathname === "/account" ||
+    location.pathname === "/admin" ||
+    location.pathname === "/admin/login";
   const chromeless = () => isAuthRoute() || isDashboard();
 
   return (

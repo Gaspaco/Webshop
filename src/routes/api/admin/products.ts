@@ -1,0 +1,246 @@
+import type { APIEvent } from "@solidjs/start/server";
+import { and, eq } from "drizzle-orm";
+import { z } from "zod";
+import { db } from "~/db";
+import {
+  inventoryMovements,
+  products,
+  productVariants,
+} from "~/db/schema";
+import { apiJson, requireAdmin, toSlug } from "~/lib/admin.server";
+
+const statusSchema = z.enum(["draft", "active", "archived"]);
+const gameSchema = z.enum(["pokemon", "yugioh", "magic", "other"]);
+const imageSchema = z
+  .string()
+  .trim()
+  .max(1_200_000)
+  .refine(
+    value =>
+      value === "" ||
+      value.startsWith("/") ||
+      value.startsWith("https://") ||
+      /^data:image\/(?:webp|jpeg|png);base64,/i.test(value),
+    "Use an HTTPS image, a local image path, or upload a JPG, PNG, or WebP file.",
+  );
+
+const createProductSchema = z.object({
+  name: z.string().trim().min(2).max(140),
+  slug: z.string().trim().max(110).optional().default(""),
+  description: z.string().trim().max(2400).optional().default(""),
+  game: gameSchema,
+  productType: z.enum(["single", "sealed", "graded", "accessory"]),
+  set: z.string().trim().max(120).optional().default(""),
+  badge: z.string().trim().max(32).optional().default(""),
+  image: imageSchema.optional().default(""),
+  status: statusSchema,
+  sku: z.string().trim().max(80).optional().default(""),
+  condition: z.string().trim().max(60).optional().default("Near Mint"),
+  language: z.string().trim().max(60).optional().default("English"),
+  priceCents: z.number().int().min(0).max(100_000_000),
+  compareAtPriceCents: z.number().int().min(0).max(100_000_000).nullable().optional(),
+  stock: z.number().int().min(0).max(1_000_000),
+});
+
+const updateProductSchema = createProductSchema.partial().extend({
+  id: z.string().uuid(),
+  variantId: z.string().uuid(),
+});
+
+function failure(error: unknown) {
+  if (error instanceof z.ZodError) {
+    return apiJson(
+      { error: error.issues[0]?.message ?? "Check the product details." },
+      { status: 400 },
+    );
+  }
+
+  const code = (error as { code?: string }).code;
+  if (code === "23505") {
+    return apiJson(
+      { error: "That product slug or SKU is already in use." },
+      { status: 409 },
+    );
+  }
+
+  console.error("Admin product mutation failed", error);
+  return apiJson(
+    { error: "The product could not be saved." },
+    { status: 500 },
+  );
+}
+
+export async function POST(event: APIEvent) {
+  const guard = await requireAdmin(event);
+  if (guard.response) return guard.response;
+
+  try {
+    const input = createProductSchema.parse(await event.request.json());
+    const slug = toSlug(input.slug || input.name);
+    if (!slug) {
+      return apiJson({ error: "Enter a product name." }, { status: 400 });
+    }
+
+    const result = await db.transaction(async tx => {
+      const [createdProduct] = await tx
+        .insert(products)
+        .values({
+          name: input.name,
+          slug,
+          description: input.description || null,
+          game: input.game,
+          productType: input.productType,
+          status: input.status,
+          imageUrls: input.image ? [input.image] : [],
+          metadata: {
+            set: input.set || null,
+            badge: input.badge || null,
+          },
+        })
+        .returning();
+
+      if (!createdProduct) throw new Error("Product insert returned no row.");
+
+      const sku =
+        input.sku ||
+        `${input.game.slice(0, 3).toUpperCase()}-${slug.slice(0, 36).toUpperCase()}`;
+      const [variant] = await tx
+        .insert(productVariants)
+        .values({
+          productId: createdProduct.id,
+          sku,
+          name: input.condition || "Default",
+          condition: input.condition || null,
+          language: input.language || null,
+          priceCents: input.priceCents,
+          compareAtPriceCents: input.compareAtPriceCents ?? null,
+          stock: input.stock,
+        })
+        .returning();
+
+      if (!variant) throw new Error("Variant insert returned no row.");
+
+      if (input.stock > 0) {
+        await tx.insert(inventoryMovements).values({
+          variantId: variant.id,
+          quantity: input.stock,
+          reason: "adjustment",
+          note: "Opening stock from admin dashboard",
+          createdBy: guard.session!.user.id,
+        });
+      }
+
+      return { product: createdProduct, variant };
+    });
+
+    return apiJson(result, { status: 201 });
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+export async function PATCH(event: APIEvent) {
+  const guard = await requireAdmin(event);
+  if (guard.response) return guard.response;
+
+  try {
+    const input = updateProductSchema.parse(await event.request.json());
+    const [currentVariant] = await db
+      .select({ stock: productVariants.stock })
+      .from(productVariants)
+      .where(
+        and(
+          eq(productVariants.id, input.variantId),
+          eq(productVariants.productId, input.id),
+        ),
+      )
+      .limit(1);
+
+    if (!currentVariant) {
+      return apiJson({ error: "Product variant not found." }, { status: 404 });
+    }
+
+    await db.transaction(async tx => {
+      const productChanges: Partial<typeof products.$inferInsert> = {};
+      if (input.name !== undefined) productChanges.name = input.name;
+      if (input.slug !== undefined) productChanges.slug = toSlug(input.slug || input.name || "");
+      if (input.description !== undefined) productChanges.description = input.description || null;
+      if (input.game !== undefined) productChanges.game = input.game;
+      if (input.productType !== undefined) productChanges.productType = input.productType;
+      if (input.status !== undefined) productChanges.status = input.status;
+      if (input.image !== undefined) productChanges.imageUrls = input.image ? [input.image] : [];
+      if (input.set !== undefined || input.badge !== undefined) {
+        const [stored] = await tx
+          .select({ metadata: products.metadata })
+          .from(products)
+          .where(eq(products.id, input.id))
+          .limit(1);
+        productChanges.metadata = {
+          ...(stored?.metadata ?? {}),
+          ...(input.set !== undefined ? { set: input.set || null } : {}),
+          ...(input.badge !== undefined ? { badge: input.badge || null } : {}),
+        };
+      }
+
+      if (Object.keys(productChanges).length) {
+        await tx.update(products).set(productChanges).where(eq(products.id, input.id));
+      }
+
+      const variantChanges: Partial<typeof productVariants.$inferInsert> = {};
+      if (input.sku !== undefined) variantChanges.sku = input.sku;
+      if (input.condition !== undefined) {
+        variantChanges.condition = input.condition || null;
+        variantChanges.name = input.condition || "Default";
+      }
+      if (input.language !== undefined) variantChanges.language = input.language || null;
+      if (input.priceCents !== undefined) variantChanges.priceCents = input.priceCents;
+      if (input.compareAtPriceCents !== undefined) {
+        variantChanges.compareAtPriceCents = input.compareAtPriceCents;
+      }
+      if (input.stock !== undefined) variantChanges.stock = input.stock;
+
+      if (Object.keys(variantChanges).length) {
+        await tx
+          .update(productVariants)
+          .set(variantChanges)
+          .where(eq(productVariants.id, input.variantId));
+      }
+
+      if (input.stock !== undefined && input.stock !== currentVariant.stock) {
+        await tx.insert(inventoryMovements).values({
+          variantId: input.variantId,
+          quantity: input.stock - currentVariant.stock,
+          reason: "adjustment",
+          note: "Stock changed from admin dashboard",
+          createdBy: guard.session!.user.id,
+        });
+      }
+    });
+
+    return apiJson({ ok: true });
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+export async function DELETE(event: APIEvent) {
+  const guard = await requireAdmin(event);
+  if (guard.response) return guard.response;
+
+  try {
+    const input = z.object({ id: z.string().uuid() }).parse(await event.request.json());
+    const [archived] = await db
+      .update(products)
+      .set({ status: "archived" })
+      .where(eq(products.id, input.id))
+      .returning({ id: products.id });
+
+    if (!archived) {
+      return apiJson({ error: "Product not found." }, { status: 404 });
+    }
+
+    return apiJson({ ok: true });
+  } catch (error) {
+    return failure(error);
+  }
+}
