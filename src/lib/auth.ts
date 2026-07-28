@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { APIError } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { db } from "~/db";
 import * as schema from "~/db/schema";
 import {
@@ -8,6 +8,12 @@ import {
   sendVerificationEmail,
 } from "~/lib/email.server";
 import { getAuthEnv, getEmailEnv } from "~/lib/env.server";
+import {
+  meetsPasswordRequirements,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_REQUIREMENTS_MESSAGE,
+} from "~/lib/password";
 
 const authEnv = getAuthEnv();
 const emailEnv = getEmailEnv();
@@ -42,6 +48,26 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [authEnv.BETTER_AUTH_URL],
+  hooks: {
+    before: createAuthMiddleware(async context => {
+      const password =
+        context.path === "/sign-up/email"
+          ? context.body.password
+          : context.path === "/reset-password" ||
+              context.path === "/change-password"
+            ? context.body.newPassword
+            : undefined;
+
+      if (
+        typeof password === "string" &&
+        !meetsPasswordRequirements(password)
+      ) {
+        throw new APIError("BAD_REQUEST", {
+          message: PASSWORD_REQUIREMENTS_MESSAGE,
+        });
+      }
+    }),
+  },
   ...(emailEnv
     ? {
         emailVerification: {
@@ -76,8 +102,8 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 12,
-    maxPasswordLength: 128,
+    minPasswordLength: PASSWORD_MIN_LENGTH,
+    maxPasswordLength: PASSWORD_MAX_LENGTH,
     requireEmailVerification: Boolean(emailEnv),
     revokeSessionsOnPasswordReset: true,
     ...(emailEnv

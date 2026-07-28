@@ -10,6 +10,12 @@ import {
   Switch,
 } from "solid-js";
 import { authClient } from "~/lib/auth-client";
+import {
+  meetsPasswordRequirements,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_REQUIREMENTS_MESSAGE,
+} from "~/lib/password";
 import styles from "./account.module.scss";
 
 type Section =
@@ -211,9 +217,9 @@ export default function Account() {
   const updatePassword = async (event: SubmitEvent) => {
     event.preventDefault();
 
-    if (newPassword().length < 12) {
+    if (!meetsPasswordRequirements(newPassword())) {
       setSecurityStatus("error");
-      setSecurityMessage("Your new password must contain at least 12 characters.");
+      setSecurityMessage(PASSWORD_REQUIREMENTS_MESSAGE);
       return;
     }
 
@@ -625,8 +631,8 @@ export default function Account() {
                           <input
                             type="password"
                             value={newPassword()}
-                            minlength="12"
-                            maxlength="128"
+                            minlength={PASSWORD_MIN_LENGTH}
+                            maxlength={PASSWORD_MAX_LENGTH}
                             autocomplete="new-password"
                             required
                             onInput={event => setNewPassword(event.currentTarget.value)}
@@ -637,8 +643,8 @@ export default function Account() {
                           <input
                             type="password"
                             value={confirmPassword()}
-                            minlength="12"
-                            maxlength="128"
+                            minlength={PASSWORD_MIN_LENGTH}
+                            maxlength={PASSWORD_MAX_LENGTH}
                             autocomplete="new-password"
                             required
                             onInput={event => setConfirmPassword(event.currentTarget.value)}

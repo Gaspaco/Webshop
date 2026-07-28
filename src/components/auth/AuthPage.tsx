@@ -2,6 +2,12 @@ import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
 import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { authClient } from "~/lib/auth-client";
+import {
+  meetsPasswordRequirements,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_REQUIREMENTS_MESSAGE,
+} from "~/lib/password";
 import styles from "./AuthPage.module.scss";
 
 type AuthMode = "login" | "signup";
@@ -87,36 +93,65 @@ export default function AuthPage(props: AuthPageProps) {
       return;
     }
 
+    if (!meetsPasswordRequirements(signupPassword())) {
+      setError(PASSWORD_REQUIREMENTS_MESSAGE);
+      return;
+    }
+
     setLoading(true);
 
-    const { data: authData, error: authError } = await authClient.signUp.email({
-      name: name(),
-      email: signupEmail(),
-      password: signupPassword(),
-      callbackURL: "/verify-email?verified=true",
-    });
+    try {
+      const { data: authData, error: authError } =
+        await authClient.signUp.email({
+          name: name().trim(),
+          email: signupEmail().trim(),
+          password: signupPassword(),
+          callbackURL: "/verify-email?verified=true",
+        });
 
-    setLoading(false);
+      if (authError) {
+        const authCode = String(authError.code ?? "");
+        const authMessage = String(authError.message ?? "").toLowerCase();
 
-    if (authError) {
+        if (
+          authCode === "PASSWORD_TOO_SHORT" ||
+          (authMessage.includes("password") &&
+            (authMessage.includes("short") ||
+              authMessage.includes("special character")))
+        ) {
+          setError(PASSWORD_REQUIREMENTS_MESSAGE);
+        } else if (
+          authCode === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL" ||
+          authMessage.includes("already exists")
+        ) {
+          setError("An account already exists for this email. Sign in instead.");
+        } else if (authError.status === 429) {
+          setError(
+            "Too many account requests. Wait a few minutes and try again.",
+          );
+        } else {
+          setError("We couldn't create an account with those details.");
+        }
+        return;
+      }
+
+      if (!authData?.token) {
+        window.sessionStorage.setItem(
+          "tcghaven.pending-verification-email",
+          signupEmail().trim(),
+        );
+        window.location.assign("/verify-email");
+        return;
+      }
+
+      window.location.assign("/account");
+    } catch {
       setError(
-        authError.status === 429
-          ? "Too many account requests. Wait a few minutes and try again."
-          : "We couldn't create an account with those details.",
+        "We couldn't reach the account service. Check your connection and try again.",
       );
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    if (!authData?.token) {
-      window.sessionStorage.setItem(
-        "tcghaven.pending-verification-email",
-        signupEmail(),
-      );
-      window.location.assign("/verify-email");
-      return;
-    }
-
-    window.location.assign("/account");
   };
 
   const openPasswordReset = () => {
@@ -263,8 +298,8 @@ export default function AuthPage(props: AuthPageProps) {
                   placeholder="••••••••"
                   autocomplete="new-password"
                   required
-                  minlength={12}
-                  maxlength={128}
+                  minlength={PASSWORD_MIN_LENGTH}
+                  maxlength={PASSWORD_MAX_LENGTH}
                   disabled={mode() !== "signup"}
                   value={signupPassword()}
                   onInput={event => setSignupPassword(event.currentTarget.value)}
@@ -275,7 +310,7 @@ export default function AuthPage(props: AuthPageProps) {
                   onToggle={() => setShowSignupPassword(value => !value)}
                 />
               </div>
-              <span class={styles.hint}>Use at least 12 characters.</span>
+              <span class={styles.hint}>{PASSWORD_REQUIREMENTS_MESSAGE}</span>
             </div>
 
             <div class={styles.field}>
@@ -290,8 +325,8 @@ export default function AuthPage(props: AuthPageProps) {
                   placeholder="••••••••"
                   autocomplete="new-password"
                   required
-                  minlength={12}
-                  maxlength={128}
+                  minlength={PASSWORD_MIN_LENGTH}
+                  maxlength={PASSWORD_MAX_LENGTH}
                   disabled={mode() !== "signup"}
                   value={confirmPassword()}
                   onInput={event =>

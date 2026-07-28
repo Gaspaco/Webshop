@@ -533,13 +533,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:95"
     },
     {
-      "id": "file::auth",
-      "label": "auth.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts:1"
-    },
-    {
       "id": "file::authflowshell",
       "label": "AuthFlowShell.tsx",
       "fileType": "code",
@@ -722,69 +715,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/drizzle.config.ts:1"
     },
     {
-      "id": "file::authpage",
-      "label": "AuthPage.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:1"
-    },
-    {
-      "id": "AuthPage::switchmode",
-      "label": "switchMode",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:33"
-    },
-    {
-      "id": "AuthPage::submitlogin",
-      "label": "submitLogin",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:45"
-    },
-    {
-      "id": "AuthPage::submitsignup",
-      "label": "submitSignup",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:81"
-    },
-    {
-      "id": "AuthPage::openpasswordreset",
-      "label": "openPasswordReset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:122"
-    },
-    {
-      "id": "AuthPage::closepasswordreset",
-      "label": "closePasswordReset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:130"
-    },
-    {
-      "id": "AuthPage::submitpasswordreset",
-      "label": "submitPasswordReset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:135"
-    },
-    {
-      "id": "AuthPage::handlehistory",
-      "label": "handleHistory",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:162"
-    },
-    {
-      "id": "AuthPage::handlekeydown",
-      "label": "handleKeydown",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:167"
-    },
-    {
       "id": "file::index",
       "label": "index.tsx",
       "fileType": "code",
@@ -897,90 +827,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:70"
     },
     {
-      "id": "file::account",
-      "label": "account.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:1"
-    },
-    {
-      "id": "account::formatmoney",
-      "label": "formatMoney",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:84"
-    },
-    {
-      "id": "account::formatdate",
-      "label": "formatDate",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:91"
-    },
-    {
-      "id": "account::readablestatus",
-      "label": "readableStatus",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:99"
-    },
-    {
-      "id": "account::loadoverview",
-      "label": "loadOverview",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:103"
-    },
-    {
-      "id": "account::initials",
-      "label": "initials",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:153"
-    },
-    {
-      "id": "account::totalspent",
-      "label": "totalSpent",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:163"
-    },
-    {
-      "id": "account::saveprofile",
-      "label": "saveProfile",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:166"
-    },
-    {
-      "id": "account::resendverification",
-      "label": "resendVerification",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:190"
-    },
-    {
-      "id": "account::updatepassword",
-      "label": "updatePassword",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:211"
-    },
-    {
-      "id": "account::revokeothersessions",
-      "label": "revokeOtherSessions",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:247"
-    },
-    {
-      "id": "account::signout",
-      "label": "signOut",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:262"
-    },
-    {
       "id": "file::create_payment",
       "label": "create-payment.ts",
       "fileType": "code",
@@ -1084,6 +930,160 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/db/schema.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/db/schema.ts:1"
+    },
+    {
+      "id": "file::authpage",
+      "label": "AuthPage.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:1"
+    },
+    {
+      "id": "AuthPage::switchmode",
+      "label": "switchMode",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:39"
+    },
+    {
+      "id": "AuthPage::submitlogin",
+      "label": "submitLogin",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:51"
+    },
+    {
+      "id": "AuthPage::submitsignup",
+      "label": "submitSignup",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:87"
+    },
+    {
+      "id": "AuthPage::openpasswordreset",
+      "label": "openPasswordReset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:157"
+    },
+    {
+      "id": "AuthPage::closepasswordreset",
+      "label": "closePasswordReset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:165"
+    },
+    {
+      "id": "AuthPage::submitpasswordreset",
+      "label": "submitPasswordReset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:170"
+    },
+    {
+      "id": "AuthPage::handlehistory",
+      "label": "handleHistory",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:197"
+    },
+    {
+      "id": "AuthPage::handlekeydown",
+      "label": "handleKeydown",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:202"
+    },
+    {
+      "id": "file::auth",
+      "label": "auth.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts:1"
+    },
+    {
+      "id": "file::account",
+      "label": "account.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:1"
+    },
+    {
+      "id": "account::formatmoney",
+      "label": "formatMoney",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:90"
+    },
+    {
+      "id": "account::formatdate",
+      "label": "formatDate",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:97"
+    },
+    {
+      "id": "account::readablestatus",
+      "label": "readableStatus",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:105"
+    },
+    {
+      "id": "account::loadoverview",
+      "label": "loadOverview",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:109"
+    },
+    {
+      "id": "account::initials",
+      "label": "initials",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:159"
+    },
+    {
+      "id": "account::totalspent",
+      "label": "totalSpent",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:169"
+    },
+    {
+      "id": "account::saveprofile",
+      "label": "saveProfile",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:172"
+    },
+    {
+      "id": "account::resendverification",
+      "label": "resendVerification",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:196"
+    },
+    {
+      "id": "account::updatepassword",
+      "label": "updatePassword",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:217"
+    },
+    {
+      "id": "account::revokeothersessions",
+      "label": "revokeOtherSessions",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:253"
+    },
+    {
+      "id": "account::signout",
+      "label": "signOut",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:268"
     }
   ],
   "edges": [
@@ -1646,78 +1646,6 @@
       "weight": 1
     },
     {
-      "source": "file::authpage",
-      "target": "AuthPage::switchmode",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:33",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::submitlogin",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:45",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::submitsignup",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:81",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::openpasswordreset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:122",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::closepasswordreset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:130",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::submitpasswordreset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:135",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::handlehistory",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:162",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::handlekeydown",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:167",
-      "weight": 1
-    },
-    {
       "source": "file::checkout_server",
       "target": "checkout.server::centstoamount",
       "relation": "contains",
@@ -1835,105 +1763,6 @@
       "weight": 1
     },
     {
-      "source": "file::account",
-      "target": "account::formatmoney",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:84",
-      "weight": 1
-    },
-    {
-      "source": "file::account",
-      "target": "account::formatdate",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:91",
-      "weight": 1
-    },
-    {
-      "source": "file::account",
-      "target": "account::readablestatus",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:99",
-      "weight": 1
-    },
-    {
-      "source": "file::account",
-      "target": "account::loadoverview",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:103",
-      "weight": 1
-    },
-    {
-      "source": "file::account",
-      "target": "account::initials",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:153",
-      "weight": 1
-    },
-    {
-      "source": "file::account",
-      "target": "account::totalspent",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:163",
-      "weight": 1
-    },
-    {
-      "source": "file::account",
-      "target": "account::saveprofile",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:166",
-      "weight": 1
-    },
-    {
-      "source": "file::account",
-      "target": "account::resendverification",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:190",
-      "weight": 1
-    },
-    {
-      "source": "file::account",
-      "target": "account::updatepassword",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:211",
-      "weight": 1
-    },
-    {
-      "source": "file::account",
-      "target": "account::revokeothersessions",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:247",
-      "weight": 1
-    },
-    {
-      "source": "file::account",
-      "target": "account::signout",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:262",
-      "weight": 1
-    },
-    {
       "source": "file::create_payment",
       "target": "create_payment::json",
       "relation": "contains",
@@ -2013,12 +1842,183 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/overview.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/overview.ts:22",
       "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::switchmode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:39",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::submitlogin",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:51",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::submitsignup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:87",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::openpasswordreset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:157",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::closepasswordreset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:165",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::submitpasswordreset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:170",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::handlehistory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:197",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::handlekeydown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:202",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::formatmoney",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:90",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::formatdate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:97",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::readablestatus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:105",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::loadoverview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:109",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::initials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:159",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::totalspent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:169",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::saveprofile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:172",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::resendverification",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:196",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::updatepassword",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:217",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::revokeothersessions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:253",
+      "weight": 1
+    },
+    {
+      "source": "file::account",
+      "target": "account::signout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account.tsx:268",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 55,
     "nodes": 155,
     "edges": 103,
-    "builtAt": "2026-07-28T17:08:45.240Z"
+    "builtAt": "2026-07-28T17:19:46.081Z"
   }
 }

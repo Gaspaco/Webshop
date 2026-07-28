@@ -4,6 +4,12 @@ import { createSignal, Show } from "solid-js";
 import AuthFlowShell from "~/components/auth/AuthFlowShell";
 import styles from "~/components/auth/AuthFlowShell.module.scss";
 import { authClient } from "~/lib/auth-client";
+import {
+  meetsPasswordRequirements,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_REQUIREMENTS_MESSAGE,
+} from "~/lib/password";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -26,6 +32,12 @@ export default function ResetPassword() {
     if (password() !== confirmation()) {
       setStatus("error");
       setMessage("Passwords do not match.");
+      return;
+    }
+
+    if (!meetsPasswordRequirements(password())) {
+      setStatus("error");
+      setMessage(PASSWORD_REQUIREMENTS_MESSAGE);
       return;
     }
 
@@ -102,8 +114,8 @@ export default function ResetPassword() {
                   type={showPassword() ? "text" : "password"}
                   autocomplete="new-password"
                   required
-                  minlength={12}
-                  maxlength={128}
+                  minlength={PASSWORD_MIN_LENGTH}
+                  maxlength={PASSWORD_MAX_LENGTH}
                   value={password()}
                   onInput={event => setPassword(event.currentTarget.value)}
                 />
@@ -116,7 +128,7 @@ export default function ResetPassword() {
                   {showPassword() ? "Hide" : "Show"}
                 </button>
               </span>
-              <span class={styles.hint}>Use at least 12 characters.</span>
+              <span class={styles.hint}>{PASSWORD_REQUIREMENTS_MESSAGE}</span>
             </label>
 
             <label class={styles.label} for="confirm-new-password">
@@ -128,8 +140,8 @@ export default function ResetPassword() {
                   type={showPassword() ? "text" : "password"}
                   autocomplete="new-password"
                   required
-                  minlength={12}
-                  maxlength={128}
+                  minlength={PASSWORD_MIN_LENGTH}
+                  maxlength={PASSWORD_MAX_LENGTH}
                   value={confirmation()}
                   onInput={event => setConfirmation(event.currentTarget.value)}
                 />
