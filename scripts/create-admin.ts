@@ -1,6 +1,7 @@
-import { eq } from "drizzle-orm";
+import { hashPassword } from "better-auth/crypto";
+import { and, eq } from "drizzle-orm";
 import { db } from "../src/db";
-import { user } from "../src/db/schema";
+import { account, session, user } from "../src/db/schema";
 import { auth } from "../src/lib/auth";
 import { meetsPasswordRequirements } from "../src/lib/password";
 
@@ -26,10 +27,41 @@ const [existing] = await db
   .limit(1);
 
 if (existing) {
-  await db
-    .update(user)
-    .set({ role: "admin", emailVerified: true })
-    .where(eq(user.id, existing.id));
+  const passwordHash = await hashPassword(password);
+
+  await db.transaction(async tx => {
+    const [credentialAccount] = await tx
+      .select({ id: account.id })
+      .from(account)
+      .where(
+        and(
+          eq(account.userId, existing.id),
+          eq(account.providerId, "credential"),
+        ),
+      )
+      .limit(1);
+
+    if (credentialAccount) {
+      await tx
+        .update(account)
+        .set({ password: passwordHash })
+        .where(eq(account.id, credentialAccount.id));
+    } else {
+      await tx.insert(account).values({
+        userId: existing.id,
+        accountId: existing.id,
+        providerId: "credential",
+        password: passwordHash,
+      });
+    }
+
+    await tx
+      .update(user)
+      .set({ role: "admin", emailVerified: true })
+      .where(eq(user.id, existing.id));
+    await tx.delete(session).where(eq(session.userId, existing.id));
+  });
+
   console.log(`Administrator access enabled for ${email}.`);
   process.exit(0);
 }

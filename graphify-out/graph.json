@@ -1247,13 +1247,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx:44"
     },
     {
-      "id": "file::create_admin",
-      "label": "create-admin.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/create-admin.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/create-admin.ts:1"
-    },
-    {
       "id": "file::admin_server",
       "label": "admin.server.ts",
       "fileType": "code",
@@ -1511,6 +1504,13 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts:6"
+    },
+    {
+      "id": "file::create_admin",
+      "label": "create-admin.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/create-admin.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/create-admin.ts:1"
     }
   ],
   "edges": [
@@ -2905,6 +2905,6 @@
     "files": 69,
     "nodes": 216,
     "edges": 154,
-    "builtAt": "2026-07-28T19:25:42.459Z"
+    "builtAt": "2026-07-28T19:32:08.016Z"
   }
 }
