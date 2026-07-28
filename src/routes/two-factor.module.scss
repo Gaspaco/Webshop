@@ -1,0 +1,182 @@
+@use "../styles/variables" as *;
+
+.page {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at 50% 0%, rgba($primary, 0.13), transparent 32rem),
+    #090c0a;
+}
+
+.shell {
+  width: min(100%, 29rem);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border: 1px solid rgba($white, 0.1);
+  background: #0d100e;
+}
+
+.logo {
+  display: inline-flex;
+  color: $white;
+  font-family: $font-display;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.logo span {
+  color: $primary-light;
+}
+
+.securityMark {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-top: 3rem;
+  place-items: center;
+  border-radius: 0.65rem;
+  background: rgba($primary, 0.13);
+  color: $primary-light;
+}
+
+.securityMark svg {
+  width: 1.55rem;
+  height: 1.55rem;
+  stroke-width: 1.7;
+}
+
+.shell h1 {
+  margin-top: 1.4rem;
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(2rem, 7vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-wrap: balance;
+}
+
+.shell > p {
+  max-width: 38ch;
+  margin-top: 0.75rem;
+  color: $gray-400;
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.shell form {
+  display: flex;
+  margin-top: 2rem;
+  flex-direction: column;
+}
+
+.shell form > label:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.shell label > span {
+  color: $gray-300;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.shell input[type="text"] {
+  width: 100%;
+  height: 3.5rem;
+  padding-inline: 1rem;
+  border: 1px solid rgba($white, 0.15);
+  border-radius: 0.5rem;
+  outline: none;
+  background: #080a09;
+  color: $white;
+  font: inherit;
+  font-size: 1.05rem;
+  letter-spacing: 0.12em;
+  transition: border-color 180ms ease;
+}
+
+.shell input[type="text"]:focus {
+  border-color: $primary;
+}
+
+.trustDevice {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+.trustDevice input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: $primary;
+}
+
+.trustDevice span {
+  color: $gray-400;
+  font-size: 0.74rem;
+  font-weight: 500;
+}
+
+.error {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(#f87171, 0.28);
+  color: #fca5a5;
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.primary {
+  min-height: 3rem;
+  margin-top: 1.25rem;
+  border-radius: 0.5rem;
+  background: $primary;
+  color: #06120d;
+  font-size: 0.78rem;
+  font-weight: 800;
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.primary:hover {
+  background: $primary-light;
+  transform: translateY(-1px);
+}
+
+.primary:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+}
+
+.methodSwitch,
+.cancel {
+  display: block;
+  width: fit-content;
+  margin-top: 1rem;
+  color: $primary-light;
+  font-size: 0.73rem;
+  font-weight: 700;
+}
+
+.cancel {
+  color: $gray-500;
+}
+
+.methodSwitch:hover,
+.cancel:hover {
+  color: $white;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary {
+    transition: none;
+  }
+}

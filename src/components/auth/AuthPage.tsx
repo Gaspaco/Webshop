@@ -53,7 +53,7 @@ export default function AuthPage(props: AuthPageProps) {
     setError(undefined);
     setLoading(true);
 
-    const { error: authError } = await authClient.signIn.email({
+    const { data: authData, error: authError } = await authClient.signIn.email({
       email: loginEmail(),
       password: loginPassword(),
     });
@@ -78,6 +78,10 @@ export default function AuthPage(props: AuthPageProps) {
           ? "Too many sign-in attempts. Wait a minute and try again."
           : "Email or password is incorrect.",
       );
+      return;
+    }
+
+    if (authData && "twoFactorRedirect" in authData) {
       return;
     }
 

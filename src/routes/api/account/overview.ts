@@ -4,6 +4,7 @@ import { db } from "~/db";
 import {
   orderItems,
   orders,
+  payments,
   products,
   wishlistItems,
 } from "~/db/schema";
@@ -59,6 +60,24 @@ export async function GET(event: APIEvent) {
         .where(inArray(orderItems.orderId, customerOrders.map(order => order.id)))
     : [];
 
+  const paymentRows = customerOrders.length
+    ? await db
+        .select({
+          id: payments.id,
+          orderId: payments.orderId,
+          orderNumber: orders.orderNumber,
+          status: payments.status,
+          method: payments.method,
+          amountCents: payments.amountCents,
+          createdAt: payments.createdAt,
+        })
+        .from(payments)
+        .innerJoin(orders, eq(payments.orderId, orders.id))
+        .where(inArray(payments.orderId, customerOrders.map(order => order.id)))
+        .orderBy(desc(payments.createdAt))
+        .limit(20)
+    : [];
+
   const itemsByOrder = new Map<
     string,
     Array<{ name: string; quantity: number }>
@@ -98,6 +117,7 @@ export async function GET(event: APIEvent) {
       image: item.imageUrls[0] ?? null,
       createdAt: item.createdAt,
     })),
+    payments: paymentRows,
     latestAddress: customerOrders[0]?.shippingAddress ?? null,
   });
 }

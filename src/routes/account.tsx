@@ -1,5 +1,6 @@
 import { Title } from "@solidjs/meta";
 import { A, useNavigate } from "@solidjs/router";
+import QRCode from "qrcode";
 import {
   createEffect,
   createResource,
@@ -29,6 +30,7 @@ type Section =
   | "orders"
   | "wishlist"
   | "addresses"
+  | "payments"
   | "profile"
   | "security";
 
@@ -51,9 +53,20 @@ type WishlistItem = {
   createdAt: string;
 };
 
+type AccountPayment = {
+  id: string;
+  orderId: string;
+  orderNumber: string;
+  status: string;
+  method: string | null;
+  amountCents: number;
+  createdAt: string;
+};
+
 type AccountOverview = {
   orders: AccountOrder[];
   wishlist: WishlistItem[];
+  payments: AccountPayment[];
   latestAddress: Record<string, string> | null;
 };
 
@@ -62,6 +75,7 @@ const NAV_ITEMS: Array<{ id: Section; label: string }> = [
   { id: "orders", label: "Orders" },
   { id: "wishlist", label: "Wishlist" },
   { id: "addresses", label: "Addresses" },
+  { id: "payments", label: "Payments" },
   { id: "profile", label: "Profile" },
   { id: "security", label: "Security" },
 ];
@@ -83,13 +97,17 @@ const SECTION_COPY: Record<Section, { title: string; description: string }> = {
     title: "Delivery address",
     description: "Your most recently used shipping destination.",
   },
+  payments: {
+    title: "Payments",
+    description: "Review the payment activity connected to your orders.",
+  },
   profile: {
     title: "Profile details",
     description: "Keep your customer information accurate.",
   },
   security: {
     title: "Security",
-    description: "Manage your password and active sign-ins.",
+    description: "Manage your password, two-factor protection, and sign-ins.",
   },
 };
 
@@ -110,6 +128,14 @@ function formatDate(value: string | Date) {
 
 function readableStatus(status: string) {
   return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function readablePaymentMethod(method: string | null) {
+  if (!method) return "Mollie checkout";
+
+  return method
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, character => character.toUpperCase());
 }
 
 async function prepareProfileImage(file: File) {
@@ -190,6 +216,11 @@ export default function Account() {
     "idle" | "saving" | "success" | "error"
   >("idle");
   const [profileMessage, setProfileMessage] = createSignal("");
+  const [newEmail, setNewEmail] = createSignal("");
+  const [emailStatus, setEmailStatus] = createSignal<
+    "idle" | "saving" | "success" | "error"
+  >("idle");
+  const [emailMessage, setEmailMessage] = createSignal("");
   const [currentPassword, setCurrentPassword] = createSignal("");
   const [newPassword, setNewPassword] = createSignal("");
   const [confirmPassword, setConfirmPassword] = createSignal("");
@@ -197,6 +228,14 @@ export default function Account() {
     "idle" | "saving" | "success" | "error"
   >("idle");
   const [securityMessage, setSecurityMessage] = createSignal("");
+  const [twoFactorPassword, setTwoFactorPassword] = createSignal("");
+  const [twoFactorCode, setTwoFactorCode] = createSignal("");
+  const [twoFactorQr, setTwoFactorQr] = createSignal("");
+  const [backupCodes, setBackupCodes] = createSignal<string[]>([]);
+  const [twoFactorStatus, setTwoFactorStatus] = createSignal<
+    "idle" | "saving" | "success" | "error"
+  >("idle");
+  const [twoFactorMessage, setTwoFactorMessage] = createSignal("");
   let profileInitialized = false;
 
   const [overview] = createResource(
@@ -215,6 +254,7 @@ export default function Account() {
     if (name && !profileInitialized) {
       setProfileName(name);
       setProfileImage(session().data?.user.image ?? null);
+      setNewEmail(session().data?.user.email ?? "");
       profileInitialized = true;
     }
   });
@@ -308,6 +348,40 @@ export default function Account() {
     setProfileMessage("A new verification link is on its way.");
   };
 
+  const requestEmailChange = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const email = newEmail().normalize("NFKC").trim().toLowerCase();
+    const currentEmail = session().data?.user.email.toLowerCase();
+
+    if (!email || email === currentEmail) {
+      setEmailStatus("error");
+      setEmailMessage("Enter a different email address.");
+      return;
+    }
+
+    setEmailStatus("saving");
+    setEmailMessage("");
+    const { error } = await authClient.changeEmail({
+      newEmail: email,
+      callbackURL: `${window.location.origin}/account?emailChanged=true`,
+    });
+
+    if (error) {
+      setEmailStatus("error");
+      setEmailMessage(
+        error.status === 429
+          ? "Too many email-change requests. Wait a few minutes and try again."
+          : "The verification email could not be sent. Check the address and try again.",
+      );
+      return;
+    }
+
+    setEmailStatus("success");
+    setEmailMessage(
+      "Verification sent to the new address. Your current email stays active until you confirm it.",
+    );
+  };
+
   const updatePassword = async (event: SubmitEvent) => {
     event.preventDefault();
 
@@ -359,6 +433,138 @@ export default function Account() {
     setSecurityMessage("All other sessions have been signed out.");
   };
 
+  const beginTwoFactor = async (event: SubmitEvent) => {
+    event.preventDefault();
+
+    if (!twoFactorPassword()) {
+      setTwoFactorStatus("error");
+      setTwoFactorMessage("Enter your current password to continue.");
+      return;
+    }
+
+    setTwoFactorStatus("saving");
+    setTwoFactorMessage("");
+    const { data, error } = await authClient.twoFactor.enable({
+      password: twoFactorPassword(),
+      issuer: "TCGHaven",
+    });
+
+    if (error || !data) {
+      setTwoFactorStatus("error");
+      setTwoFactorMessage("Your password was not accepted. Try again.");
+      return;
+    }
+
+    try {
+      const qr = await QRCode.toDataURL(data.totpURI, {
+        width: 240,
+        margin: 1,
+        color: {
+          dark: "#07110d",
+          light: "#ffffff",
+        },
+      });
+      setTwoFactorQr(qr);
+      setBackupCodes(data.backupCodes);
+      setTwoFactorPassword("");
+      setTwoFactorStatus("idle");
+      setTwoFactorMessage(
+        "Scan the code, then enter the current six-digit code to finish setup.",
+      );
+    } catch {
+      setTwoFactorStatus("error");
+      setTwoFactorMessage("The authenticator setup code could not be prepared.");
+    }
+  };
+
+  const confirmTwoFactor = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const code = twoFactorCode().replace(/\s+/g, "");
+
+    if (!/^\d{6}$/.test(code)) {
+      setTwoFactorStatus("error");
+      setTwoFactorMessage("Enter the six-digit code from your authenticator app.");
+      return;
+    }
+
+    setTwoFactorStatus("saving");
+    setTwoFactorMessage("");
+    const { error } = await authClient.twoFactor.verifyTotp({ code });
+
+    if (error) {
+      setTwoFactorStatus("error");
+      setTwoFactorMessage("That code was not accepted. Wait for a new code and try again.");
+      return;
+    }
+
+    setTwoFactorCode("");
+    setTwoFactorQr("");
+    setTwoFactorStatus("success");
+    setTwoFactorMessage(
+      "Two-factor authentication is active. Save the recovery codes below.",
+    );
+  };
+
+  const regenerateBackupCodes = async (event: SubmitEvent) => {
+    event.preventDefault();
+
+    if (!twoFactorPassword()) {
+      setTwoFactorStatus("error");
+      setTwoFactorMessage("Enter your current password to create new recovery codes.");
+      return;
+    }
+
+    setTwoFactorStatus("saving");
+    setTwoFactorMessage("");
+    const { data, error } = await authClient.twoFactor.generateBackupCodes({
+      password: twoFactorPassword(),
+    });
+
+    if (error || !data) {
+      setTwoFactorStatus("error");
+      setTwoFactorMessage("New recovery codes could not be created.");
+      return;
+    }
+
+    setBackupCodes(data.backupCodes);
+    setTwoFactorPassword("");
+    setTwoFactorStatus("success");
+    setTwoFactorMessage(
+      "New recovery codes created. Your previous codes no longer work.",
+    );
+  };
+
+  const disableTwoFactor = async () => {
+    if (!twoFactorPassword()) {
+      setTwoFactorStatus("error");
+      setTwoFactorMessage("Enter your current password before turning off two-factor authentication.");
+      return;
+    }
+
+    setTwoFactorStatus("saving");
+    setTwoFactorMessage("");
+    const { error } = await authClient.twoFactor.disable({
+      password: twoFactorPassword(),
+    });
+
+    if (error) {
+      setTwoFactorStatus("error");
+      setTwoFactorMessage("Two-factor authentication could not be turned off.");
+      return;
+    }
+
+    setBackupCodes([]);
+    setTwoFactorPassword("");
+    setTwoFactorStatus("success");
+    setTwoFactorMessage("Two-factor authentication is turned off.");
+  };
+
+  const copyBackupCodes = async () => {
+    await navigator.clipboard.writeText(backupCodes().join("\n"));
+    setTwoFactorStatus("success");
+    setTwoFactorMessage("Recovery codes copied.");
+  };
+
   const signOut = async () => {
     await authClient.signOut();
     navigate("/", { replace: true });
@@ -380,13 +586,11 @@ export default function Account() {
         {data => (
           <div class={styles.account}>
             <aside class={styles.sidebar}>
-              <A href="/" class={styles.brand} aria-label="TCG Haven home">
-                <span class={styles.brandMark}>
-                  <img src="/images/logo-mark.png" alt="" width="409" height="379" />
-                </span>
-                <span class={styles.brandName}>
-                  TCG<span>Haven</span>
-                </span>
+              <A href="/" class={styles.backLink}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M19 12H5M11 18l-6-6 6-6" />
+                </svg>
+                Back to store
               </A>
 
               <div class={styles.identity}>
@@ -650,6 +854,83 @@ export default function Account() {
                     </Show>
                   </Match>
 
+                  <Match when={activeSection() === "payments"}>
+                    <div class={styles.paymentLayout}>
+                      <section class={styles.paymentHistory}>
+                        <div class={styles.panelHead}>
+                          <div>
+                            <span>Payment activity</span>
+                            <h3>Recent payments</h3>
+                          </div>
+                        </div>
+
+                        <Show
+                          when={overview()?.payments.length}
+                          fallback={
+                            <div class={styles.compactEmpty}>
+                              <strong>No payments yet</strong>
+                              <span>
+                                Payment activity appears after you start an order.
+                              </span>
+                              <A href="/products">Browse the shop</A>
+                            </div>
+                          }
+                        >
+                          <div class={styles.paymentRows}>
+                            <For each={overview()?.payments}>
+                              {payment => (
+                                <article class={styles.paymentRow}>
+                                  <div class={styles.paymentMethod}>
+                                    <span aria-hidden="true">
+                                      {payment.method?.toLowerCase() === "ideal"
+                                        ? "iD"
+                                        : "M"}
+                                    </span>
+                                    <div>
+                                      <strong>
+                                        {readablePaymentMethod(payment.method)}
+                                      </strong>
+                                      <small>{payment.orderNumber}</small>
+                                    </div>
+                                  </div>
+                                  <div class={styles.paymentMeta}>
+                                    <span class={styles.status}>
+                                      {readableStatus(payment.status)}
+                                    </span>
+                                    <small>{formatDate(payment.createdAt)}</small>
+                                  </div>
+                                  <strong>
+                                    {formatMoney(payment.amountCents)}
+                                  </strong>
+                                </article>
+                              )}
+                            </For>
+                          </div>
+                        </Show>
+                      </section>
+
+                      <aside class={styles.paymentSafety}>
+                        <div class={styles.paymentShield} aria-hidden="true">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                          >
+                            <path d="M12 3 5.5 5.7v5.6c0 4.1 2.6 7.8 6.5 9.7 3.9-1.9 6.5-5.6 6.5-9.7V5.7L12 3Z" />
+                            <path d="m9.2 12.1 1.8 1.8 3.9-4" />
+                          </svg>
+                        </div>
+                        <h3>Payment details stay with Mollie</h3>
+                        <p>
+                          Card and bank credentials are entered on Mollie’s
+                          secure checkout. TCGHaven stores the payment status
+                          and order reference, never the raw credentials.
+                        </p>
+                        <A href="/products">Start a secure checkout</A>
+                      </aside>
+                    </div>
+                  </Match>
+
                   <Match when={activeSection() === "profile"}>
                     <div class={styles.settingsGrid}>
                       <form class={styles.settingsPanel} onSubmit={saveProfile}>
@@ -703,12 +984,6 @@ export default function Account() {
                           />
                         </label>
 
-                        <label class={styles.field}>
-                          <span>Email address</span>
-                          <input value={data().user.email} type="email" disabled />
-                          <small>Email changes require support to protect your orders.</small>
-                        </label>
-
                         <Show when={profileMessage()}>
                           <p
                             class={styles.formMessage}
@@ -724,10 +999,13 @@ export default function Account() {
                         </button>
                       </form>
 
-                      <section class={styles.settingsPanel}>
+                      <form
+                        class={styles.settingsPanel}
+                        onSubmit={requestEmailChange}
+                      >
                         <div class={styles.settingsTitle}>
-                          <span>Email status</span>
-                          <h3>Verification</h3>
+                          <span>Login email</span>
+                          <h3>Change email address</h3>
                         </div>
                         <div class={styles.verificationState}>
                           <span classList={{ [styles.verified]: data().user.emailVerified }}>
@@ -735,21 +1013,60 @@ export default function Account() {
                           </span>
                           <p>
                             {data().user.emailVerified
-                              ? "Your email address is verified and ready for account notifications."
+                              ? `Your current login email is ${data().user.email}.`
                               : "Verify your email to keep account recovery and order updates secure."}
                           </p>
                         </div>
+
+                        <label class={styles.field}>
+                          <span>New email address</span>
+                          <input
+                            value={newEmail()}
+                            type="email"
+                            maxlength="254"
+                            autocomplete="email"
+                            required
+                            disabled={emailStatus() === "saving"}
+                            onInput={event => setNewEmail(event.currentTarget.value)}
+                          />
+                          <small>
+                            The address changes only after you open its verification link.
+                          </small>
+                        </label>
+
+                        <Show when={emailMessage()}>
+                          <p
+                            class={styles.formMessage}
+                            classList={{ [styles.formError]: emailStatus() === "error" }}
+                            role={emailStatus() === "error" ? "alert" : "status"}
+                          >
+                            {emailMessage()}
+                          </p>
+                        </Show>
+
                         <Show when={!data().user.emailVerified}>
                           <button
                             type="button"
                             class={styles.secondaryAction}
-                            disabled={profileStatus() === "saving"}
+                            disabled={
+                              profileStatus() === "saving" ||
+                              emailStatus() === "saving"
+                            }
                             onClick={resendVerification}
                           >
-                            Send verification email
+                            Resend current verification
                           </button>
                         </Show>
-                      </section>
+
+                        <button
+                          class={styles.primaryAction}
+                          disabled={emailStatus() === "saving"}
+                        >
+                          {emailStatus() === "saving"
+                            ? "Sending verification"
+                            : "Verify new email"}
+                        </button>
+                      </form>
                     </div>
                   </Match>
 
@@ -832,6 +1149,182 @@ export default function Account() {
                         </A>
                       </section>
                     </div>
+
+                    <section class={styles.twoFactorPanel}>
+                      <div class={styles.twoFactorIntro}>
+                        <div>
+                          <span>Authenticator app</span>
+                          <h3>Two-factor authentication</h3>
+                        </div>
+                        <span
+                          class={styles.securityStatus}
+                          classList={{
+                            [styles.securityStatusActive]:
+                              Boolean(data().user.twoFactorEnabled),
+                          }}
+                        >
+                          {data().user.twoFactorEnabled ? "Active" : "Not active"}
+                        </span>
+                      </div>
+
+                      <Show
+                        when={data().user.twoFactorEnabled}
+                        fallback={
+                          <Show
+                            when={twoFactorQr()}
+                            fallback={
+                              <form
+                                class={styles.twoFactorStart}
+                                onSubmit={beginTwoFactor}
+                              >
+                                <p>
+                                  Add a second check at sign in using Google
+                                  Authenticator, 1Password, Authy, or another
+                                  TOTP app.
+                                </p>
+                                <label class={styles.field}>
+                                  <span>Current password</span>
+                                  <input
+                                    type="password"
+                                    value={twoFactorPassword()}
+                                    autocomplete="current-password"
+                                    required
+                                    onInput={event =>
+                                      setTwoFactorPassword(
+                                        event.currentTarget.value,
+                                      )
+                                    }
+                                  />
+                                </label>
+                                <button
+                                  class={styles.primaryAction}
+                                  disabled={twoFactorStatus() === "saving"}
+                                >
+                                  {twoFactorStatus() === "saving"
+                                    ? "Preparing setup"
+                                    : "Set up authenticator"}
+                                </button>
+                              </form>
+                            }
+                          >
+                            <div class={styles.authenticatorSetup}>
+                              <div class={styles.qrFrame}>
+                                <img
+                                  src={twoFactorQr()}
+                                  alt="Authenticator setup QR code"
+                                />
+                              </div>
+                              <form onSubmit={confirmTwoFactor}>
+                                <p>
+                                  Scan this code in your authenticator app, then
+                                  enter its current code.
+                                </p>
+                                <label class={styles.field}>
+                                  <span>Six-digit code</span>
+                                  <input
+                                    type="text"
+                                    inputmode="numeric"
+                                    autocomplete="one-time-code"
+                                    maxlength="6"
+                                    placeholder="000000"
+                                    value={twoFactorCode()}
+                                    required
+                                    onInput={event =>
+                                      setTwoFactorCode(event.currentTarget.value)
+                                    }
+                                  />
+                                </label>
+                                <button
+                                  class={styles.primaryAction}
+                                  disabled={twoFactorStatus() === "saving"}
+                                >
+                                  {twoFactorStatus() === "saving"
+                                    ? "Verifying code"
+                                    : "Activate two-factor"}
+                                </button>
+                              </form>
+                            </div>
+                          </Show>
+                        }
+                      >
+                        <form
+                          class={styles.twoFactorManage}
+                          onSubmit={regenerateBackupCodes}
+                        >
+                          <p>
+                            Two-factor authentication is required after your
+                            password on new or untrusted devices.
+                          </p>
+                          <label class={styles.field}>
+                            <span>Current password</span>
+                            <input
+                              type="password"
+                              value={twoFactorPassword()}
+                              autocomplete="current-password"
+                              required
+                              onInput={event =>
+                                setTwoFactorPassword(event.currentTarget.value)
+                              }
+                            />
+                          </label>
+                          <div class={styles.twoFactorActions}>
+                            <button
+                              class={styles.secondaryAction}
+                              disabled={twoFactorStatus() === "saving"}
+                            >
+                              Create new recovery codes
+                            </button>
+                            <button
+                              type="button"
+                              class={styles.dangerAction}
+                              disabled={twoFactorStatus() === "saving"}
+                              onClick={disableTwoFactor}
+                            >
+                              Turn off two-factor
+                            </button>
+                          </div>
+                        </form>
+                      </Show>
+
+                      <Show when={twoFactorMessage()}>
+                        <p
+                          class={styles.formMessage}
+                          classList={{
+                            [styles.formError]: twoFactorStatus() === "error",
+                          }}
+                          role={twoFactorStatus() === "error" ? "alert" : "status"}
+                        >
+                          {twoFactorMessage()}
+                        </p>
+                      </Show>
+
+                      <Show
+                        when={
+                          data().user.twoFactorEnabled && backupCodes().length
+                        }
+                      >
+                        <div class={styles.recoveryCodes}>
+                          <div>
+                            <h4>Recovery codes</h4>
+                            <p>
+                              Save these somewhere private. Each code works once.
+                            </p>
+                          </div>
+                          <div class={styles.codeGrid}>
+                            <For each={backupCodes()}>
+                              {code => <code>{code}</code>}
+                            </For>
+                          </div>
+                          <button
+                            type="button"
+                            class={styles.secondaryAction}
+                            onClick={copyBackupCodes}
+                          >
+                            Copy recovery codes
+                          </button>
+                        </div>
+                      </Show>
+                    </section>
                   </Match>
                 </Switch>
             </section>

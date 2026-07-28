@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
+import { twoFactor } from "better-auth/plugins";
 import { db } from "~/db";
 import * as schema from "~/db/schema";
 import {
@@ -132,6 +133,10 @@ export const auth = betterAuth({
       "/request-password-reset": { window: 900, max: 3 },
       "/reset-password": { window: 900, max: 5 },
       "/send-verification-email": { window: 600, max: 3 },
+      "/change-email": { window: 600, max: 3 },
+      "/two-factor/enable": { window: 600, max: 5 },
+      "/two-factor/verify-totp": { window: 300, max: 10 },
+      "/two-factor/verify-backup-code": { window: 300, max: 10 },
     },
   },
   emailAndPassword: {
@@ -159,6 +164,10 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 12,
   },
   user: {
+    changeEmail: {
+      enabled: Boolean(emailEnv),
+      updateEmailWithoutVerification: false,
+    },
     additionalFields: {
       role: {
         type: ["customer", "admin"],
@@ -168,6 +177,21 @@ export const auth = betterAuth({
       },
     },
   },
+  plugins: [
+    twoFactor({
+      issuer: "TCGHaven",
+      twoFactorCookieMaxAge: 60 * 10,
+      trustDeviceMaxAge: 60 * 60 * 24 * 30,
+      backupCodeOptions: {
+        storeBackupCodes: "encrypted",
+      },
+      accountLockout: {
+        enabled: true,
+        maxFailedAttempts: 8,
+        durationSeconds: 60 * 15,
+      },
+    }),
+  ],
   advanced: {
     // Better Auth must emit UUIDs because the auth tables use PostgreSQL uuid columns.
     database: {
