@@ -690,6 +690,44 @@
   font-size: 1.3rem;
 }
 
+.addressEditor {
+  min-height: auto;
+}
+
+.addressFieldRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.addressPreview {
+  display: flex;
+  min-height: 32rem;
+  flex-direction: column;
+}
+
+.addressPreview address {
+  margin-top: 2rem;
+}
+
+.addressPreview > p {
+  max-width: 38ch;
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid rgba($white, 0.08);
+  color: $gray-400;
+  font-size: 0.8rem;
+  line-height: 1.65;
+}
+
+.addressPreview > a {
+  width: fit-content;
+  margin-top: 1rem;
+  color: $primary-light;
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
 .addressNote {
   display: flex;
   justify-content: flex-end;
@@ -895,6 +933,19 @@
 .formError {
   border-color: rgba(#f87171, 0.25);
   color: #fca5a5;
+}
+
+.emailActions {
+  display: flex;
+  align-items: flex-start;
+  margin-top: auto;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.emailActions .primaryAction,
+.emailActions .secondaryAction {
+  margin-top: 0;
 }
 
 .primaryAction,
@@ -1493,6 +1544,15 @@
   .addressNote,
   .settingsPanel {
     min-height: 20rem;
+  }
+
+  .addressFieldRow {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .addressPreview {
+    min-height: 24rem;
   }
 
   .twoFactorStart,

@@ -1,7 +1,15 @@
 import { Title } from "@solidjs/meta";
 import { A, useSearchParams } from "@solidjs/router";
-import { createMemo, createSignal, For, Show, type JSX } from "solid-js";
+import {
+  createMemo,
+  createSignal,
+  For,
+  onMount,
+  Show,
+  type JSX,
+} from "solid-js";
 import { z } from "zod";
+import type { SavedAddress } from "~/lib/address";
 import { formatPrice, useCart, type CartItem } from "~/lib/cart";
 import styles from "./checkout.module.scss";
 
@@ -58,6 +66,11 @@ type CreatePaymentResponse = {
   error?: string;
 };
 
+type SavedAddressResponse = {
+  address: SavedAddress | null;
+  email: string;
+};
+
 export default function Checkout() {
   const cart = useCart();
   const [searchParams] = useSearchParams();
@@ -81,6 +94,29 @@ export default function Checkout() {
     subtotalCents() >= 10000 ? 0 : SHIPPING_OPTIONS[shippingMethod()].priceCents,
   );
   const totalCents = createMemo(() => subtotalCents() + shippingCents());
+
+  onMount(async () => {
+    try {
+      const response = await fetch("/api/account/address", {
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+      });
+
+      if (!response.ok) return;
+      const result = (await response.json()) as SavedAddressResponse;
+
+      if (!email()) setEmail(result.email);
+      if (!result.address) return;
+      if (!firstName()) setFirstName(result.address.firstName);
+      if (!lastName()) setLastName(result.address.lastName);
+      if (!address()) setAddress(result.address.streetAndHouseNumber);
+      if (!postalCode()) setPostalCode(result.address.postalCode);
+      if (!city()) setCity(result.address.city);
+      if (country() === "Netherlands") setCountry(result.address.country);
+    } catch {
+      // Guest checkout and temporary account-service errors stay editable.
+    }
+  });
 
   const submitOrder = async (event: SubmitEvent) => {
     event.preventDefault();

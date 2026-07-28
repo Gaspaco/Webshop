@@ -28,6 +28,7 @@ export default function AuthPage(props: AuthPageProps) {
   const [showSignupPassword, setShowSignupPassword] = createSignal(false);
   const [error, setError] = createSignal<string>();
   const [loading, setLoading] = createSignal(false);
+  const [googleLoading, setGoogleLoading] = createSignal(false);
   const [resetOpen, setResetOpen] = createSignal(false);
   const [resetEmail, setResetEmail] = createSignal("");
   const [resetStatus, setResetStatus] = createSignal<
@@ -46,6 +47,32 @@ export default function AuthPage(props: AuthPageProps) {
 
     const nextPath = nextMode === "signup" ? "/signup" : "/login";
     window.history.pushState({ authMode: nextMode }, "", nextPath);
+  };
+
+  const continueWithGoogle = async () => {
+    setError(undefined);
+    setGoogleLoading(true);
+
+    try {
+      const { error: authError } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: `${window.location.origin}/account`,
+        newUserCallbackURL: `${window.location.origin}/account`,
+        errorCallbackURL: `${window.location.origin}/${mode()}?oauth=google`,
+      });
+
+      if (authError) {
+        setError(
+          "Google sign-in is not connected yet. The store owner needs to finish its OAuth setup.",
+        );
+        setGoogleLoading(false);
+      }
+    } catch {
+      setError(
+        "Google sign-in could not start. Check your connection and try again.",
+      );
+      setGoogleLoading(false);
+    }
   };
 
   const submitLogin = async (event: SubmitEvent) => {
@@ -198,6 +225,14 @@ export default function AuthPage(props: AuthPageProps) {
   };
 
   onMount(() => {
+    const search = new URLSearchParams(window.location.search);
+    if (search.get("oauth") === "google" || search.has("error")) {
+      setError(
+        "Google could not complete the sign-in. Try again or use your email.",
+      );
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
     const handleHistory = () => {
       setMode(window.location.pathname === "/signup" ? "signup" : "login");
       setError(undefined);
@@ -244,6 +279,15 @@ export default function AuthPage(props: AuthPageProps) {
 
           <h1 class={styles.title}>Create your account</h1>
           <p class={styles.subtitle}>It only takes a minute.</p>
+
+          <GoogleButton
+            loading={googleLoading()}
+            disabled={mode() !== "signup"}
+            onClick={continueWithGoogle}
+          />
+          <div class={styles.authDivider}>
+            <span>or create one with email</span>
+          </div>
 
           <form class={styles.form} onSubmit={submitSignup}>
             <Show when={mode() === "signup" && error()}>
@@ -375,6 +419,15 @@ export default function AuthPage(props: AuthPageProps) {
 
           <h1 class={styles.title}>Sign in</h1>
           <p class={styles.subtitle}>Enter your details to access your account.</p>
+
+          <GoogleButton
+            loading={googleLoading()}
+            disabled={mode() !== "login"}
+            onClick={continueWithGoogle}
+          />
+          <div class={styles.authDivider}>
+            <span>or continue with email</span>
+          </div>
 
           <form class={styles.form} onSubmit={submitLogin}>
             <Show when={mode() === "login" && error()}>
@@ -691,6 +744,46 @@ function SubmitButton(props: {
         <span class={styles.spinner} />
       </Show>
       {props.loading ? props.loadingLabel : props.idleLabel}
+    </button>
+  );
+}
+
+function GoogleButton(props: {
+  loading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      class={styles.googleButton}
+      disabled={props.loading || props.disabled}
+      onClick={props.onClick}
+    >
+      <Show
+        when={!props.loading}
+        fallback={<span class={styles.googleSpinner} aria-hidden="true" />}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="#4285F4"
+            d="M21.6 12.2c0-.7-.1-1.5-.2-2.2H12v4.2h5.4a4.6 4.6 0 0 1-2 3v2.7h3.3c1.9-1.8 2.9-4.4 2.9-7.7Z"
+          />
+          <path
+            fill="#34A853"
+            d="M12 22c2.7 0 5-.9 6.7-2.4l-3.3-2.7c-.9.6-2.1 1-3.4 1a5.9 5.9 0 0 1-5.5-4.1H3.1v2.8A10 10 0 0 0 12 22Z"
+          />
+          <path
+            fill="#FBBC05"
+            d="M6.5 13.8a6 6 0 0 1 0-3.8V7.2H3.1a10 10 0 0 0 0 9.1l3.4-2.5Z"
+          />
+          <path
+            fill="#EA4335"
+            d="M12 6.1c1.5 0 2.9.5 4 1.6l3-3A10 10 0 0 0 3.1 7.2L6.5 10A5.9 5.9 0 0 1 12 6.1Z"
+          />
+        </svg>
+      </Show>
+      {props.loading ? "Opening Google" : "Continue with Google"}
     </button>
   );
 }

@@ -2,6 +2,7 @@ import type { APIEvent } from "@solidjs/start/server";
 import { desc, eq, inArray, or } from "drizzle-orm";
 import { db } from "~/db";
 import {
+  customerAddresses,
   orderItems,
   orders,
   payments,
@@ -104,6 +105,19 @@ export async function GET(event: APIEvent) {
     .orderBy(desc(wishlistItems.createdAt))
     .limit(24);
 
+  const [savedAddress] = await db
+    .select({
+      firstName: customerAddresses.firstName,
+      lastName: customerAddresses.lastName,
+      streetAndHouseNumber: customerAddresses.streetAndHouseNumber,
+      postalCode: customerAddresses.postalCode,
+      city: customerAddresses.city,
+      country: customerAddresses.country,
+    })
+    .from(customerAddresses)
+    .where(eq(customerAddresses.userId, session.user.id))
+    .limit(1);
+
   return json({
     orders: customerOrders.map(order => ({
       ...order,
@@ -118,6 +132,8 @@ export async function GET(event: APIEvent) {
       createdAt: item.createdAt,
     })),
     payments: paymentRows,
-    latestAddress: customerOrders[0]?.shippingAddress ?? null,
+    latestAddress:
+      savedAddress ?? customerOrders[0]?.shippingAddress ?? null,
+    hasSavedAddress: Boolean(savedAddress),
   });
 }
