@@ -1,6 +1,12 @@
 import { Title } from "@solidjs/meta";
 import { A, useParams } from "@solidjs/router";
-import { createResource, createSignal, For, Show } from "solid-js";
+import {
+  createResource,
+  createSignal,
+  For,
+  onMount,
+  Show,
+} from "solid-js";
 import ProductCard, { BoxArt, Stars, type SectionProduct } from "~/components/product/ProductCard";
 import { fetchDatabaseCatalog } from "~/lib/catalog";
 import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories";
@@ -76,8 +82,9 @@ const SERVICE_NOTES = [
 export default function ProductDetail() {
   const params = useParams();
   const cart = useCart();
+  const [clientReady, setClientReady] = createSignal(false);
   const [databaseProduct] = createResource(
-    () => params.id,
+    () => (clientReady() ? params.id : undefined),
     async id => (await fetchDatabaseCatalog(id))[0],
   );
   const product = () => findProduct(params.id ?? "") ?? databaseProduct();
@@ -86,6 +93,8 @@ export default function ProductDetail() {
   const [added, setAdded] = createSignal(false);
   const [saved, setSaved] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
+
+  onMount(() => setClientReady(true));
 
   const addMain = (item: ShopProduct) => {
     if (item.priceRangeCents || item.priceCents === undefined) return;

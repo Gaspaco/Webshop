@@ -1,5 +1,12 @@
 import { Title } from "@solidjs/meta";
-import { createMemo, createResource, createSignal, For, Show } from "solid-js";
+import {
+  createMemo,
+  createResource,
+  createSignal,
+  For,
+  onMount,
+  Show,
+} from "solid-js";
 import ProductCard, { type SectionProduct } from "~/components/product/ProductCard";
 import { ALL_PRODUCTS, CATEGORY_LIST, type ShopProduct } from "~/lib/categories";
 import { fetchDatabaseCatalog } from "~/lib/catalog";
@@ -49,11 +56,17 @@ export default function Products() {
   const [price, setPrice] = createSignal("all");
   const [sort, setSort] = createSignal<SortKey>("featured");
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
-  const [databaseProducts] = createResource(() => fetchDatabaseCatalog());
+  const [clientReady, setClientReady] = createSignal(false);
+  const [databaseProducts] = createResource(
+    clientReady,
+    () => fetchDatabaseCatalog(),
+  );
   const allProducts = createMemo(() => [
     ...ALL_PRODUCTS,
     ...(databaseProducts() ?? []),
   ]);
+
+  onMount(() => setClientReady(true));
 
   const visible = createMemo(() => {
     const query = search().trim().toLocaleLowerCase();

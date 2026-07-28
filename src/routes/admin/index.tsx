@@ -10,10 +10,11 @@ import {
   createResource,
   createSignal,
   For,
+  onMount,
   Show,
 } from "solid-js";
 import { authClient } from "~/lib/auth-client";
-import styles from "./admin.module.scss";
+import styles from "../admin.module.scss";
 
 type AdminSection =
   | "overview"
@@ -386,8 +387,12 @@ function ProductRow(props: {
 
 export default function Admin() {
   const session = authClient.useSession();
+  const [clientReady, setClientReady] = createSignal(false);
   const [section, setSection] = createSignal<AdminSection>("overview");
-  const [dashboard, { refetch }] = createResource(loadDashboard);
+  const [dashboard, { refetch }] = createResource(
+    clientReady,
+    loadDashboard,
+  );
   const [composerOpen, setComposerOpen] = createSignal(false);
   const [draft, setDraft] = createSignal<ProductDraft>({ ...emptyProduct });
   const [productStatus, setProductStatus] = createSignal("");
@@ -417,6 +422,8 @@ export default function Admin() {
     columns: customerColumns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  onMount(() => setClientReady(true));
 
   createEffect(() => {
     if (dashboard.error) {
