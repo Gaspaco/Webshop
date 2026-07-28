@@ -14,6 +14,10 @@ import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_REQUIREMENTS_MESSAGE,
 } from "~/lib/password";
+import {
+  isValidStoredProfileImage,
+  PROFILE_IMAGE_ERROR_MESSAGE,
+} from "~/lib/profile-image";
 
 const authEnv = getAuthEnv();
 const emailEnv = getEmailEnv();
@@ -43,6 +47,36 @@ export const auth = betterAuth({
           }
 
           return { data: { ...user, name } };
+        },
+      },
+      update: {
+        before: async user => {
+          const data = { ...user };
+
+          if (typeof data.name === "string") {
+            const name = data.name.normalize("NFKC").trim();
+            if (
+              name.length < 1 ||
+              name.length > 80 ||
+              /[\u0000-\u001f\u007f]/.test(name)
+            ) {
+              throw new APIError("BAD_REQUEST", {
+                message: "Enter a valid name of 80 characters or fewer.",
+              });
+            }
+            data.name = name;
+          }
+
+          if (
+            Object.prototype.hasOwnProperty.call(data, "image") &&
+            !isValidStoredProfileImage(data.image)
+          ) {
+            throw new APIError("BAD_REQUEST", {
+              message: PROFILE_IMAGE_ERROR_MESSAGE,
+            });
+          }
+
+          return { data };
         },
       },
     },

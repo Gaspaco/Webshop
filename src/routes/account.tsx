@@ -16,6 +16,12 @@ import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_REQUIREMENTS_MESSAGE,
 } from "~/lib/password";
+import {
+  PROFILE_IMAGE_ACCEPTED_TYPES,
+  PROFILE_IMAGE_ERROR_MESSAGE,
+  PROFILE_IMAGE_MAX_DATA_URL_LENGTH,
+  PROFILE_IMAGE_MAX_SOURCE_BYTES,
+} from "~/lib/profile-image";
 import styles from "./account.module.scss";
 
 type Section =
@@ -106,6 +112,61 @@ function readableStatus(status: string) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
+async function prepareProfileImage(file: File) {
+  if (
+    !PROFILE_IMAGE_ACCEPTED_TYPES.includes(
+      file.type as (typeof PROFILE_IMAGE_ACCEPTED_TYPES)[number],
+    ) ||
+    file.size > PROFILE_IMAGE_MAX_SOURCE_BYTES
+  ) {
+    throw new Error(PROFILE_IMAGE_ERROR_MESSAGE);
+  }
+
+  const source = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  const outputSize = 512;
+  const cropSize = Math.min(source.width, source.height);
+  const sourceX = (source.width - cropSize) / 2;
+  const sourceY = (source.height - cropSize) / 2;
+
+  canvas.width = outputSize;
+  canvas.height = outputSize;
+
+  if (!context) {
+    source.close();
+    throw new Error("This image could not be prepared. Choose another file.");
+  }
+
+  context.fillStyle = "#101512";
+  context.fillRect(0, 0, outputSize, outputSize);
+  context.drawImage(
+    source,
+    sourceX,
+    sourceY,
+    cropSize,
+    cropSize,
+    0,
+    0,
+    outputSize,
+    outputSize,
+  );
+  source.close();
+
+  let image = canvas.toDataURL("image/webp", 0.8);
+  if (!image.startsWith("data:image/webp")) {
+    image = canvas.toDataURL("image/jpeg", 0.78);
+  }
+  if (image.length > PROFILE_IMAGE_MAX_DATA_URL_LENGTH) {
+    image = canvas.toDataURL("image/jpeg", 0.68);
+  }
+  if (image.length > PROFILE_IMAGE_MAX_DATA_URL_LENGTH) {
+    throw new Error("This image is too detailed. Choose a smaller image.");
+  }
+
+  return image;
+}
+
 async function loadOverview() {
   const response = await fetch("/api/account/overview", {
     credentials: "same-origin",
@@ -124,6 +185,7 @@ export default function Account() {
   const session = authClient.useSession();
   const [activeSection, setActiveSection] = createSignal<Section>("overview");
   const [profileName, setProfileName] = createSignal("");
+  const [profileImage, setProfileImage] = createSignal<string | null>(null);
   const [profileStatus, setProfileStatus] = createSignal<
     "idle" | "saving" | "success" | "error"
   >("idle");
@@ -152,6 +214,7 @@ export default function Account() {
     const name = session().data?.user.name;
     if (name && !profileInitialized) {
       setProfileName(name);
+      setProfileImage(session().data?.user.image ?? null);
       profileInitialized = true;
     }
   });
@@ -169,6 +232,34 @@ export default function Account() {
   const totalSpent = () =>
     overview()?.orders.reduce((total, order) => total + order.totalCents, 0) ?? 0;
 
+  const selectProfileImage = async (
+    event: Event & { currentTarget: HTMLInputElement },
+  ) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+
+    setProfileStatus("saving");
+    setProfileMessage("");
+
+    try {
+      setProfileImage(await prepareProfileImage(file));
+      setProfileStatus("idle");
+      setProfileMessage("Image ready. Save your profile to apply it.");
+    } catch (error) {
+      setProfileStatus("error");
+      setProfileMessage(
+        error instanceof Error ? error.message : PROFILE_IMAGE_ERROR_MESSAGE,
+      );
+    }
+  };
+
+  const removeProfileImage = () => {
+    setProfileImage(null);
+    setProfileStatus("idle");
+    setProfileMessage("Image removed. Save your profile to apply it.");
+  };
+
   const saveProfile = async (event: SubmitEvent) => {
     event.preventDefault();
     const name = profileName().normalize("NFKC").trim();
@@ -181,7 +272,10 @@ export default function Account() {
 
     setProfileStatus("saving");
     setProfileMessage("");
-    const { error } = await authClient.updateUser({ name });
+    const { error } = await authClient.updateUser({
+      name,
+      image: profileImage(),
+    });
 
     if (error) {
       setProfileStatus("error");
@@ -286,8 +380,21 @@ export default function Account() {
         {data => (
           <div class={styles.account}>
             <aside class={styles.sidebar}>
+              <A href="/" class={styles.brand} aria-label="TCG Haven home">
+                <span class={styles.brandMark}>
+                  <img src="/images/logo-mark.png" alt="" width="409" height="379" />
+                </span>
+                <span class={styles.brandName}>
+                  TCG<span>Haven</span>
+                </span>
+              </A>
+
               <div class={styles.identity}>
-                <span class={styles.avatar}>{initials() || "?"}</span>
+                <span class={styles.avatar}>
+                  <Show when={profileImage()} fallback={initials() || "?"}>
+                    {image => <img src={image()} alt="" />}
+                  </Show>
+                </span>
                 <div>
                   <strong>{data().user.name}</strong>
                   <span>{data().user.email}</span>
@@ -549,6 +656,41 @@ export default function Account() {
                         <div class={styles.settingsTitle}>
                           <span>Personal information</span>
                           <h3>Your details</h3>
+                        </div>
+
+                        <div class={styles.profileImageEditor}>
+                          <div class={styles.profileImagePreview}>
+                            <Show
+                              when={profileImage()}
+                              fallback={<span>{initials() || "?"}</span>}
+                            >
+                              {image => <img src={image()} alt="" />}
+                            </Show>
+                          </div>
+                          <div class={styles.profileImageDetails}>
+                            <strong>Profile image</strong>
+                            <span>JPG, PNG, or WebP. Maximum 5 MB.</span>
+                            <div class={styles.profileImageActions}>
+                              <label>
+                                Choose image
+                                <input
+                                  type="file"
+                                  accept={PROFILE_IMAGE_ACCEPTED_TYPES.join(",")}
+                                  disabled={profileStatus() === "saving"}
+                                  onChange={selectProfileImage}
+                                />
+                              </label>
+                              <Show when={profileImage()}>
+                                <button
+                                  type="button"
+                                  disabled={profileStatus() === "saving"}
+                                  onClick={removeProfileImage}
+                                >
+                                  Remove
+                                </button>
+                              </Show>
+                            </div>
+                          </div>
                         </div>
 
                         <label class={styles.field}>
