@@ -126,8 +126,28 @@ export default function Products() {
             <p>Browse singles, sealed products, and decks across every game we carry.</p>
           </div>
 
-          <div class={styles.inventoryCount} aria-label="26 products available">
-            26
+          <div class={styles.inventoryPanel} aria-label="26 products available">
+            <div class={styles.inventoryTop}>
+              <span>Live catalogue</span>
+              <span class={styles.inventoryStatus}>
+                <i aria-hidden="true" />
+                Updated daily
+              </span>
+            </div>
+
+            <div class={styles.inventoryCount}>
+              <strong>26</strong>
+              <span>
+                Curated products
+                <small>ready to discover</small>
+              </span>
+            </div>
+
+            <div class={styles.inventoryTypes} aria-hidden="true">
+              <span>Singles</span>
+              <span>Sealed</span>
+              <span>Graded</span>
+            </div>
           </div>
         </header>
 

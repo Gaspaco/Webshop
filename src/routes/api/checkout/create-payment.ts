@@ -1,5 +1,6 @@
 import type { APIEvent } from "@solidjs/start/server";
 import { z } from "zod";
+import { auth } from "~/lib/auth";
 import { createCheckoutPayment } from "~/lib/checkout.server";
 
 function json(data: unknown, init?: ResponseInit) {
@@ -15,7 +16,10 @@ function json(data: unknown, init?: ResponseInit) {
 export async function POST(event: APIEvent) {
   try {
     const payload = await event.request.json();
-    const result = await createCheckoutPayment(payload);
+    const session = await auth.api.getSession({
+      headers: event.request.headers,
+    });
+    const result = await createCheckoutPayment(payload, session?.user.id);
 
     if (!result.checkoutUrl) {
       return json(
