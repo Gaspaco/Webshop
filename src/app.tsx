@@ -40,6 +40,8 @@ function AppShell(props: ParentProps) {
     ["/login", "/signup", "/verify-email", "/reset-password"].includes(
       location.pathname,
     );
+  const hidesFooter = () =>
+    isAuthRoute() || location.pathname === "/account";
 
   return (
     <MetaProvider>
@@ -56,7 +58,7 @@ function AppShell(props: ParentProps) {
           {_ => <div class="route-enter">{props.children}</div>}
         </Show>
       </Suspense>
-      {!isAuthRoute() && <Footer />}
+      {!hidesFooter() && <Footer />}
     </MetaProvider>
   );
 }
