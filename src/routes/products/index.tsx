@@ -1,20 +1,10 @@
 import { Title } from "@solidjs/meta";
-import { createMemo, createSignal, For, Show } from "solid-js";
+import { createMemo, createResource, createSignal, For, Show } from "solid-js";
 import ProductCard, { type SectionProduct } from "~/components/product/ProductCard";
-import { CATEGORY_LIST } from "~/lib/categories";
+import { ALL_PRODUCTS, CATEGORY_LIST, type ShopProduct } from "~/lib/categories";
+import { fetchDatabaseCatalog } from "~/lib/catalog";
 import { useCart } from "~/lib/cart";
 import styles from "./index.module.scss";
-
-type ShopProduct = SectionProduct & { game: string; gameName: string };
-
-const ALL: ShopProduct[] = CATEGORY_LIST.flatMap(category =>
-  category.products.map(product => ({
-    ...product,
-    game: category.slug,
-    gameName: category.name,
-    theme: product.theme ?? category.theme,
-  })),
-);
 
 const GAME_OPTIONS = [
   { key: "all", label: "All games" },
@@ -41,7 +31,7 @@ function priceOf(product: SectionProduct) {
 }
 
 function typeOf(product: ShopProduct) {
-  return product.image ? "single" : "sealed";
+  return product.productType ?? (product.image ? "single" : "sealed");
 }
 
 function priceBucket(product: ShopProduct) {
@@ -59,10 +49,15 @@ export default function Products() {
   const [price, setPrice] = createSignal("all");
   const [sort, setSort] = createSignal<SortKey>("featured");
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
+  const [databaseProducts] = createResource(() => fetchDatabaseCatalog());
+  const allProducts = createMemo(() => [
+    ...ALL_PRODUCTS,
+    ...(databaseProducts() ?? []),
+  ]);
 
   const visible = createMemo(() => {
     const query = search().trim().toLocaleLowerCase();
-    const list = ALL.filter(
+    const list = allProducts().filter(
       product =>
         (!query ||
           product.name.toLocaleLowerCase().includes(query) ||
@@ -126,7 +121,7 @@ export default function Products() {
             <p>Browse singles, sealed products, and decks across every game we carry.</p>
           </div>
 
-          <div class={styles.inventoryPanel} aria-label="26 products available">
+          <div class={styles.inventoryPanel} aria-label={`${allProducts().length} products available`}>
             <div class={styles.inventoryTop}>
               <span>Live catalogue</span>
               <span class={styles.inventoryStatus}>
@@ -136,7 +131,7 @@ export default function Products() {
             </div>
 
             <div class={styles.inventoryCount}>
-              <strong>26</strong>
+              <strong>{allProducts().length}</strong>
               <span>
                 Curated products
                 <small>ready to discover</small>

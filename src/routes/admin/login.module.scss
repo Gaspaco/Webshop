@@ -1,0 +1,156 @@
+@use "../../styles/variables" as *;
+
+.page {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 3rem 1.25rem;
+  background:
+    radial-gradient(circle at 12% 18%, rgba($primary, 0.12), transparent 30rem),
+    #090c0a;
+}
+
+.backLink {
+  position: fixed;
+  top: 1.5rem;
+  left: 1.5rem;
+  color: $gray-400;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: color 180ms ease;
+}
+
+.backLink:hover {
+  color: $white;
+}
+
+.loginPanel {
+  width: min(100%, 30rem);
+  padding: clamp(2rem, 6vw, 3.5rem);
+  border: 1px solid rgba($white, 0.1);
+  border-radius: 0.875rem;
+  background: #0d110e;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 3rem;
+  color: $white;
+  font-weight: 850;
+}
+
+.brand img {
+  width: 2.25rem;
+  height: 2.25rem;
+  object-fit: contain;
+}
+
+.context {
+  margin-bottom: 0.6rem;
+  color: $primary-light;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.loginPanel h1 {
+  font-family: $font-body;
+  font-size: 2rem;
+  letter-spacing: -0.025em;
+}
+
+.intro {
+  margin-top: 0.75rem;
+  color: $gray-400;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.loginPanel form {
+  display: flex;
+  margin-top: 2.25rem;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.loginPanel label > span {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: $gray-300;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.loginPanel input {
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0 1rem;
+  border: 1px solid rgba($white, 0.14);
+  border-radius: 0.5rem;
+  outline: none;
+  background: #080b09;
+  color: $white;
+  font: inherit;
+  transition: border-color 180ms ease;
+}
+
+.loginPanel input:focus {
+  border-color: $primary;
+}
+
+.passwordField {
+  position: relative;
+}
+
+.passwordField input {
+  padding-right: 4.5rem;
+}
+
+.passwordField button {
+  position: absolute;
+  top: 0;
+  right: 0.75rem;
+  height: 100%;
+  color: $gray-400;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.error {
+  padding: 0.8rem 1rem;
+  border-radius: 0.5rem;
+  background: rgba(#ef4444, 0.1);
+  color: #fca5a5;
+  font-size: 0.78rem;
+}
+
+.submit {
+  min-height: 3.25rem;
+  margin-top: 0.35rem;
+  border-radius: 0.5rem;
+  background: $primary;
+  color: #04130c;
+  font-size: 0.82rem;
+  font-weight: 850;
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.submit:hover:not(:disabled) {
+  background: $primary-light;
+  transform: translateY(-1px);
+}
+
+.submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.securityNote {
+  margin-top: 1.5rem;
+  color: $gray-600;
+  font-size: 0.7rem;
+  line-height: 1.55;
+}

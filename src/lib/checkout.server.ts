@@ -1,8 +1,14 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { PaymentMethod, type PaymentCreateParams } from "@mollie/api-client";
 import { z } from "zod";
 import { db } from "~/db";
-import { orderItems, orders, payments } from "~/db/schema";
+import {
+  orderItems,
+  orders,
+  payments,
+  products,
+  productVariants,
+} from "~/db/schema";
 import { findProduct } from "~/lib/categories";
 import { getAuthEnv } from "~/lib/env.server";
 import { getMollieClient } from "~/lib/mollie.server";
@@ -64,25 +70,67 @@ function appUrl(path: string) {
   return new URL(path, getAuthEnv().BETTER_AUTH_URL).toString();
 }
 
-export function calculateTrustedCheckout(input: unknown) {
+export async function calculateTrustedCheckout(input: unknown) {
   const parsed = checkoutInputSchema.parse(input);
-  const lines = parsed.items.map(item => {
-    const product = findProduct(item.id);
+  const lines = await Promise.all(parsed.items.map(async item => {
+    const staticProduct = findProduct(item.id);
 
-    if (!product || product.priceCents === undefined || product.priceRangeCents) {
+    if (
+      staticProduct &&
+      staticProduct.priceCents !== undefined &&
+      !staticProduct.priceRangeCents
+    ) {
+      return {
+        id: staticProduct.id,
+        sku: staticProduct.id,
+        name: staticProduct.set
+          ? `${staticProduct.name} (${staticProduct.set})`
+          : staticProduct.name,
+        image: staticProduct.image ?? "",
+        quantity: item.quantity,
+        unitPriceCents: staticProduct.priceCents,
+        totalCents: staticProduct.priceCents * item.quantity,
+      };
+    }
+
+    const [databaseProduct] = await db
+      .select({
+        id: products.id,
+        slug: products.slug,
+        name: products.name,
+        imageUrls: products.imageUrls,
+        sku: productVariants.sku,
+        priceCents: productVariants.priceCents,
+        stock: productVariants.stock,
+        reservedStock: productVariants.reservedStock,
+      })
+      .from(products)
+      .innerJoin(productVariants, eq(productVariants.productId, products.id))
+      .where(
+        and(
+          eq(products.slug, item.id),
+          eq(products.status, "active"),
+        ),
+      )
+      .limit(1);
+
+    if (
+      !databaseProduct ||
+      databaseProduct.stock - databaseProduct.reservedStock < item.quantity
+    ) {
       throw new Error(`Product is not purchasable: ${item.id}`);
     }
 
     return {
-      id: product.id,
-      sku: product.id,
-      name: product.set ? `${product.name} (${product.set})` : product.name,
-      image: product.image ?? "",
+      id: databaseProduct.slug,
+      sku: databaseProduct.sku,
+      name: databaseProduct.name,
+      image: databaseProduct.imageUrls[0] ?? "",
       quantity: item.quantity,
-      unitPriceCents: product.priceCents,
-      totalCents: product.priceCents * item.quantity,
+      unitPriceCents: databaseProduct.priceCents,
+      totalCents: databaseProduct.priceCents * item.quantity,
     };
-  });
+  }));
 
   const subtotalCents = lines.reduce((sum, item) => sum + item.totalCents, 0);
   const shippingCents =
@@ -99,7 +147,7 @@ export function calculateTrustedCheckout(input: unknown) {
 }
 
 export async function createCheckoutPayment(input: unknown, userId?: string) {
-  const checkout = calculateTrustedCheckout(input);
+  const checkout = await calculateTrustedCheckout(input);
   const orderNumber = makeOrderNumber();
   const address = {
     firstName: checkout.customer.firstName,
