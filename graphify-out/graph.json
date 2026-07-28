@@ -533,13 +533,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:95"
     },
     {
-      "id": "file::schema",
-      "label": "schema.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/db/schema.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/db/schema.ts:1"
-    },
-    {
       "id": "file::auth",
       "label": "auth.ts",
       "fileType": "code",
@@ -1084,6 +1077,13 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/overview.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/overview.ts:22"
+    },
+    {
+      "id": "file::schema",
+      "label": "schema.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/db/schema.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/db/schema.ts:1"
     }
   ],
   "edges": [
@@ -2016,9 +2016,9 @@
     }
   ],
   "metadata": {
-    "files": 56,
+    "files": 55,
     "nodes": 155,
     "edges": 103,
-    "builtAt": "2026-07-28T16:44:28.146Z"
+    "builtAt": "2026-07-28T17:08:45.240Z"
   }
 }
