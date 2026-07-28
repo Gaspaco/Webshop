@@ -33,6 +33,26 @@ const authSchema = z.object({
   }),
 });
 
+const googleAuthSchema = z
+  .object({
+    GOOGLE_CLIENT_ID: z.string().trim().min(10).max(512).optional(),
+    GOOGLE_CLIENT_SECRET: z.string().trim().min(10).max(512).optional(),
+  })
+  .superRefine((value, context) => {
+    if (
+      Boolean(value.GOOGLE_CLIENT_ID) ===
+      Boolean(value.GOOGLE_CLIENT_SECRET)
+    ) {
+      return;
+    }
+
+    context.addIssue({
+      code: "custom",
+      message:
+        "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must either both be set or both be omitted.",
+    });
+  });
+
 const emailSchema = z
   .object({
     RESEND_API_KEY: z.string().trim().startsWith("re_").max(256).optional(),
@@ -58,6 +78,15 @@ export const getDatabaseEnv = () =>
       process.env.DATABASE_PUBLIC_URL ?? process.env.DATABASE_URL,
   });
 export const getAuthEnv = () => authSchema.parse(process.env);
+export const getGoogleAuthEnv = () => {
+  const parsed = googleAuthSchema.parse(process.env);
+  return parsed.GOOGLE_CLIENT_ID && parsed.GOOGLE_CLIENT_SECRET
+    ? {
+        GOOGLE_CLIENT_ID: parsed.GOOGLE_CLIENT_ID,
+        GOOGLE_CLIENT_SECRET: parsed.GOOGLE_CLIENT_SECRET,
+      }
+    : null;
+};
 export const getEmailEnv = () => {
   const parsed = emailSchema.parse(process.env);
   return parsed.RESEND_API_KEY && parsed.AUTH_EMAIL_FROM

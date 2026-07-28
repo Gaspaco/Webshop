@@ -314,6 +314,24 @@ export const wishlistItems = pgTable(
   table => [primaryKey({ columns: [table.userId, table.productId] })],
 );
 
+export const customerAddresses = pgTable(
+  "customer_addresses",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").notNull(),
+    streetAndHouseNumber: text("street_and_house_number").notNull(),
+    postalCode: text("postal_code").notNull(),
+    city: text("city").notNull(),
+    country: text("country").notNull(),
+    ...timestamps,
+  },
+  table => [uniqueIndex("customer_address_user_idx").on(table.userId)],
+);
+
 export const orders = pgTable(
   "orders",
   {

@@ -300,11 +300,81 @@
   line-height: 1.6;
 }
 
+.googleButton {
+  display: flex;
+  width: 100%;
+  height: clamp(2.65rem, 5.8vh, 2.95rem);
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: clamp(1rem, 2.3vh, 1.5rem);
+  border-radius: $radius-md;
+  background: $white;
+  color: #151918;
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition:
+    background $transition-fast,
+    transform $transition-base,
+    opacity $transition-fast;
+
+  svg,
+  .googleSpinner {
+    width: 1.15rem;
+    height: 1.15rem;
+    flex: 0 0 auto;
+  }
+
+  &:hover:not(:disabled) {
+    background: #edf1ef;
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 3px solid $primary-light;
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+}
+
+.googleSpinner {
+  border: 2px solid rgba(#151918, 0.25);
+  border-top-color: #151918;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.authDivider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: clamp(0.85rem, 1.8vh, 1.1rem);
+  color: $gray-500;
+  font-size: 0.7rem;
+  white-space: nowrap;
+
+  &::before,
+  &::after {
+    height: 1px;
+    flex: 1;
+    background: rgba($white, 0.1);
+    content: "";
+  }
+}
+
 .form {
   display: flex;
   flex-direction: column;
   gap: clamp(0.8rem, 1.8vh, 1.2rem);
   margin-top: clamp(1.15rem, 2.4vh, 1.75rem);
+}
+
+.authDivider + .form {
+  margin-top: clamp(0.85rem, 1.8vh, 1.15rem);
 }
 
 .field {
@@ -625,8 +695,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spinner {
+  .spinner,
+  .googleSpinner {
     animation: none;
+  }
+  .googleButton {
+    transition: none;
   }
   .inputWrap::after {
     transition: none;

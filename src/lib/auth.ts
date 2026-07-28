@@ -8,7 +8,11 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "~/lib/email.server";
-import { getAuthEnv, getEmailEnv } from "~/lib/env.server";
+import {
+  getAuthEnv,
+  getEmailEnv,
+  getGoogleAuthEnv,
+} from "~/lib/env.server";
 import {
   meetsPasswordRequirements,
   PASSWORD_MAX_LENGTH,
@@ -22,6 +26,7 @@ import {
 
 const authEnv = getAuthEnv();
 const emailEnv = getEmailEnv();
+const googleAuthEnv = getGoogleAuthEnv();
 const usesHttps = new URL(authEnv.BETTER_AUTH_URL).protocol === "https:";
 
 export const auth = betterAuth({
@@ -83,6 +88,18 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [authEnv.BETTER_AUTH_URL],
+  ...(googleAuthEnv
+    ? {
+        socialProviders: {
+          google: {
+            clientId: googleAuthEnv.GOOGLE_CLIENT_ID,
+            clientSecret: googleAuthEnv.GOOGLE_CLIENT_SECRET,
+            accessType: "online" as const,
+            prompt: "select_account" as const,
+          },
+        },
+      }
+    : {}),
   hooks: {
     before: createAuthMiddleware(async context => {
       const password =
@@ -129,6 +146,7 @@ export const auth = betterAuth({
     storage: "database",
     customRules: {
       "/sign-in/email": { window: 60, max: 5 },
+      "/sign-in/social": { window: 60, max: 10 },
       "/sign-up/email": { window: 600, max: 5 },
       "/request-password-reset": { window: 900, max: 3 },
       "/reset-password": { window: 900, max: 5 },

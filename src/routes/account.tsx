@@ -10,6 +10,7 @@ import {
   Show,
   Switch,
 } from "solid-js";
+import { savedAddressSchema } from "~/lib/address";
 import { authClient } from "~/lib/auth-client";
 import {
   meetsPasswordRequirements,
@@ -68,6 +69,7 @@ type AccountOverview = {
   wishlist: WishlistItem[];
   payments: AccountPayment[];
   latestAddress: Record<string, string> | null;
+  hasSavedAddress: boolean;
 };
 
 const NAV_ITEMS: Array<{ id: Section; label: string }> = [
@@ -216,6 +218,16 @@ export default function Account() {
     "idle" | "saving" | "success" | "error"
   >("idle");
   const [profileMessage, setProfileMessage] = createSignal("");
+  const [addressFirstName, setAddressFirstName] = createSignal("");
+  const [addressLastName, setAddressLastName] = createSignal("");
+  const [addressStreet, setAddressStreet] = createSignal("");
+  const [addressPostalCode, setAddressPostalCode] = createSignal("");
+  const [addressCity, setAddressCity] = createSignal("");
+  const [addressCountry, setAddressCountry] = createSignal("Netherlands");
+  const [addressStatus, setAddressStatus] = createSignal<
+    "idle" | "saving" | "success" | "error"
+  >("idle");
+  const [addressMessage, setAddressMessage] = createSignal("");
   const [newEmail, setNewEmail] = createSignal("");
   const [emailStatus, setEmailStatus] = createSignal<
     "idle" | "saving" | "success" | "error"
@@ -237,8 +249,9 @@ export default function Account() {
   >("idle");
   const [twoFactorMessage, setTwoFactorMessage] = createSignal("");
   let profileInitialized = false;
+  let addressInitialized = false;
 
-  const [overview] = createResource(
+  const [overview, { refetch: refetchOverview }] = createResource(
     () => session().data?.user.id,
     loadOverview,
   );
@@ -247,6 +260,27 @@ export default function Account() {
     if (!session().isPending && !session().data) {
       navigate("/login", { replace: true });
     }
+  });
+
+  createEffect(() => {
+    const account = overview();
+    if (!account || addressInitialized) return;
+
+    const address = account.latestAddress;
+    if (address) {
+      setAddressFirstName(address.firstName ?? "");
+      setAddressLastName(address.lastName ?? "");
+      setAddressStreet(address.streetAndHouseNumber ?? "");
+      setAddressPostalCode(address.postalCode ?? "");
+      setAddressCity(address.city ?? "");
+      setAddressCountry(address.country ?? "Netherlands");
+    } else {
+      const name = (session().data?.user.name ?? "").trim().split(/\s+/);
+      setAddressFirstName(name[0] ?? "");
+      setAddressLastName(name.slice(1).join(" "));
+    }
+
+    addressInitialized = true;
   });
 
   createEffect(() => {
@@ -380,6 +414,58 @@ export default function Account() {
     setEmailMessage(
       "Verification sent to the new address. Your current email stays active until you confirm it.",
     );
+  };
+
+  const saveAddress = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const parsed = savedAddressSchema.safeParse({
+      firstName: addressFirstName(),
+      lastName: addressLastName(),
+      streetAndHouseNumber: addressStreet(),
+      postalCode: addressPostalCode(),
+      city: addressCity(),
+      country: addressCountry(),
+    });
+
+    if (!parsed.success) {
+      setAddressStatus("error");
+      setAddressMessage(
+        parsed.error.issues[0]?.message ??
+          "Check the address and try again.",
+      );
+      return;
+    }
+
+    setAddressStatus("saving");
+    setAddressMessage("");
+
+    try {
+      const response = await fetch("/api/account/address", {
+        method: "PUT",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(parsed.data),
+      });
+      const result = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setAddressStatus("error");
+        setAddressMessage(
+          result.error ?? "Your address could not be saved.",
+        );
+        return;
+      }
+
+      setAddressStatus("success");
+      setAddressMessage("Address saved and ready for checkout.");
+      await refetchOverview();
+    } catch {
+      setAddressStatus("error");
+      setAddressMessage("Your address could not be saved. Try again.");
+    }
   };
 
   const updatePassword = async (event: SubmitEvent) => {
@@ -814,44 +900,159 @@ export default function Account() {
                   </Match>
 
                   <Match when={activeSection() === "addresses"}>
-                    <Show
-                      when={overview()?.latestAddress}
-                      fallback={
-                        <EmptyState
-                          number="03"
-                          title="No saved address"
-                          copy="Your latest delivery address will be saved here after checkout."
-                          action="Visit the shop"
-                          href="/products"
-                        />
-                      }
-                    >
-                      {address => (
-                        <div class={styles.addressLayout}>
-                          <article class={styles.addressCard}>
-                            <div class={styles.addressTop}>
-                              <span>Latest delivery address</span>
-                              <strong>Default</strong>
-                            </div>
-                            <address>
-                              <strong>
-                                {[address().firstName, address().lastName].filter(Boolean).join(" ")}
-                              </strong>
-                              <span>{address().streetAndHouseNumber}</span>
-                              <span>{[address().postalCode, address().city].filter(Boolean).join(" ")}</span>
-                              <span>{address().country}</span>
-                            </address>
-                          </article>
-                          <div class={styles.addressNote}>
-                            <span>How addresses work</span>
-                            <p>
-                              Delivery details are taken from checkout so every order can use the right destination.
-                            </p>
-                            <A href="/checkout">Review at checkout</A>
-                          </div>
+                    <div class={styles.addressLayout}>
+                      <form
+                        class={`${styles.settingsPanel} ${styles.addressEditor}`}
+                        onSubmit={saveAddress}
+                      >
+                        <div class={styles.settingsTitle}>
+                          <span>Default delivery address</span>
+                          <h3>
+                            {overview()?.hasSavedAddress
+                              ? "Edit your address"
+                              : "Add your address"}
+                          </h3>
                         </div>
-                      )}
-                    </Show>
+
+                        <div class={styles.addressFieldRow}>
+                          <label class={styles.field}>
+                            <span>First name</span>
+                            <input
+                              value={addressFirstName()}
+                              autocomplete="given-name"
+                              maxlength="80"
+                              required
+                              onInput={event =>
+                                setAddressFirstName(event.currentTarget.value)
+                              }
+                            />
+                          </label>
+                          <label class={styles.field}>
+                            <span>Last name</span>
+                            <input
+                              value={addressLastName()}
+                              autocomplete="family-name"
+                              maxlength="80"
+                              required
+                              onInput={event =>
+                                setAddressLastName(event.currentTarget.value)
+                              }
+                            />
+                          </label>
+                        </div>
+
+                        <label class={styles.field}>
+                          <span>Street and house number</span>
+                          <input
+                            value={addressStreet()}
+                            autocomplete="street-address"
+                            maxlength="160"
+                            required
+                            placeholder="Example Street 24"
+                            onInput={event =>
+                              setAddressStreet(event.currentTarget.value)
+                            }
+                          />
+                        </label>
+
+                        <div class={styles.addressFieldRow}>
+                          <label class={styles.field}>
+                            <span>Postal code</span>
+                            <input
+                              value={addressPostalCode()}
+                              autocomplete="postal-code"
+                              maxlength="24"
+                              required
+                              placeholder="1234 AB"
+                              onInput={event =>
+                                setAddressPostalCode(event.currentTarget.value)
+                              }
+                            />
+                          </label>
+                          <label class={styles.field}>
+                            <span>City</span>
+                            <input
+                              value={addressCity()}
+                              autocomplete="address-level2"
+                              maxlength="80"
+                              required
+                              onInput={event =>
+                                setAddressCity(event.currentTarget.value)
+                              }
+                            />
+                          </label>
+                        </div>
+
+                        <label class={styles.field}>
+                          <span>Country</span>
+                          <input
+                            value={addressCountry()}
+                            autocomplete="country-name"
+                            maxlength="80"
+                            required
+                            onInput={event =>
+                              setAddressCountry(event.currentTarget.value)
+                            }
+                          />
+                        </label>
+
+                        <Show when={addressMessage()}>
+                          <p
+                            class={styles.formMessage}
+                            classList={{
+                              [styles.formError]:
+                                addressStatus() === "error",
+                            }}
+                            role={
+                              addressStatus() === "error" ? "alert" : "status"
+                            }
+                          >
+                            {addressMessage()}
+                          </p>
+                        </Show>
+
+                        <button
+                          class={styles.primaryAction}
+                          disabled={addressStatus() === "saving"}
+                        >
+                          {addressStatus() === "saving"
+                            ? "Saving address"
+                            : "Save address"}
+                        </button>
+                      </form>
+
+                      <article
+                        class={`${styles.addressCard} ${styles.addressPreview}`}
+                      >
+                        <div class={styles.addressTop}>
+                          <span>Checkout preview</span>
+                          <strong>
+                            {overview()?.hasSavedAddress ? "Saved" : "New"}
+                          </strong>
+                        </div>
+                        <address>
+                          <strong>
+                            {[addressFirstName(), addressLastName()]
+                              .filter(Boolean)
+                              .join(" ") || "Your name"}
+                          </strong>
+                          <span>
+                            {addressStreet() || "Street and house number"}
+                          </span>
+                          <span>
+                            {[addressPostalCode(), addressCity()]
+                              .filter(Boolean)
+                              .join(" ") || "Postal code and city"}
+                          </span>
+                          <span>{addressCountry() || "Country"}</span>
+                        </address>
+                        <p>
+                          This address is filled in automatically when you
+                          check out while signed in.
+                        </p>
+                        <A href="/checkout">Open checkout</A>
+                      </article>
+                    </div>
                   </Match>
 
                   <Match when={activeSection() === "payments"}>
@@ -1044,28 +1245,30 @@ export default function Account() {
                           </p>
                         </Show>
 
-                        <Show when={!data().user.emailVerified}>
-                          <button
-                            type="button"
-                            class={styles.secondaryAction}
-                            disabled={
-                              profileStatus() === "saving" ||
-                              emailStatus() === "saving"
-                            }
-                            onClick={resendVerification}
-                          >
-                            Resend current verification
-                          </button>
-                        </Show>
+                        <div class={styles.emailActions}>
+                          <Show when={!data().user.emailVerified}>
+                            <button
+                              type="button"
+                              class={styles.secondaryAction}
+                              disabled={
+                                profileStatus() === "saving" ||
+                                emailStatus() === "saving"
+                              }
+                              onClick={resendVerification}
+                            >
+                              Resend current verification
+                            </button>
+                          </Show>
 
-                        <button
-                          class={styles.primaryAction}
-                          disabled={emailStatus() === "saving"}
-                        >
-                          {emailStatus() === "saving"
-                            ? "Sending verification"
-                            : "Verify new email"}
-                        </button>
+                          <button
+                            class={styles.primaryAction}
+                            disabled={emailStatus() === "saving"}
+                          >
+                            {emailStatus() === "saving"
+                              ? "Sending verification"
+                              : "Verify new email"}
+                          </button>
+                        </div>
                       </form>
                     </div>
                   </Match>
