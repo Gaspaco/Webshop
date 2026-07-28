@@ -285,66 +285,69 @@ export default function Account() {
       >
         {data => (
           <div class={styles.account}>
-            <header class={styles.hero}>
-              <div>
-                <span class={styles.eyebrow}>Customer account</span>
-                <h1>Welcome back, {data().user.name.split(" ")[0]}.</h1>
-              </div>
-              <div class={styles.heroMeta}>
-                <span>Member since</span>
-                <strong>{formatDate(data().user.createdAt)}</strong>
-              </div>
-            </header>
-
-            <div class={styles.dashboard}>
-              <aside class={styles.sidebar}>
-                <div class={styles.identity}>
-                  <span class={styles.avatar}>{initials() || "?"}</span>
-                  <div>
-                    <strong>{data().user.name}</strong>
-                    <span>{data().user.email}</span>
-                  </div>
+            <aside class={styles.sidebar}>
+              <div class={styles.identity}>
+                <span class={styles.avatar}>{initials() || "?"}</span>
+                <div>
+                  <strong>{data().user.name}</strong>
+                  <span>{data().user.email}</span>
                 </div>
+              </div>
 
-                <nav class={styles.navigation} aria-label="Account sections">
-                  <For each={NAV_ITEMS}>
-                    {(item, index) => (
-                      <button
-                        type="button"
-                        class={styles.navItem}
-                        classList={{ [styles.navItemActive]: activeSection() === item.id }}
-                        aria-current={activeSection() === item.id ? "page" : undefined}
-                        onClick={() => setActiveSection(item.id)}
-                      >
-                        <span>{String(index() + 1).padStart(2, "0")}</span>
-                        {item.label}
-                      </button>
-                    )}
-                  </For>
-                </nav>
+              <nav class={styles.navigation} aria-label="Account sections">
+                <For each={NAV_ITEMS}>
+                  {item => (
+                    <button
+                      type="button"
+                      class={styles.navItem}
+                      classList={{
+                        [styles.navItemActive]: activeSection() === item.id,
+                      }}
+                      aria-current={
+                        activeSection() === item.id ? "page" : undefined
+                      }
+                      onClick={() => setActiveSection(item.id)}
+                    >
+                      {item.label}
+                    </button>
+                  )}
+                </For>
+              </nav>
 
+              <div class={styles.sidebarFooter}>
+                <span>Member since {formatDate(data().user.createdAt)}</span>
                 <button type="button" class={styles.signOut} onClick={signOut}>
                   Sign out
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    aria-hidden="true"
+                  >
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                     <path d="m16 17 5-5-5-5M21 12H9" />
                   </svg>
                 </button>
-              </aside>
+              </div>
+            </aside>
 
-              <section class={styles.workspace}>
-                <header class={styles.sectionHeader}>
-                  <div>
-                    <span class={styles.sectionIndex}>
-                      {String(NAV_ITEMS.findIndex(item => item.id === activeSection()) + 1).padStart(2, "0")} / 06
-                    </span>
-                    <h2>{SECTION_COPY[activeSection()].title}</h2>
-                    <p>{SECTION_COPY[activeSection()].description}</p>
-                  </div>
+            <section class={styles.workspace}>
+              <header class={styles.sectionHeader}>
+                <div>
+                  <span class={styles.welcome}>
+                    Welcome back, {data().user.name.split(" ")[0]}
+                  </span>
+                  <h1>{SECTION_COPY[activeSection()].title}</h1>
+                  <p>{SECTION_COPY[activeSection()].description}</p>
+                </div>
+                <div class={styles.headerActions}>
                   <Show when={overview.loading}>
                     <span class={styles.syncing}>Syncing</span>
                   </Show>
-                </header>
+                  <A href="/products">Browse shop</A>
+                </div>
+              </header>
 
                 <Show when={overview.error}>
                   <div class={styles.errorState} role="alert">
@@ -689,8 +692,7 @@ export default function Account() {
                     </div>
                   </Match>
                 </Switch>
-              </section>
-            </div>
+            </section>
           </div>
         )}
       </Show>
