@@ -58,46 +58,32 @@
   background: #090c0a;
 }
 
-.brand {
+.backLink {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   min-height: 4.5rem;
   padding-inline: 1.5rem;
   border-bottom: 1px solid rgba($white, 0.08);
-  transition: opacity $transition-fast;
+  color: $gray-400;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: color $transition-fast;
 }
 
-.brand:hover {
-  opacity: 0.82;
+.backLink svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  transition: transform $transition-base;
 }
 
-.brandMark {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 0.5rem;
-  background: $primary;
+.backLink:hover {
+  color: $white;
 }
 
-.brandMark img {
-  width: 1.35rem;
-  height: auto;
-}
-
-.brandName {
-  font-family: $font-display;
-  font-size: 1.05rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: $primary;
-}
-
-.brandName span {
-  margin-left: 0.08em;
-  color: $primary;
+.backLink:hover svg {
+  transform: translateX(-3px);
 }
 
 .identity {
@@ -978,6 +964,319 @@
   display: block;
 }
 
+.paymentLayout {
+  display: grid;
+  margin-top: 1.5rem;
+  grid-template-columns: minmax(0, 1.5fr) minmax(17rem, 0.65fr);
+  gap: 1.5rem;
+}
+
+.paymentHistory,
+.paymentSafety,
+.twoFactorPanel {
+  border: 1px solid rgba($white, 0.09);
+  background: #0e1110;
+}
+
+.paymentHistory {
+  min-height: 27rem;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.paymentRows {
+  display: flex;
+  flex-direction: column;
+}
+
+.paymentRow {
+  display: grid;
+  min-height: 5.5rem;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid rgba($white, 0.07);
+  grid-template-columns: minmax(0, 1fr) auto minmax(5rem, auto);
+}
+
+.paymentMethod {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.paymentMethod > span {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.5rem;
+  background: rgba($primary, 0.13);
+  color: $primary-light;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.paymentMethod div {
+  min-width: 0;
+}
+
+.paymentMethod strong,
+.paymentMethod small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paymentMethod strong {
+  color: $white;
+  font-size: 0.78rem;
+}
+
+.paymentMethod small,
+.paymentMeta small {
+  margin-top: 0.2rem;
+  color: $gray-600;
+  font-size: 0.65rem;
+}
+
+.paymentMeta {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+}
+
+.paymentRow > strong {
+  color: $white;
+  font-family: $font-display;
+  font-size: 0.86rem;
+  text-align: right;
+}
+
+.paymentSafety {
+  display: flex;
+  min-height: 27rem;
+  justify-content: flex-end;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  flex-direction: column;
+}
+
+.paymentShield {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: auto;
+  place-items: center;
+  border-radius: 0.6rem;
+  background: rgba($primary, 0.13);
+  color: $primary-light;
+}
+
+.paymentShield svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  stroke-width: 1.7;
+}
+
+.paymentSafety h3 {
+  color: $white;
+  font-family: $font-display;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.paymentSafety p {
+  margin-top: 0.75rem;
+  color: $gray-400;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.paymentSafety a {
+  width: fit-content;
+  margin-top: 1.25rem;
+  color: $primary-light;
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
+.twoFactorPanel {
+  margin-top: 1.5rem;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.twoFactorIntro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba($white, 0.08);
+}
+
+.twoFactorIntro > div > span {
+  color: $gray-500;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.twoFactorIntro h3 {
+  margin-top: 0.35rem;
+  color: $white;
+  font-family: $font-display;
+  font-size: 1.15rem;
+}
+
+.securityStatus {
+  display: inline-flex;
+  min-height: 1.8rem;
+  align-items: center;
+  padding-inline: 0.65rem;
+  border: 1px solid rgba(#fbbf24, 0.24);
+  color: #fde68a;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.securityStatusActive {
+  border-color: rgba($primary, 0.24);
+  color: $primary-light;
+}
+
+.twoFactorStart,
+.twoFactorManage {
+  display: grid;
+  max-width: 42rem;
+  margin-top: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.65fr);
+  gap: 1.25rem 2rem;
+}
+
+.twoFactorStart > p,
+.twoFactorManage > p,
+.authenticatorSetup p,
+.recoveryCodes p {
+  color: $gray-400;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.twoFactorStart > p,
+.twoFactorManage > p {
+  grid-row: 1 / 3;
+}
+
+.twoFactorStart .field,
+.twoFactorManage .field {
+  margin: 0;
+}
+
+.twoFactorStart .primaryAction,
+.twoFactorManage .secondaryAction {
+  margin-top: 0;
+}
+
+.authenticatorSetup {
+  display: grid;
+  max-width: 48rem;
+  margin-top: 1.5rem;
+  align-items: center;
+  grid-template-columns: 13rem minmax(0, 1fr);
+  gap: 2rem;
+}
+
+.qrFrame {
+  padding: 0.75rem;
+  background: $white;
+}
+
+.qrFrame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.authenticatorSetup form {
+  display: flex;
+  flex-direction: column;
+}
+
+.authenticatorSetup .field {
+  margin-top: 1rem;
+}
+
+.twoFactorActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.dangerAction {
+  display: inline-flex;
+  min-height: 2.8rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1rem;
+  border: 1px solid rgba(#f87171, 0.25);
+  border-radius: $radius-md;
+  color: #fca5a5;
+  font-size: 0.74rem;
+  font-weight: 750;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.dangerAction:hover {
+  border-color: rgba(#f87171, 0.5);
+  background: rgba(#f87171, 0.07);
+}
+
+.dangerAction:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.twoFactorPanel > .formMessage {
+  max-width: 48rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0;
+}
+
+.recoveryCodes {
+  max-width: 48rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba($white, 0.08);
+}
+
+.recoveryCodes h4 {
+  color: $white;
+  font-family: $font-display;
+  font-size: 1rem;
+}
+
+.codeGrid {
+  display: grid;
+  margin-top: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.codeGrid code {
+  padding: 0.65rem 0.75rem;
+  background: #090b0a;
+  color: $gray-300;
+  font-size: 0.75rem;
+}
+
+.recoveryCodes .secondaryAction {
+  margin-top: 1rem;
+}
+
 .emptyState {
   display: flex;
   min-height: 28rem;
@@ -1033,7 +1332,8 @@
 
   .overviewGrid,
   .settingsGrid,
-  .addressLayout {
+  .addressLayout,
+  .paymentLayout {
     grid-template-columns: 1fr;
   }
 
@@ -1150,6 +1450,21 @@
   .orderTotal {
     text-align: left;
   }
+
+  .paymentRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .paymentMeta {
+    align-items: flex-start;
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .paymentRow > strong {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
 }
 
 @media (max-width: 34rem) {
@@ -1179,6 +1494,29 @@
   .settingsPanel {
     min-height: 20rem;
   }
+
+  .twoFactorStart,
+  .twoFactorManage,
+  .authenticatorSetup {
+    grid-template-columns: 1fr;
+  }
+
+  .twoFactorStart > p,
+  .twoFactorManage > p {
+    grid-row: auto;
+  }
+
+  .authenticatorSetup {
+    align-items: start;
+  }
+
+  .qrFrame {
+    width: min(100%, 14rem);
+  }
+
+  .codeGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1194,7 +1532,8 @@
   .wishlistItem,
   .field input,
   .primaryAction,
-  .secondaryAction {
+  .secondaryAction,
+  .dangerAction {
     transition-duration: 0.01ms;
   }
 }

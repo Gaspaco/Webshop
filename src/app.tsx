@@ -37,7 +37,13 @@ export default function App() {
 function AppShell(props: ParentProps) {
   const location = useLocation();
   const isAuthRoute = () =>
-    ["/login", "/signup", "/verify-email", "/reset-password"].includes(
+    [
+      "/login",
+      "/signup",
+      "/verify-email",
+      "/reset-password",
+      "/two-factor",
+    ].includes(
       location.pathname,
     );
   const isDashboard = () => location.pathname === "/account";

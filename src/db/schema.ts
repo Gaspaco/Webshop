@@ -32,10 +32,32 @@ export const user = pgTable(
     email: text("email").notNull(),
     emailVerified: boolean("email_verified").default(false).notNull(),
     image: text("image"),
+    twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
     role: text("role").default("customer").notNull(),
     ...timestamps,
   },
   table => [uniqueIndex("user_email_idx").on(table.email)],
+);
+
+export const twoFactor = pgTable(
+  "two_factor",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    secret: text("secret").notNull(),
+    backupCodes: text("backup_codes").notNull(),
+    verified: boolean("verified").default(true).notNull(),
+    failedVerificationCount: integer("failed_verification_count")
+      .default(0)
+      .notNull(),
+    lockedUntil: timestamp("locked_until", { withTimezone: true }),
+  },
+  table => [
+    uniqueIndex("two_factor_user_id_idx").on(table.userId),
+    index("two_factor_secret_idx").on(table.secret),
+  ],
 );
 
 export const session = pgTable(
