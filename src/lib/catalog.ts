@@ -79,14 +79,29 @@ export function databaseProductToShopProduct(
   };
 }
 
-export async function fetchDatabaseCatalog(slug?: string) {
+export type DatabaseCatalogState = {
+  products: ShopProduct[];
+  managedSlugs: string[];
+};
+
+export async function fetchDatabaseCatalogState(
+  slug?: string,
+): Promise<DatabaseCatalogState> {
   const query = slug ? `?slug=${encodeURIComponent(slug)}` : "";
   const response = await fetch(`/api/catalog/products${query}`, {
     headers: { Accept: "application/json" },
   });
-  if (!response.ok) return [];
+  if (!response.ok) return { products: [], managedSlugs: [] };
   const data = (await response.json()) as {
     products: DatabaseCatalogProduct[];
+    managedSlugs?: string[];
   };
-  return data.products.map(databaseProductToShopProduct);
+  return {
+    products: data.products.map(databaseProductToShopProduct),
+    managedSlugs: data.managedSlugs ?? data.products.map(product => product.slug),
+  };
+}
+
+export async function fetchDatabaseCatalog(slug?: string) {
+  return (await fetchDatabaseCatalogState(slug)).products;
 }

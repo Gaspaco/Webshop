@@ -13,6 +13,7 @@ import {
   toSlug,
   writeAuditLog,
 } from "~/lib/admin.server";
+import { findProduct } from "~/lib/categories";
 
 const statusSchema = z.enum(["draft", "active", "archived"]);
 const gameSchema = z.enum(["pokemon", "yugioh", "magic", "other"]);
@@ -62,6 +63,10 @@ const createProductSchema = z.object({
 const updateProductSchema = createProductSchema.partial().extend({
   id: z.string().uuid(),
   variantId: z.string().uuid(),
+});
+const starterOverrideSchema = createProductSchema.extend({
+  id: z.string().startsWith("static:"),
+  variantId: z.string().startsWith("static:"),
 });
 
 function failure(error: unknown) {
@@ -178,7 +183,89 @@ export async function PATCH(event: APIEvent) {
   if (guard.response) return guard.response;
 
   try {
-    const input = updateProductSchema.parse(await event.request.json());
+    const payload = await event.request.json();
+    if (
+      typeof payload?.id === "string" &&
+      payload.id.startsWith("static:")
+    ) {
+      const input = starterOverrideSchema.parse(payload);
+      const starterSlug = input.id.slice("static:".length);
+      const starter = findProduct(starterSlug);
+      if (!starter || input.variantId !== `static:${starterSlug}`) {
+        return apiJson(
+          { error: "Starter product could not be verified." },
+          { status: 404 },
+        );
+      }
+
+      const result = await db.transaction(async tx => {
+        const [createdProduct] = await tx
+          .insert(products)
+          .values({
+            name: input.name,
+            slug: starterSlug,
+            description: input.description || null,
+            game: input.game,
+            productType: input.productType,
+            status: input.status,
+            imageUrls: input.image ? [input.image] : [],
+            metadata: {
+              set: input.set || null,
+              badge: input.badge || null,
+              cardNumber: input.cardNumber || null,
+              rarity: input.rarity || null,
+              setCode: input.setCode || null,
+              illustrator: input.illustrator || null,
+              gradingCompany: input.gradingCompany || null,
+              grade: input.grade || null,
+              certificationNumber: input.certificationNumber || null,
+              source: "managed",
+            },
+          })
+          .returning();
+        if (!createdProduct) throw new Error("Starter product was not created.");
+
+        const [variant] = await tx
+          .insert(productVariants)
+          .values({
+            productId: createdProduct.id,
+            sku: input.sku,
+            name: input.condition || "Default",
+            condition: input.condition || null,
+            language: input.language || null,
+            finish: input.finish || null,
+            priceCents: input.priceCents,
+            compareAtPriceCents: input.compareAtPriceCents ?? null,
+            stock: input.stock,
+          })
+          .returning();
+        if (!variant) throw new Error("Starter variant was not created.");
+
+        if (input.stock > 0) {
+          await tx.insert(inventoryMovements).values({
+            variantId: variant.id,
+            quantity: input.stock,
+            reason: "adjustment",
+            note: "Opening stock for converted starter listing",
+            createdBy: guard.session!.user.id,
+          });
+        }
+        return { product: createdProduct, variant };
+      });
+
+      await writeAuditLog({
+        event,
+        actorId: guard.session!.user.id,
+        action: "product.starter_converted",
+        entityType: "product",
+        entityId: result.product.id,
+        summary: `${result.product.name} converted to a managed listing.`,
+      });
+
+      return apiJson({ ok: true, ...result });
+    }
+
+    const input = updateProductSchema.parse(payload);
     const [currentVariant] = await db
       .select({ stock: productVariants.stock })
       .from(productVariants)

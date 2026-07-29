@@ -8,7 +8,7 @@ import {
   Show,
 } from "solid-js";
 import ProductCard, { BoxArt, Stars, type SectionProduct } from "~/components/product/ProductCard";
-import { fetchDatabaseCatalog } from "~/lib/catalog";
+import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories";
 import { formatPrice, useCart } from "~/lib/cart";
 import styles from "./[id].module.scss";
@@ -83,11 +83,16 @@ export default function ProductDetail() {
   const params = useParams();
   const cart = useCart();
   const [clientReady, setClientReady] = createSignal(false);
-  const [databaseProduct] = createResource(
+  const [databaseCatalog] = createResource(
     () => (clientReady() ? params.id : undefined),
-    async id => (await fetchDatabaseCatalog(id))[0],
+    id => fetchDatabaseCatalogState(id),
   );
-  const product = () => findProduct(params.id ?? "") ?? databaseProduct();
+  const product = () => {
+    const id = params.id ?? "";
+    const catalog = databaseCatalog();
+    if (catalog?.managedSlugs.includes(id)) return catalog.products[0];
+    return findProduct(id);
+  };
 
   const [quantity, setQuantity] = createSignal(1);
   const [added, setAdded] = createSignal(false);
