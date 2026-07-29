@@ -75,26 +75,6 @@ function appUrl(path: string) {
 export async function calculateTrustedCheckout(input: unknown) {
   const parsed = checkoutInputSchema.parse(input);
   const lines = await Promise.all(parsed.items.map(async item => {
-    const staticProduct = findProduct(item.id);
-
-    if (
-      staticProduct &&
-      staticProduct.priceCents !== undefined &&
-      !staticProduct.priceRangeCents
-    ) {
-      return {
-        id: staticProduct.id,
-        sku: staticProduct.id,
-        name: staticProduct.set
-          ? `${staticProduct.name} (${staticProduct.set})`
-          : staticProduct.name,
-        image: staticProduct.image ?? "",
-        quantity: item.quantity,
-        unitPriceCents: staticProduct.priceCents,
-        totalCents: staticProduct.priceCents * item.quantity,
-      };
-    }
-
     const [databaseProduct] = await db
       .select({
         id: products.id,
@@ -105,32 +85,53 @@ export async function calculateTrustedCheckout(input: unknown) {
         priceCents: productVariants.priceCents,
         stock: productVariants.stock,
         reservedStock: productVariants.reservedStock,
+        status: products.status,
       })
       .from(products)
       .innerJoin(productVariants, eq(productVariants.productId, products.id))
       .where(
         and(
           eq(products.slug, item.id),
-          eq(products.status, "active"),
         ),
       )
       .limit(1);
 
+    if (databaseProduct) {
+      if (
+        databaseProduct.status !== "active" ||
+        databaseProduct.stock - databaseProduct.reservedStock < item.quantity
+      ) {
+        throw new Error(`Product is not purchasable: ${item.id}`);
+      }
+      return {
+        id: databaseProduct.slug,
+        sku: databaseProduct.sku,
+        name: databaseProduct.name,
+        image: databaseProduct.imageUrls[0] ?? "",
+        quantity: item.quantity,
+        unitPriceCents: databaseProduct.priceCents,
+        totalCents: databaseProduct.priceCents * item.quantity,
+      };
+    }
+
+    const staticProduct = findProduct(item.id);
     if (
-      !databaseProduct ||
-      databaseProduct.stock - databaseProduct.reservedStock < item.quantity
+      !staticProduct ||
+      staticProduct.priceCents === undefined ||
+      staticProduct.priceRangeCents
     ) {
       throw new Error(`Product is not purchasable: ${item.id}`);
     }
-
     return {
-      id: databaseProduct.slug,
-      sku: databaseProduct.sku,
-      name: databaseProduct.name,
-      image: databaseProduct.imageUrls[0] ?? "",
+      id: staticProduct.id,
+      sku: staticProduct.id,
+      name: staticProduct.set
+        ? `${staticProduct.name} (${staticProduct.set})`
+        : staticProduct.name,
+      image: staticProduct.image ?? "",
       quantity: item.quantity,
-      unitPriceCents: databaseProduct.priceCents,
-      totalCents: databaseProduct.priceCents * item.quantity,
+      unitPriceCents: staticProduct.priceCents,
+      totalCents: staticProduct.priceCents * item.quantity,
     };
   }));
 

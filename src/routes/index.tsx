@@ -6,7 +6,7 @@ import Hero from "~/components/home/Hero";
 import ShopByGame from "~/components/home/ShopByGame";
 import WeeklyShowcase from "~/components/home/WeeklyShowcase";
 import ProductSection, { type SectionProduct } from "~/components/product/ProductSection";
-import { fetchDatabaseCatalog } from "~/lib/catalog";
+import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import styles from "./home.module.scss";
 
 type HomeContent = {
@@ -36,7 +36,7 @@ export default function Home() {
     try {
       const [response, catalog] = await Promise.all([
         fetch("/api/storefront/content"),
-        fetchDatabaseCatalog(),
+        fetchDatabaseCatalogState(),
       ]);
       if (!response.ok) return;
       const result = (await response.json()) as {
@@ -46,11 +46,21 @@ export default function Home() {
       setContent(managed);
       if (managed.featuredProductSlugs?.length) {
         const chosen = managed.featuredProductSlugs
-          .map(slug => catalog.find(product => product.id === slug))
+          .map(slug => catalog.products.find(product => product.id === slug))
           .filter((product): product is NonNullable<typeof product> =>
             Boolean(product),
           );
         if (chosen.length) setFeaturedProducts(chosen);
+      } else {
+        const managedSlugs = new Set(catalog.managedSlugs);
+        const merged = NEW_ARRIVALS.flatMap(product => {
+          const managedProduct = catalog.products.find(
+            candidate => candidate.id === product.id,
+          );
+          if (managedProduct) return [managedProduct];
+          return managedSlugs.has(product.id) ? [] : [product];
+        });
+        setFeaturedProducts(merged);
       }
     } catch {
       // The designed defaults stay visible if managed content is unavailable.

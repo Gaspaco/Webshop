@@ -482,6 +482,12 @@ function ProductRow(props: {
 
   const save = async () => {
     if (!props.product.variantId) return;
+    if (
+      metadataText("source") === "starter" &&
+      !window.confirm(
+        "This starter listing will become a managed database product using the price and stock currently shown. Continue?",
+      )
+    ) return;
     setSaving(true);
     setMessage("");
     const response = await fetch("/api/admin/products", {
@@ -602,7 +608,11 @@ function ProductRow(props: {
             </Show>
             <div>
               <strong>{name()}</strong>
-              <span>{sku() || "No SKU"}</span>
+              <span>
+                {metadataText("source") === "starter"
+                  ? "Starter listing, save once to manage"
+                  : sku() || "No SKU"}
+              </span>
             </div>
           </div>
         </td>
@@ -775,6 +785,15 @@ function ProductRow(props: {
                 </button>
               </div>
 
+              <Show
+                when={metadataText("source") !== "starter"}
+                fallback={
+                  <p class={styles.starterNotice}>
+                    Save this starter listing once before adding more variants.
+                    Confirm the real price and available stock first.
+                  </p>
+                }
+              >
               <section class={styles.variantManager}>
                 <div class={styles.sectionHead}>
                   <div>
@@ -839,6 +858,7 @@ function ProductRow(props: {
                   </form>
                 </Show>
               </section>
+              </Show>
             </div>
           </td>
         </tr>
@@ -1840,6 +1860,7 @@ export default function Admin() {
                     <Show
                       when={data().products.filter(product =>
                         product.status === "active" &&
+                        product.metadata.source !== "starter" &&
                         product.variants.some(
                           variant => variant.stock - variant.reservedStock <= 3,
                         ),
@@ -1849,6 +1870,7 @@ export default function Admin() {
                       <div class={styles.lowStockGrid}>
                         <For each={data().products.filter(product =>
                           product.status === "active" &&
+                          product.metadata.source !== "starter" &&
                           product.variants.some(
                             variant => variant.stock - variant.reservedStock <= 3,
                           ),

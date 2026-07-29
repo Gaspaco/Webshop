@@ -1,13 +1,38 @@
 import { Title } from "@solidjs/meta";
 import { A, useParams } from "@solidjs/router";
-import { Show } from "solid-js";
+import {
+  createMemo,
+  createResource,
+  createSignal,
+  onMount,
+  Show,
+} from "solid-js";
 import ProductGrid from "~/components/product/ProductGrid";
 import { CATEGORIES } from "~/lib/categories";
+import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import styles from "./[game].module.scss";
 
 export default function CategoryPage() {
   const params = useParams();
   const category = () => CATEGORIES[params.game ?? ""];
+  const [clientReady, setClientReady] = createSignal(false);
+  const [databaseCatalog] = createResource(
+    clientReady,
+    () => fetchDatabaseCatalogState(),
+  );
+  const products = createMemo(() => {
+    const starter = category()?.products ?? [];
+    const managed = (databaseCatalog()?.products ?? []).filter(
+      product => product.game === params.game,
+    );
+    const managedIds = new Set(databaseCatalog()?.managedSlugs ?? []);
+    return [
+      ...starter.filter(product => !managedIds.has(product.id)),
+      ...managed,
+    ];
+  });
+
+  onMount(() => setClientReady(true));
 
   return (
     <Show
@@ -38,7 +63,7 @@ export default function CategoryPage() {
           </div>
 
           <div class={styles.wide}>
-            <ProductGrid products={cat().products} />
+            <ProductGrid products={products()} />
           </div>
         </main>
       )}

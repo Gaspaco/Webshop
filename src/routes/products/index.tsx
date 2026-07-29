@@ -9,7 +9,7 @@ import {
 } from "solid-js";
 import ProductCard, { type SectionProduct } from "~/components/product/ProductCard";
 import { ALL_PRODUCTS, CATEGORY_LIST, type ShopProduct } from "~/lib/categories";
-import { fetchDatabaseCatalog } from "~/lib/catalog";
+import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { useCart } from "~/lib/cart";
 import styles from "./index.module.scss";
 
@@ -57,14 +57,18 @@ export default function Products() {
   const [sort, setSort] = createSignal<SortKey>("featured");
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
   const [clientReady, setClientReady] = createSignal(false);
-  const [databaseProducts] = createResource(
+  const [databaseCatalog] = createResource(
     clientReady,
-    () => fetchDatabaseCatalog(),
+    () => fetchDatabaseCatalogState(),
   );
-  const allProducts = createMemo(() => [
-    ...ALL_PRODUCTS,
-    ...(databaseProducts() ?? []),
-  ]);
+  const allProducts = createMemo(() => {
+    const managed = databaseCatalog()?.products ?? [];
+    const managedIds = new Set(databaseCatalog()?.managedSlugs ?? []);
+    return [
+      ...ALL_PRODUCTS.filter(product => !managedIds.has(product.id)),
+      ...managed,
+    ];
+  });
 
   onMount(() => setClientReady(true));
 
