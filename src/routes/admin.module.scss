@@ -505,6 +505,50 @@
   transform: translateY(-1px);
 }
 
+.primaryAction {
+  gap: 0.45rem;
+}
+
+.primaryAction > span {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.productGuide {
+  display: grid;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 0.75rem;
+  grid-template-columns: repeat(3, 1fr);
+  background: #0e1210;
+}
+
+.productGuide div {
+  min-width: 0;
+  padding: 1rem 1.15rem;
+}
+
+.productGuide div + div {
+  border-left: 1px solid rgba($white, 0.08);
+}
+
+.productGuide strong,
+.productGuide span {
+  display: block;
+}
+
+.productGuide strong {
+  color: $white;
+  font-size: 0.7rem;
+}
+
+.productGuide span {
+  margin-top: 0.3rem;
+  color: $gray-500;
+  font-size: 0.63rem;
+  line-height: 1.5;
+}
+
 .productForm {
   display: grid;
   margin-bottom: 1.25rem;
@@ -546,6 +590,9 @@
 .formGrid input,
 .formGrid select,
 .formGrid textarea,
+.editorGrid input,
+.editorGrid select,
+.editorGrid textarea,
 .tableInput,
 .stockInput,
 .tableSelect,
@@ -561,12 +608,15 @@
 }
 
 .formGrid input,
-.formGrid select {
+.formGrid select,
+.editorGrid input,
+.editorGrid select {
   min-height: 2.7rem;
   padding: 0 0.75rem;
 }
 
-.formGrid textarea {
+.formGrid textarea,
+.editorGrid textarea {
   min-height: 6rem;
   padding: 0.7rem 0.75rem;
   resize: vertical;
@@ -575,6 +625,9 @@
 .formGrid input:focus,
 .formGrid select:focus,
 .formGrid textarea:focus,
+.editorGrid input:focus,
+.editorGrid select:focus,
+.editorGrid textarea:focus,
 .tableInput:focus,
 .stockInput:focus,
 .tableSelect:focus,
@@ -582,7 +635,8 @@
   border-color: $primary;
 }
 
-.formGrid input::placeholder {
+.formGrid input::placeholder,
+.editorGrid input::placeholder {
   color: $gray-600;
 }
 
@@ -752,7 +806,7 @@
 
 .rowActions {
   display: flex;
-  min-width: 10rem;
+  min-width: 16rem;
   align-items: center;
   gap: 0.75rem;
 }
@@ -766,6 +820,14 @@
   font-weight: 750;
 }
 
+.rowActions .editAction {
+  min-height: 2rem;
+  padding: 0 0.65rem;
+  border: 1px solid rgba($primary, 0.3);
+  border-radius: 0.4rem;
+  background: rgba($primary, 0.07);
+}
+
 .rowActions button:disabled {
   cursor: wait;
   opacity: 0.5;
@@ -774,6 +836,111 @@
 .rowActions span {
   color: $gray-600;
   font-size: 0.58rem;
+}
+
+.editorRow:hover {
+  background: transparent !important;
+}
+
+.editorRow > td {
+  height: auto;
+  padding: 0 1rem 1rem;
+}
+
+.productEditor {
+  padding: 1.25rem;
+  border: 1px solid rgba($primary, 0.2);
+  border-radius: 0.65rem;
+  background: #0a0e0b;
+}
+
+.editorHeading {
+  display: flex;
+  margin-bottom: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.editorHeading h3 {
+  font-family: $font-body;
+  font-size: 0.82rem;
+}
+
+.editorHeading p {
+  margin-top: 0.2rem;
+  color: $gray-600;
+  font-size: 0.62rem;
+}
+
+.editorHeading img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.35rem;
+  object-fit: contain;
+  background: #060806;
+}
+
+.editorGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.editorGrid label > span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: $gray-400;
+  font-size: 0.61rem;
+  font-weight: 700;
+}
+
+.editorGrid input[type="file"] {
+  padding: 0.58rem;
+  font-size: 0.62rem;
+}
+
+.editorActions {
+  display: flex;
+  margin-top: 1rem;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.editorActions > button:first-child {
+  min-height: 2.7rem;
+  padding: 0 0.9rem;
+  color: $gray-400;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.catalogEmpty {
+  display: flex;
+  min-height: 12rem;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  flex-direction: column;
+  text-align: center;
+}
+
+.catalogEmpty strong {
+  color: $white;
+  font-size: 0.85rem;
+}
+
+.catalogEmpty p {
+  margin-top: 0.35rem;
+  color: $gray-500;
+  font-size: 0.68rem;
+}
+
+.catalogEmpty button {
+  margin-top: 1rem;
+  color: $primary-light;
+  font-size: 0.7rem;
+  font-weight: 800;
 }
 
 .inlineMessage {
@@ -795,6 +962,39 @@
 .customerIdentity strong {
   color: $white;
   font-size: 0.7rem;
+}
+
+.removeAccount {
+  display: flex;
+  min-width: 15rem;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.removeAccount button {
+  min-height: 2.1rem;
+  padding: 0 0.65rem;
+  border-radius: 0.38rem;
+  color: $gray-500;
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+
+.removeAccount button:last-of-type {
+  border: 1px solid rgba(#ef4444, 0.25);
+  color: #fca5a5;
+}
+
+.removeAccount .removeConfirm {
+  background: #ef4444;
+  color: $white;
+}
+
+.removeAccount span {
+  flex-basis: 100%;
+  color: #fca5a5;
+  font-size: 0.58rem;
 }
 
 .importHero {
@@ -842,6 +1042,56 @@
   margin-top: 1rem;
   color: $primary-light;
   font-size: 0.72rem;
+}
+
+.importGuide {
+  display: grid;
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.35rem;
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 0.75rem;
+  grid-template-columns: minmax(13rem, 0.65fr) minmax(0, 1.35fr);
+  gap: 2rem;
+  background: #0e1210;
+}
+
+.importGuide h3 {
+  font-family: $font-body;
+  font-size: 0.8rem;
+}
+
+.importGuide p {
+  max-width: 42ch;
+  margin-top: 0.4rem;
+  color: $gray-500;
+  font-size: 0.66rem;
+  line-height: 1.55;
+}
+
+.importGuide dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1.5rem;
+}
+
+.importGuide dl div {
+  display: grid;
+  min-height: 2.4rem;
+  align-items: center;
+  border-bottom: 1px solid rgba($white, 0.06);
+  grid-template-columns: 6rem 1fr;
+  gap: 0.75rem;
+}
+
+.importGuide dt {
+  color: $primary-light;
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+
+.importGuide dd {
+  color: $gray-500;
+  font-size: 0.61rem;
 }
 
 .importHistory {
@@ -914,12 +1164,25 @@
     grid-template-columns: 1fr;
   }
 
+  .productGuide {
+    grid-template-columns: 1fr;
+  }
+
+  .productGuide div + div {
+    border-top: 1px solid rgba($white, 0.08);
+    border-left: 0;
+  }
+
   .productForm {
     grid-template-columns: 1fr;
   }
 
   .formActions {
     grid-column: 1;
+  }
+
+  .importGuide {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -987,6 +1250,11 @@
   }
 
   .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .editorGrid,
+  .importGuide dl {
     grid-template-columns: 1fr;
   }
 

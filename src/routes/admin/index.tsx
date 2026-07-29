@@ -282,6 +282,32 @@ function ProductRow(props: {
   product: AdminProduct;
   onSaved: () => unknown;
 }) {
+  const metadata = () => props.product.metadata ?? {};
+  const [editing, setEditing] = createSignal(false);
+  const [name, setName] = createSignal(props.product.name);
+  const [description, setDescription] = createSignal(
+    props.product.description ?? "",
+  );
+  const [game, setGame] = createSignal(
+    (props.product.game ?? "other") as ProductDraft["game"],
+  );
+  const [productType, setProductType] = createSignal(
+    (props.product.productType ?? "single") as ProductDraft["productType"],
+  );
+  const [collection, setCollection] = createSignal(
+    typeof metadata().set === "string" ? metadata().set as string : "",
+  );
+  const [badge, setBadge] = createSignal(
+    typeof metadata().badge === "string" ? metadata().badge as string : "",
+  );
+  const [sku, setSku] = createSignal(props.product.sku ?? "");
+  const [condition, setCondition] = createSignal(
+    props.product.condition ?? "Near Mint",
+  );
+  const [language, setLanguage] = createSignal(
+    props.product.language ?? "English",
+  );
+  const [image, setImage] = createSignal(props.product.imageUrls[0] ?? "");
   const [price, setPrice] = createSignal(
     ((props.product.priceCents ?? 0) / 100).toFixed(2),
   );
@@ -289,6 +315,21 @@ function ProductRow(props: {
   const [status, setStatus] = createSignal(props.product.status);
   const [saving, setSaving] = createSignal(false);
   const [message, setMessage] = createSignal("");
+
+  const loadImage = (file?: File) => {
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setMessage("Choose a JPG, PNG, or WebP image.");
+      return;
+    }
+    if (file.size > 850_000) {
+      setMessage("Use an image smaller than 850 KB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setImage(String(reader.result ?? ""));
+    reader.readAsDataURL(file);
+  };
 
   const save = async () => {
     if (!props.product.variantId) return;
@@ -301,6 +342,16 @@ function ProductRow(props: {
       body: JSON.stringify({
         id: props.product.id,
         variantId: props.product.variantId,
+        name: name(),
+        description: description(),
+        game: game(),
+        productType: productType(),
+        set: collection(),
+        badge: badge(),
+        sku: sku(),
+        condition: condition(),
+        language: language(),
+        image: image(),
         priceCents: Math.round(Number(price()) * 100),
         stock: Number(stock()),
         status: status(),
@@ -314,67 +365,245 @@ function ProductRow(props: {
     }
     await Promise.resolve(props.onSaved());
     setMessage("Saved");
+    setEditing(false);
     setSaving(false);
+  };
+
+  return (
+    <>
+      <tr>
+        <td>
+          <div class={styles.productIdentity}>
+            <Show
+              when={image()}
+              fallback={<span class={styles.productFallback}>{name()[0]}</span>}
+            >
+              <img src={image()} alt="" />
+            </Show>
+            <div>
+              <strong>{name()}</strong>
+              <span>{sku() || "No SKU"}</span>
+            </div>
+          </div>
+        </td>
+        <td><span class={styles.gameTag}>{game()}</span></td>
+        <td>
+          <input
+            class={styles.tableInput}
+            type="number"
+            min="0"
+            step="0.01"
+            aria-label={`Price for ${name()}`}
+            value={price()}
+            onInput={event => setPrice(event.currentTarget.value)}
+          />
+        </td>
+        <td>
+          <input
+            class={styles.stockInput}
+            type="number"
+            min="0"
+            step="1"
+            aria-label={`Stock for ${name()}`}
+            value={stock()}
+            onInput={event => setStock(event.currentTarget.value)}
+          />
+        </td>
+        <td>
+          <select
+            class={styles.tableSelect}
+            aria-label={`Status for ${name()}`}
+            value={status()}
+            onChange={event =>
+              setStatus(event.currentTarget.value as AdminProduct["status"])
+            }
+          >
+            <option value="draft">Draft</option>
+            <option value="active">Live</option>
+            <option value="archived">Archived</option>
+          </select>
+        </td>
+        <td>
+          <div class={styles.rowActions}>
+            <button
+              type="button"
+              class={styles.editAction}
+              onClick={() => setEditing(value => !value)}
+            >
+              {editing() ? "Close editor" : "Edit details"}
+            </button>
+            <button type="button" onClick={save} disabled={saving()}>
+              {saving() ? "Saving" : "Save"}
+            </button>
+            <A href={`/products/${props.product.slug}`} target="_blank">View</A>
+            <Show when={message()}>
+              <span>{message()}</span>
+            </Show>
+          </div>
+        </td>
+      </tr>
+      <Show when={editing()}>
+        <tr class={styles.editorRow}>
+          <td colSpan={6}>
+            <div class={styles.productEditor}>
+              <div class={styles.editorHeading}>
+                <div>
+                  <h3>Edit product details</h3>
+                  <p>Changes are saved to the catalogue database.</p>
+                </div>
+                <Show when={image()}>
+                  <img src={image()} alt="Current product preview" />
+                </Show>
+              </div>
+              <div class={styles.editorGrid}>
+                <label class={styles.spanTwo}>
+                  <span>Product name</span>
+                  <input value={name()} onInput={event => setName(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Game</span>
+                  <select value={game()} onChange={event => setGame(event.currentTarget.value as ProductDraft["game"])}>
+                    <option value="pokemon">Pokémon</option>
+                    <option value="yugioh">Yu-Gi-Oh!</option>
+                    <option value="magic">Magic</option>
+                    <option value="other">Other</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Product type</span>
+                  <select value={productType()} onChange={event => setProductType(event.currentTarget.value as ProductDraft["productType"])}>
+                    <option value="single">Single</option>
+                    <option value="sealed">Sealed</option>
+                    <option value="graded">Graded</option>
+                    <option value="accessory">Accessory</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Set or collection</span>
+                  <input value={collection()} onInput={event => setCollection(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>SKU</span>
+                  <input value={sku()} onInput={event => setSku(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Condition</span>
+                  <input value={condition()} onInput={event => setCondition(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Language</span>
+                  <input value={language()} onInput={event => setLanguage(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Badge</span>
+                  <input placeholder="New, Vintage, PSA 10" value={badge()} onInput={event => setBadge(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Replace image</span>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => loadImage(event.currentTarget.files?.[0])} />
+                </label>
+                <label class={styles.spanTwo}>
+                  <span>Image URL</span>
+                  <input
+                    type="url"
+                    placeholder="https://"
+                    value={image().startsWith("data:") ? "" : image()}
+                    onInput={event => setImage(event.currentTarget.value)}
+                  />
+                </label>
+                <label class={styles.spanTwo}>
+                  <span>Description</span>
+                  <textarea rows="4" value={description()} onInput={event => setDescription(event.currentTarget.value)} />
+                </label>
+              </div>
+              <div class={styles.editorActions}>
+                <button type="button" onClick={() => setEditing(false)}>Cancel</button>
+                <button type="button" class={styles.primaryAction} onClick={save} disabled={saving()}>
+                  {saving() ? "Saving changes" : "Save all changes"}
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </Show>
+    </>
+  );
+}
+
+function CustomerRow(props: {
+  customer: AdminCustomer;
+  onRemoved: () => unknown;
+}) {
+  const [confirming, setConfirming] = createSignal(false);
+  const [removing, setRemoving] = createSignal(false);
+  const [message, setMessage] = createSignal("");
+
+  const remove = async () => {
+    if (!confirming()) {
+      setConfirming(true);
+      setMessage("Click again to permanently remove this account.");
+      return;
+    }
+
+    setRemoving(true);
+    const response = await fetch("/api/admin/customers", {
+      method: "DELETE",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: props.customer.id,
+        confirmation: "REMOVE",
+      }),
+    });
+    const result = (await response.json()) as {
+      error?: string;
+      message?: string;
+    };
+    if (!response.ok) {
+      setMessage(result.error ?? "The account could not be removed.");
+      setRemoving(false);
+      return;
+    }
+
+    await Promise.resolve(props.onRemoved());
   };
 
   return (
     <tr>
       <td>
-        <div class={styles.productIdentity}>
-          <Show
-            when={props.product.imageUrls[0]}
-            fallback={<span class={styles.productFallback}>{props.product.name[0]}</span>}
-          >
-            <img src={props.product.imageUrls[0]} alt="" />
-          </Show>
-          <div>
-            <strong>{props.product.name}</strong>
-            <span>{props.product.sku ?? "No SKU"}</span>
-          </div>
+        <div class={styles.customerIdentity}>
+          <span>{initials(props.customer.name)}</span>
+          <strong>{props.customer.name}</strong>
         </div>
       </td>
-      <td><span class={styles.gameTag}>{props.product.game ?? "other"}</span></td>
+      <td>{props.customer.email}</td>
       <td>
-        <input
-          class={styles.tableInput}
-          type="number"
-          min="0"
-          step="0.01"
-          aria-label={`Price for ${props.product.name}`}
-          value={price()}
-          onInput={event => setPrice(event.currentTarget.value)}
-        />
+        <span class={`${styles.status} ${props.customer.emailVerified ? styles.verified : styles.unverified}`}>
+          {props.customer.emailVerified ? "Verified" : "Unverified"}
+        </span>
       </td>
+      <td>{formatDate(props.customer.createdAt)}</td>
       <td>
-        <input
-          class={styles.stockInput}
-          type="number"
-          min="0"
-          step="1"
-          aria-label={`Stock for ${props.product.name}`}
-          value={stock()}
-          onInput={event => setStock(event.currentTarget.value)}
-        />
-      </td>
-      <td>
-        <select
-          class={styles.tableSelect}
-          aria-label={`Status for ${props.product.name}`}
-          value={status()}
-          onChange={event =>
-            setStatus(event.currentTarget.value as AdminProduct["status"])
-          }
-        >
-          <option value="draft">Draft</option>
-          <option value="active">Live</option>
-          <option value="archived">Archived</option>
-        </select>
-      </td>
-      <td>
-        <div class={styles.rowActions}>
-          <A href={`/products/${props.product.slug}`} target="_blank">View</A>
-          <button type="button" onClick={save} disabled={saving()}>
-            {saving() ? "Saving" : "Save"}
+        <div class={styles.removeAccount}>
+          <Show when={confirming()}>
+            <button type="button" onClick={() => {
+              setConfirming(false);
+              setMessage("");
+            }}>
+              Cancel
+            </button>
+          </Show>
+          <button
+            type="button"
+            classList={{ [styles.removeConfirm]: confirming() }}
+            onClick={remove}
+            disabled={removing()}
+          >
+            {removing()
+              ? "Removing"
+              : confirming()
+                ? "Confirm removal"
+                : "Remove account"}
           </button>
           <Show when={message()}>
             <span>{message()}</span>
@@ -697,9 +926,25 @@ export default function Admin() {
                       class={styles.primaryAction}
                       onClick={() => setComposerOpen(value => !value)}
                     >
-                      {composerOpen() ? "Close product form" : "Add product"}
+                      <span aria-hidden="true">{composerOpen() ? "×" : "+"}</span>
+                      {composerOpen() ? "Close product form" : "Add new product"}
                     </button>
                   </section>
+
+                  <div class={styles.productGuide}>
+                    <div>
+                      <strong>Add one product</strong>
+                      <span>Use the green button for cards, sealed products, graded cards, and accessories.</span>
+                    </div>
+                    <div>
+                      <strong>Edit anything later</strong>
+                      <span>Use Edit details in a product row to change its image, name, set, condition, or description.</span>
+                    </div>
+                    <div>
+                      <strong>Choose when it appears</strong>
+                      <span>Draft stays private. Live publishes the product in the customer shop.</span>
+                    </div>
+                  </div>
 
                   <Show when={composerOpen()}>
                     <form class={styles.productForm} onSubmit={createProduct}>
@@ -809,7 +1054,13 @@ export default function Admin() {
                       </tbody>
                     </table>
                     <Show when={!data().products.length}>
-                      <p class={styles.empty}>No database products yet. Add the first listing above.</p>
+                      <div class={styles.catalogEmpty}>
+                        <strong>Your managed catalogue is empty</strong>
+                        <p>Add one product here, or use Bulk import for a full inventory file.</p>
+                        <button type="button" onClick={() => setComposerOpen(true)}>
+                          + Add the first product
+                        </button>
+                      </div>
                     </Show>
                   </div>
                 </Show>
@@ -863,25 +1114,10 @@ export default function Admin() {
                   </section>
                   <div class={styles.tableWrap}>
                     <table>
-                      <thead><tr><th>Customer</th><th>Email</th><th>Verification</th><th>Joined</th></tr></thead>
+                      <thead><tr><th>Customer</th><th>Email</th><th>Verification</th><th>Joined</th><th>Account controls</th></tr></thead>
                       <tbody>
                         <For each={customerTable.getRowModel().rows}>
-                          {row => {
-                            const customer = row.original;
-                            return (
-                            <tr>
-                              <td>
-                                <div class={styles.customerIdentity}>
-                                  <span>{initials(customer.name)}</span>
-                                  <strong>{customer.name}</strong>
-                                </div>
-                              </td>
-                              <td>{customer.email}</td>
-                              <td><span class={`${styles.status} ${customer.emailVerified ? styles.verified : styles.unverified}`}>{customer.emailVerified ? "Verified" : "Unverified"}</span></td>
-                              <td>{formatDate(customer.createdAt)}</td>
-                            </tr>
-                            );
-                          }}
+                          {row => <CustomerRow customer={row.original} onRemoved={refetch} />}
                         </For>
                       </tbody>
                     </table>
@@ -911,6 +1147,21 @@ export default function Admin() {
                     </div>
                   </section>
                   <Show when={importMessage()}><p class={styles.importMessage} role="status">{importMessage()}</p></Show>
+
+                  <section class={styles.importGuide}>
+                    <div>
+                      <h3>How the product file works</h3>
+                      <p>Download the template, keep the header row, fill one product per line, then upload the completed CSV.</p>
+                    </div>
+                    <dl>
+                      <div><dt>game</dt><dd>pokemon, yugioh, magic, or other</dd></div>
+                      <div><dt>productType</dt><dd>single, sealed, graded, or accessory</dd></div>
+                      <div><dt>price</dt><dd>Use euros, for example 12.95</dd></div>
+                      <div><dt>status</dt><dd>draft for private or active for live</dd></div>
+                      <div><dt>image</dt><dd>Optional HTTPS image address</dd></div>
+                      <div><dt>sku</dt><dd>A unique stock code for every row</dd></div>
+                    </dl>
+                  </section>
 
                   <section class={styles.importHistory}>
                     <div class={styles.sectionHead}>
