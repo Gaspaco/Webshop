@@ -85,6 +85,11 @@ export default function Checkout() {
   const [city, setCity] = createSignal("");
   const [country, setCountry] = createSignal("Netherlands");
   const [notes, setNotes] = createSignal("");
+  const [discountInput, setDiscountInput] = createSignal("");
+  const [discountCode, setDiscountCode] = createSignal("");
+  const [discountCents, setDiscountCents] = createSignal(0);
+  const [discountMessage, setDiscountMessage] = createSignal("");
+  const [checkingDiscount, setCheckingDiscount] = createSignal(false);
   const [error, setError] = createSignal("");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const [confirmation, setConfirmation] = createSignal<CheckoutSnapshot>();
@@ -93,7 +98,43 @@ export default function Checkout() {
   const shippingCents = createMemo(() =>
     subtotalCents() >= 10000 ? 0 : SHIPPING_OPTIONS[shippingMethod()].priceCents,
   );
-  const totalCents = createMemo(() => subtotalCents() + shippingCents());
+  const totalCents = createMemo(
+    () => subtotalCents() - discountCents() + shippingCents(),
+  );
+
+  const applyDiscount = async () => {
+    setCheckingDiscount(true);
+    setDiscountMessage("");
+    try {
+      const response = await fetch("/api/checkout/discount", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: discountInput(),
+          subtotalCents: subtotalCents(),
+        }),
+      });
+      const result = (await response.json()) as {
+        error?: string;
+        code?: string;
+        discountCents?: number;
+        label?: string;
+      };
+      if (!response.ok || !result.code || !result.discountCents) {
+        setDiscountCode("");
+        setDiscountCents(0);
+        setDiscountMessage(result.error ?? "This code cannot be applied.");
+        return;
+      }
+      setDiscountCode(result.code);
+      setDiscountCents(result.discountCents);
+      setDiscountMessage(`${result.label} applied.`);
+    } catch {
+      setDiscountMessage("The discount could not be checked.");
+    } finally {
+      setCheckingDiscount(false);
+    }
+  };
 
   onMount(async () => {
     try {
@@ -188,6 +229,7 @@ export default function Checkout() {
           customer: values,
           shippingMethod: values.shippingMethod,
           paymentMethod: values.paymentMethod,
+          discountCode: discountCode(),
         }),
       });
       const result = (await response.json()) as CreatePaymentResponse;
@@ -443,8 +485,40 @@ export default function Checkout() {
                   </For>
                 </div>
 
+                <div class={styles.discount}>
+                  <label>
+                    <span>Discount code</span>
+                    <div>
+                      <input
+                        value={discountInput()}
+                        onInput={event => setDiscountInput(event.currentTarget.value.toUpperCase())}
+                        placeholder="Enter code"
+                        maxlength={32}
+                      />
+                      <button
+                        type="button"
+                        onClick={applyDiscount}
+                        disabled={checkingDiscount() || !discountInput().trim()}
+                      >
+                        {checkingDiscount() ? "Checking" : "Apply"}
+                      </button>
+                    </div>
+                  </label>
+                  <Show when={discountMessage()}>
+                    <p classList={{ [styles.discountApplied]: discountCents() > 0 }}>
+                      {discountMessage()}
+                    </p>
+                  </Show>
+                </div>
+
                 <div class={styles.totals}>
                   <SummaryRow label="Subtotal" value={formatPrice(subtotalCents())} />
+                  <Show when={discountCents() > 0}>
+                    <SummaryRow
+                      label={`Discount ${discountCode()}`}
+                      value={`-${formatPrice(discountCents())}`}
+                    />
+                  </Show>
                   <SummaryRow
                     label="Shipping"
                     value={

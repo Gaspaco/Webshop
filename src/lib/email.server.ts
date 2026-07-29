@@ -8,7 +8,7 @@ type AuthEmail = {
   idempotencyKey: string;
 };
 
-const escapeHtml = (value: string) =>
+export const escapeEmailHtml = (value: string) =>
   value.replace(
     /[&<>"]/g,
     character =>
@@ -31,7 +31,7 @@ const tokenFingerprint = async (token: string) => {
     .slice(0, 32);
 };
 
-async function sendAuthEmail(message: AuthEmail) {
+export async function sendTransactionalEmail(message: AuthEmail) {
   const emailEnv = getEmailEnv();
   if (!emailEnv) throw new Error("Transactional email is not configured.");
 
@@ -67,9 +67,9 @@ const authEmailHtml = (input: {
     <div style="max-width:560px;margin:0 auto;padding:40px 20px">
       <div style="background:#0a0d0c;color:#ffffff;padding:18px 24px;font-weight:700">TCGHaven</div>
       <div style="background:#ffffff;padding:32px 24px">
-        <h1 style="margin:0 0 12px;font-size:24px">${escapeHtml(input.heading)}</h1>
-        <p style="margin:0 0 24px;line-height:1.6;color:#46514b">${escapeHtml(input.copy)}</p>
-        <a href="${escapeHtml(input.actionUrl)}" style="display:inline-block;background:#10b981;color:#07110d;text-decoration:none;font-weight:700;padding:13px 18px;border-radius:8px">${escapeHtml(input.actionLabel)}</a>
+        <h1 style="margin:0 0 12px;font-size:24px">${escapeEmailHtml(input.heading)}</h1>
+        <p style="margin:0 0 24px;line-height:1.6;color:#46514b">${escapeEmailHtml(input.copy)}</p>
+        <a href="${escapeEmailHtml(input.actionUrl)}" style="display:inline-block;background:#10b981;color:#07110d;text-decoration:none;font-weight:700;padding:13px 18px;border-radius:8px">${escapeEmailHtml(input.actionLabel)}</a>
         <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#65716a">If you did not request this, you can ignore this email.</p>
       </div>
     </div>
@@ -81,7 +81,7 @@ export const sendVerificationEmail = async (input: {
   url: string;
   token: string;
 }) =>
-  sendAuthEmail({
+  sendTransactionalEmail({
     to: input.email,
     subject: "Verify your TCGHaven email",
     text: `Verify your email address by opening this link: ${input.url}\n\nIf you did not create a TCGHaven account, you can ignore this email.`,
@@ -99,7 +99,7 @@ export const sendPasswordResetEmail = async (input: {
   url: string;
   token: string;
 }) =>
-  sendAuthEmail({
+  sendTransactionalEmail({
     to: input.email,
     subject: "Reset your TCGHaven password",
     text: `Reset your password by opening this link: ${input.url}\n\nIf you did not request a password reset, you can ignore this email.`,

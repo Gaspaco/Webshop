@@ -303,6 +303,64 @@
   border-top: 1px solid rgba($white, 0.08);
 }
 
+.discount {
+  display: grid;
+  gap: 0.45rem;
+
+  label > span {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: $gray-400;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  label > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  input {
+    min-width: 0;
+    height: 2.75rem;
+    padding: 0 0.8rem;
+    border: 1px solid rgba($white, 0.13);
+    border-radius: 0.45rem 0 0 0.45rem;
+    outline: none;
+    background: rgba(#050706, 0.5);
+    color: $white;
+    font: inherit;
+  }
+
+  input:focus {
+    border-color: $primary;
+  }
+
+  button {
+    min-width: 5rem;
+    padding: 0 0.85rem;
+    border-radius: 0 0.45rem 0.45rem 0;
+    background: rgba($primary, 0.14);
+    color: $primary-light;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  button:disabled {
+    cursor: wait;
+    opacity: 0.5;
+  }
+
+  p {
+    color: #fca5a5;
+    font-size: 0.72rem;
+  }
+}
+
+.discount .discountApplied {
+  color: $primary-light;
+}
+
 .summaryRow,
 .total {
   display: flex;

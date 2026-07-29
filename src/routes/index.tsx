@@ -1,10 +1,18 @@
 import { Title } from "@solidjs/meta";
+import { createSignal, onMount, Show } from "solid-js";
 import AboutHaven from "~/components/home/AboutHaven";
 import HavenBand from "~/components/home/HavenBand";
 import Hero from "~/components/home/Hero";
 import ShopByGame from "~/components/home/ShopByGame";
 import WeeklyShowcase from "~/components/home/WeeklyShowcase";
 import ProductSection, { type SectionProduct } from "~/components/product/ProductSection";
+import styles from "./home.module.scss";
+
+type HomeContent = {
+  announcement?: string;
+  heroTitle?: string;
+  heroCopy?: string;
+};
 
 const NEW_ARRIVALS: SectionProduct[] = [
   { id: "palkia-v-astral", name: "Palkia V", set: "Astral Radiance", image: "/images/cards/palkia.png", priceCents: 3495, href: "/products", badge: "New" },
@@ -18,10 +26,31 @@ const NEW_ARRIVALS: SectionProduct[] = [
 ];
 
 export default function Home() {
+  const [content, setContent] = createSignal<HomeContent>({});
+
+  onMount(async () => {
+    try {
+      const response = await fetch("/api/storefront/content");
+      if (!response.ok) return;
+      const result = (await response.json()) as {
+        content: HomeContent | null;
+      };
+      setContent(result.content ?? {});
+    } catch {
+      // The designed defaults stay visible if managed content is unavailable.
+    }
+  });
+
   return (
     <main>
       <Title>TCGHaven | Your Favorite Card Store, Online</Title>
-      <Hero />
+      <Show when={content().announcement}>
+        <div class={styles.announcement}>{content().announcement}</div>
+      </Show>
+      <Hero
+        managedTitle={content().heroTitle}
+        managedCopy={content().heroCopy}
+      />
       <ShopByGame />
       <WeeklyShowcase />
       <ProductSection heading="New arrivals" sub="Fresh stock, added this week." products={NEW_ARRIVALS} />

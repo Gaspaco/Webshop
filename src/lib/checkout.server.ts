@@ -1,8 +1,9 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { PaymentMethod, type PaymentCreateParams } from "@mollie/api-client";
 import { z } from "zod";
 import { db } from "~/db";
 import {
+  discountCodes,
   orderItems,
   orders,
   payments,
@@ -38,6 +39,7 @@ const checkoutInputSchema = z.object({
   }),
   shippingMethod: shippingMethodSchema,
   paymentMethod: paymentMethodSchema,
+  discountCode: z.string().trim().max(32).optional().default(""),
 });
 
 type CheckoutInput = z.infer<typeof checkoutInputSchema>;
@@ -133,6 +135,36 @@ export async function calculateTrustedCheckout(input: unknown) {
   }));
 
   const subtotalCents = lines.reduce((sum, item) => sum + item.totalCents, 0);
+  let discount: typeof discountCodes.$inferSelect | undefined;
+  let discountCents = 0;
+  const requestedDiscount = parsed.discountCode.trim().toUpperCase();
+  if (requestedDiscount) {
+    const [storedDiscount] = await db
+      .select()
+      .from(discountCodes)
+      .where(
+        and(
+          eq(discountCodes.code, requestedDiscount),
+          eq(discountCodes.active, true),
+        ),
+      )
+      .limit(1);
+    const now = new Date();
+    const usable =
+      storedDiscount &&
+      (!storedDiscount.startsAt || storedDiscount.startsAt <= now) &&
+      (!storedDiscount.expiresAt || storedDiscount.expiresAt > now) &&
+      subtotalCents >= storedDiscount.minimumOrderCents &&
+      (storedDiscount.maximumUses === null ||
+        storedDiscount.usedCount < storedDiscount.maximumUses);
+    if (!usable) throw new Error("Discount code is not valid for this order.");
+    discount = storedDiscount;
+    discountCents =
+      discount.type === "percentage"
+        ? Math.round((subtotalCents * discount.value) / 100)
+        : discount.value;
+    discountCents = Math.min(discountCents, subtotalCents);
+  }
   const shippingCents =
     subtotalCents >= 10000 ? 0 : SHIPPING_CENTS[parsed.shippingMethod];
 
@@ -140,9 +172,12 @@ export async function calculateTrustedCheckout(input: unknown) {
     ...parsed,
     lines,
     subtotalCents,
+    discountId: discount?.id ?? null,
+    discountCode: discount?.code ?? null,
+    discountCents,
     shippingCents,
     taxCents: 0,
-    totalCents: subtotalCents + shippingCents,
+    totalCents: subtotalCents - discountCents + shippingCents,
   };
 }
 
@@ -170,6 +205,8 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
         subtotalCents: checkout.subtotalCents,
         shippingCents: checkout.shippingCents,
         taxCents: checkout.taxCents,
+        discountCode: checkout.discountCode,
+        discountCents: checkout.discountCents,
         totalCents: checkout.totalCents,
         billingAddress: address,
         shippingAddress: address,
@@ -189,6 +226,13 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
         totalCents: line.totalCents,
       })),
     );
+
+    if (checkout.discountId) {
+      await tx
+        .update(discountCodes)
+        .set({ usedCount: sql`${discountCodes.usedCount} + 1` })
+        .where(eq(discountCodes.id, checkout.discountId));
+    }
 
     return createdOrder;
   });
@@ -237,6 +281,7 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
     recalculated: {
       subtotalCents: checkout.subtotalCents,
       shippingCents: checkout.shippingCents,
+      discountCents: checkout.discountCents,
       totalCents: checkout.totalCents,
       lines: checkout.lines,
     },

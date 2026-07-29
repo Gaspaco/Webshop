@@ -1,11 +1,18 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "~/db";
 import {
+  adminAuditLog,
+  customerAdminProfiles,
+  discountCodes,
   importJobs,
+  orderItems,
   orders,
+  payments,
   products,
   productVariants,
+  returnRequests,
+  storefrontContent,
   user,
 } from "~/db/schema";
 import { apiJson, requireAdmin } from "~/lib/admin.server";
@@ -14,7 +21,16 @@ export async function GET(event: APIEvent) {
   const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
 
-  const [productRows, orderRows, customerRows, imports] = await Promise.all([
+  const [
+    productRows,
+    orderRows,
+    customerRows,
+    imports,
+    discounts,
+    contentRows,
+    auditRows,
+    returnRows,
+  ] = await Promise.all([
     db
       .select({
         id: products.id,
@@ -30,8 +46,10 @@ export async function GET(event: APIEvent) {
         updatedAt: products.updatedAt,
         variantId: productVariants.id,
         sku: productVariants.sku,
+        variantName: productVariants.name,
         condition: productVariants.condition,
         language: productVariants.language,
+        finish: productVariants.finish,
         priceCents: productVariants.priceCents,
         compareAtPriceCents: productVariants.compareAtPriceCents,
         stock: productVariants.stock,
@@ -48,7 +66,16 @@ export async function GET(event: APIEvent) {
         email: orders.email,
         status: orders.status,
         currency: orders.currency,
+        subtotalCents: orders.subtotalCents,
+        shippingCents: orders.shippingCents,
+        discountCode: orders.discountCode,
+        discountCents: orders.discountCents,
         totalCents: orders.totalCents,
+        shippingAddress: orders.shippingAddress,
+        notes: orders.notes,
+        trackingNumber: orders.trackingNumber,
+        trackingUrl: orders.trackingUrl,
+        shippedAt: orders.shippedAt,
         createdAt: orders.createdAt,
       })
       .from(orders)
@@ -63,8 +90,15 @@ export async function GET(event: APIEvent) {
         image: user.image,
         role: user.role,
         createdAt: user.createdAt,
+        notes: customerAdminProfiles.notes,
+        tags: customerAdminProfiles.tags,
+        suspended: customerAdminProfiles.suspended,
       })
       .from(user)
+      .leftJoin(
+        customerAdminProfiles,
+        eq(customerAdminProfiles.userId, user.id),
+      )
       .orderBy(desc(user.createdAt))
       .limit(200),
     db
@@ -72,19 +106,136 @@ export async function GET(event: APIEvent) {
       .from(importJobs)
       .orderBy(desc(importJobs.createdAt))
       .limit(20),
+    db
+      .select()
+      .from(discountCodes)
+      .orderBy(desc(discountCodes.createdAt))
+      .limit(100),
+    db.select().from(storefrontContent),
+    db
+      .select({
+        id: adminAuditLog.id,
+        action: adminAuditLog.action,
+        entityType: adminAuditLog.entityType,
+        entityId: adminAuditLog.entityId,
+        summary: adminAuditLog.summary,
+        metadata: adminAuditLog.metadata,
+        ipAddress: adminAuditLog.ipAddress,
+        createdAt: adminAuditLog.createdAt,
+        actorName: user.name,
+        actorEmail: user.email,
+      })
+      .from(adminAuditLog)
+      .leftJoin(user, eq(adminAuditLog.actorId, user.id))
+      .orderBy(desc(adminAuditLog.createdAt))
+      .limit(100),
+    db
+      .select()
+      .from(returnRequests)
+      .orderBy(desc(returnRequests.createdAt))
+      .limit(100),
   ]);
 
+  const orderIds = orderRows.map(order => order.id);
+  const [itemRows, paymentRows] = orderIds.length
+    ? await Promise.all([
+        db
+          .select()
+          .from(orderItems)
+          .where(inArray(orderItems.orderId, orderIds)),
+        db
+          .select({
+            id: payments.id,
+            orderId: payments.orderId,
+            status: payments.status,
+            method: payments.method,
+            amountCents: payments.amountCents,
+            molliePaymentId: payments.molliePaymentId,
+            paidAt: payments.paidAt,
+          })
+          .from(payments)
+          .where(inArray(payments.orderId, orderIds)),
+      ])
+    : [[], []];
+
+  const itemsByOrder = new Map<string, typeof itemRows>();
+  for (const item of itemRows) {
+    const items = itemsByOrder.get(item.orderId) ?? [];
+    items.push(item);
+    itemsByOrder.set(item.orderId, items);
+  }
+  const paymentsByOrder = new Map(
+    paymentRows.map(payment => [payment.orderId, payment]),
+  );
+  const returnsByOrder = new Map(
+    returnRows.map(returnRequest => [returnRequest.orderId, returnRequest]),
+  );
+
   const productMap = new Map<string, (typeof productRows)[number]>();
+  const variantsByProduct = new Map<
+    string,
+    Array<{
+      id: string;
+      sku: string;
+      name: string;
+      condition: string | null;
+      language: string | null;
+      finish: string | null;
+      priceCents: number;
+      stock: number;
+      reservedStock: number;
+    }>
+  >();
   for (const product of productRows) {
     if (!productMap.has(product.id)) productMap.set(product.id, product);
+    if (product.variantId && product.sku && product.priceCents !== null) {
+      const variants = variantsByProduct.get(product.id) ?? [];
+      variants.push({
+        id: product.variantId,
+        sku: product.sku,
+        name: product.variantName ?? product.condition ?? "Default",
+        condition: product.condition,
+        language: product.language,
+        finish: product.finish,
+        priceCents: product.priceCents,
+        stock: product.stock ?? 0,
+        reservedStock: product.reservedStock ?? 0,
+      });
+      variantsByProduct.set(product.id, variants);
+    }
   }
-  const catalog = [...productMap.values()];
+  const catalog = [...productMap.values()].map(product => ({
+    ...product,
+    variants: variantsByProduct.get(product.id) ?? [],
+  }));
   const customers = customerRows.filter(customer => customer.role !== "admin");
   const paidRevenue = orderRows
     .filter(order =>
       ["paid", "processing", "shipped", "completed"].includes(order.status),
     )
     .reduce((sum, order) => sum + order.totalCents, 0);
+  const salesByDay = new Map<string, { revenueCents: number; orders: number }>();
+  for (const order of orderRows) {
+    const day = new Date(order.createdAt).toISOString().slice(0, 10);
+    const current = salesByDay.get(day) ?? { revenueCents: 0, orders: 0 };
+    current.orders += 1;
+    if (["paid", "processing", "shipped", "completed"].includes(order.status)) {
+      current.revenueCents += order.totalCents;
+    }
+    salesByDay.set(day, current);
+  }
+  const customerOrderCounts = new Map<string, { count: number; spentCents: number }>();
+  for (const order of orderRows) {
+    const current = customerOrderCounts.get(order.email) ?? {
+      count: 0,
+      spentCents: 0,
+    };
+    current.count += 1;
+    if (["paid", "processing", "shipped", "completed"].includes(order.status)) {
+      current.spentCents += order.totalCents;
+    }
+    customerOrderCounts.set(order.email, current);
+  }
 
   return apiJson({
     owner: {
@@ -107,8 +258,39 @@ export async function GET(event: APIEvent) {
       customers: customers.length,
     },
     products: catalog,
-    orders: orderRows,
-    customers,
+    orders: orderRows.map(order => ({
+      ...order,
+      items: itemsByOrder.get(order.id) ?? [],
+      payment: paymentsByOrder.get(order.id) ?? null,
+      returnRequest: returnsByOrder.get(order.id) ?? null,
+    })),
+    customers: customers.map(customer => ({
+      ...customer,
+      notes: customer.notes ?? "",
+      tags: customer.tags ?? [],
+      suspended: customer.suspended ?? false,
+      orderCount: customerOrderCounts.get(customer.email)?.count ?? 0,
+      spentCents: customerOrderCounts.get(customer.email)?.spentCents ?? 0,
+    })),
     imports,
+    discounts,
+    content: Object.fromEntries(
+      contentRows.map(content => [content.key, content.value]),
+    ),
+    audit: auditRows,
+    analytics: {
+      salesByDay: [...salesByDay.entries()]
+        .map(([date, totals]) => ({ date, ...totals }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+      averageOrderCents: orderRows.length
+        ? Math.round(
+            orderRows.reduce((sum, order) => sum + order.totalCents, 0) /
+              orderRows.length,
+          )
+        : 0,
+      returningCustomers: [...customerOrderCounts.values()].filter(
+        customer => customer.count > 1,
+      ).length,
+    },
   });
 }

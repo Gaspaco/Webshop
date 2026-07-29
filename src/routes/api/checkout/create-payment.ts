@@ -41,6 +41,13 @@ export async function POST(event: APIEvent) {
       );
     }
 
+    if (
+      error instanceof Error &&
+      error.message.startsWith("Discount code")
+    ) {
+      return json({ error: error.message }, { status: 400 });
+    }
+
     console.error("Checkout payment creation failed", error);
 
     return json(

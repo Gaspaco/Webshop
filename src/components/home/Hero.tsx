@@ -94,7 +94,10 @@ function Stars(props: { rating: number }) {
   );
 }
 
-export default function Hero() {
+export default function Hero(props: {
+  managedTitle?: string;
+  managedCopy?: string;
+}) {
   const cart = useCart();
   const [active, setActive] = createSignal(0);
   const [paused, setPaused] = createSignal(false);
@@ -164,8 +167,16 @@ export default function Hero() {
                     <span class={styles.gameTag}>{slide.game}</span>
                     <span class={styles.setTag}>{slide.tag}</span>
                   </div>
-                  <h2 class={styles.slideTitle}>{slide.title}</h2>
-                  <p class={styles.slideBlurb}>{slide.blurb}</p>
+                  <h2 class={styles.slideTitle}>
+                    {i() === 0 && props.managedTitle
+                      ? props.managedTitle
+                      : slide.title}
+                  </h2>
+                  <p class={styles.slideBlurb}>
+                    {i() === 0 && props.managedCopy
+                      ? props.managedCopy
+                      : slide.blurb}
+                  </p>
                   <div class={styles.slideFooter}>
                     <A href={slide.href} class={styles.slideCta}>
                       Shop {slide.set}
