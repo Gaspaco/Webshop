@@ -1,6 +1,6 @@
 import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
-import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { authClient } from "~/lib/auth-client";
 import {
   meetsPasswordRequirements,
@@ -17,6 +17,7 @@ type AuthPageProps = {
 };
 
 export default function AuthPage(props: AuthPageProps) {
+  const session = authClient.useSession();
   const [mode, setMode] = createSignal<AuthMode>(props.initialMode);
   const [name, setName] = createSignal("");
   const [loginEmail, setLoginEmail] = createSignal("");
@@ -36,6 +37,11 @@ export default function AuthPage(props: AuthPageProps) {
   >("idle");
   const [resetMessage, setResetMessage] = createSignal("");
   let resetEmailInput: HTMLInputElement | undefined;
+
+  createEffect(() => {
+    const current = session().data?.user as { role?: string } | undefined;
+    if (current?.role === "admin") window.location.replace("/admin");
+  });
 
   const switchMode = (nextMode: AuthMode, event: MouseEvent) => {
     event.preventDefault();
@@ -112,7 +118,10 @@ export default function AuthPage(props: AuthPageProps) {
       return;
     }
 
-    window.location.assign("/account");
+    const signedInUser = authData?.user as { role?: string } | undefined;
+    window.location.assign(
+      signedInUser?.role === "admin" ? "/admin" : "/account",
+    );
   };
 
   const submitSignup = async (event: SubmitEvent) => {

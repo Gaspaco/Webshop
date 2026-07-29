@@ -253,7 +253,9 @@ export async function GET(event: APIEvent) {
       lowStock: catalog.filter(
         product =>
           product.status === "active" &&
-          (product.stock ?? 0) - (product.reservedStock ?? 0) <= 3,
+          product.variants.some(
+            variant => variant.stock - variant.reservedStock <= 3,
+          ),
       ).length,
       customers: customers.length,
     },

@@ -335,6 +335,14 @@ export default function ProductDetail() {
                 <div><dt>Product type</dt><dd>{item().productType ? item().productType : item().priceRangeCents ? "Sealed product" : "Single card"}</dd></div>
                 <div><dt>Condition</dt><dd>{conditionFor(item())}</dd></div>
                 <div><dt>Language</dt><dd>{item().language ?? "English"}</dd></div>
+                <Show when={item().finish}><div><dt>Finish</dt><dd>{item().finish}</dd></div></Show>
+                <Show when={item().cardNumber}><div><dt>Card number</dt><dd>{item().cardNumber}</dd></div></Show>
+                <Show when={item().rarity}><div><dt>Rarity</dt><dd>{item().rarity}</dd></div></Show>
+                <Show when={item().setCode}><div><dt>Set code</dt><dd>{item().setCode}</dd></div></Show>
+                <Show when={item().illustrator}><div><dt>Illustrator</dt><dd>{item().illustrator}</dd></div></Show>
+                <Show when={item().gradingCompany}><div><dt>Grading company</dt><dd>{item().gradingCompany}</dd></div></Show>
+                <Show when={item().grade}><div><dt>Grade</dt><dd>{item().grade}</dd></div></Show>
+                <Show when={item().certificationNumber}><div><dt>Certification</dt><dd>{item().certificationNumber}</dd></div></Show>
                 <div><dt>Ships from</dt><dd>Netherlands</dd></div>
               </dl>
             </section>

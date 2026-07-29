@@ -1,15 +1,21 @@
 import { A, useNavigate } from "@solidjs/router";
 import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import { authClient } from "~/lib/auth-client";
 import { useCart } from "~/lib/cart";
 import styles from "./Navbar.module.scss";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const cart = useCart();
+  const session = authClient.useSession();
   const [searchOpen, setSearchOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");
   let searchInput: HTMLInputElement | undefined;
   let wrapRef: HTMLFormElement | undefined;
+  const accountHref = () =>
+    (session().data?.user as { role?: string } | undefined)?.role === "admin"
+      ? "/admin"
+      : "/account";
 
   const openSearch = () => {
     setSearchOpen(true);
@@ -118,7 +124,11 @@ export default function Navbar() {
               <path d="M12 20s-7.5-4.6-10-9.3C.4 7.1 2 3.5 5.6 3a5 5 0 0 1 6.4 2.2A5 5 0 0 1 18.4 3c3.6.5 5.2 4.1 3.6 7.7C19.5 15.4 12 20 12 20Z" />
             </svg>
           </A>
-          <A href="/account" class={styles.iconBtn} aria-label="Account">
+          <A
+            href={accountHref()}
+            class={styles.iconBtn}
+            aria-label={accountHref() === "/admin" ? "Owner dashboard" : "Account"}
+          >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="8" r="4" />
               <path d="M5 20a7 7 0 0 1 14 0" />

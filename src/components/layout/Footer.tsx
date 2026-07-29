@@ -1,8 +1,10 @@
 import { A } from "@solidjs/router";
 import { createSignal, onMount } from "solid-js";
+import { authClient } from "~/lib/auth-client";
 import styles from "./Footer.module.scss";
 
 export default function Footer() {
+  const session = authClient.useSession();
   const [socials, setSocials] = createSignal({
     tiktok: "https://www.tiktok.com",
     youtube: "https://www.youtube.com",
@@ -18,6 +20,10 @@ export default function Footer() {
       return fallback;
     }
   };
+  const accountHref = () =>
+    (session().data?.user as { role?: string } | undefined)?.role === "admin"
+      ? "/admin"
+      : "/account";
 
   onMount(async () => {
     try {
@@ -94,7 +100,7 @@ export default function Footer() {
 
         <div class={styles.linkCol}>
           <h3 class={styles.linkHeading}>Account</h3>
-          <A href="/account">My account</A>
+          <A href={accountHref()}>{accountHref() === "/admin" ? "Owner dashboard" : "My account"}</A>
           <A href="/wishlist">Wishlist</A>
           <A href="/cart">Cart</A>
           <A href="/login">Sign in</A>
