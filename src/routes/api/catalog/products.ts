@@ -24,6 +24,7 @@ export async function GET(event: APIEvent) {
       sku: productVariants.sku,
       condition: productVariants.condition,
       language: productVariants.language,
+      finish: productVariants.finish,
       priceCents: productVariants.priceCents,
       stock: productVariants.stock,
     })

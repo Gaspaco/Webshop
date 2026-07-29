@@ -1840,14 +1840,18 @@ export default function Admin() {
                     <Show
                       when={data().products.filter(product =>
                         product.status === "active" &&
-                        (product.stock ?? 0) - (product.reservedStock ?? 0) <= 3,
+                        product.variants.some(
+                          variant => variant.stock - variant.reservedStock <= 3,
+                        ),
                       ).length}
                       fallback={<p class={styles.empty}>Every live product has healthy stock.</p>}
                     >
                       <div class={styles.lowStockGrid}>
                         <For each={data().products.filter(product =>
                           product.status === "active" &&
-                          (product.stock ?? 0) - (product.reservedStock ?? 0) <= 3,
+                          product.variants.some(
+                            variant => variant.stock - variant.reservedStock <= 3,
+                          ),
                         ).slice(0, 8)}>
                           {product => (
                             <article>

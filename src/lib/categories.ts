@@ -77,6 +77,14 @@ export type ShopProduct = SectionProduct & {
   productType?: string;
   condition?: string;
   language?: string;
+  finish?: string;
+  cardNumber?: string;
+  rarity?: string;
+  setCode?: string;
+  illustrator?: string;
+  gradingCompany?: string;
+  grade?: string;
+  certificationNumber?: string;
   stock?: number;
   variantId?: string;
   sku?: string;

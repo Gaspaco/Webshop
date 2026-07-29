@@ -29,6 +29,12 @@ export async function GET(event: APIEvent) {
   if (!session) {
     return json({ error: "Authentication required." }, { status: 401 });
   }
+  if ((session.user as { role?: string }).role === "admin") {
+    return json(
+      { error: "Owner accounts use the admin dashboard." },
+      { status: 403 },
+    );
+  }
 
   const customerOrders = await db
     .select({

@@ -1,5 +1,5 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -164,15 +164,36 @@ export async function POST(event: APIEvent) {
       .where(eq(payments.orderId, order.id))
       .limit(1);
 
-    if (!payment || payment.status !== "paid") {
+    if (!payment || !["paid", "refunded"].includes(payment.status)) {
       return apiJson(
         { error: "Only a confirmed paid Mollie payment can be refunded." },
         { status: 400 },
       );
     }
-    if (input.amountCents > payment.amountCents) {
+    const [refundTotals] = await db
+      .select({
+        refundedCents: sql<number>`coalesce(sum(${returnRequests.amountCents}), 0)`,
+      })
+      .from(returnRequests)
+      .where(
+        and(
+          eq(returnRequests.orderId, order.id),
+          eq(returnRequests.status, "refunded"),
+        ),
+      );
+    const alreadyRefundedCents = Number(refundTotals?.refundedCents ?? 0);
+    const remainingCents = payment.amountCents - alreadyRefundedCents;
+    if (remainingCents <= 0) {
       return apiJson(
-        { error: "Refund amount cannot exceed the paid amount." },
+        { error: "This payment has already been fully refunded." },
+        { status: 400 },
+      );
+    }
+    if (input.amountCents > remainingCents) {
+      return apiJson(
+        {
+          error: `Refund amount cannot exceed the remaining ${amountValue(remainingCents)} EUR.`,
+        },
         { status: 400 },
       );
     }
@@ -189,18 +210,22 @@ export async function POST(event: APIEvent) {
         orderNumber: order.orderNumber,
         requestedBy: guard.session!.user.id,
       },
-      idempotencyKey: `admin-refund-${order.id}-${input.amountCents}`,
+      idempotencyKey: `admin-refund-${order.id}-${alreadyRefundedCents}-${input.amountCents}`,
     });
 
+    const fullyRefunded =
+      alreadyRefundedCents + input.amountCents >= payment.amountCents;
     await db.transaction(async tx => {
-      await tx
-        .update(orders)
-        .set({ status: "refunded" })
-        .where(eq(orders.id, order.id));
-      await tx
-        .update(payments)
-        .set({ status: "refunded" })
-        .where(eq(payments.id, payment.id));
+      if (fullyRefunded) {
+        await tx
+          .update(orders)
+          .set({ status: "refunded" })
+          .where(eq(orders.id, order.id));
+        await tx
+          .update(payments)
+          .set({ status: "refunded" })
+          .where(eq(payments.id, payment.id));
+      }
       await tx.insert(returnRequests).values({
         orderId: order.id,
         status: "refunded",

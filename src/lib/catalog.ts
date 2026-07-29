@@ -13,6 +13,7 @@ export type DatabaseCatalogProduct = {
   sku: string;
   condition: string | null;
   language: string | null;
+  finish: string | null;
   priceCents: number;
   stock: number;
 };
@@ -52,6 +53,26 @@ export function databaseProductToShopProduct(
     productType: product.productType ?? undefined,
     condition: product.condition ?? undefined,
     language: product.language ?? undefined,
+    finish: product.finish ?? undefined,
+    cardNumber:
+      typeof metadata.cardNumber === "string"
+        ? metadata.cardNumber
+        : undefined,
+    rarity: typeof metadata.rarity === "string" ? metadata.rarity : undefined,
+    setCode: typeof metadata.setCode === "string" ? metadata.setCode : undefined,
+    illustrator:
+      typeof metadata.illustrator === "string"
+        ? metadata.illustrator
+        : undefined,
+    gradingCompany:
+      typeof metadata.gradingCompany === "string"
+        ? metadata.gradingCompany
+        : undefined,
+    grade: typeof metadata.grade === "string" ? metadata.grade : undefined,
+    certificationNumber:
+      typeof metadata.certificationNumber === "string"
+        ? metadata.certificationNumber
+        : undefined,
     stock: product.stock,
     variantId: product.variantId,
     sku: product.sku,

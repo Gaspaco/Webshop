@@ -257,6 +257,13 @@ export default function Account() {
   );
 
   createEffect(() => {
+    const currentUser = session().data?.user as
+      | { role?: string }
+      | undefined;
+    if (!session().isPending && currentUser?.role === "admin") {
+      navigate("/admin", { replace: true });
+      return;
+    }
     if (!session().isPending && !session().data) {
       navigate("/login", { replace: true });
     }
@@ -661,7 +668,13 @@ export default function Account() {
       <Title>Your account | TCGHaven</Title>
 
       <Show
-        when={!session().isPending && session().data}
+        when={
+          !session().isPending &&
+          session().data &&
+          (session().data!.user as { role?: string }).role !== "admin"
+            ? session().data
+            : undefined
+        }
         fallback={
           <div class={styles.loading} role="status">
             <span />
