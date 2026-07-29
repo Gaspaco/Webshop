@@ -171,6 +171,13 @@ export const importStatus = pgEnum("import_status", [
   "completed",
   "failed",
 ]);
+export const discountType = pgEnum("discount_type", ["percentage", "fixed"]);
+export const returnStatus = pgEnum("return_status", [
+  "requested",
+  "approved",
+  "rejected",
+  "refunded",
+]);
 
 export const categories = pgTable(
   "categories",
@@ -346,6 +353,11 @@ export const orders = pgTable(
     subtotalCents: integer("subtotal_cents").notNull(),
     shippingCents: integer("shipping_cents").default(0).notNull(),
     taxCents: integer("tax_cents").default(0).notNull(),
+    discountCode: text("discount_code"),
+    discountCents: integer("discount_cents").default(0).notNull(),
+    trackingNumber: text("tracking_number"),
+    trackingUrl: text("tracking_url"),
+    shippedAt: timestamp("shipped_at", { withTimezone: true }),
     totalCents: integer("total_cents").notNull(),
     billingAddress: jsonb("billing_address")
       .$type<Record<string, string>>()
@@ -360,6 +372,29 @@ export const orders = pgTable(
     uniqueIndex("order_number_idx").on(table.orderNumber),
     index("order_user_idx").on(table.userId),
     index("order_status_idx").on(table.status),
+  ],
+);
+
+export const returnRequests = pgTable(
+  "return_requests",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    status: returnStatus("status").default("requested").notNull(),
+    reason: text("reason").notNull(),
+    amountCents: integer("amount_cents"),
+    adminNote: text("admin_note"),
+    resolvedBy: uuid("resolved_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  table => [
+    index("return_request_order_idx").on(table.orderId),
+    index("return_request_status_idx").on(table.status),
   ],
 );
 
@@ -425,4 +460,83 @@ export const importJobs = pgTable(
     ...timestamps,
   },
   table => [index("import_job_status_idx").on(table.status)],
+);
+
+export const discountCodes = pgTable(
+  "discount_codes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    code: text("code").notNull(),
+    type: discountType("type").notNull(),
+    value: integer("value").notNull(),
+    minimumOrderCents: integer("minimum_order_cents").default(0).notNull(),
+    maximumUses: integer("maximum_uses"),
+    usedCount: integer("used_count").default(0).notNull(),
+    active: boolean("active").default(true).notNull(),
+    startsAt: timestamp("starts_at", { withTimezone: true }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    createdBy: uuid("created_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    ...timestamps,
+  },
+  table => [
+    uniqueIndex("discount_code_idx").on(table.code),
+    index("discount_active_idx").on(table.active),
+  ],
+);
+
+export const storefrontContent = pgTable(
+  "storefront_content",
+  {
+    key: text("key").primaryKey(),
+    value: jsonb("value").$type<Record<string, unknown>>().notNull(),
+    updatedBy: uuid("updated_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    ...timestamps,
+  },
+);
+
+export const customerAdminProfiles = pgTable(
+  "customer_admin_profiles",
+  {
+    userId: uuid("user_id")
+      .primaryKey()
+      .references(() => user.id, { onDelete: "cascade" }),
+    notes: text("notes"),
+    tags: jsonb("tags").$type<string[]>().default([]).notNull(),
+    suspended: boolean("suspended").default(false).notNull(),
+    updatedBy: uuid("updated_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    ...timestamps,
+  },
+);
+
+export const adminAuditLog = pgTable(
+  "admin_audit_log",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    actorId: uuid("actor_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    action: text("action").notNull(),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id"),
+    summary: text("summary").notNull(),
+    metadata: jsonb("metadata")
+      .$type<Record<string, unknown>>()
+      .default({})
+      .notNull(),
+    ipAddress: text("ip_address"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  table => [
+    index("admin_audit_actor_idx").on(table.actorId),
+    index("admin_audit_created_idx").on(table.createdAt),
+    index("admin_audit_entity_idx").on(table.entityType, table.entityId),
+  ],
 );

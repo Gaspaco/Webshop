@@ -1135,6 +1135,594 @@
   font-size: 0.7rem;
 }
 
+.active {
+  background: rgba($primary, 0.11);
+  color: $primary-light;
+}
+
+.introActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.introActions > a,
+.sectionIntro > a {
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  padding: 0 0.9rem;
+  border: 1px solid rgba($white, 0.12);
+  border-radius: 0.45rem;
+  color: $gray-300;
+  font-size: 0.67rem;
+  font-weight: 750;
+}
+
+.lowStockCenter,
+.salesChart {
+  margin-top: 1.25rem;
+  overflow: hidden;
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 0.75rem;
+  background: #0e1210;
+}
+
+.lowStockGrid {
+  display: grid;
+  padding: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.lowStockGrid article {
+  display: grid;
+  min-width: 0;
+  min-height: 4rem;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba($white, 0.07);
+  border-radius: 0.55rem;
+  grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  background: #0a0e0b;
+}
+
+.lowStockGrid img {
+  width: 2.6rem;
+  height: 2.6rem;
+  object-fit: contain;
+}
+
+.lowStockGrid div {
+  min-width: 0;
+}
+
+.lowStockGrid strong,
+.lowStockGrid span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lowStockGrid strong {
+  color: $white;
+  font-size: 0.68rem;
+}
+
+.lowStockGrid span {
+  margin-top: 0.15rem;
+  color: $gray-600;
+  font-size: 0.58rem;
+}
+
+.lowStockGrid b {
+  color: #fcd34d;
+  font-size: 0.64rem;
+}
+
+.rowNote {
+  display: block;
+  margin-top: 0.25rem;
+  color: #fcd34d;
+  font-size: 0.56rem;
+  text-transform: capitalize;
+}
+
+.orderEditor,
+.customerEditor {
+  padding: 1.25rem;
+  border: 1px solid rgba($primary, 0.2);
+  border-radius: 0.65rem;
+  background: #0a0e0b;
+}
+
+.orderSummaryGrid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.9fr 0.85fr;
+  gap: 1rem;
+}
+
+.orderSummaryGrid > section,
+.orderActionGrid > form,
+.contentForm > section {
+  padding: 1rem;
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 0.55rem;
+  background: #0d120f;
+}
+
+.orderEditor h3,
+.customerEditor h3,
+.variantManager h3,
+.discountForm h3,
+.contentForm h3 {
+  color: $white;
+  font-family: $font-body;
+  font-size: 0.76rem;
+}
+
+.orderItem {
+  display: grid;
+  min-height: 3.2rem;
+  align-items: center;
+  border-bottom: 1px solid rgba($white, 0.06);
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.8rem;
+  font-size: 0.62rem;
+}
+
+.orderItem strong,
+.orderItem small {
+  display: block;
+}
+
+.orderItem strong {
+  color: $white;
+}
+
+.orderItem small {
+  margin-top: 0.15rem;
+  color: $gray-600;
+}
+
+.orderSummaryGrid address {
+  margin-top: 0.75rem;
+  color: $gray-400;
+  font-size: 0.66rem;
+  font-style: normal;
+  line-height: 1.55;
+}
+
+.orderSummaryGrid address span {
+  display: block;
+}
+
+.orderSummaryGrid p {
+  margin-top: 0.75rem;
+  color: $gray-500;
+  font-size: 0.62rem;
+  line-height: 1.5;
+}
+
+.orderSummaryGrid dl {
+  margin: 0.65rem 0;
+}
+
+.orderSummaryGrid dl div {
+  display: flex;
+  min-height: 1.8rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba($white, 0.05);
+  font-size: 0.62rem;
+}
+
+.orderSummaryGrid dd {
+  color: $white;
+  font-weight: 750;
+}
+
+.orderSummaryGrid a {
+  color: $primary-light;
+  font-size: 0.64rem;
+  font-weight: 750;
+}
+
+.orderActionGrid {
+  display: grid;
+  margin-top: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.orderActionGrid label,
+.customerControlGrid label,
+.variantForm label,
+.discountForm label,
+.contentForm label {
+  display: block;
+  margin-top: 0.7rem;
+}
+
+.orderActionGrid label > span,
+.customerControlGrid label > span,
+.variantForm label > span,
+.discountForm label > span,
+.contentForm label > span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: $gray-400;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.orderActionGrid input,
+.orderActionGrid textarea,
+.customerControlGrid input,
+.customerControlGrid textarea,
+.variantForm input,
+.discountForm input,
+.discountForm select,
+.contentForm input,
+.contentForm textarea {
+  width: 100%;
+  border: 1px solid rgba($white, 0.1);
+  border-radius: 0.4rem;
+  background: #070a08;
+  color: $white;
+  font-size: 0.68rem;
+  outline: none;
+}
+
+.orderActionGrid input,
+.customerControlGrid input,
+.variantForm input,
+.discountForm input,
+.discountForm select,
+.contentForm input {
+  height: 2.55rem;
+  padding: 0 0.7rem;
+}
+
+.orderActionGrid textarea,
+.customerControlGrid textarea,
+.contentForm textarea {
+  padding: 0.7rem;
+  resize: vertical;
+}
+
+.orderActionGrid button,
+.dangerControls button,
+.variantManager button,
+.discountGrid button {
+  min-height: 2.45rem;
+  margin-top: 0.75rem;
+  padding: 0 0.75rem;
+  border: 1px solid rgba($white, 0.12);
+  border-radius: 0.42rem;
+  color: $gray-300;
+  font-size: 0.63rem;
+  font-weight: 750;
+}
+
+.orderActionGrid form > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.dangerAction,
+.removeConfirm {
+  border-color: rgba(#ef4444, 0.3) !important;
+  background: rgba(#ef4444, 0.08) !important;
+  color: #fca5a5 !important;
+}
+
+.customerEditor > div:first-child p {
+  margin-top: 0.3rem;
+  color: $gray-600;
+  font-size: 0.62rem;
+}
+
+.customerControlGrid {
+  display: grid;
+  margin-top: 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1rem;
+}
+
+.customerControlGrid small {
+  display: block;
+  margin-top: 0.3rem;
+  color: $gray-600;
+  font-size: 0.56rem;
+}
+
+.customerControlGrid .toggleField {
+  display: flex;
+  min-height: 2.55rem;
+  margin-top: 1.66rem;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.customerControlGrid .toggleField input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.customerControlGrid .toggleField span {
+  margin: 0;
+}
+
+.dangerControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.variantManager {
+  margin-top: 1rem;
+  overflow: hidden;
+  border-top: 1px solid rgba($white, 0.08);
+}
+
+.variantManager .sectionHead {
+  padding-inline: 0;
+}
+
+.variantList > div {
+  display: grid;
+  min-height: 3.5rem;
+  align-items: center;
+  border-bottom: 1px solid rgba($white, 0.06);
+  grid-template-columns: minmax(9rem, 1.4fr) repeat(5, minmax(5rem, 0.8fr)) auto;
+  gap: 0.65rem;
+  color: $gray-400;
+  font-size: 0.61rem;
+}
+
+.variantList strong,
+.variantList small {
+  display: block;
+}
+
+.variantList strong {
+  color: $white;
+}
+
+.variantList small {
+  margin-top: 0.15rem;
+  color: $gray-600;
+}
+
+.variantList button {
+  margin: 0;
+  color: #fca5a5;
+}
+
+.variantForm {
+  display: grid;
+  padding: 1rem 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.variantForm label {
+  margin: 0;
+}
+
+.variantForm button {
+  align-self: end;
+  margin: 0;
+}
+
+.discountForm,
+.contentForm {
+  padding: 1.25rem;
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 0.75rem;
+  background: #0e1210;
+}
+
+.discountForm {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.discountForm label {
+  margin: 0;
+}
+
+.discountForm > button {
+  align-self: end;
+}
+
+.discountGrid {
+  display: grid;
+  margin-top: 1.25rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.discountGrid article {
+  padding: 1rem;
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 0.65rem;
+  background: #0e1210;
+}
+
+.discountGrid header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.discountGrid header strong {
+  color: $primary-light;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+}
+
+.discountGrid h3 {
+  margin-top: 1.1rem;
+  color: $white;
+  font-family: $font-body;
+  font-size: 1.15rem;
+}
+
+.discountGrid p,
+.discountGrid small {
+  display: block;
+  margin-top: 0.3rem;
+  color: $gray-500;
+  font-size: 0.62rem;
+}
+
+.contentForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.contentForm > .formActions {
+  grid-column: 1 / -1;
+}
+
+.publishNote {
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border: 1px solid rgba($primary, 0.18);
+  border-radius: 0.45rem;
+  background: rgba($primary, 0.05);
+}
+
+.publishNote strong {
+  color: $primary-light;
+  font-size: 0.65rem;
+}
+
+.publishNote p {
+  margin-top: 0.25rem;
+  color: $gray-500;
+  font-size: 0.6rem;
+  line-height: 1.5;
+}
+
+.analyticsMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.analyticsMetrics article {
+  padding: 1.1rem;
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 0.65rem;
+  background: #0e1210;
+}
+
+.analyticsMetrics span,
+.analyticsMetrics strong,
+.analyticsMetrics small {
+  display: block;
+}
+
+.analyticsMetrics span {
+  color: $gray-500;
+  font-size: 0.63rem;
+}
+
+.analyticsMetrics strong {
+  margin-top: 0.65rem;
+  color: $white;
+  font-size: 1.35rem;
+}
+
+.analyticsMetrics small {
+  margin-top: 0.25rem;
+  color: $gray-600;
+  font-size: 0.58rem;
+}
+
+.chartRows {
+  padding: 0.75rem 1.25rem 1rem;
+}
+
+.chartRows > div {
+  display: grid;
+  min-height: 2.25rem;
+  align-items: center;
+  grid-template-columns: 5.5rem minmax(8rem, 1fr) 6rem 4rem;
+  gap: 0.8rem;
+  color: $gray-500;
+  font-size: 0.59rem;
+}
+
+.chartRows i {
+  height: 0.45rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba($white, 0.06);
+}
+
+.chartRows b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: $primary;
+}
+
+.chartRows strong {
+  color: $white;
+  font-size: 0.62rem;
+}
+
+.activityList {
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 0.75rem;
+  background: #0e1210;
+}
+
+.activityList article {
+  display: grid;
+  min-height: 4rem;
+  align-items: center;
+  padding: 0.75rem 1.2rem;
+  border-bottom: 1px solid rgba($white, 0.06);
+  grid-template-columns: 0.6rem minmax(0, 1fr) auto;
+  gap: 0.85rem;
+}
+
+.activityList article:last-child {
+  border-bottom: 0;
+}
+
+.activityMark {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: $primary;
+  box-shadow: 0 0 0 0.3rem rgba($primary, 0.08);
+}
+
+.activityList strong {
+  color: $white;
+  font-size: 0.67rem;
+}
+
+.activityList p,
+.activityList article > span:last-child {
+  margin-top: 0.2rem;
+  color: $gray-600;
+  font-size: 0.57rem;
+}
+
 @keyframes pulse {
   to {
     opacity: 0.35;
@@ -1183,6 +1771,19 @@
 
   .importGuide {
     grid-template-columns: 1fr;
+  }
+
+  .orderSummaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .orderSummaryGrid > section:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .variantForm,
+  .discountForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1270,6 +1871,45 @@
   .importActions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .introActions,
+  .dangerControls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .lowStockGrid,
+  .orderSummaryGrid,
+  .orderActionGrid,
+  .customerControlGrid,
+  .variantForm,
+  .discountForm,
+  .discountGrid,
+  .contentForm,
+  .analyticsMetrics {
+    grid-template-columns: 1fr;
+  }
+
+  .orderSummaryGrid > section:first-child,
+  .contentForm > .formActions {
+    grid-column: auto;
+  }
+
+  .variantList {
+    overflow-x: auto;
+  }
+
+  .variantList > div {
+    min-width: 52rem;
+  }
+
+  .chartRows > div {
+    grid-template-columns: 4.8rem minmax(5rem, 1fr) 4.5rem;
+  }
+
+  .chartRows small {
+    display: none;
   }
 }
 

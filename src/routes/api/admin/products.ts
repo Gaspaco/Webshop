@@ -7,7 +7,12 @@ import {
   products,
   productVariants,
 } from "~/db/schema";
-import { apiJson, requireAdmin, toSlug } from "~/lib/admin.server";
+import {
+  apiJson,
+  requireAdmin,
+  toSlug,
+  writeAuditLog,
+} from "~/lib/admin.server";
 
 const statusSchema = z.enum(["draft", "active", "archived"]);
 const gameSchema = z.enum(["pokemon", "yugioh", "magic", "other"]);
@@ -24,6 +29,16 @@ const imageSchema = z
     "Use an HTTPS image, a local image path, or upload a JPG, PNG, or WebP file.",
   );
 
+const tcgFields = {
+  cardNumber: z.string().trim().max(60).optional().default(""),
+  rarity: z.string().trim().max(80).optional().default(""),
+  setCode: z.string().trim().max(60).optional().default(""),
+  illustrator: z.string().trim().max(120).optional().default(""),
+  gradingCompany: z.string().trim().max(40).optional().default(""),
+  grade: z.string().trim().max(20).optional().default(""),
+  certificationNumber: z.string().trim().max(80).optional().default(""),
+};
+
 const createProductSchema = z.object({
   name: z.string().trim().min(2).max(140),
   slug: z.string().trim().max(110).optional().default(""),
@@ -37,6 +52,8 @@ const createProductSchema = z.object({
   sku: z.string().trim().max(80).optional().default(""),
   condition: z.string().trim().max(60).optional().default("Near Mint"),
   language: z.string().trim().max(60).optional().default("English"),
+  finish: z.string().trim().max(60).optional().default(""),
+  ...tcgFields,
   priceCents: z.number().int().min(0).max(100_000_000),
   compareAtPriceCents: z.number().int().min(0).max(100_000_000).nullable().optional(),
   stock: z.number().int().min(0).max(1_000_000),
@@ -95,6 +112,13 @@ export async function POST(event: APIEvent) {
           metadata: {
             set: input.set || null,
             badge: input.badge || null,
+            cardNumber: input.cardNumber || null,
+            rarity: input.rarity || null,
+            setCode: input.setCode || null,
+            illustrator: input.illustrator || null,
+            gradingCompany: input.gradingCompany || null,
+            grade: input.grade || null,
+            certificationNumber: input.certificationNumber || null,
           },
         })
         .returning();
@@ -112,6 +136,7 @@ export async function POST(event: APIEvent) {
           name: input.condition || "Default",
           condition: input.condition || null,
           language: input.language || null,
+          finish: input.finish || null,
           priceCents: input.priceCents,
           compareAtPriceCents: input.compareAtPriceCents ?? null,
           stock: input.stock,
@@ -131,6 +156,15 @@ export async function POST(event: APIEvent) {
       }
 
       return { product: createdProduct, variant };
+    });
+
+    await writeAuditLog({
+      event,
+      actorId: guard.session!.user.id,
+      action: "product.created",
+      entityType: "product",
+      entityId: result.product.id,
+      summary: `${result.product.name} created as ${result.product.status}.`,
     });
 
     return apiJson(result, { status: 201 });
@@ -169,7 +203,17 @@ export async function PATCH(event: APIEvent) {
       if (input.productType !== undefined) productChanges.productType = input.productType;
       if (input.status !== undefined) productChanges.status = input.status;
       if (input.image !== undefined) productChanges.imageUrls = input.image ? [input.image] : [];
-      if (input.set !== undefined || input.badge !== undefined) {
+      if (
+        input.set !== undefined ||
+        input.badge !== undefined ||
+        input.cardNumber !== undefined ||
+        input.rarity !== undefined ||
+        input.setCode !== undefined ||
+        input.illustrator !== undefined ||
+        input.gradingCompany !== undefined ||
+        input.grade !== undefined ||
+        input.certificationNumber !== undefined
+      ) {
         const [stored] = await tx
           .select({ metadata: products.metadata })
           .from(products)
@@ -179,6 +223,21 @@ export async function PATCH(event: APIEvent) {
           ...(stored?.metadata ?? {}),
           ...(input.set !== undefined ? { set: input.set || null } : {}),
           ...(input.badge !== undefined ? { badge: input.badge || null } : {}),
+          ...(input.cardNumber !== undefined
+            ? { cardNumber: input.cardNumber || null }
+            : {}),
+          ...(input.rarity !== undefined ? { rarity: input.rarity || null } : {}),
+          ...(input.setCode !== undefined ? { setCode: input.setCode || null } : {}),
+          ...(input.illustrator !== undefined
+            ? { illustrator: input.illustrator || null }
+            : {}),
+          ...(input.gradingCompany !== undefined
+            ? { gradingCompany: input.gradingCompany || null }
+            : {}),
+          ...(input.grade !== undefined ? { grade: input.grade || null } : {}),
+          ...(input.certificationNumber !== undefined
+            ? { certificationNumber: input.certificationNumber || null }
+            : {}),
         };
       }
 
@@ -193,6 +252,7 @@ export async function PATCH(event: APIEvent) {
         variantChanges.name = input.condition || "Default";
       }
       if (input.language !== undefined) variantChanges.language = input.language || null;
+      if (input.finish !== undefined) variantChanges.finish = input.finish || null;
       if (input.priceCents !== undefined) variantChanges.priceCents = input.priceCents;
       if (input.compareAtPriceCents !== undefined) {
         variantChanges.compareAtPriceCents = input.compareAtPriceCents;
@@ -217,6 +277,20 @@ export async function PATCH(event: APIEvent) {
       }
     });
 
+    await writeAuditLog({
+      event,
+      actorId: guard.session!.user.id,
+      action: "product.updated",
+      entityType: "product",
+      entityId: input.id,
+      summary: `${input.name ?? "Product"} listing updated.`,
+      metadata: {
+        status: input.status,
+        stock: input.stock,
+        priceCents: input.priceCents,
+      },
+    });
+
     return apiJson({ ok: true });
   } catch (error) {
     return failure(error);
@@ -238,6 +312,15 @@ export async function DELETE(event: APIEvent) {
     if (!archived) {
       return apiJson({ error: "Product not found." }, { status: 404 });
     }
+
+    await writeAuditLog({
+      event,
+      actorId: guard.session!.user.id,
+      action: "product.archived",
+      entityType: "product",
+      entityId: archived.id,
+      summary: "Product archived.",
+    });
 
     return apiJson({ ok: true });
   } catch (error) {

@@ -21,7 +21,23 @@ type AdminSection =
   | "products"
   | "orders"
   | "customers"
+  | "discounts"
+  | "storefront"
+  | "analytics"
+  | "activity"
   | "imports";
+
+type AdminVariant = {
+  id: string;
+  sku: string;
+  name: string;
+  condition: string | null;
+  language: string | null;
+  finish: string | null;
+  priceCents: number;
+  stock: number;
+  reservedStock: number;
+};
 
 type AdminProduct = {
   id: string;
@@ -41,7 +57,17 @@ type AdminProduct = {
   compareAtPriceCents: number | null;
   stock: number | null;
   reservedStock: number | null;
+  variants: AdminVariant[];
   updatedAt: string;
+};
+
+type AdminOrderItem = {
+  id: string;
+  sku: string;
+  name: string;
+  quantity: number;
+  unitPriceCents: number;
+  totalCents: number;
 };
 
 type AdminOrder = {
@@ -50,7 +76,31 @@ type AdminOrder = {
   email: string;
   status: string;
   currency: string;
+  subtotalCents: number;
+  shippingCents: number;
+  discountCode: string | null;
+  discountCents: number;
   totalCents: number;
+  shippingAddress: Record<string, string>;
+  notes: string | null;
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+  shippedAt: string | null;
+  items: AdminOrderItem[];
+  payment: {
+    id: string;
+    status: string;
+    method: string | null;
+    amountCents: number;
+    molliePaymentId: string;
+    paidAt: string | null;
+  } | null;
+  returnRequest: {
+    id: string;
+    status: string;
+    reason: string;
+    amountCents: number | null;
+  } | null;
   createdAt: string;
 };
 
@@ -60,7 +110,48 @@ type AdminCustomer = {
   email: string;
   emailVerified: boolean;
   image: string | null;
+  notes: string;
+  tags: string[];
+  suspended: boolean;
+  orderCount: number;
+  spentCents: number;
   createdAt: string;
+};
+
+type AdminDiscount = {
+  id: string;
+  code: string;
+  type: "percentage" | "fixed";
+  value: number;
+  minimumOrderCents: number;
+  maximumUses: number | null;
+  usedCount: number;
+  active: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+};
+
+type StorefrontSettings = {
+  announcement: string;
+  heroTitle: string;
+  heroCopy: string;
+  featuredProductSlugs: string[];
+  socialInstagram: string;
+  socialTiktok: string;
+  socialYoutube: string;
+  socialDiscord: string;
+};
+
+type AuditEntry = {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  summary: string;
+  ipAddress: string | null;
+  createdAt: string;
+  actorName: string | null;
+  actorEmail: string | null;
 };
 
 type ImportJob = {
@@ -86,6 +177,18 @@ type AdminDashboard = {
   orders: AdminOrder[];
   customers: AdminCustomer[];
   imports: ImportJob[];
+  discounts: AdminDiscount[];
+  content: { home?: Partial<StorefrontSettings> };
+  audit: AuditEntry[];
+  analytics: {
+    salesByDay: Array<{
+      date: string;
+      revenueCents: number;
+      orders: number;
+    }>;
+    averageOrderCents: number;
+    returningCustomers: number;
+  };
 };
 
 type ProductDraft = {
@@ -97,6 +200,14 @@ type ProductDraft = {
   description: string;
   image: string;
   badge: string;
+  cardNumber: string;
+  rarity: string;
+  setCode: string;
+  illustrator: string;
+  gradingCompany: string;
+  grade: string;
+  certificationNumber: string;
+  finish: string;
   price: string;
   stock: string;
   status: "draft" | "active";
@@ -111,6 +222,14 @@ const emptyProduct: ProductDraft = {
   description: "",
   image: "",
   badge: "",
+  cardNumber: "",
+  rarity: "",
+  setCode: "",
+  illustrator: "",
+  gradingCompany: "",
+  grade: "",
+  certificationNumber: "",
+  finish: "",
   price: "",
   stock: "1",
   status: "draft",
@@ -121,6 +240,10 @@ const NAV_ITEMS: Array<{ id: AdminSection; label: string; short: string }> = [
   { id: "products", label: "Catalogue", short: "Products and stock" },
   { id: "orders", label: "Orders", short: "Fulfilment" },
   { id: "customers", label: "Customers", short: "Accounts" },
+  { id: "discounts", label: "Discounts", short: "Campaigns" },
+  { id: "storefront", label: "Storefront", short: "Homepage content" },
+  { id: "analytics", label: "Analytics", short: "Sales performance" },
+  { id: "activity", label: "Activity", short: "Security history" },
   { id: "imports", label: "Bulk import", short: "CSV tools" },
 ];
 
@@ -283,6 +406,8 @@ function ProductRow(props: {
   onSaved: () => unknown;
 }) {
   const metadata = () => props.product.metadata ?? {};
+  const metadataText = (key: string) =>
+    typeof metadata()[key] === "string" ? metadata()[key] as string : "";
   const [editing, setEditing] = createSignal(false);
   const [name, setName] = createSignal(props.product.name);
   const [description, setDescription] = createSignal(
@@ -298,7 +423,21 @@ function ProductRow(props: {
     typeof metadata().set === "string" ? metadata().set as string : "",
   );
   const [badge, setBadge] = createSignal(
-    typeof metadata().badge === "string" ? metadata().badge as string : "",
+    metadataText("badge"),
+  );
+  const [cardNumber, setCardNumber] = createSignal(metadataText("cardNumber"));
+  const [rarity, setRarity] = createSignal(metadataText("rarity"));
+  const [setCode, setSetCode] = createSignal(metadataText("setCode"));
+  const [illustrator, setIllustrator] = createSignal(metadataText("illustrator"));
+  const [gradingCompany, setGradingCompany] = createSignal(
+    metadataText("gradingCompany"),
+  );
+  const [grade, setGrade] = createSignal(metadataText("grade"));
+  const [certificationNumber, setCertificationNumber] = createSignal(
+    metadataText("certificationNumber"),
+  );
+  const [finish, setFinish] = createSignal(
+    props.product.variants[0]?.finish ?? "",
   );
   const [sku, setSku] = createSignal(props.product.sku ?? "");
   const [condition, setCondition] = createSignal(
@@ -315,6 +454,16 @@ function ProductRow(props: {
   const [status, setStatus] = createSignal(props.product.status);
   const [saving, setSaving] = createSignal(false);
   const [message, setMessage] = createSignal("");
+  const [variantOpen, setVariantOpen] = createSignal(false);
+  const [variantDraft, setVariantDraft] = createSignal({
+    name: "",
+    sku: "",
+    condition: "Near Mint",
+    language: "English",
+    finish: "",
+    price: "",
+    stock: "0",
+  });
 
   const loadImage = (file?: File) => {
     if (!file) return;
@@ -348,6 +497,14 @@ function ProductRow(props: {
         productType: productType(),
         set: collection(),
         badge: badge(),
+        cardNumber: cardNumber(),
+        rarity: rarity(),
+        setCode: setCode(),
+        illustrator: illustrator(),
+        gradingCompany: gradingCompany(),
+        grade: grade(),
+        certificationNumber: certificationNumber(),
+        finish: finish(),
         sku: sku(),
         condition: condition(),
         language: language(),
@@ -367,6 +524,69 @@ function ProductRow(props: {
     setMessage("Saved");
     setEditing(false);
     setSaving(false);
+  };
+
+  const addVariant = async (event: SubmitEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+    const current = variantDraft();
+    const response = await fetch("/api/admin/variants", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId: props.product.id,
+        name: current.name,
+        sku: current.sku,
+        condition: current.condition,
+        language: current.language,
+        finish: current.finish,
+        priceCents: Math.round(Number(current.price) * 100),
+        stock: Number(current.stock),
+      }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Variant could not be added.");
+      setSaving(false);
+      return;
+    }
+    await Promise.resolve(props.onSaved());
+    setVariantDraft({
+      name: "",
+      sku: "",
+      condition: "Near Mint",
+      language: "English",
+      finish: "",
+      price: "",
+      stock: "0",
+    });
+    setVariantOpen(false);
+    setMessage("Variant added");
+    setSaving(false);
+  };
+
+  const removeVariant = async (variant: AdminVariant) => {
+    if (!window.confirm(`Remove variant ${variant.sku}?`)) return;
+    setMessage("");
+    const response = await fetch("/api/admin/variants", {
+      method: "DELETE",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: variant.id,
+        productId: props.product.id,
+        confirmation: "REMOVE",
+      }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Variant could not be removed.");
+      return;
+    }
+    await Promise.resolve(props.onSaved());
+    setMessage("Variant removed");
   };
 
   return (
@@ -499,6 +719,38 @@ function ProductRow(props: {
                   <input placeholder="New, Vintage, PSA 10" value={badge()} onInput={event => setBadge(event.currentTarget.value)} />
                 </label>
                 <label>
+                  <span>Card number</span>
+                  <input placeholder="025/165" value={cardNumber()} onInput={event => setCardNumber(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Set code</span>
+                  <input placeholder="MEW" value={setCode()} onInput={event => setSetCode(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Rarity</span>
+                  <input placeholder="Special illustration rare" value={rarity()} onInput={event => setRarity(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Finish</span>
+                  <input placeholder="Holofoil" value={finish()} onInput={event => setFinish(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Illustrator</span>
+                  <input value={illustrator()} onInput={event => setIllustrator(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Grading company</span>
+                  <input placeholder="PSA, BGS, CGC" value={gradingCompany()} onInput={event => setGradingCompany(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Grade</span>
+                  <input placeholder="10" value={grade()} onInput={event => setGrade(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Certification number</span>
+                  <input value={certificationNumber()} onInput={event => setCertificationNumber(event.currentTarget.value)} />
+                </label>
+                <label>
                   <span>Replace image</span>
                   <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => loadImage(event.currentTarget.files?.[0])} />
                 </label>
@@ -522,6 +774,310 @@ function ProductRow(props: {
                   {saving() ? "Saving changes" : "Save all changes"}
                 </button>
               </div>
+
+              <section class={styles.variantManager}>
+                <div class={styles.sectionHead}>
+                  <div>
+                    <h3>Variants</h3>
+                    <p>Manage language, condition, finish, price, and stock options.</p>
+                  </div>
+                  <button type="button" onClick={() => setVariantOpen(value => !value)}>
+                    {variantOpen() ? "Close variant form" : "Add variant"}
+                  </button>
+                </div>
+                <div class={styles.variantList}>
+                  <For each={props.product.variants}>
+                    {variant => (
+                      <div>
+                        <span>
+                          <strong>{variant.name}</strong>
+                          <small>{variant.sku}</small>
+                        </span>
+                        <span>{variant.condition ?? "No condition"}</span>
+                        <span>{variant.language ?? "No language"}</span>
+                        <span>{variant.finish || "Standard"}</span>
+                        <span>{formatMoney(variant.priceCents)}</span>
+                        <span>{variant.stock - variant.reservedStock} available</span>
+                        <button type="button" onClick={() => removeVariant(variant)}>Remove</button>
+                      </div>
+                    )}
+                  </For>
+                </div>
+                <Show when={variantOpen()}>
+                  <form class={styles.variantForm} onSubmit={addVariant}>
+                    <label>
+                      <span>Variant name</span>
+                      <input required value={variantDraft().name} onInput={event => setVariantDraft(current => ({ ...current, name: event.currentTarget.value }))} />
+                    </label>
+                    <label>
+                      <span>SKU</span>
+                      <input required value={variantDraft().sku} onInput={event => setVariantDraft(current => ({ ...current, sku: event.currentTarget.value }))} />
+                    </label>
+                    <label>
+                      <span>Condition</span>
+                      <input value={variantDraft().condition} onInput={event => setVariantDraft(current => ({ ...current, condition: event.currentTarget.value }))} />
+                    </label>
+                    <label>
+                      <span>Language</span>
+                      <input value={variantDraft().language} onInput={event => setVariantDraft(current => ({ ...current, language: event.currentTarget.value }))} />
+                    </label>
+                    <label>
+                      <span>Finish</span>
+                      <input value={variantDraft().finish} onInput={event => setVariantDraft(current => ({ ...current, finish: event.currentTarget.value }))} />
+                    </label>
+                    <label>
+                      <span>Price in EUR</span>
+                      <input required type="number" min="0" step="0.01" value={variantDraft().price} onInput={event => setVariantDraft(current => ({ ...current, price: event.currentTarget.value }))} />
+                    </label>
+                    <label>
+                      <span>Opening stock</span>
+                      <input required type="number" min="0" step="1" value={variantDraft().stock} onInput={event => setVariantDraft(current => ({ ...current, stock: event.currentTarget.value }))} />
+                    </label>
+                    <button type="submit" class={styles.primaryAction} disabled={saving()}>
+                      {saving() ? "Adding variant" : "Add variant"}
+                    </button>
+                  </form>
+                </Show>
+              </section>
+            </div>
+          </td>
+        </tr>
+      </Show>
+    </>
+  );
+}
+
+function OrderRow(props: {
+  order: AdminOrder;
+  onUpdated: () => unknown;
+}) {
+  const [expanded, setExpanded] = createSignal(false);
+  const [trackingNumber, setTrackingNumber] = createSignal(
+    props.order.trackingNumber ?? "",
+  );
+  const [trackingUrl, setTrackingUrl] = createSignal(
+    props.order.trackingUrl ?? "",
+  );
+  const [refundAmount, setRefundAmount] = createSignal(
+    (props.order.totalCents / 100).toFixed(2),
+  );
+  const [reason, setReason] = createSignal("");
+  const [busy, setBusy] = createSignal(false);
+  const [message, setMessage] = createSignal("");
+
+  const updateStatus = async (status: string) => {
+    setBusy(true);
+    setMessage("");
+    const response = await fetch("/api/admin/orders", {
+      method: "PATCH",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: props.order.id, status }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Order could not be updated.");
+      setBusy(false);
+      return;
+    }
+    await Promise.resolve(props.onUpdated());
+    setMessage("Order status updated");
+    setBusy(false);
+  };
+
+  const runAction = async (
+    payload:
+      | {
+          action: "ship";
+          id: string;
+          trackingNumber: string;
+          trackingUrl: string;
+        }
+      | {
+          action: "record_return";
+          id: string;
+          reason: string;
+        }
+      | {
+          action: "refund";
+          id: string;
+          amountCents: number;
+          reason: string;
+          confirmation: "REFUND";
+        },
+  ) => {
+    setBusy(true);
+    setMessage("");
+    const response = await fetch("/api/admin/orders", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Order action could not be completed.");
+      setBusy(false);
+      return;
+    }
+    await Promise.resolve(props.onUpdated());
+    setMessage(
+      payload.action === "ship"
+        ? "Shipment saved and customer notified"
+        : payload.action === "refund"
+          ? "Mollie refund completed"
+          : "Return request recorded",
+    );
+    setBusy(false);
+  };
+
+  const refund = () => {
+    const amountCents = Math.round(Number(refundAmount()) * 100);
+    if (!reason().trim()) {
+      setMessage("Add a reason before issuing a refund.");
+      return;
+    }
+    if (
+      !window.confirm(
+        `Refund ${formatMoney(amountCents)} through Mollie? This payment action cannot be undone.`,
+      )
+    ) return;
+    void runAction({
+      action: "refund",
+      id: props.order.id,
+      amountCents,
+      reason: reason(),
+      confirmation: "REFUND",
+    });
+  };
+
+  const addressLines = () =>
+    Object.values(props.order.shippingAddress ?? {}).filter(Boolean);
+
+  return (
+    <>
+      <tr>
+        <td>
+          <strong>{props.order.orderNumber}</strong>
+          <Show when={props.order.returnRequest}>
+            <small class={styles.rowNote}>Return {props.order.returnRequest!.status}</small>
+          </Show>
+        </td>
+        <td>{props.order.email}</td>
+        <td>{formatDate(props.order.createdAt)}</td>
+        <td>{formatMoney(props.order.totalCents, props.order.currency)}</td>
+        <td>
+          <select
+            class={styles.orderSelect}
+            value={props.order.status}
+            disabled={busy()}
+            onChange={event => updateStatus(event.currentTarget.value)}
+          >
+            <For each={ORDER_STATUSES}>{status => <option value={status}>{status}</option>}</For>
+          </select>
+        </td>
+        <td>
+          <button type="button" class={styles.editAction} onClick={() => setExpanded(value => !value)}>
+            {expanded() ? "Close" : "Open order"}
+          </button>
+        </td>
+      </tr>
+      <Show when={expanded()}>
+        <tr class={styles.editorRow}>
+          <td colSpan={6}>
+            <div class={styles.orderEditor}>
+              <div class={styles.orderSummaryGrid}>
+                <section>
+                  <h3>Items</h3>
+                  <For each={props.order.items}>
+                    {item => (
+                      <div class={styles.orderItem}>
+                        <span>
+                          <strong>{item.name}</strong>
+                          <small>{item.sku}</small>
+                        </span>
+                        <span>{item.quantity} × {formatMoney(item.unitPriceCents)}</span>
+                        <strong>{formatMoney(item.totalCents)}</strong>
+                      </div>
+                    )}
+                  </For>
+                </section>
+                <section>
+                  <h3>Ship to</h3>
+                  <address>
+                    <For each={addressLines()}>{line => <span>{line}</span>}</For>
+                  </address>
+                  <Show when={props.order.notes}>
+                    <p>Customer note: {props.order.notes}</p>
+                  </Show>
+                </section>
+                <section>
+                  <h3>Payment summary</h3>
+                  <dl>
+                    <div><dt>Subtotal</dt><dd>{formatMoney(props.order.subtotalCents)}</dd></div>
+                    <div><dt>Shipping</dt><dd>{formatMoney(props.order.shippingCents)}</dd></div>
+                    <Show when={props.order.discountCents > 0}>
+                      <div><dt>Discount {props.order.discountCode}</dt><dd>{formatMoney(0 - props.order.discountCents)}</dd></div>
+                    </Show>
+                    <div><dt>Total</dt><dd>{formatMoney(props.order.totalCents)}</dd></div>
+                    <div><dt>Payment</dt><dd>{props.order.payment?.status ?? "No payment"}</dd></div>
+                  </dl>
+                  <A href={`/api/admin/invoice?id=${props.order.id}`} target="_blank">
+                    Open printable invoice
+                  </A>
+                </section>
+              </div>
+
+              <div class={styles.orderActionGrid}>
+                <form onSubmit={event => {
+                  event.preventDefault();
+                  void runAction({
+                    action: "ship",
+                    id: props.order.id,
+                    trackingNumber: trackingNumber(),
+                    trackingUrl: trackingUrl(),
+                  });
+                }}>
+                  <h3>Shipping</h3>
+                  <label>
+                    <span>Tracking number</span>
+                    <input required value={trackingNumber()} onInput={event => setTrackingNumber(event.currentTarget.value)} />
+                  </label>
+                  <label>
+                    <span>HTTPS tracking link</span>
+                    <input required type="url" placeholder="https://" value={trackingUrl()} onInput={event => setTrackingUrl(event.currentTarget.value)} />
+                  </label>
+                  <button type="submit" disabled={busy()}>Mark shipped and notify</button>
+                </form>
+
+                <form onSubmit={event => {
+                  event.preventDefault();
+                  void runAction({
+                    action: "record_return",
+                    id: props.order.id,
+                    reason: reason(),
+                  });
+                }}>
+                  <h3>Return and refund</h3>
+                  <label>
+                    <span>Reason</span>
+                    <textarea required rows="3" value={reason()} onInput={event => setReason(event.currentTarget.value)} />
+                  </label>
+                  <label>
+                    <span>Refund amount in EUR</span>
+                    <input type="number" min="0.01" step="0.01" value={refundAmount()} onInput={event => setRefundAmount(event.currentTarget.value)} />
+                  </label>
+                  <div>
+                    <button type="submit" disabled={busy()}>Record return</button>
+                    <button type="button" class={styles.dangerAction} disabled={busy()} onClick={refund}>
+                      Refund through Mollie
+                    </button>
+                  </div>
+                </form>
+              </div>
+              <Show when={message()}>
+                <p class={styles.inlineMessage}>{message()}</p>
+              </Show>
             </div>
           </td>
         </tr>
@@ -534,9 +1090,63 @@ function CustomerRow(props: {
   customer: AdminCustomer;
   onRemoved: () => unknown;
 }) {
+  const [expanded, setExpanded] = createSignal(false);
   const [confirming, setConfirming] = createSignal(false);
   const [removing, setRemoving] = createSignal(false);
+  const [saving, setSaving] = createSignal(false);
   const [message, setMessage] = createSignal("");
+  const [notes, setNotes] = createSignal(props.customer.notes);
+  const [tags, setTags] = createSignal(props.customer.tags.join(", "));
+  const [suspended, setSuspended] = createSignal(props.customer.suspended);
+
+  const saveControls = async () => {
+    setSaving(true);
+    setMessage("");
+    const response = await fetch("/api/admin/customers", {
+      method: "PATCH",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "update",
+        id: props.customer.id,
+        notes: notes(),
+        tags: tags()
+          .split(",")
+          .map(tag => tag.trim())
+          .filter(Boolean),
+        suspended: suspended(),
+      }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Customer controls could not be saved.");
+      setSaving(false);
+      return;
+    }
+    await Promise.resolve(props.onRemoved());
+    setMessage("Customer controls saved");
+    setSaving(false);
+  };
+
+  const revokeSessions = async () => {
+    if (!window.confirm("Sign this customer out on every device?")) return;
+    setMessage("");
+    const response = await fetch("/api/admin/customers", {
+      method: "PATCH",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "revoke_sessions",
+        id: props.customer.id,
+      }),
+    });
+    const result = (await response.json()) as { error?: string };
+    setMessage(
+      response.ok
+        ? "All customer sessions revoked"
+        : result.error ?? "Sessions could not be revoked.",
+    );
+  };
 
   const remove = async () => {
     if (!confirming()) {
@@ -569,48 +1179,353 @@ function CustomerRow(props: {
   };
 
   return (
-    <tr>
-      <td>
-        <div class={styles.customerIdentity}>
-          <span>{initials(props.customer.name)}</span>
-          <strong>{props.customer.name}</strong>
-        </div>
-      </td>
-      <td>{props.customer.email}</td>
-      <td>
-        <span class={`${styles.status} ${props.customer.emailVerified ? styles.verified : styles.unverified}`}>
-          {props.customer.emailVerified ? "Verified" : "Unverified"}
-        </span>
-      </td>
-      <td>{formatDate(props.customer.createdAt)}</td>
-      <td>
-        <div class={styles.removeAccount}>
-          <Show when={confirming()}>
-            <button type="button" onClick={() => {
-              setConfirming(false);
-              setMessage("");
-            }}>
-              Cancel
-            </button>
-          </Show>
-          <button
-            type="button"
-            classList={{ [styles.removeConfirm]: confirming() }}
-            onClick={remove}
-            disabled={removing()}
-          >
-            {removing()
-              ? "Removing"
-              : confirming()
-                ? "Confirm removal"
-                : "Remove account"}
+    <>
+      <tr>
+        <td>
+          <div class={styles.customerIdentity}>
+            <span>{initials(props.customer.name)}</span>
+            <strong>{props.customer.name}</strong>
+          </div>
+        </td>
+        <td>{props.customer.email}</td>
+        <td>
+          <span class={`${styles.status} ${props.customer.emailVerified ? styles.verified : styles.unverified}`}>
+            {props.customer.emailVerified ? "Verified" : "Unverified"}
+          </span>
+        </td>
+        <td>{props.customer.orderCount}</td>
+        <td>{formatMoney(props.customer.spentCents)}</td>
+        <td>
+          <span class={`${styles.status} ${props.customer.suspended ? styles.cancelled : styles.active}`}>
+            {props.customer.suspended ? "Suspended" : "Active"}
+          </span>
+        </td>
+        <td>
+          <button type="button" class={styles.editAction} onClick={() => setExpanded(value => !value)}>
+            {expanded() ? "Close" : "Manage"}
           </button>
-          <Show when={message()}>
-            <span>{message()}</span>
-          </Show>
+        </td>
+      </tr>
+      <Show when={expanded()}>
+        <tr class={styles.editorRow}>
+          <td colSpan={7}>
+            <div class={styles.customerEditor}>
+              <div>
+                <h3>{props.customer.name}</h3>
+                <p>Joined {formatDate(props.customer.createdAt)}. Authentication secrets are never exposed.</p>
+              </div>
+              <div class={styles.customerControlGrid}>
+                <label>
+                  <span>Internal tags</span>
+                  <input
+                    placeholder="VIP, wholesale, review"
+                    value={tags()}
+                    onInput={event => setTags(event.currentTarget.value)}
+                  />
+                  <small>Separate tags with commas.</small>
+                </label>
+                <label class={styles.toggleField}>
+                  <input
+                    type="checkbox"
+                    checked={suspended()}
+                    onChange={event => setSuspended(event.currentTarget.checked)}
+                  />
+                  <span>Suspend account access</span>
+                </label>
+                <label class={styles.spanTwo}>
+                  <span>Private owner notes</span>
+                  <textarea rows="4" value={notes()} onInput={event => setNotes(event.currentTarget.value)} />
+                </label>
+              </div>
+              <div class={styles.dangerControls}>
+                <button type="button" onClick={saveControls} disabled={saving()}>
+                  {saving() ? "Saving controls" : "Save customer controls"}
+                </button>
+                <button type="button" onClick={revokeSessions}>Sign out all devices</button>
+                <Show when={confirming()}>
+                  <button type="button" onClick={() => {
+                    setConfirming(false);
+                    setMessage("");
+                  }}>
+                    Cancel removal
+                  </button>
+                </Show>
+                <button
+                  type="button"
+                  classList={{ [styles.removeConfirm]: confirming() }}
+                  onClick={remove}
+                  disabled={removing()}
+                >
+                  {removing()
+                    ? "Removing"
+                    : confirming()
+                      ? "Confirm account removal"
+                      : "Remove account"}
+                </button>
+              </div>
+              <Show when={message()}>
+                <p class={styles.inlineMessage}>{message()}</p>
+              </Show>
+            </div>
+          </td>
+        </tr>
+      </Show>
+    </>
+  );
+}
+
+function DiscountManager(props: {
+  discounts: AdminDiscount[];
+  onUpdated: () => unknown;
+}) {
+  const [code, setCode] = createSignal("");
+  const [type, setType] = createSignal<"percentage" | "fixed">("percentage");
+  const [value, setValue] = createSignal("");
+  const [minimum, setMinimum] = createSignal("0");
+  const [maximumUses, setMaximumUses] = createSignal("");
+  const [expiresAt, setExpiresAt] = createSignal("");
+  const [busy, setBusy] = createSignal(false);
+  const [message, setMessage] = createSignal("");
+
+  const createDiscount = async (event: SubmitEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
+    const response = await fetch("/api/admin/discounts", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code: code(),
+        type: type(),
+        value:
+          type() === "percentage"
+            ? Math.round(Number(value()))
+            : Math.round(Number(value()) * 100),
+        minimumOrderCents: Math.round(Number(minimum()) * 100),
+        maximumUses: maximumUses() ? Number(maximumUses()) : null,
+        expiresAt: expiresAt() ? new Date(expiresAt()).toISOString() : null,
+      }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Discount could not be created.");
+      setBusy(false);
+      return;
+    }
+    await Promise.resolve(props.onUpdated());
+    setCode("");
+    setValue("");
+    setMaximumUses("");
+    setExpiresAt("");
+    setMessage("Discount code created");
+    setBusy(false);
+  };
+
+  const toggleDiscount = async (discount: AdminDiscount) => {
+    const response = await fetch("/api/admin/discounts", {
+      method: "PATCH",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: discount.id, active: !discount.active }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Discount could not be updated.");
+      return;
+    }
+    await Promise.resolve(props.onUpdated());
+  };
+
+  return (
+    <>
+      <section class={styles.sectionIntro}>
+        <div>
+          <h2>Discount campaigns</h2>
+          <p>Create controlled checkout codes with limits, minimum totals, and expiry dates.</p>
         </div>
-      </td>
-    </tr>
+      </section>
+      <form class={styles.discountForm} onSubmit={createDiscount}>
+        <label>
+          <span>Code</span>
+          <input required placeholder="HAVEN10" value={code()} onInput={event => setCode(event.currentTarget.value.toUpperCase())} />
+        </label>
+        <label>
+          <span>Discount type</span>
+          <select value={type()} onChange={event => setType(event.currentTarget.value as "percentage" | "fixed")}>
+            <option value="percentage">Percentage</option>
+            <option value="fixed">Fixed EUR amount</option>
+          </select>
+        </label>
+        <label>
+          <span>{type() === "percentage" ? "Percent" : "Amount in EUR"}</span>
+          <input required type="number" min="1" step={type() === "percentage" ? "1" : "0.01"} value={value()} onInput={event => setValue(event.currentTarget.value)} />
+        </label>
+        <label>
+          <span>Minimum order in EUR</span>
+          <input type="number" min="0" step="0.01" value={minimum()} onInput={event => setMinimum(event.currentTarget.value)} />
+        </label>
+        <label>
+          <span>Maximum uses</span>
+          <input type="number" min="1" step="1" placeholder="Unlimited" value={maximumUses()} onInput={event => setMaximumUses(event.currentTarget.value)} />
+        </label>
+        <label>
+          <span>Expires</span>
+          <input type="datetime-local" value={expiresAt()} onInput={event => setExpiresAt(event.currentTarget.value)} />
+        </label>
+        <button type="submit" class={styles.primaryAction} disabled={busy()}>
+          {busy() ? "Creating code" : "Create discount"}
+        </button>
+        <Show when={message()}><p class={styles.inlineMessage}>{message()}</p></Show>
+      </form>
+      <div class={styles.discountGrid}>
+        <For each={props.discounts}>
+          {discount => (
+            <article>
+              <header>
+                <strong>{discount.code}</strong>
+                <span class={`${styles.status} ${discount.active ? styles.active : styles.cancelled}`}>
+                  {discount.active ? "Active" : "Disabled"}
+                </span>
+              </header>
+              <h3>
+                {discount.type === "percentage"
+                  ? `${discount.value}% off`
+                  : `${formatMoney(discount.value)} off`}
+              </h3>
+              <p>
+                {discount.minimumOrderCents
+                  ? `Minimum ${formatMoney(discount.minimumOrderCents)}`
+                  : "No minimum order"}
+              </p>
+              <small>
+                {discount.usedCount} used
+                {discount.maximumUses ? ` of ${discount.maximumUses}` : ""}
+              </small>
+              <button type="button" onClick={() => toggleDiscount(discount)}>
+                {discount.active ? "Disable code" : "Enable code"}
+              </button>
+            </article>
+          )}
+        </For>
+      </div>
+    </>
+  );
+}
+
+function StorefrontManager(props: {
+  settings?: Partial<StorefrontSettings>;
+  onUpdated: () => unknown;
+}) {
+  const defaults: StorefrontSettings = {
+    announcement: "",
+    heroTitle: "Umbreon VMAX has landed",
+    heroCopy:
+      "Freshly graded cards and collector favourites, ready to ship from our Dutch stock.",
+    featuredProductSlugs: [],
+    socialInstagram: "",
+    socialTiktok: "",
+    socialYoutube: "",
+    socialDiscord: "",
+  };
+  const [settings, setSettings] = createSignal<StorefrontSettings>({
+    ...defaults,
+    ...(props.settings ?? {}),
+    featuredProductSlugs: props.settings?.featuredProductSlugs ?? [],
+  });
+  const [busy, setBusy] = createSignal(false);
+  const [message, setMessage] = createSignal("");
+  const patch = <K extends keyof StorefrontSettings>(
+    key: K,
+    value: StorefrontSettings[K],
+  ) => setSettings(current => ({ ...current, [key]: value }));
+
+  const save = async (event: SubmitEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
+    const response = await fetch("/api/admin/content", {
+      method: "PUT",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(settings()),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Storefront settings could not be saved.");
+      setBusy(false);
+      return;
+    }
+    await Promise.resolve(props.onUpdated());
+    setMessage("Storefront content published");
+    setBusy(false);
+  };
+
+  return (
+    <>
+      <section class={styles.sectionIntro}>
+        <div>
+          <h2>Storefront controls</h2>
+          <p>Update homepage messaging and social links without editing code.</p>
+        </div>
+        <A href="/" target="_blank">Preview storefront</A>
+      </section>
+      <form class={styles.contentForm} onSubmit={save}>
+        <section>
+          <h3>Homepage message</h3>
+          <label>
+            <span>Announcement bar</span>
+            <input maxlength="180" placeholder="Free shipping this weekend" value={settings().announcement} onInput={event => patch("announcement", event.currentTarget.value)} />
+          </label>
+          <label>
+            <span>Hero title</span>
+            <input required maxlength="100" value={settings().heroTitle} onInput={event => patch("heroTitle", event.currentTarget.value)} />
+          </label>
+          <label>
+            <span>Hero copy</span>
+            <textarea required rows="4" maxlength="300" value={settings().heroCopy} onInput={event => patch("heroCopy", event.currentTarget.value)} />
+          </label>
+          <label>
+            <span>Featured product slugs</span>
+            <textarea
+              rows="4"
+              placeholder="umbreon-vmax, charizard-base-set"
+              value={settings().featuredProductSlugs.join(", ")}
+              onInput={event => patch(
+                "featuredProductSlugs",
+                event.currentTarget.value.split(",").map(value => value.trim()).filter(Boolean),
+              )}
+            />
+          </label>
+        </section>
+        <section>
+          <h3>Social destinations</h3>
+          <For each={[
+            ["socialInstagram", "Instagram"],
+            ["socialTiktok", "TikTok"],
+            ["socialYoutube", "YouTube"],
+            ["socialDiscord", "Discord"],
+          ] as const}>
+            {([key, label]) => (
+              <label>
+                <span>{label} URL</span>
+                <input type="url" placeholder="https://" value={settings()[key]} onInput={event => patch(key, event.currentTarget.value)} />
+              </label>
+            )}
+          </For>
+          <div class={styles.publishNote}>
+            <strong>Safe publishing</strong>
+            <p>These values are treated as content only. They cannot expose database or payment credentials.</p>
+          </div>
+        </section>
+        <div class={styles.formActions}>
+          <Show when={message()}><p class={styles.inlineMessage}>{message()}</p></Show>
+          <button type="submit" class={styles.primaryAction} disabled={busy()}>
+            {busy() ? "Publishing changes" : "Publish storefront changes"}
+          </button>
+        </div>
+      </form>
+    </>
   );
 }
 
@@ -913,6 +1828,43 @@ export default function Admin() {
                       </button>
                     </aside>
                   </div>
+
+                  <section class={styles.lowStockCenter}>
+                    <div class={styles.sectionHead}>
+                      <div>
+                        <h2>Low stock centre</h2>
+                        <p>Live variants with three or fewer units available.</p>
+                      </div>
+                      <button type="button" onClick={() => setSection("products")}>Manage inventory</button>
+                    </div>
+                    <Show
+                      when={data().products.filter(product =>
+                        product.status === "active" &&
+                        (product.stock ?? 0) - (product.reservedStock ?? 0) <= 3,
+                      ).length}
+                      fallback={<p class={styles.empty}>Every live product has healthy stock.</p>}
+                    >
+                      <div class={styles.lowStockGrid}>
+                        <For each={data().products.filter(product =>
+                          product.status === "active" &&
+                          (product.stock ?? 0) - (product.reservedStock ?? 0) <= 3,
+                        ).slice(0, 8)}>
+                          {product => (
+                            <article>
+                              <Show when={product.imageUrls[0]}>
+                                <img src={product.imageUrls[0]} alt="" />
+                              </Show>
+                              <div>
+                                <strong>{product.name}</strong>
+                                <span>{product.sku ?? "No SKU"}</span>
+                              </div>
+                              <b>{(product.stock ?? 0) - (product.reservedStock ?? 0)} left</b>
+                            </article>
+                          )}
+                        </For>
+                      </div>
+                    </Show>
+                  </section>
                 </Show>
 
                 <Show when={section() === "products"}>
@@ -921,14 +1873,17 @@ export default function Admin() {
                       <h2>Catalogue and inventory</h2>
                       <p>Live listings appear in the customer shop. Drafts remain private.</p>
                     </div>
-                    <button
-                      type="button"
-                      class={styles.primaryAction}
-                      onClick={() => setComposerOpen(value => !value)}
-                    >
-                      <span aria-hidden="true">{composerOpen() ? "×" : "+"}</span>
-                      {composerOpen() ? "Close product form" : "Add new product"}
-                    </button>
+                    <div class={styles.introActions}>
+                      <A href="/api/admin/export?type=inventory" target="_blank">Export inventory CSV</A>
+                      <button
+                        type="button"
+                        class={styles.primaryAction}
+                        onClick={() => setComposerOpen(value => !value)}
+                      >
+                        <span aria-hidden="true">{composerOpen() ? "×" : "+"}</span>
+                        {composerOpen() ? "Close product form" : "Add new product"}
+                      </button>
+                    </div>
                   </section>
 
                   <div class={styles.productGuide}>
@@ -994,6 +1949,38 @@ export default function Admin() {
                         <label>
                           <span>Badge</span>
                           <input placeholder="New, Vintage, PSA 10" value={draft().badge} onInput={event => patchDraft("badge", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>Card number</span>
+                          <input placeholder="025/165" value={draft().cardNumber} onInput={event => patchDraft("cardNumber", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>Set code</span>
+                          <input placeholder="MEW" value={draft().setCode} onInput={event => patchDraft("setCode", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>Rarity</span>
+                          <input placeholder="Ultra rare" value={draft().rarity} onInput={event => patchDraft("rarity", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>Finish</span>
+                          <input placeholder="Holofoil" value={draft().finish} onInput={event => patchDraft("finish", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>Illustrator</span>
+                          <input value={draft().illustrator} onInput={event => patchDraft("illustrator", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>Grading company</span>
+                          <input placeholder="PSA, BGS, CGC" value={draft().gradingCompany} onInput={event => patchDraft("gradingCompany", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>Grade</span>
+                          <input placeholder="10" value={draft().grade} onInput={event => patchDraft("grade", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>Certification number</span>
+                          <input value={draft().certificationNumber} onInput={event => patchDraft("certificationNumber", event.currentTarget.value)} />
                         </label>
                         <label>
                           <span>Initial status</span>
@@ -1069,35 +2056,17 @@ export default function Admin() {
                   <section class={styles.sectionIntro}>
                     <div>
                       <h2>Order fulfilment</h2>
-                      <p>Review payment state and move each order through dispatch.</p>
+                      <p>Review items and addresses, dispatch parcels, print invoices, record returns, and issue Mollie refunds.</p>
                     </div>
+                    <A href="/api/admin/export?type=orders" target="_blank">Export orders CSV</A>
                     <Show when={orderMessage()}><p class={styles.inlineMessage}>{orderMessage()}</p></Show>
                   </section>
                   <div class={styles.tableWrap}>
                     <table>
-                      <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+                      <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th>Details</th></tr></thead>
                       <tbody>
                         <For each={orderTable.getRowModel().rows}>
-                          {row => {
-                            const order = row.original;
-                            return (
-                            <tr>
-                              <td><strong>{order.orderNumber}</strong></td>
-                              <td>{order.email}</td>
-                              <td>{formatDate(order.createdAt)}</td>
-                              <td>{formatMoney(order.totalCents, order.currency)}</td>
-                              <td>
-                                <select
-                                  class={styles.orderSelect}
-                                  value={order.status}
-                                  onChange={event => updateOrder(order.id, event.currentTarget.value)}
-                                >
-                                  <For each={ORDER_STATUSES}>{status => <option value={status}>{status}</option>}</For>
-                                </select>
-                              </td>
-                            </tr>
-                            );
-                          }}
+                          {row => <OrderRow order={row.original} onUpdated={refetch} />}
                         </For>
                       </tbody>
                     </table>
@@ -1109,12 +2078,13 @@ export default function Admin() {
                   <section class={styles.sectionIntro}>
                     <div>
                       <h2>Customer accounts</h2>
-                      <p>Account status only. Passwords and authentication secrets are never exposed here.</p>
+                      <p>Add internal notes and tags, suspend access, revoke sessions, and review customer value.</p>
                     </div>
+                    <A href="/api/admin/export?type=customers" target="_blank">Export customers CSV</A>
                   </section>
                   <div class={styles.tableWrap}>
                     <table>
-                      <thead><tr><th>Customer</th><th>Email</th><th>Verification</th><th>Joined</th><th>Account controls</th></tr></thead>
+                      <thead><tr><th>Customer</th><th>Email</th><th>Verification</th><th>Orders</th><th>Spent</th><th>Access</th><th>Controls</th></tr></thead>
                       <tbody>
                         <For each={customerTable.getRowModel().rows}>
                           {row => <CustomerRow customer={row.original} onRemoved={refetch} />}
@@ -1122,6 +2092,95 @@ export default function Admin() {
                       </tbody>
                     </table>
                     <Show when={!data().customers.length}><p class={styles.empty}>No customer accounts yet.</p></Show>
+                  </div>
+                </Show>
+
+                <Show when={section() === "discounts"}>
+                  <DiscountManager discounts={data().discounts} onUpdated={refetch} />
+                </Show>
+
+                <Show when={section() === "storefront"}>
+                  <StorefrontManager settings={data().content.home} onUpdated={refetch} />
+                </Show>
+
+                <Show when={section() === "analytics"}>
+                  <section class={styles.sectionIntro}>
+                    <div>
+                      <h2>Sales analytics</h2>
+                      <p>A clear view of recent revenue, order value, and repeat customers.</p>
+                    </div>
+                    <A href="/api/admin/export?type=orders" target="_blank">Export source data</A>
+                  </section>
+                  <section class={styles.analyticsMetrics}>
+                    <article>
+                      <span>Revenue</span>
+                      <strong>{formatMoney(data().metrics.revenueCents)}</strong>
+                      <small>Paid and fulfilled orders</small>
+                    </article>
+                    <article>
+                      <span>Average order</span>
+                      <strong>{formatMoney(data().analytics.averageOrderCents)}</strong>
+                      <small>Across loaded order history</small>
+                    </article>
+                    <article>
+                      <span>Returning customers</span>
+                      <strong>{data().analytics.returningCustomers}</strong>
+                      <small>Customers with multiple orders</small>
+                    </article>
+                  </section>
+                  <section class={styles.salesChart}>
+                    <div class={styles.sectionHead}>
+                      <div>
+                        <h2>Recent sales</h2>
+                        <p>Revenue recorded per day.</p>
+                      </div>
+                    </div>
+                    <Show when={data().analytics.salesByDay.length} fallback={<p class={styles.empty}>Sales data will appear after the first paid order.</p>}>
+                      <div class={styles.chartRows}>
+                        <For each={data().analytics.salesByDay.slice(-30)}>
+                          {day => {
+                            const maximum = Math.max(
+                              1,
+                              ...data().analytics.salesByDay.map(point => point.revenueCents),
+                            );
+                            return (
+                              <div>
+                                <span>{formatDate(`${day.date}T12:00:00Z`)}</span>
+                                <i><b style={{ width: `${Math.max(2, day.revenueCents / maximum * 100)}%` }} /></i>
+                                <strong>{formatMoney(day.revenueCents)}</strong>
+                                <small>{day.orders} orders</small>
+                              </div>
+                            );
+                          }}
+                        </For>
+                      </div>
+                    </Show>
+                  </section>
+                </Show>
+
+                <Show when={section() === "activity"}>
+                  <section class={styles.sectionIntro}>
+                    <div>
+                      <h2>Owner activity</h2>
+                      <p>Security history for catalogue, customer, order, discount, and storefront changes.</p>
+                    </div>
+                  </section>
+                  <div class={styles.activityList}>
+                    <For each={data().audit}>
+                      {entry => (
+                        <article>
+                          <span class={styles.activityMark} />
+                          <div>
+                            <strong>{entry.summary}</strong>
+                            <p>{entry.actorName ?? entry.actorEmail ?? "System"} · {entry.entityType}</p>
+                          </div>
+                          <span>{formatDate(entry.createdAt)}</span>
+                        </article>
+                      )}
+                    </For>
+                    <Show when={!data().audit.length}>
+                      <p class={styles.empty}>Admin activity will appear here.</p>
+                    </Show>
                   </div>
                 </Show>
 

@@ -1,4 +1,6 @@
 import type { APIEvent } from "@solidjs/start/server";
+import { db } from "~/db";
+import { adminAuditLog } from "~/db/schema";
 import { auth } from "~/lib/auth";
 
 export function apiJson(data: unknown, init?: ResponseInit) {
@@ -60,4 +62,27 @@ export function toSlug(value: string) {
     .replace(/[^\p{L}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 100);
+}
+
+export async function writeAuditLog(input: {
+  event: APIEvent;
+  actorId: string;
+  action: string;
+  entityType: string;
+  entityId?: string | null;
+  summary: string;
+  metadata?: Record<string, unknown>;
+}) {
+  await db.insert(adminAuditLog).values({
+    actorId: input.actorId,
+    action: input.action,
+    entityType: input.entityType,
+    entityId: input.entityId ?? null,
+    summary: input.summary,
+    metadata: input.metadata ?? {},
+    ipAddress:
+      input.event.request.headers.get("x-real-ip") ??
+      input.event.request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      null,
+  });
 }

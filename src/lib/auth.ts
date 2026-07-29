@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { twoFactor } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 import { db } from "~/db";
 import * as schema from "~/db/schema";
 import {
@@ -102,12 +103,37 @@ export const auth = betterAuth({
     : {}),
   hooks: {
     before: createAuthMiddleware(async context => {
+      if (
+        context.path === "/sign-in/email" &&
+        typeof context.body?.email === "string"
+      ) {
+        const normalizedEmail = context.body.email.trim().toLowerCase();
+        const [account] = await db
+          .select({
+            suspended: schema.customerAdminProfiles.suspended,
+          })
+          .from(schema.user)
+          .leftJoin(
+            schema.customerAdminProfiles,
+            eq(schema.customerAdminProfiles.userId, schema.user.id),
+          )
+          .where(eq(schema.user.email, normalizedEmail))
+          .limit(1);
+
+        if (account?.suspended) {
+          throw new APIError("FORBIDDEN", {
+            message:
+              "This account is suspended. Contact TCGHaven support for help.",
+          });
+        }
+      }
+
       const password =
         context.path === "/sign-up/email"
-          ? context.body.password
+          ? context.body?.password
           : context.path === "/reset-password" ||
               context.path === "/change-password"
-            ? context.body.newPassword
+            ? context.body?.newPassword
             : undefined;
 
       if (

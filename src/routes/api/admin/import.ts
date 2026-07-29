@@ -8,7 +8,12 @@ import {
   products,
   productVariants,
 } from "~/db/schema";
-import { apiJson, requireAdmin, toSlug } from "~/lib/admin.server";
+import {
+  apiJson,
+  requireAdmin,
+  toSlug,
+  writeAuditLog,
+} from "~/lib/admin.server";
 
 const rowSchema = z.object({
   name: z.string().trim().min(2).max(140),
@@ -113,6 +118,16 @@ export async function POST(event: APIEvent) {
         completedAt: new Date(),
       })
       .where(eq(importJobs.id, job.id));
+
+    await writeAuditLog({
+      event,
+      actorId: guard.session!.user.id,
+      action: "catalogue.imported",
+      entityType: "import",
+      entityId: job.id,
+      summary: `${processedRows} products imported from ${input.fileName}.`,
+      metadata: { failedRows: errors.length, totalRows: input.rows.length },
+    });
 
     return apiJson({
       jobId: job.id,
