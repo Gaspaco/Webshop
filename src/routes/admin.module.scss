@@ -777,31 +777,49 @@
   text-transform: capitalize;
 }
 
-.tableInput {
+.tableInput,
+.stockInput {
   min-height: 2.2rem;
-  max-width: 6rem;
-  padding: 0 0.5rem;
+  padding: 0 0.6rem;
+  // Hide the native number spinners — they were overlapping the value.
+  appearance: textfield;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.tableInput {
+  max-width: 7rem;
 }
 
 .stockInput {
-  min-height: 2.2rem;
-  max-width: 4.5rem;
-  padding: 0 0.5rem;
+  max-width: 5rem;
 }
 
 .tableSelect,
 .orderSelect {
   min-height: 2.2rem;
-  padding: 0 1.8rem 0 0.5rem;
+  padding: 0 2rem 0 0.6rem;
   text-transform: capitalize;
+  // Custom caret so the text isn't squeezed by the native arrow.
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 0.95rem;
+  cursor: pointer;
 }
 
 .tableSelect {
-  max-width: 7rem;
+  max-width: 9rem;
 }
 
 .orderSelect {
-  min-width: 8rem;
+  min-width: 9rem;
 }
 
 .rowActions {
