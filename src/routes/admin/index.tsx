@@ -25,7 +25,8 @@ type AdminSection =
   | "storefront"
   | "analytics"
   | "activity"
-  | "imports";
+  | "imports"
+  | "readiness";
 
 type AdminVariant = {
   id: string;
@@ -189,6 +190,21 @@ type AdminDashboard = {
     averageOrderCents: number;
     returningCustomers: number;
   };
+  readiness: {
+    ready: boolean;
+    blockers: number;
+    complete: number;
+    total: number;
+    items: Array<{
+      id: string;
+      category: "commerce" | "operations" | "legal" | "growth";
+      label: string;
+      detail: string;
+      responsible: "developer" | "owner" | "joint";
+      configured: boolean;
+      blocking: boolean;
+    }>;
+  };
 };
 
 type ProductDraft = {
@@ -245,7 +261,15 @@ const NAV_ITEMS: Array<{ id: AdminSection; label: string; short: string }> = [
   { id: "analytics", label: "Analytics", short: "Sales performance" },
   { id: "activity", label: "Activity", short: "Security history" },
   { id: "imports", label: "Bulk import", short: "CSV tools" },
+  { id: "readiness", label: "Launch readiness", short: "Owner and developer" },
 ];
+
+const READINESS_CATEGORIES = [
+  ["commerce", "Commerce core"],
+  ["operations", "Operations"],
+  ["legal", "Owner and legal"],
+  ["growth", "Optional growth"],
+] as const;
 
 const ORDER_STATUSES = [
   "pending",
@@ -1766,7 +1790,12 @@ export default function Admin() {
                   <h1>{NAV_ITEMS.find(item => item.id === section())?.label}</h1>
                 </div>
                 <div class={styles.topActions}>
-                  <span class={styles.liveStatus}><i /> Store connected</span>
+                  <span class={styles.liveStatus}>
+                    <i />
+                    {data().readiness.ready
+                      ? "Ready for owner approval"
+                      : `${data().readiness.blockers} launch blockers`}
+                  </span>
                   <A href="/" target="_blank">Open storefront</A>
                 </div>
               </header>
@@ -1891,6 +1920,75 @@ export default function Admin() {
                       </div>
                     </Show>
                   </section>
+                </Show>
+
+                <Show when={section() === "readiness"}>
+                  <section class={styles.readinessHero}>
+                    <div>
+                      <span>Launch control</span>
+                      <h2>
+                        {data().readiness.ready
+                          ? "The technical checklist is complete."
+                          : `${data().readiness.blockers} required items still need attention.`}
+                      </h2>
+                      <p>
+                        Developer tasks configure the application. Owner tasks require the shop owner's company data, provider accounts, commercial decisions, or formal approval.
+                      </p>
+                    </div>
+                    <div class={styles.readinessScore}>
+                      <strong>{data().readiness.complete}</strong>
+                      <span>of {data().readiness.total} complete</span>
+                    </div>
+                  </section>
+
+                  <div class={styles.readinessRoles}>
+                    <article>
+                      <span>Developer</span>
+                      <strong>Build and configure</strong>
+                      <p>Code, credentials wiring, monitoring, storage, deployment, and restore testing.</p>
+                    </article>
+                    <article>
+                      <span>Shop owner</span>
+                      <strong>Provide and approve</strong>
+                      <p>Legal identity, VAT policy, carrier and payment accounts, rates, policies, and final approval.</p>
+                    </article>
+                  </div>
+
+                  <For each={READINESS_CATEGORIES}>
+                    {([category, label]) => (
+                      <section class={styles.readinessGroup}>
+                        <div class={styles.sectionHead}>
+                          <div>
+                            <h2>{label}</h2>
+                            <p>Configuration status for this part of the shop.</p>
+                          </div>
+                        </div>
+                        <div class={styles.readinessList}>
+                          <For each={data().readiness.items.filter(item => item.category === category)}>
+                            {item => (
+                              <article classList={{ [styles.readinessDone]: item.configured }}>
+                                <span class={styles.readinessMark} aria-hidden="true">
+                                  {item.configured ? "✓" : "!"}
+                                </span>
+                                <div>
+                                  <strong>{item.label}</strong>
+                                  <p>{item.detail}</p>
+                                </div>
+                                <span class={styles.readinessOwner}>
+                                  {item.responsible === "joint"
+                                    ? "Owner and developer"
+                                    : item.responsible === "owner"
+                                      ? "Shop owner"
+                                      : "Developer"}
+                                </span>
+                                <b>{item.configured ? "Configured" : item.blocking ? "Required" : "Optional"}</b>
+                              </article>
+                            )}
+                          </For>
+                        </div>
+                      </section>
+                    )}
+                  </For>
                 </Show>
 
                 <Show when={section() === "products"}>

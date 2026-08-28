@@ -69,6 +69,17 @@ for (const cat of Object.values(CATEGORIES)) {
 
 export const CATEGORY_LIST = Object.values(CATEGORIES);
 
+export type ShopVariant = {
+  id: string;
+  name: string;
+  sku: string;
+  condition?: string;
+  language?: string;
+  finish?: string;
+  priceCents: number;
+  stock: number;
+};
+
 export type ShopProduct = SectionProduct & {
   game: string;
   gameName: string;
@@ -88,6 +99,7 @@ export type ShopProduct = SectionProduct & {
   stock?: number;
   variantId?: string;
   sku?: string;
+  variants?: ShopVariant[];
 };
 
 export const ALL_PRODUCTS: ShopProduct[] = CATEGORY_LIST.flatMap(cat =>

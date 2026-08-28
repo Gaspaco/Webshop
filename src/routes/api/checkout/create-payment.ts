@@ -48,6 +48,17 @@ export async function POST(event: APIEvent) {
       return json({ error: error.message }, { status: 400 });
     }
 
+    if (
+      error instanceof Error &&
+      (error.message.startsWith("Product is not purchasable") ||
+        error.message.startsWith("Product is no longer available"))
+    ) {
+      return json(
+        { error: "One of these items is no longer available in that quantity. Refresh your cart and try again." },
+        { status: 409 },
+      );
+    }
+
     console.error("Checkout payment creation failed", error);
 
     return json(

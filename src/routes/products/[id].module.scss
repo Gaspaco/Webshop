@@ -376,6 +376,88 @@
   text-wrap: pretty;
 }
 
+.variantPicker {
+  min-width: 0;
+  padding: 0;
+  margin-top: 1.5rem;
+  border: 0;
+
+  legend {
+    margin-bottom: 0.65rem;
+    color: $gray-400;
+    font-size: 0.72rem;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  > div {
+    display: grid;
+    gap: 0.5rem;
+    max-height: 15.5rem;
+    padding-right: 0.25rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    min-height: 4rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid rgba($white, 0.13);
+    border-radius: $radius-md;
+    background: rgba($white, 0.025);
+    color: $white;
+    text-align: left;
+    transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+
+    &:hover:not(:disabled) {
+      border-color: rgba($primary-light, 0.55);
+      background: rgba($primary, 0.07);
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+    }
+
+    > span {
+      display: grid;
+      gap: 0.2rem;
+
+      &:last-child {
+        flex: 0 0 auto;
+        text-align: right;
+      }
+    }
+
+    strong {
+      font-family: $font-display;
+      font-size: 0.82rem;
+      font-weight: 750;
+    }
+
+    small {
+      color: $gray-500;
+      font-size: 0.68rem;
+    }
+  }
+}
+
+.variantActive {
+  border-color: $primary !important;
+  background: rgba($primary, 0.11) !important;
+
+  small {
+    color: $gray-300 !important;
+  }
+}
+
 .buyArea {
   display: grid;
   grid-template-columns: auto minmax(10rem, 1fr);

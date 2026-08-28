@@ -1,0 +1,257 @@
+@use "../styles/variables" as *;
+
+.page {
+  min-height: 100vh;
+  padding: clamp(7rem, 12vh, 10rem) clamp(1rem, 4vw, 4rem) clamp(4rem, 8vh, 7rem);
+  background: #0a0e0c;
+  color: $white;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(31rem, 1.18fr);
+  gap: clamp(3rem, 8vw, 9rem);
+  width: min(100%, 88rem);
+  margin: 0 auto;
+}
+
+.intro {
+  position: sticky;
+  top: 7rem;
+  align-self: start;
+
+  h1 {
+    max-width: 9ch;
+    margin-top: 1rem;
+    font-family: $font-display;
+    font-size: clamp(3.4rem, 7vw, 7.5rem);
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 0.9;
+  }
+}
+
+.eyebrow,
+.formHeading span,
+.success > span {
+  color: $primary-light;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lead {
+  max-width: 40rem;
+  margin-top: 2rem;
+  color: $gray-300;
+  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  line-height: 1.75;
+}
+
+.intro dl {
+  margin-top: 3rem;
+  border-top: 1px solid rgba($white, 0.13);
+
+  div {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 1rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid rgba($white, 0.1);
+  }
+
+  dt {
+    color: $primary;
+    font-family: $font-display;
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  dd {
+    color: $gray-300;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+}
+
+.help {
+  margin-top: 1.5rem;
+  color: $gray-500;
+  font-size: 0.78rem;
+  line-height: 1.65;
+
+  a {
+    color: $gray-200;
+    text-decoration: underline;
+    text-underline-offset: 0.18rem;
+  }
+}
+
+.formPanel {
+  min-width: 0;
+  border: 1px solid rgba($white, 0.13);
+  background: #101512;
+}
+
+.formPanel form,
+.success {
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.formHeading {
+  padding-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid rgba($white, 0.11);
+
+  h2 {
+    margin-top: 0.55rem;
+    font-family: $font-display;
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    letter-spacing: -0.035em;
+  }
+}
+
+.formPanel label:not(.consent) {
+  display: grid;
+  gap: 0.5rem;
+
+  > span {
+    color: $gray-200;
+    font-size: 0.76rem;
+    font-weight: 750;
+  }
+
+  small {
+    color: $gray-600;
+    font-size: 0.7rem;
+    line-height: 1.5;
+  }
+}
+
+.formPanel input:not([type="checkbox"]),
+.formPanel textarea {
+  width: 100%;
+  border: 1px solid rgba($white, 0.15);
+  border-radius: $radius-md;
+  background: #090d0b;
+  color: $white;
+  font: inherit;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+
+  &:focus {
+    border-color: $primary;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba($primary, 0.12);
+  }
+}
+
+.formPanel input:not([type="checkbox"]) {
+  min-height: 3.6rem;
+  padding: 0 1rem;
+}
+
+.formPanel textarea {
+  min-height: 9rem;
+  padding: 1rem;
+  resize: vertical;
+}
+
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  color: $gray-300;
+  font-size: 0.78rem;
+  line-height: 1.5;
+
+  input {
+    width: 1.05rem;
+    height: 1.05rem;
+    margin-top: 0.12rem;
+    accent-color: $primary;
+  }
+}
+
+.formPanel button,
+.success a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.65rem;
+  padding: 0.85rem 1.25rem;
+  border: 1px solid $primary;
+  border-radius: $radius-md;
+  background: $primary;
+  color: #06110d;
+  font-family: $font-display;
+  font-size: 0.86rem;
+  font-weight: 800;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+}
+
+.privacy,
+.error {
+  color: $gray-600;
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+.error {
+  color: #ff9b9b;
+}
+
+.success {
+  min-height: 32rem;
+  align-content: center;
+
+  h2 {
+    max-width: 12ch;
+    font-family: $font-display;
+    font-size: clamp(2.2rem, 5vw, 4.6rem);
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+  }
+
+  p {
+    max-width: 35rem;
+    color: $gray-300;
+    line-height: 1.7;
+  }
+
+  a {
+    justify-self: start;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: $bp-lg) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .intro {
+    position: static;
+
+    h1 {
+      max-width: 12ch;
+    }
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .page {
+    padding-inline: 0.75rem;
+  }
+
+  .formPanel form,
+  .success {
+    padding: 1.25rem;
+  }
+}

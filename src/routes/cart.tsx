@@ -56,7 +56,7 @@ export default function Cart() {
                           type="button"
                           class={styles.qtyBtn}
                           aria-label={`Decrease quantity of ${item.name}`}
-                          onClick={() => cart.setQuantity(item.id, item.quantity - 1)}
+                          onClick={() => cart.setQuantity(item.variantId ?? item.id, item.quantity - 1)}
                         >
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
                             <path d="M5 12h14" />
@@ -67,7 +67,7 @@ export default function Cart() {
                           type="button"
                           class={styles.qtyBtn}
                           aria-label={`Increase quantity of ${item.name}`}
-                          onClick={() => cart.setQuantity(item.id, item.quantity + 1)}
+                          onClick={() => cart.setQuantity(item.variantId ?? item.id, item.quantity + 1)}
                         >
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
                             <path d="M12 5v14M5 12h14" />
@@ -83,7 +83,7 @@ export default function Cart() {
                       <button
                         type="button"
                         class={styles.removeBtn}
-                        onClick={() => cart.removeItem(item.id)}
+                        onClick={() => cart.removeItem(item.variantId ?? item.id)}
                       >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M3 6h18" />

@@ -111,6 +111,7 @@ export default function Footer() {
           <A href="/about">About us</A>
           <A href="/contact">Contact</A>
           <A href="/shipping">Shipping & returns</A>
+          <A href="/returns">Cancel or return an order</A>
         </div>
       </div>
 

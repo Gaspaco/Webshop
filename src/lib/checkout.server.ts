@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "~/db";
 import {
   discountCodes,
+  inventoryMovements,
   orderItems,
   orders,
   payments,
@@ -22,6 +23,7 @@ const checkoutInputSchema = z.object({
     .array(
       z.object({
         id: z.string().trim().min(1).max(120),
+        variantId: z.string().uuid().optional(),
         quantity: z.number().int().min(1).max(99),
       }),
     )
@@ -72,6 +74,40 @@ function appUrl(path: string) {
   return new URL(path, getAuthEnv().BETTER_AUTH_URL).toString();
 }
 
+async function releaseOrderReservations(orderId: string, discountId: string | null) {
+  await db.transaction(async tx => {
+    const reservedItems = await tx
+      .select({
+        variantId: orderItems.variantId,
+        quantity: orderItems.quantity,
+      })
+      .from(orderItems)
+      .where(eq(orderItems.orderId, orderId));
+
+    for (const item of reservedItems) {
+      if (!item.variantId) continue;
+      await tx
+        .update(productVariants)
+        .set({
+          reservedStock: sql`greatest(${productVariants.reservedStock} - ${item.quantity}, 0)`,
+        })
+        .where(eq(productVariants.id, item.variantId));
+    }
+
+    await tx
+      .update(orders)
+      .set({ status: "cancelled" })
+      .where(eq(orders.id, orderId));
+
+    if (discountId) {
+      await tx
+        .update(discountCodes)
+        .set({ usedCount: sql`greatest(${discountCodes.usedCount} - 1, 0)` })
+        .where(eq(discountCodes.id, discountId));
+    }
+  });
+}
+
 export async function calculateTrustedCheckout(input: unknown) {
   const parsed = checkoutInputSchema.parse(input);
   const lines = await Promise.all(parsed.items.map(async item => {
@@ -81,6 +117,7 @@ export async function calculateTrustedCheckout(input: unknown) {
         slug: products.slug,
         name: products.name,
         imageUrls: products.imageUrls,
+        variantId: productVariants.id,
         sku: productVariants.sku,
         priceCents: productVariants.priceCents,
         stock: productVariants.stock,
@@ -92,6 +129,9 @@ export async function calculateTrustedCheckout(input: unknown) {
       .where(
         and(
           eq(products.slug, item.id),
+          item.variantId
+            ? eq(productVariants.id, item.variantId)
+            : undefined,
         ),
       )
       .limit(1);
@@ -105,6 +145,7 @@ export async function calculateTrustedCheckout(input: unknown) {
       }
       return {
         id: databaseProduct.slug,
+        variantId: databaseProduct.variantId,
         sku: databaseProduct.sku,
         name: databaseProduct.name,
         image: databaseProduct.imageUrls[0] ?? "",
@@ -124,6 +165,7 @@ export async function calculateTrustedCheckout(input: unknown) {
     }
     return {
       id: staticProduct.id,
+      variantId: null,
       sku: staticProduct.id,
       name: staticProduct.set
         ? `${staticProduct.name} (${staticProduct.set})`
@@ -195,6 +237,27 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
   };
 
   const order = await db.transaction(async tx => {
+    for (const line of checkout.lines) {
+      if (!line.variantId) continue;
+
+      const reserved = await tx
+        .update(productVariants)
+        .set({
+          reservedStock: sql`${productVariants.reservedStock} + ${line.quantity}`,
+        })
+        .where(
+          and(
+            eq(productVariants.id, line.variantId),
+            sql`${productVariants.stock} - ${productVariants.reservedStock} >= ${line.quantity}`,
+          ),
+        )
+        .returning({ id: productVariants.id });
+
+      if (!reserved.length) {
+        throw new Error(`Product is no longer available: ${line.id}`);
+      }
+    }
+
     const [createdOrder] = await tx
       .insert(orders)
       .values({
@@ -220,6 +283,7 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
     await tx.insert(orderItems).values(
       checkout.lines.map(line => ({
         orderId: createdOrder.id,
+        variantId: line.variantId,
         sku: line.sku,
         name: line.name,
         quantity: line.quantity,
@@ -256,21 +320,33 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
     paymentParameters.method = PaymentMethod.banktransfer;
   }
 
-  const molliePayment = await getMollieClient().payments.create(paymentParameters);
+  let molliePayment;
+  try {
+    molliePayment = await getMollieClient().payments.create(paymentParameters);
+  } catch (error) {
+    await releaseOrderReservations(order.id, checkout.discountId);
+    throw error;
+  }
 
-  await db.insert(payments).values({
-    orderId: order.id,
-    molliePaymentId: molliePayment.id,
-    status: normalizeMollieStatus(molliePayment.status),
-    amountCents: checkout.totalCents,
-    method: molliePayment.method ?? checkout.paymentMethod,
-    rawPayload: {
-      id: molliePayment.id,
-      status: molliePayment.status,
-      amount: molliePayment.amount,
-      metadata: molliePayment.metadata,
-    },
-  });
+  try {
+    await db.insert(payments).values({
+      orderId: order.id,
+      molliePaymentId: molliePayment.id,
+      status: normalizeMollieStatus(molliePayment.status),
+      amountCents: checkout.totalCents,
+      method: molliePayment.method ?? checkout.paymentMethod,
+      rawPayload: {
+        id: molliePayment.id,
+        status: molliePayment.status,
+        amount: molliePayment.amount,
+        metadata: molliePayment.metadata,
+      },
+    });
+  } catch (error) {
+    await getMollieClient().payments.cancel(molliePayment.id).catch(() => undefined);
+    await releaseOrderReservations(order.id, checkout.discountId);
+    throw error;
+  }
 
   return {
     orderNumber: order.orderNumber,
@@ -292,36 +368,97 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
 export async function syncMolliePaymentStatus(paymentId: string) {
   const molliePayment = await getMollieClient().payments.get(paymentId);
   const normalizedStatus = normalizeMollieStatus(molliePayment.status);
-  const paidAt = normalizedStatus === "paid" ? new Date() : null;
   const amountCents = Math.round(Number(molliePayment.amount.value) * 100);
 
-  const [storedPayment] = await db
-    .select()
-    .from(payments)
-    .where(eq(payments.molliePaymentId, paymentId))
-    .limit(1);
+  return db.transaction(async tx => {
+    const [storedPayment] = await tx
+      .select()
+      .from(payments)
+      .where(eq(payments.molliePaymentId, paymentId))
+      .limit(1)
+      .for("update");
 
-  if (!storedPayment) {
-    throw new Error(`Unknown Mollie payment: ${paymentId}`);
-  }
+    if (!storedPayment) {
+      throw new Error(`Unknown Mollie payment: ${paymentId}`);
+    }
 
-  const amountMatches = storedPayment.amountCents === amountCents;
-  const nextOrderStatus =
-    normalizedStatus === "paid" && amountMatches
-      ? "paid"
-      : normalizedStatus === "failed" ||
-          normalizedStatus === "cancelled" ||
-          normalizedStatus === "expired"
-        ? "cancelled"
-        : "pending";
+    const amountMatches = storedPayment.amountCents === amountCents;
+    const previousIsTerminal = [
+      "paid",
+      "failed",
+      "cancelled",
+      "expired",
+      "refunded",
+    ].includes(storedPayment.status);
+    const effectiveStatus = previousIsTerminal
+      ? storedPayment.status
+      : amountMatches
+        ? normalizedStatus
+        : "failed";
+    const nextOrderStatus =
+      effectiveStatus === "paid"
+        ? "paid"
+        : effectiveStatus === "failed" ||
+            effectiveStatus === "cancelled" ||
+            effectiveStatus === "expired"
+          ? "cancelled"
+          : "pending";
+    const firstPaidTransition =
+      effectiveStatus === "paid" &&
+      ["open", "pending", "authorized"].includes(storedPayment.status);
+    const firstReleaseTransition =
+      ["failed", "cancelled", "expired"].includes(effectiveStatus) &&
+      !["failed", "cancelled", "expired", "paid", "refunded"].includes(
+        storedPayment.status,
+      );
 
-  await db.transaction(async tx => {
+    if (firstPaidTransition || firstReleaseTransition) {
+      const reservedItems = await tx
+        .select({
+          variantId: orderItems.variantId,
+          quantity: orderItems.quantity,
+        })
+        .from(orderItems)
+        .where(eq(orderItems.orderId, storedPayment.orderId));
+
+      for (const item of reservedItems) {
+        if (!item.variantId) continue;
+
+        if (firstPaidTransition) {
+          await tx
+            .update(productVariants)
+            .set({
+              stock: sql`greatest(${productVariants.stock} - ${item.quantity}, 0)`,
+              reservedStock: sql`greatest(${productVariants.reservedStock} - ${item.quantity}, 0)`,
+            })
+            .where(eq(productVariants.id, item.variantId));
+          await tx.insert(inventoryMovements).values({
+            variantId: item.variantId,
+            quantity: 0 - item.quantity,
+            reason: "sale",
+            reference: storedPayment.orderId,
+            note: `Stock committed after Mollie payment ${paymentId}`,
+          });
+        } else {
+          await tx
+            .update(productVariants)
+            .set({
+              reservedStock: sql`greatest(${productVariants.reservedStock} - ${item.quantity}, 0)`,
+            })
+            .where(eq(productVariants.id, item.variantId));
+        }
+      }
+    }
+
     await tx
       .update(payments)
       .set({
-        status: amountMatches ? normalizedStatus : "failed",
+        status: effectiveStatus,
         method: molliePayment.method ?? storedPayment.method,
-        paidAt,
+        paidAt:
+          effectiveStatus === "paid"
+            ? storedPayment.paidAt ?? new Date()
+            : storedPayment.paidAt,
         rawPayload: {
           id: molliePayment.id,
           status: molliePayment.status,
@@ -339,14 +476,14 @@ export async function syncMolliePaymentStatus(paymentId: string) {
         status: nextOrderStatus,
       })
       .where(eq(orders.id, storedPayment.orderId));
-  });
 
-  return {
-    paymentId,
-    status: normalizedStatus,
-    amountMatches,
-    orderStatus: nextOrderStatus,
-  };
+    return {
+      paymentId,
+      status: effectiveStatus,
+      amountMatches,
+      orderStatus: nextOrderStatus,
+    };
+  });
 }
 
 export function parseCheckoutInput(input: unknown): CheckoutInput {

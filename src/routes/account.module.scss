@@ -565,6 +565,24 @@
   display: block;
 }
 
+.orderActions {
+  display: grid;
+  justify-items: end;
+  gap: 0.55rem;
+
+  a {
+    color: $gray-500;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 0.2rem;
+
+    &:hover {
+      color: $primary-light;
+    }
+  }
+}
+
 .orderMain > span {
   color: $gray-600;
   font-size: 0.64rem;
