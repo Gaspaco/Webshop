@@ -31,7 +31,7 @@ export default function Contact() {
           <h1 class={styles.heading}>Get in touch</h1>
           <p class={styles.sub}>
             Question about an order, a card's condition, or something else?
-            You're talking to a real person, not a call centre — usually within
+            You're talking to a real person, not a call centre, usually within
             one business day.
           </p>
         </header>

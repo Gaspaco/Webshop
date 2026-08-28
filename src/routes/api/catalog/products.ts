@@ -22,18 +22,20 @@ export async function GET(event: APIEvent) {
         imageUrls: products.imageUrls,
         metadata: products.metadata,
         variantId: productVariants.id,
+        variantName: productVariants.name,
         sku: productVariants.sku,
         condition: productVariants.condition,
         language: productVariants.language,
         finish: productVariants.finish,
         priceCents: productVariants.priceCents,
         stock: productVariants.stock,
+        reservedStock: productVariants.reservedStock,
       })
       .from(products)
       .innerJoin(productVariants, eq(productVariants.productId, products.id))
       .where(where)
       .orderBy(asc(products.createdAt))
-      .limit(slug ? 1 : 250),
+      .limit(slug ? 50 : 250),
     db
       .select({ slug: products.slug })
       .from(products)

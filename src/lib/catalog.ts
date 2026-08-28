@@ -10,12 +10,14 @@ export type DatabaseCatalogProduct = {
   imageUrls: string[];
   metadata: Record<string, unknown>;
   variantId: string;
+  variantName: string;
   sku: string;
   condition: string | null;
   language: string | null;
   finish: string | null;
   priceCents: number;
   stock: number;
+  reservedStock: number;
 };
 
 const gameNames: Record<string, string> = {
@@ -35,6 +37,7 @@ export function databaseProductToShopProduct(
       ? product.game
       : "pokemon";
   const metadata = product.metadata ?? {};
+  const availableStock = Math.max(product.stock - product.reservedStock, 0);
 
   return {
     id: product.slug,
@@ -73,9 +76,21 @@ export function databaseProductToShopProduct(
       typeof metadata.certificationNumber === "string"
         ? metadata.certificationNumber
         : undefined,
-    stock: product.stock,
+    stock: availableStock,
     variantId: product.variantId,
     sku: product.sku,
+    variants: [
+      {
+        id: product.variantId,
+        name: product.variantName,
+        sku: product.sku,
+        condition: product.condition ?? undefined,
+        language: product.language ?? undefined,
+        finish: product.finish ?? undefined,
+        priceCents: product.priceCents,
+        stock: availableStock,
+      },
+    ],
   };
 }
 
@@ -96,8 +111,31 @@ export async function fetchDatabaseCatalogState(
     products: DatabaseCatalogProduct[];
     managedSlugs?: string[];
   };
+  const grouped = new Map<string, ShopProduct>();
+  for (const databaseProduct of data.products) {
+    const mapped = databaseProductToShopProduct(databaseProduct);
+    const existing = grouped.get(mapped.id);
+    if (!existing) {
+      grouped.set(mapped.id, mapped);
+      continue;
+    }
+
+    const variants = [...(existing.variants ?? []), ...(mapped.variants ?? [])];
+    const firstAvailable = variants.find(variant => variant.stock > 0) ?? variants[0];
+    grouped.set(mapped.id, {
+      ...existing,
+      priceCents: Math.min(...variants.map(variant => variant.priceCents)),
+      stock: variants.reduce((total, variant) => total + variant.stock, 0),
+      variantId: firstAvailable?.id,
+      sku: firstAvailable?.sku,
+      condition: firstAvailable?.condition,
+      language: firstAvailable?.language,
+      finish: firstAvailable?.finish,
+      variants,
+    });
+  }
   return {
-    products: data.products.map(databaseProductToShopProduct),
+    products: [...grouped.values()],
     managedSlugs: data.managedSlugs ?? data.products.map(product => product.slug),
   };
 }

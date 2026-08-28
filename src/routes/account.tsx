@@ -872,9 +872,14 @@ export default function Account() {
                                 </small>
                               </div>
                               <span class={styles.status}>{readableStatus(order.status)}</span>
-                              <strong class={styles.orderTotal}>
-                                {formatMoney(order.totalCents, order.currency)}
-                              </strong>
+                              <div class={styles.orderActions}>
+                                <strong class={styles.orderTotal}>
+                                  {formatMoney(order.totalCents, order.currency)}
+                                </strong>
+                                <A href={`/returns?order=${encodeURIComponent(order.orderNumber)}`}>
+                                  Cancel or return
+                                </A>
+                              </div>
                             </article>
                           )}
                         </For>

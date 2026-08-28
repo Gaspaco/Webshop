@@ -224,6 +224,7 @@ export default function Checkout() {
         body: JSON.stringify({
           items: items.map(item => ({
             id: item.id,
+            variantId: item.variantId,
             quantity: item.quantity,
           })),
           customer: values,

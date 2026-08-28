@@ -1,4 +1,4 @@
-import { Title } from "@solidjs/meta";
+import { Link, Meta, Title } from "@solidjs/meta";
 import { A, useParams } from "@solidjs/router";
 import {
   createResource,
@@ -95,23 +95,91 @@ export default function ProductDetail() {
   };
 
   const [quantity, setQuantity] = createSignal(1);
+  const [selectedVariantId, setSelectedVariantId] = createSignal("");
   const [added, setAdded] = createSignal(false);
   const [saved, setSaved] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
 
   onMount(() => setClientReady(true));
 
+  const selectedVariant = () => {
+    const variants = product()?.variants ?? [];
+    return (
+      variants.find(variant => variant.id === selectedVariantId()) ??
+      variants.find(variant => variant.stock > 0) ??
+      variants[0]
+    );
+  };
+
+  const activeProduct = () => {
+    const current = product();
+    const variant = selectedVariant();
+    if (!current || !variant) return current;
+    return {
+      ...current,
+      variantId: variant.id,
+      sku: variant.sku,
+      condition: variant.condition,
+      language: variant.language,
+      finish: variant.finish,
+      priceCents: variant.priceCents,
+      stock: variant.stock,
+    };
+  };
+
+  const productJsonLd = () => {
+    const current = product();
+    if (!current) return "";
+    const variants = current.variants?.length
+      ? current.variants
+      : current.priceCents !== undefined
+        ? [{
+            id: current.variantId ?? current.id,
+            sku: current.sku ?? current.id,
+            priceCents: current.priceCents,
+            stock: current.stock ?? 1,
+          }]
+        : [];
+    const data = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: current.name,
+      description: describe(current),
+      image: current.image ? [current.image] : undefined,
+      sku: current.sku,
+      category: current.gameName,
+      brand: { "@type": "Brand", name: "TCGHaven" },
+      offers: variants.map(variant => ({
+        "@type": "Offer",
+        sku: variant.sku,
+        priceCurrency: "EUR",
+        price: (variant.priceCents / 100).toFixed(2),
+        availability:
+          variant.stock > 0
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+        url: `https://my-little-tcg-haven.vercel.app/products/${encodeURIComponent(current.id)}`,
+      })),
+    };
+    return JSON.stringify(data).replaceAll("<", "\\u003c");
+  };
+
   const addMain = (item: ShopProduct) => {
     if (item.priceRangeCents || item.priceCents === undefined) return;
 
-    for (let index = 0; index < quantity(); index += 1) {
-      cart.addItem({
+    const variantLabel = [item.condition, item.language, item.finish]
+      .filter(Boolean)
+      .join(", ");
+    cart.addItem(
+      {
         id: item.id,
-        name: item.set ? `${item.name} · ${item.set}` : item.name,
+        variantId: item.variantId,
+        name: `${item.set ? `${item.name} · ${item.set}` : item.name}${variantLabel ? ` (${variantLabel})` : ""}`,
         image: item.image ?? "/images/logo-mark.png",
         priceCents: item.priceCents,
-      });
-    }
+      },
+      quantity(),
+    );
 
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
@@ -155,6 +223,9 @@ export default function ProductDetail() {
       {item => (
         <main class={styles.page}>
           <Title>{item().name} | TCGHaven</Title>
+          <Meta name="description" content={describe(item())} />
+          <Link rel="canonical" href={`https://my-little-tcg-haven.vercel.app/products/${encodeURIComponent(item().id)}`} />
+          <script type="application/ld+json" textContent={productJsonLd()} />
 
           <div class={styles.wide}>
             <nav class={styles.breadcrumb} aria-label="Breadcrumb">
@@ -230,7 +301,7 @@ export default function ProductDetail() {
                 <p class={styles.price}>
                   <Show
                     when={item().priceRangeCents}
-                    fallback={formatPrice(item().priceCents ?? 0)}
+                    fallback={formatPrice(activeProduct()?.priceCents ?? 0)}
                   >
                     {formatPrice(item().priceRangeCents![0])} to {formatPrice(item().priceRangeCents![1])}
                   </Show>
@@ -240,12 +311,50 @@ export default function ProductDetail() {
                   <span />
                   {item().priceRangeCents
                     ? "Available in multiple formats"
-                    : item().stock === 0
+                    : activeProduct()?.stock === 0
                       ? "Currently out of stock"
                       : "In stock, ready to ship"}
                 </div>
 
                 <p class={styles.description}>{describe(item())}</p>
+
+                <Show when={(item().variants?.length ?? 0) > 1}>
+                  <fieldset class={styles.variantPicker}>
+                    <legend>Choose your card</legend>
+                    <div>
+                      <For each={item().variants}>
+                        {variant => (
+                          <button
+                            type="button"
+                            classList={{
+                              [styles.variantActive]:
+                                selectedVariant()?.id === variant.id,
+                            }}
+                            aria-pressed={selectedVariant()?.id === variant.id}
+                            disabled={variant.stock === 0}
+                            onClick={() => {
+                              setSelectedVariantId(variant.id);
+                              setQuantity(1);
+                            }}
+                          >
+                            <span>
+                              <strong>{variant.name}</strong>
+                              <small>
+                                {[variant.condition, variant.language, variant.finish]
+                                  .filter(Boolean)
+                                  .join(" · ") || variant.sku}
+                              </small>
+                            </span>
+                            <span>
+                              <strong>{formatPrice(variant.priceCents)}</strong>
+                              <small>{variant.stock > 0 ? `${variant.stock} available` : "Sold out"}</small>
+                            </span>
+                          </button>
+                        )}
+                      </For>
+                    </div>
+                  </fieldset>
+                </Show>
 
                 <Show
                   when={!item().priceRangeCents}
@@ -270,7 +379,7 @@ export default function ProductDetail() {
                       <button
                         type="button"
                         aria-label="Increase quantity"
-                        onClick={() => setQuantity(value => Math.min(99, value + 1))}
+                        onClick={() => setQuantity(value => Math.min(99, activeProduct()?.stock ?? 99, value + 1))}
                       >
                         +
                       </button>
@@ -280,8 +389,11 @@ export default function ProductDetail() {
                       type="button"
                       class={styles.primaryButton}
                       classList={{ [styles.primaryButtonDone]: added() }}
-                      disabled={item().stock === 0}
-                      onClick={() => addMain(item())}
+                      disabled={activeProduct()?.stock === 0}
+                      onClick={() => {
+                        const current = activeProduct();
+                        if (current) addMain(current);
+                      }}
                     >
                       <Show
                         when={!added()}
@@ -304,7 +416,7 @@ export default function ProductDetail() {
                 <div class={styles.purchaseFoot}>
                   <div>
                     <span>Condition</span>
-                    <strong>{conditionFor(item())}</strong>
+                    <strong>{activeProduct() ? conditionFor(activeProduct()!) : conditionFor(item())}</strong>
                   </div>
                   <div>
                     <span>Dispatch</span>

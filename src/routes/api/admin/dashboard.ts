@@ -17,6 +17,7 @@ import {
 } from "~/db/schema";
 import { apiJson, requireAdmin } from "~/lib/admin.server";
 import { ALL_PRODUCTS } from "~/lib/categories";
+import { getLaunchReadiness } from "~/lib/readiness.server";
 
 export async function GET(event: APIEvent) {
   const guard = await requireAdmin(event);
@@ -268,6 +269,9 @@ export async function GET(event: APIEvent) {
       };
     });
   const catalog = [...managedCatalog, ...starterCatalog];
+  const readiness = getLaunchReadiness({
+    unconvertedStarterProducts: starterCatalog.length,
+  });
   const customers = customerRows.filter(customer => customer.role !== "admin");
   const paidRevenue = orderRows
     .filter(order =>
@@ -355,5 +359,6 @@ export async function GET(event: APIEvent) {
         customer => customer.count > 1,
       ).length,
     },
+    readiness,
   });
 }

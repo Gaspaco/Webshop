@@ -9,6 +9,7 @@ import {
 
 export type CartItem = {
   id: string;
+  variantId?: string;
   name: string;
   image: string;
   priceCents: number;
@@ -38,6 +39,9 @@ function loadStored(): CartItem[] {
 
 const CartContext = createContext<CartContextValue>();
 
+const cartLineKey = (item: Pick<CartItem, "id" | "variantId">) =>
+  item.variantId ?? item.id;
+
 export function CartProvider(props: ParentProps) {
   // Always start empty so the server-rendered markup and the client's
   // first hydration pass match exactly. Stored items are loaded after
@@ -58,10 +62,13 @@ export function CartProvider(props: ParentProps) {
 
   const addItem: CartContextValue["addItem"] = (item, quantity = 1) => {
     setItems(prev => {
-      const existing = prev.find(i => i.id === item.id);
+      const key = cartLineKey(item);
+      const existing = prev.find(i => cartLineKey(i) === key);
       if (existing) {
         return prev.map(i =>
-          i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i,
+          cartLineKey(i) === key
+            ? { ...i, quantity: i.quantity + quantity }
+            : i,
         );
       }
       return [...prev, { ...item, quantity }];
@@ -69,13 +76,15 @@ export function CartProvider(props: ParentProps) {
   };
 
   const removeItem = (id: string) => {
-    setItems(prev => prev.filter(i => i.id !== id));
+    setItems(prev => prev.filter(i => cartLineKey(i) !== id));
   };
 
   const setQuantity = (id: string, quantity: number) => {
     setItems(prev => {
-      if (quantity <= 0) return prev.filter(i => i.id !== id);
-      return prev.map(i => (i.id === id ? { ...i, quantity } : i));
+      if (quantity <= 0) return prev.filter(i => cartLineKey(i) !== id);
+      return prev.map(i =>
+        cartLineKey(i) === id ? { ...i, quantity } : i,
+      );
     });
   };
 
