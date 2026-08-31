@@ -17,11 +17,18 @@ const variantSchema = z.object({
   productId: z.string().uuid(),
   name: z.string().trim().min(1).max(120),
   sku: z.string().trim().min(1).max(80),
+  barcode: z.string().trim().max(120).optional().default(""),
   language: z.string().trim().max(60),
   condition: z.string().trim().max(60),
   finish: z.string().trim().max(60),
   priceCents: z.number().int().min(0).max(100_000_000),
+  compareAtPriceCents: z.number().int().min(0).max(100_000_000).nullable().optional(),
   stock: z.number().int().min(0).max(1_000_000),
+  trackInventory: z.boolean().optional().default(true),
+});
+
+const updateVariantSchema = variantSchema.extend({
+  id: z.string().uuid(),
 });
 
 export async function POST(event: APIEvent) {
@@ -38,7 +45,10 @@ export async function POST(event: APIEvent) {
 
     const [variant] = await db
       .insert(productVariants)
-      .values(input)
+      .values({
+        ...input,
+        barcode: input.barcode || null,
+      })
       .returning();
     if (input.stock > 0) {
       await db.insert(inventoryMovements).values({
@@ -67,6 +77,82 @@ export async function POST(event: APIEvent) {
       return apiJson({ error: "Check the variant details." }, { status: 400 });
     }
     return apiJson({ error: "The variant could not be added." }, { status: 500 });
+  }
+}
+
+export async function PATCH(event: APIEvent) {
+  const guard = await requireAdmin(event);
+  if (guard.response) return guard.response;
+
+  try {
+    const input = updateVariantSchema.parse(await event.request.json());
+    const [current] = await db
+      .select({ stock: productVariants.stock })
+      .from(productVariants)
+      .where(
+        and(
+          eq(productVariants.id, input.id),
+          eq(productVariants.productId, input.productId),
+        ),
+      )
+      .limit(1);
+    if (!current) {
+      return apiJson({ error: "Variant not found." }, { status: 404 });
+    }
+
+    const [variant] = await db
+      .update(productVariants)
+      .set({
+        name: input.name,
+        sku: input.sku,
+        barcode: input.barcode || null,
+        condition: input.condition || null,
+        language: input.language || null,
+        finish: input.finish || null,
+        priceCents: input.priceCents,
+        compareAtPriceCents: input.compareAtPriceCents ?? null,
+        stock: input.stock,
+        trackInventory: input.trackInventory,
+      })
+      .where(
+        and(
+          eq(productVariants.id, input.id),
+          eq(productVariants.productId, input.productId),
+        ),
+      )
+      .returning();
+
+    if (input.stock !== current.stock) {
+      await db.insert(inventoryMovements).values({
+        variantId: input.id,
+        quantity: input.stock - current.stock,
+        reason: "adjustment",
+        note: "Variant stock changed from admin dashboard",
+        createdBy: guard.session!.user.id,
+      });
+    }
+
+    await writeAuditLog({
+      event,
+      actorId: guard.session!.user.id,
+      action: "variant.updated",
+      entityType: "product",
+      entityId: input.productId,
+      summary: `Variant ${input.sku} updated.`,
+      metadata: { stock: input.stock, priceCents: input.priceCents },
+    });
+    return apiJson({ variant });
+  } catch (error) {
+    if ((error as { code?: string }).code === "23505") {
+      return apiJson({ error: "That SKU already exists." }, { status: 409 });
+    }
+    if (error instanceof z.ZodError) {
+      return apiJson(
+        { error: error.issues[0]?.message ?? "Check the variant details." },
+        { status: 400 },
+      );
+    }
+    return apiJson({ error: "The variant could not be updated." }, { status: 500 });
   }
 }
 

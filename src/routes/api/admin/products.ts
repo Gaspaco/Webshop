@@ -44,6 +44,7 @@ const createProductSchema = z.object({
   name: z.string().trim().min(2).max(140),
   slug: z.string().trim().max(110).optional().default(""),
   description: z.string().trim().max(2400).optional().default(""),
+  brand: z.string().trim().max(120).optional().default(""),
   game: gameSchema,
   productType: z.enum(["single", "sealed", "graded", "accessory"]),
   set: z.string().trim().max(120).optional().default(""),
@@ -51,6 +52,7 @@ const createProductSchema = z.object({
   image: imageSchema.optional().default(""),
   status: statusSchema,
   sku: z.string().trim().max(80).optional().default(""),
+  barcode: z.string().trim().max(120).optional().default(""),
   condition: z.string().trim().max(60).optional().default("Near Mint"),
   language: z.string().trim().max(60).optional().default("English"),
   finish: z.string().trim().max(60).optional().default(""),
@@ -58,6 +60,7 @@ const createProductSchema = z.object({
   priceCents: z.number().int().min(0).max(100_000_000),
   compareAtPriceCents: z.number().int().min(0).max(100_000_000).nullable().optional(),
   stock: z.number().int().min(0).max(1_000_000),
+  trackInventory: z.boolean().optional().default(true),
 });
 
 const updateProductSchema = createProductSchema.partial().extend({
@@ -110,6 +113,7 @@ export async function POST(event: APIEvent) {
           name: input.name,
           slug,
           description: input.description || null,
+          brand: input.brand || null,
           game: input.game,
           productType: input.productType,
           status: input.status,
@@ -138,6 +142,7 @@ export async function POST(event: APIEvent) {
         .values({
           productId: createdProduct.id,
           sku,
+          barcode: input.barcode || null,
           name: input.condition || "Default",
           condition: input.condition || null,
           language: input.language || null,
@@ -145,6 +150,7 @@ export async function POST(event: APIEvent) {
           priceCents: input.priceCents,
           compareAtPriceCents: input.compareAtPriceCents ?? null,
           stock: input.stock,
+          trackInventory: input.trackInventory,
         })
         .returning();
 
@@ -205,6 +211,7 @@ export async function PATCH(event: APIEvent) {
             name: input.name,
             slug: starterSlug,
             description: input.description || null,
+            brand: input.brand || null,
             game: input.game,
             productType: input.productType,
             status: input.status,
@@ -230,6 +237,7 @@ export async function PATCH(event: APIEvent) {
           .values({
             productId: createdProduct.id,
             sku: input.sku,
+            barcode: input.barcode || null,
             name: input.condition || "Default",
             condition: input.condition || null,
             language: input.language || null,
@@ -237,6 +245,7 @@ export async function PATCH(event: APIEvent) {
             priceCents: input.priceCents,
             compareAtPriceCents: input.compareAtPriceCents ?? null,
             stock: input.stock,
+            trackInventory: input.trackInventory,
           })
           .returning();
         if (!variant) throw new Error("Starter variant was not created.");
@@ -286,6 +295,7 @@ export async function PATCH(event: APIEvent) {
       if (input.name !== undefined) productChanges.name = input.name;
       if (input.slug !== undefined) productChanges.slug = toSlug(input.slug || input.name || "");
       if (input.description !== undefined) productChanges.description = input.description || null;
+      if (input.brand !== undefined) productChanges.brand = input.brand || null;
       if (input.game !== undefined) productChanges.game = input.game;
       if (input.productType !== undefined) productChanges.productType = input.productType;
       if (input.status !== undefined) productChanges.status = input.status;
@@ -334,6 +344,7 @@ export async function PATCH(event: APIEvent) {
 
       const variantChanges: Partial<typeof productVariants.$inferInsert> = {};
       if (input.sku !== undefined) variantChanges.sku = input.sku;
+      if (input.barcode !== undefined) variantChanges.barcode = input.barcode || null;
       if (input.condition !== undefined) {
         variantChanges.condition = input.condition || null;
         variantChanges.name = input.condition || "Default";
@@ -345,6 +356,9 @@ export async function PATCH(event: APIEvent) {
         variantChanges.compareAtPriceCents = input.compareAtPriceCents;
       }
       if (input.stock !== undefined) variantChanges.stock = input.stock;
+      if (input.trackInventory !== undefined) {
+        variantChanges.trackInventory = input.trackInventory;
+      }
 
       if (Object.keys(variantChanges).length) {
         await tx
