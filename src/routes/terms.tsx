@@ -1,28 +1,37 @@
 import { Title } from "@solidjs/meta";
-import { For } from "solid-js";
+import { createSignal, For, onMount, Show } from "solid-js";
+import {
+  DEFAULT_STORE_PROFILE,
+  fetchStoreProfile,
+  type StoreProfile,
+} from "~/lib/store-profile";
 import styles from "./legal.module.scss";
 
 const SECTIONS = [
-  { id: "agreement", title: "Agreement to these terms" },
-  { id: "orders", title: "Orders" },
-  { id: "pricing", title: "Pricing & availability" },
-  { id: "grading", title: "Card condition & grading" },
+  { id: "business", title: "The seller" },
+  { id: "orders", title: "Ordering and the contract" },
+  { id: "prices", title: "Prices and VAT" },
   { id: "payments", title: "Payments" },
-  { id: "shipping", title: "Shipping & delivery" },
-  { id: "returns", title: "Returns & the right of withdrawal" },
-  { id: "account-use", title: "Account use" },
-  { id: "ip", title: "Intellectual property" },
-  { id: "liability", title: "Limitation of liability" },
-  { id: "law", title: "Governing law" },
+  { id: "condition", title: "Card condition and product information" },
+  { id: "delivery", title: "Delivery and shipping risk" },
+  { id: "withdrawal", title: "Right of withdrawal" },
+  { id: "refunds", title: "Returns and refunds" },
+  { id: "guarantee", title: "Faulty, damaged, or incorrect products" },
+  { id: "accounts", title: "Customer accounts" },
+  { id: "complaints", title: "Complaints" },
+  { id: "liability", title: "Liability" },
+  { id: "law", title: "Applicable law" },
   { id: "changes", title: "Changes to these terms" },
-  { id: "contact", title: "Questions" },
 ];
 
 export default function Terms() {
+  const [profile, setProfile] = createSignal<StoreProfile>(DEFAULT_STORE_PROFILE);
+  onMount(async () => setProfile(await fetchStoreProfile()));
+
   return (
     <main class={styles.page}>
       <div class={styles.wide}>
-        <Title>Terms of Service | TCGHaven</Title>
+        <Title>Terms and conditions | TCGHaven</Title>
 
         <header class={styles.header}>
           <span class={styles.headerIcon}>
@@ -33,248 +42,272 @@ export default function Terms() {
             </svg>
           </span>
           <div>
-            <h1 class={styles.heading}>Terms of Service</h1>
-            <p class={styles.updated}>Last updated: January 2026</p>
+            <h1 class={styles.heading}>Terms and conditions</h1>
+            <p class={styles.updated}>Last updated: 30 August 2026</p>
           </div>
         </header>
 
         <div class={styles.layout}>
-          <nav class={styles.toc} aria-label="Sections">
+          <nav class={styles.toc} aria-label="Terms sections">
             <span class={styles.tocLabel}>On this page</span>
             <For each={SECTIONS}>
-              {(section, i) => (
-                <a href={`#${section.id}`} class={styles.tocLink}>
-                  <span class={styles.tocNum}>{String(i() + 1).padStart(2, "0")}</span>
-                  {section.title}
-                </a>
-              )}
+              {section => <a href={`#${section.id}`} class={styles.tocLink}>{section.title}</a>}
             </For>
           </nav>
 
           <div class={styles.content}>
-            <section id="agreement" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>01</span>
-                Agreement to these terms
-              </h2>
+            <section id="business" class={styles.section}>
+              <h2 class={styles.sectionTitle}>The seller</h2>
               <p>
-                These terms apply whenever you browse, create an account, or
-                place an order on TCGHaven. By using the site, you're
-                agreeing to them. If something here doesn't make sense,
-                reach out through our <a href="/contact">contact page</a>{" "}
-                before you order.
+                These terms apply to purchases from {profile().companyName}, an online
+                trading card shop established in the Netherlands.
+              </p>
+              <dl class={styles.identity}>
+                <div><dt>Company</dt><dd>{profile().companyName}</dd></div>
+                <div><dt>KVK</dt><dd>{profile().kvkNumber}</dd></div>
+                <div><dt>VAT ID</dt><dd>{profile().vatId}</dd></div>
+                <Show when={profile().businessAddress}>
+                  <div><dt>Address</dt><dd>{profile().businessAddress}</dd></div>
+                </Show>
+                <div><dt>Email</dt><dd><a href={`mailto:${profile().businessEmail}`}>{profile().businessEmail}</a></dd></div>
+                <div><dt>Phone</dt><dd><a href={`tel:${profile().phone.replace(/\s+/g, "")}`}>{profile().phone}</a></dd></div>
+              </dl>
+              <p>
+                These terms are written for consumers. Mandatory consumer rights
+                always take priority if a term conflicts with the law.
               </p>
             </section>
 
             <section id="orders" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>02</span>
-                Orders
-              </h2>
+              <h2 class={styles.sectionTitle}>Ordering and the contract</h2>
               <p>
-                Placing an order means you're agreeing to purchase the items
-                in your cart at the listed price. We confirm stock at the
-                time of order, but in the rare case an item sells out before
-                we can ship it, we'll contact you and offer a swap, a
-                partial refund, or a full refund. The choice is yours.
+                Product pages describe the main characteristics, condition, price,
+                and available stock. Review your order before selecting the button
+                that confirms your payment obligation. We send an electronic order
+                confirmation after the order is accepted.
               </p>
               <p>
-                We reserve the right to cancel an order if we suspect fraud,
-                reseller abuse, or a genuine pricing or stock error.
+                If an item is unavailable or a clear price or stock error makes
+                fulfilment impossible, we will contact you promptly. You can choose
+                an available alternative or a refund. Any amount already collected
+                for a cancelled item is returned through the original payment method.
               </p>
-            </section>
-
-            <section id="pricing" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>03</span>
-                Pricing & availability
-              </h2>
               <p>
-                Prices are shown in EUR and include applicable VAT unless
-                stated otherwise. We reserve the right to correct pricing
-                errors before an order ships, and to update prices at any
-                time for items not yet in your cart.
+                We may refuse or cancel an order where reasonably necessary to
+                prevent fraud, unlawful activity, or misuse of the webshop. We will
+                explain the decision unless doing so would compromise a security or
+                legal investigation.
               </p>
             </section>
 
-            <section id="grading" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>04</span>
-                Card condition & grading
-              </h2>
+            <section id="prices" class={styles.section}>
+              <h2 class={styles.sectionTitle}>Prices and VAT</h2>
               <p>
-                Every card is graded honestly against standard TCG condition
-                guidelines (Mint, Near Mint, Lightly Played, Moderately
-                Played, Heavily Played, Damaged) and photographed so what you
-                see matches what ships. Grading is a judgment call, and
-                reasonable people can disagree by a shade. If a card
-                arrives in meaningfully worse condition than described,
-                contact us within 14 days of delivery for a replacement or
-                refund.
+                Prices are shown in euros and include applicable VAT. Delivery
+                charges and discounts are shown before you place the order. For
+                eligible second-hand goods sold under the VAT margin scheme, VAT is
+                included in the price but is not shown separately on the invoice.
               </p>
             </section>
 
             <section id="payments" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>05</span>
-                Payments
-              </h2>
+              <h2 class={styles.sectionTitle}>Payments</h2>
               <p>
-                Checkout is processed securely through Mollie, supporting
-                iDEAL, major cards, and other regional payment methods.
-                Payment is taken at the time of order. We don't store your
-                card or bank details ourselves.
+                Mollie processes online payments and shows the payment methods
+                available for the transaction. TCGHaven does not receive or store
+                your complete card or online banking credentials. An order is
+                prepared after payment is confirmed, unless the selected payment
+                method has a later settlement period.
               </p>
             </section>
 
-            <section id="shipping" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>06</span>
-                Shipping & delivery
-              </h2>
+            <section id="condition" class={styles.section}>
+              <h2 class={styles.sectionTitle}>Card condition and product information</h2>
               <p>
-                Orders ship from the Netherlands, typically within 1 to 2
-                business days of payment confirmation. Delivery times vary
-                by destination and carrier. Risk of loss passes to you once
-                the order is handed to the carrier, though we'll always help
-                sort out a lost or damaged parcel with the carrier on your
-                behalf.
+                Singles are listed with a condition, language, finish, grading
+                information, and images where available. Professional grading labels
+                remain the opinion of the grading company. Raw-card condition is
+                assessed carefully, but minor differences in judgment can occur. A
+                disclosed defect or condition issue is part of the agreed product
+                description.
+              </p>
+              <p>
+                Product names, set symbols, artwork, and trademarks belong to their
+                respective rights holders. They are displayed to identify genuine
+                products and are not evidence of sponsorship.
               </p>
             </section>
 
-            <section id="returns" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>07</span>
-                Returns & the right of withdrawal
-              </h2>
+            <section id="delivery" class={styles.section}>
+              <h2 class={styles.sectionTitle}>Delivery and shipping risk</h2>
               <p>
-                As an EU consumer, you have the right to withdraw from your
-                order within 14 days of delivery, without giving a reason.
-                Items must be unopened and in the condition you received
-                them. For sealed product, that means the seal itself must
-                be intact. See our{" "}
-                <a href="/shipping">shipping & returns page</a> for the
-                step-by-step process and who covers return shipping in each
-                case.
+                We currently deliver within the Netherlands using the methods shown
+                at checkout. We aim to hand paid orders to the carrier within 1 to 2
+                business days. If no other delivery period is agreed, delivery will
+                take place within the period required by Dutch consumer law.
+              </p>
+              <p>
+                TCGHaven remains responsible for loss or damage during delivery until
+                you, or a person designated by you, receives the order. This does not
+                apply when you independently appoint a carrier that we did not offer.
+                Report visible transport damage or a missing parcel as soon as
+                reasonably possible so we can contact the carrier and provide a
+                replacement or refund where required.
+              </p>
+              <p><a href="/shipping">View current shipping rates and delivery information</a>.</p>
+            </section>
+
+            <section id="withdrawal" class={styles.section}>
+              <h2 class={styles.sectionTitle}>Right of withdrawal</h2>
+              <p>
+                Consumers may withdraw from an online purchase without giving a
+                reason within 14 days after the day the product is received. For an
+                order delivered in separate parts, the period starts after the final
+                part is received.
+              </p>
+              <p>
+                Tell us within that period through the <a href="/returns">online
+                withdrawal form</a> or by sending an unambiguous statement to
+                <a href={`mailto:${profile().businessEmail}`}> {profile().businessEmail}</a>.
+                Using the form is optional and a reason is not required. We send an
+                electronic acknowledgement when the online form is accepted.
+              </p>
+              <p>
+                The statutory exceptions to withdrawal apply only where the law says
+                they apply, such as a genuinely personalised product. A standard
+                single card or second-hand product is not excluded just because it
+                was sold online.
               </p>
             </section>
 
-            <section id="account-use" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>08</span>
-                Account use
-              </h2>
+            <section id="refunds" class={styles.section}>
+              <h2 class={styles.sectionTitle}>Returns and refunds</h2>
               <p>
-                You're responsible for keeping your account credentials
-                secure and for any activity that happens under your account.
-                We may suspend or close accounts used for fraud, abuse, bulk
-                reselling that violates fair-use limits, or attempts to
-                circumvent stock or pricing controls.
+                After notifying us of withdrawal, send the products back within
+                another 14 days. For an ordinary change-of-mind withdrawal, you pay
+                the direct return shipping cost. Use suitable protection and keep
+                proof of dispatch because the return shipment remains your
+                responsibility until it reaches us.
+              </p>
+              <p>
+                You may inspect a product as you could in a shop. You are responsible
+                for any reduction in value caused by handling beyond what is
+                necessary to establish its nature, characteristics, and operation.
+                Opening randomized sealed trading card products can substantially
+                reduce their resale value. Any deduction is based on the actual
+                reduction in value and assessed case by case.
+              </p>
+              <p>
+                For a full-order withdrawal, we refund the purchase price and the
+                cost of the least expensive standard delivery method we offered.
+                Additional delivery upgrades are not refunded. We pay within 14 days
+                after your withdrawal notice, using the original payment method, but
+                may wait until the goods arrive or you supply proof of dispatch.
+                Original delivery costs are not refunded for a partial return.
               </p>
             </section>
 
-            <section id="ip" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>09</span>
-                Intellectual property
-              </h2>
+            <section id="guarantee" class={styles.section}>
+              <h2 class={styles.sectionTitle}>Faulty, damaged, or incorrect products</h2>
               <p>
-                All card names, artwork, and trademarks shown on this site
-                belong to their respective publishers (Pokémon, Yu-Gi-Oh!,
-                Wizards of the Coast, and others). We use product imagery
-                for identification purposes only. Site content, design, and
-                code belong to TCGHaven.
+                Every consumer has the Dutch statutory right to a product that
+                matches the agreement. If an item is incorrect, damaged in transit,
+                counterfeit, incomplete, or meaningfully worse than its description,
+                contact us within a reasonable time after discovery. Reporting within
+                two months is always considered timely under Dutch consumer law.
+              </p>
+              <p>
+                Where the product does not conform, TCGHaven is responsible for an
+                appropriate legal remedy, such as replacement, repair where relevant,
+                a price reduction, or a refund. Necessary return costs for a valid
+                non-conformity claim are paid by TCGHaven. These rights are separate
+                from the 14-day right of withdrawal.
+              </p>
+            </section>
+
+            <section id="accounts" class={styles.section}>
+              <h2 class={styles.sectionTitle}>Customer accounts</h2>
+              <p>
+                Keep your credentials confidential and notify us if you suspect
+                unauthorized access. We may temporarily restrict an account to
+                protect customers, investigate fraud, comply with law, or stop
+                technical abuse. Closing an account does not remove records that must
+                be retained for orders, tax, fraud prevention, or legal claims.
+              </p>
+            </section>
+
+            <section id="complaints" class={styles.section}>
+              <h2 class={styles.sectionTitle}>Complaints</h2>
+              <p>
+                Send a complaint through the <a href="/contact">contact page</a> or to
+                <a href={`mailto:${profile().businessEmail}`}> {profile().businessEmail}</a>.
+                Include your order number and a clear description. We acknowledge
+                complaints within 2 business days and aim to provide a substantive
+                response within 14 days. If more time is needed, we will explain why
+                and give a new response date.
+              </p>
+              <p>
+                If we cannot resolve a cross-border consumer dispute together, your
+                local European Consumer Centre may be able to provide information and
+                assistance. You also retain access to the courts and any mandatory
+                consumer remedies.
               </p>
             </section>
 
             <section id="liability" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>10</span>
-                Limitation of liability
-              </h2>
+              <h2 class={styles.sectionTitle}>Liability</h2>
               <p>
-                We work hard to keep listings, prices, and stock accurate,
-                but we can't guarantee the site will be error-free at all
-                times. To the extent permitted by law, our liability for any
-                issue with an order is limited to the amount you paid for
-                that order.
+                Nothing in these terms excludes or restricts liability or consumer
+                rights that cannot legally be excluded. TCGHaven is not responsible
+                for loss caused by circumstances outside its reasonable control,
+                provided that we still meet any mandatory duty to deliver, refund,
+                replace, or compensate under applicable law.
               </p>
             </section>
 
             <section id="law" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>11</span>
-                Governing law
-              </h2>
+              <h2 class={styles.sectionTitle}>Applicable law</h2>
               <p>
-                These terms are governed by the laws of the Netherlands. Any
-                dispute we can't resolve directly will be handled by the
-                competent Dutch courts, without prejudice to any mandatory
-                consumer protections you're entitled to in your own country.
+                Dutch law applies to these terms. If you live in another country,
+                this choice does not remove mandatory consumer protection granted by
+                the law that applies to you. Disputes may be submitted to the
+                competent court under applicable jurisdiction rules.
               </p>
             </section>
 
             <section id="changes" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>12</span>
-                Changes to these terms
-              </h2>
+              <h2 class={styles.sectionTitle}>Changes to these terms</h2>
               <p>
-                We may update these terms as the shop grows. Changes apply
-                to orders placed after the update date at the top of this
-                page, never retroactively to an order you've already
-                placed.
-              </p>
-            </section>
-
-            <section id="contact" class={styles.section}>
-              <h2 class={styles.sectionTitle}>
-                <span class={styles.sectionNum}>13</span>
-                Questions
-              </h2>
-              <p>
-                Anything unclear? Reach out through our{" "}
-                <a href="/contact">contact page</a> and we'll sort it out.
+                We may update these terms for future orders. The version accepted
+                when you placed an order continues to apply to that order. The update
+                date appears at the top of this page.
               </p>
             </section>
           </div>
 
           <aside class={styles.aside}>
             <div class={styles.asideCard}>
-              <h2 class={styles.asideTitle}>The short version</h2>
+              <h2 class={styles.asideTitle}>Key customer rights</h2>
               <ul class={styles.asideList}>
-                <For
-                  each={[
-                    "14-day EU right of withdrawal on unopened items",
-                    "Cards graded honestly and photographed before shipping",
-                    "Ships from the Netherlands within 1 to 2 business days",
-                    "Prices in EUR, VAT included, paid securely via Mollie",
-                  ]}
-                >
+                <For each={[
+                  "14 days to withdraw from most online purchases",
+                  "Another 14 days to send a withdrawn order back",
+                  "TCGHaven carries delivery risk until receipt",
+                  "Statutory guarantee remains separate from returns",
+                ]}>
                   {point => (
                     <li class={styles.asideItem}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
                       {point}
                     </li>
                   )}
                 </For>
               </ul>
             </div>
-
             <div class={styles.asideContact}>
-              <h2 class={styles.asideTitle}>Something unclear?</h2>
-              <p>
-                No legal-speak runarounds here. Ask us and we'll give you a
-                straight answer.
-              </p>
-              <a href="/contact" class={styles.asideCta}>
-                Contact us
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </a>
+              <h2 class={styles.asideTitle}>Need help with an order?</h2>
+              <p>Use the contact form for a question or the withdrawal form to cancel a purchase.</p>
+              <a href="/returns" class={styles.asideCta}>Withdraw from an order</a>
             </div>
           </aside>
         </div>

@@ -154,13 +154,18 @@ export const auth = betterAuth({
           expiresIn: 60 * 60,
           autoSignInAfterVerification: false,
           sendVerificationEmail: async ({ user, url, token }) => {
-            void sendVerificationEmail({
-              email: user.email,
-              url,
-              token,
-            }).catch(() => {
+            try {
+              await sendVerificationEmail({
+                email: user.email,
+                url,
+                token,
+              });
+            } catch {
               console.error("Verification email delivery failed.");
-            });
+              throw new APIError("INTERNAL_SERVER_ERROR", {
+                message: "Verification email could not be sent.",
+              });
+            }
           },
         },
       }
@@ -192,13 +197,18 @@ export const auth = betterAuth({
     ...(emailEnv
       ? {
           sendResetPassword: async ({ user, url, token }) => {
-            void sendPasswordResetEmail({
-              email: user.email,
-              url,
-              token,
-            }).catch(() => {
+            try {
+              await sendPasswordResetEmail({
+                email: user.email,
+                url,
+                token,
+              });
+            } catch {
               console.error("Password reset email delivery failed.");
-            });
+              throw new APIError("INTERNAL_SERVER_ERROR", {
+                message: "Password reset email could not be sent.",
+              });
+            }
           },
         }
       : {}),

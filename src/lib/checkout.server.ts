@@ -14,8 +14,17 @@ import {
 import { findProduct } from "~/lib/categories";
 import { getAuthEnv } from "~/lib/env.server";
 import { getMollieClient } from "~/lib/mollie.server";
+import {
+  findShippingDestination,
+  getInternationalPostnlPrice,
+} from "~/lib/shipping";
+import { getStoreProfile } from "~/lib/store-profile.server";
 
-const shippingMethodSchema = z.enum(["letterbox", "tracked", "pickup"]);
+const shippingMethodSchema = z.enum([
+  "postnl_letterbox",
+  "postnl_parcel",
+  "postnl_international",
+]);
 const paymentMethodSchema = z.enum(["mollie", "bank"]);
 
 const checkoutInputSchema = z.object({
@@ -54,12 +63,6 @@ type MolliePaymentStatus =
   | "canceled"
   | "cancelled"
   | "expired";
-
-const SHIPPING_CENTS: Record<z.infer<typeof shippingMethodSchema>, number> = {
-  letterbox: 395,
-  tracked: 695,
-  pickup: 0,
-};
 
 const centsToAmount = (cents: number) => (cents / 100).toFixed(2);
 
@@ -110,6 +113,11 @@ async function releaseOrderReservations(orderId: string, discountId: string | nu
 
 export async function calculateTrustedCheckout(input: unknown) {
   const parsed = checkoutInputSchema.parse(input);
+  const destination = findShippingDestination(parsed.customer.country);
+  if (!destination) {
+    throw new Error("Shipping is not configured for this destination yet.");
+  }
+  const storeProfile = await getStoreProfile();
   const lines = await Promise.all(parsed.items.map(async item => {
     const [databaseProduct] = await db
       .select({
@@ -208,8 +216,30 @@ export async function calculateTrustedCheckout(input: unknown) {
         : discount.value;
     discountCents = Math.min(discountCents, subtotalCents);
   }
+  const isDutchOrder = destination.code === "NL";
+  const validMethod = isDutchOrder
+    ? parsed.shippingMethod === "postnl_letterbox" ||
+      parsed.shippingMethod === "postnl_parcel"
+    : parsed.shippingMethod === "postnl_international";
+  if (!validMethod) {
+    throw new Error("The selected shipping method is not valid for this destination.");
+  }
+
+  const selectedShippingCents = isDutchOrder
+    ? parsed.shippingMethod === "postnl_letterbox"
+      ? storeProfile.postnlLetterboxCents
+      : storeProfile.postnlParcelCents
+    : getInternationalPostnlPrice(
+        destination.code,
+        storeProfile.internationalPostnlRates,
+      );
+  if (selectedShippingCents === null) {
+    throw new Error("Shipping is not configured for this destination yet.");
+  }
   const shippingCents =
-    subtotalCents >= 10000 ? 0 : SHIPPING_CENTS[parsed.shippingMethod];
+    subtotalCents >= storeProfile.freeShippingThresholdCents
+      ? 0
+      : selectedShippingCents;
 
   return {
     ...parsed,
@@ -271,6 +301,7 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
         taxCents: checkout.taxCents,
         discountCode: checkout.discountCode,
         discountCents: checkout.discountCents,
+        shippingMethod: checkout.shippingMethod,
         totalCents: checkout.totalCents,
         billingAddress: address,
         shippingAddress: address,
@@ -366,6 +397,21 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
 }
 
 export async function syncMolliePaymentStatus(paymentId: string) {
+  const [knownPayment] = await db
+    .select({ id: payments.id })
+    .from(payments)
+    .where(eq(payments.molliePaymentId, paymentId))
+    .limit(1);
+
+  if (!knownPayment) {
+    return {
+      paymentId,
+      status: "unknown" as const,
+      amountMatches: false,
+      orderStatus: "unknown" as const,
+    };
+  }
+
   const molliePayment = await getMollieClient().payments.get(paymentId);
   const normalizedStatus = normalizeMollieStatus(molliePayment.status);
   const amountCents = Math.round(Number(molliePayment.amount.value) * 100);
@@ -378,9 +424,7 @@ export async function syncMolliePaymentStatus(paymentId: string) {
       .limit(1)
       .for("update");
 
-    if (!storedPayment) {
-      throw new Error(`Unknown Mollie payment: ${paymentId}`);
-    }
+    if (!storedPayment) throw new Error("The payment record disappeared during synchronization.");
 
     const amountMatches = storedPayment.amountCents === amountCents;
     const previousIsTerminal = [

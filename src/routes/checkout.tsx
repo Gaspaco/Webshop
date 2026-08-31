@@ -2,6 +2,7 @@ import { Title } from "@solidjs/meta";
 import { A, useSearchParams } from "@solidjs/router";
 import {
   createMemo,
+  createEffect,
   createSignal,
   For,
   onMount,
@@ -11,9 +12,23 @@ import {
 import { z } from "zod";
 import type { SavedAddress } from "~/lib/address";
 import { formatPrice, useCart, type CartItem } from "~/lib/cart";
+import {
+  findShippingDestination,
+  getInternationalPostnlPrice,
+  INTERNATIONAL_POSTNL_DESTINATIONS,
+  NETHERLANDS,
+} from "~/lib/shipping";
+import {
+  DEFAULT_STORE_PROFILE,
+  fetchStoreProfile,
+  type StoreProfile,
+} from "~/lib/store-profile";
 import styles from "./checkout.module.scss";
 
-type ShippingMethod = "letterbox" | "tracked" | "pickup";
+type ShippingMethod =
+  | "postnl_letterbox"
+  | "postnl_parcel"
+  | "postnl_international";
 type PaymentMethod = "mollie" | "bank";
 
 type CheckoutSnapshot = {
@@ -25,27 +40,6 @@ type CheckoutSnapshot = {
   totalCents: number;
 };
 
-const SHIPPING_OPTIONS: Record<
-  ShippingMethod,
-  { label: string; detail: string; priceCents: number }
-> = {
-  letterbox: {
-    label: "Letterbox post",
-    detail: "For singles and small accessories",
-    priceCents: 395,
-  },
-  tracked: {
-    label: "Tracked parcel",
-    detail: "Best for sealed product and larger orders",
-    priceCents: 695,
-  },
-  pickup: {
-    label: "Local pickup",
-    detail: "Arrange a pickup moment after ordering",
-    priceCents: 0,
-  },
-};
-
 const checkoutSchema = z.object({
   email: z.string().trim().email().max(254),
   firstName: z.string().trim().min(1).max(80),
@@ -55,7 +49,11 @@ const checkoutSchema = z.object({
   city: z.string().trim().min(2).max(80),
   country: z.string().trim().min(2).max(80),
   notes: z.string().trim().max(400),
-  shippingMethod: z.enum(["letterbox", "tracked", "pickup"]),
+  shippingMethod: z.enum([
+    "postnl_letterbox",
+    "postnl_parcel",
+    "postnl_international",
+  ]),
   paymentMethod: z.enum(["mollie", "bank"]),
 });
 
@@ -75,7 +73,9 @@ export default function Checkout() {
   const cart = useCart();
   const [searchParams] = useSearchParams();
   const [shippingMethod, setShippingMethod] =
-    createSignal<ShippingMethod>("tracked");
+    createSignal<ShippingMethod>("postnl_parcel");
+  const [storeProfile, setStoreProfile] =
+    createSignal<StoreProfile>(DEFAULT_STORE_PROFILE);
   const [paymentMethod, setPaymentMethod] = createSignal<PaymentMethod>("mollie");
   const [email, setEmail] = createSignal("");
   const [firstName, setFirstName] = createSignal("");
@@ -95,8 +95,58 @@ export default function Checkout() {
   const [confirmation, setConfirmation] = createSignal<CheckoutSnapshot>();
 
   const subtotalCents = () => cart.subtotalCents();
+  const shippingOptions = createMemo(() => {
+    const profile = storeProfile();
+    const destination = findShippingDestination(country());
+    if (destination && destination.code !== "NL") {
+      return [{
+        value: "postnl_international" as const,
+        label: "PostNL international parcel",
+        detail: `Tracked delivery to ${destination.name}`,
+        priceCents:
+          getInternationalPostnlPrice(
+            destination.code,
+            profile.internationalPostnlRates,
+          ) ?? 0,
+      }];
+    }
+
+    const options: Array<{
+      value: ShippingMethod;
+      label: string;
+      detail: string;
+      priceCents: number;
+    }> = [
+      {
+        value: "postnl_letterbox",
+        label: "PostNL letterbox parcel",
+        detail: "Maximum 38 × 26.5 × 3 cm and 2 kg",
+        priceCents: profile.postnlLetterboxCents,
+      },
+      {
+        value: "postnl_parcel",
+        label: "PostNL parcel",
+        detail: "Tracked parcel up to 100 × 50 × 50 cm and 10 kg",
+        priceCents: profile.postnlParcelCents,
+      },
+    ];
+    return options;
+  });
+
+  createEffect(() => {
+    const destination = findShippingDestination(country());
+    if (!destination) return;
+    if (destination.code === "NL" && shippingMethod() === "postnl_international") {
+      setShippingMethod("postnl_parcel");
+    }
+    if (destination.code !== "NL" && shippingMethod() !== "postnl_international") {
+      setShippingMethod("postnl_international");
+    }
+  });
   const shippingCents = createMemo(() =>
-    subtotalCents() >= 10000 ? 0 : SHIPPING_OPTIONS[shippingMethod()].priceCents,
+    subtotalCents() >= storeProfile().freeShippingThresholdCents
+      ? 0
+      : shippingOptions().find(option => option.value === shippingMethod())?.priceCents ?? 0,
   );
   const totalCents = createMemo(
     () => subtotalCents() - discountCents() + shippingCents(),
@@ -137,6 +187,7 @@ export default function Checkout() {
   };
 
   onMount(async () => {
+    setStoreProfile(await fetchStoreProfile());
     try {
       const response = await fetch("/api/account/address", {
         credentials: "same-origin",
@@ -153,7 +204,9 @@ export default function Checkout() {
       if (!address()) setAddress(result.address.streetAndHouseNumber);
       if (!postalCode()) setPostalCode(result.address.postalCode);
       if (!city()) setCity(result.address.city);
-      if (country() === "Netherlands") setCountry(result.address.country);
+      setCountry(
+        findShippingDestination(result.address.country)?.name ?? NETHERLANDS.name,
+      );
     } catch {
       // Guest checkout and temporary account-service errors stay editable.
     }
@@ -302,16 +355,20 @@ export default function Checkout() {
                     </label>
                     <label class={styles.field}>
                       <span>Country</span>
-                      <input
-                        type="text"
+                      <select
                         autocomplete="country-name"
                         required
-                        maxlength={80}
                         value={country()}
-                        onInput={event =>
-                          setCountry(cleanInput(event.currentTarget.value))
-                        }
-                      />
+                        onChange={event => setCountry(event.currentTarget.value)}
+                      >
+                        <option value={NETHERLANDS.name}>{NETHERLANDS.name}</option>
+                        <For each={INTERNATIONAL_POSTNL_DESTINATIONS}>
+                          {destination => (
+                            <option value={destination.name}>{destination.name}</option>
+                          )}
+                        </For>
+                      </select>
+                      <small>PostNL delivery is available to every destination listed here.</small>
                     </label>
                   </div>
                 </CheckoutSection>
@@ -392,24 +449,22 @@ export default function Checkout() {
 
                 <CheckoutSection title="Shipping">
                   <div class={styles.optionStack}>
-                    <For each={Object.entries(SHIPPING_OPTIONS)}>
-                      {([value, option]) => (
+                    <For each={shippingOptions()}>
+                      {option => (
                         <label class={styles.option}>
                           <input
                             type="radio"
                             name="shipping"
-                            value={value}
-                            checked={shippingMethod() === value}
-                            onChange={() =>
-                              setShippingMethod(value as ShippingMethod)
-                            }
+                            value={option.value}
+                            checked={shippingMethod() === option.value}
+                            onChange={() => setShippingMethod(option.value)}
                           />
                           <span>
                             <strong>{option.label}</strong>
                             <small>{option.detail}</small>
                           </span>
                           <em>
-                            {subtotalCents() >= 10000
+                            {subtotalCents() >= storeProfile().freeShippingThresholdCents
                               ? "Free"
                               : formatPrice(option.priceCents)}
                           </em>
@@ -546,10 +601,13 @@ export default function Checkout() {
                   {isSubmitting()
                     ? "Placing order..."
                     : paymentMethod() === "mollie"
-                      ? "Continue to payment"
-                      : "Place order"}
+                      ? "Place order and continue to payment"
+                      : "Place order with payment obligation"}
                 </button>
 
+                <p class={styles.legalConsent}>
+                  By placing the order, you agree to the <A href="/terms">terms and conditions</A> and confirm that you have read the <A href="/privacy">privacy policy</A> and <A href="/shipping">shipping and returns information</A>.
+                </p>
                 <p class={styles.secureNote}>
                   Prices and shipping are recalculated on the server before Mollie
                   receives the payment.

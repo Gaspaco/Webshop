@@ -1,3 +1,4 @@
+import nodemailer, { type Transporter } from "nodemailer";
 import { getEmailEnv } from "~/lib/env.server";
 
 type AuthEmail = {
@@ -6,6 +7,7 @@ type AuthEmail = {
   text: string;
   html: string;
   idempotencyKey: string;
+  replyTo?: string;
 };
 
 export const escapeEmailHtml = (value: string) =>
@@ -20,6 +22,43 @@ export const escapeEmailHtml = (value: string) =>
       })[character]!,
   );
 
+let smtpTransport: Transporter | null = null;
+let smtpTransportKey = "";
+
+function getSmtpTransport() {
+  const emailEnv = getEmailEnv();
+  if (!emailEnv) throw new Error("Transactional email is not configured.");
+
+  const transportKey = `${emailEnv.SMTP_HOST}:${emailEnv.SMTP_PORT}:${emailEnv.SMTP_USER}`;
+  if (smtpTransport && smtpTransportKey === transportKey) {
+    return { emailEnv, transport: smtpTransport };
+  }
+
+  smtpTransport = nodemailer.createTransport({
+    host: emailEnv.SMTP_HOST,
+    port: emailEnv.SMTP_PORT,
+    secure: emailEnv.SMTP_PORT === 465,
+    requireTLS: emailEnv.SMTP_PORT === 587,
+    auth: {
+      user: emailEnv.SMTP_USER,
+      pass: emailEnv.SMTP_PASS,
+    },
+    connectionTimeout: 8_000,
+    greetingTimeout: 8_000,
+    socketTimeout: 15_000,
+    disableFileAccess: true,
+    disableUrlAccess: true,
+    tls: {
+      minVersion: "TLSv1.2",
+      rejectUnauthorized: true,
+      servername: emailEnv.SMTP_HOST,
+    },
+  });
+  smtpTransportKey = transportKey;
+
+  return { emailEnv, transport: smtpTransport };
+}
+
 const tokenFingerprint = async (token: string) => {
   const digest = await crypto.subtle.digest(
     "SHA-256",
@@ -32,28 +71,20 @@ const tokenFingerprint = async (token: string) => {
 };
 
 export async function sendTransactionalEmail(message: AuthEmail) {
-  const emailEnv = getEmailEnv();
-  if (!emailEnv) throw new Error("Transactional email is not configured.");
+  const { emailEnv, transport } = getSmtpTransport();
+  const safeMessageId = message.idempotencyKey
+    .replace(/[^a-zA-Z0-9._-]/g, "")
+    .slice(0, 160);
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${emailEnv.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-      "Idempotency-Key": message.idempotencyKey,
-    },
-    body: JSON.stringify({
-      from: emailEnv.AUTH_EMAIL_FROM,
-      to: [message.to],
-      subject: message.subject,
-      text: message.text,
-      html: message.html,
-    }),
+  await transport.sendMail({
+    from: emailEnv.AUTH_EMAIL_FROM,
+    to: message.to,
+    replyTo: message.replyTo,
+    subject: message.subject,
+    text: message.text,
+    html: message.html,
+    messageId: `<${safeMessageId}@tcghaven.com>`,
   });
-
-  if (!response.ok) {
-    throw new Error(`Transactional email provider returned ${response.status}.`);
-  }
 }
 
 const authEmailHtml = (input: {

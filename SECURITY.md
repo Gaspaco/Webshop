@@ -6,7 +6,7 @@
 - The `preinstall` script blocks installs when `NPM_CONFIG_REGISTRY` or `npm_config_registry` points somewhere else.
 - Run `npm run security:check` before deploys and after dependency changes.
 - `esbuild` is forced to `0.28.1`.
-- `brace-expansion` is forced to `5.0.7`.
+- `brace-expansion` is forced to `5.0.9`.
 
 ## Runtime headers
 
@@ -24,13 +24,14 @@ The app sets security headers in `app.config.ts`:
 
 - `BETTER_AUTH_SECRET` must be at least 48 characters.
 - Production `BETTER_AUTH_URL` must use HTTPS.
-- `RESEND_API_KEY` and `AUTH_EMAIL_FROM` must be configured together.
+- SMTP host, port, user, password, and sender variables must be configured together.
+- SMTP is restricted to TLS ports 465 or 587 and validates the provider certificate.
 - Never log verification tokens, reset tokens, session cookies, passwords, or API keys.
 - Never commit real Railway, Better Auth, Mollie, or database secrets.
 
 ## Account security
 
-- Email verification is required automatically when Resend is configured.
+- Email verification is required automatically when SMTP is configured.
 - Verification and password-reset links expire after one hour.
 - New passwords must contain between 12 and 128 characters.
 - Password resets revoke all existing sessions.
@@ -55,10 +56,20 @@ The app sets security headers in `app.config.ts`:
 - Never trust a client-supplied total.
 - Run the checks in `PENTEST_CHECKLIST.md` before using live Mollie keys.
 
+## Contact-form safety
+
+- Valid messages are stored in PostgreSQL before optional SMTP notification.
+- The endpoint checks same-origin requests, JSON content type, and request size.
+- Input is normalized, length-limited, and rejected when it contains control characters.
+- A honeypot and database-backed per-address and per-email rate limits reduce automated spam.
+- Message HTML is escaped and customer input cannot control the email subject format or sender.
+- Only authenticated administrators can read, update, or permanently delete submissions.
+- Contact messages should be removed when no longer needed for customer service.
+
 ## Deploy checklist
 
 1. Set production env vars in Railway.
-2. Verify the Resend sending domain and set `RESEND_API_KEY` and `AUTH_EMAIL_FROM`.
+2. Configure authenticated SMTP and verify SPF, DKIM, and DMARC for the sending domain.
 3. Run `npm run security:check`.
 4. Run `npm run typecheck`.
 5. Run `npm run build`.

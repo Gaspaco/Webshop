@@ -55,16 +55,28 @@ const googleAuthSchema = z
 
 const emailSchema = z
   .object({
-    RESEND_API_KEY: z.string().trim().startsWith("re_").max(256).optional(),
+    SMTP_HOST: z.string().trim().min(3).max(253).optional(),
+    SMTP_PORT: z.coerce.number().int().refine(port => port === 465 || port === 587, {
+      message: "SMTP_PORT must be 465 or 587.",
+    }).optional(),
+    SMTP_USER: z.string().trim().min(1).max(320).optional(),
+    SMTP_PASS: z.string().min(8).max(512).optional(),
     AUTH_EMAIL_FROM: z.string().trim().min(3).max(320).optional(),
   })
   .superRefine((value, context) => {
-    if (Boolean(value.RESEND_API_KEY) === Boolean(value.AUTH_EMAIL_FROM)) return;
+    const fields = [
+      value.SMTP_HOST,
+      value.SMTP_PORT,
+      value.SMTP_USER,
+      value.SMTP_PASS,
+      value.AUTH_EMAIL_FROM,
+    ];
+    if (fields.every(Boolean) || fields.every(field => !field)) return;
 
     context.addIssue({
       code: "custom",
       message:
-        "RESEND_API_KEY and AUTH_EMAIL_FROM must either both be set or both be omitted.",
+        "SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and AUTH_EMAIL_FROM must all be set or all be omitted.",
     });
   });
 
@@ -89,9 +101,16 @@ export const getGoogleAuthEnv = () => {
 };
 export const getEmailEnv = () => {
   const parsed = emailSchema.parse(process.env);
-  return parsed.RESEND_API_KEY && parsed.AUTH_EMAIL_FROM
+  return parsed.SMTP_HOST &&
+    parsed.SMTP_PORT &&
+    parsed.SMTP_USER &&
+    parsed.SMTP_PASS &&
+    parsed.AUTH_EMAIL_FROM
     ? {
-        RESEND_API_KEY: parsed.RESEND_API_KEY,
+        SMTP_HOST: parsed.SMTP_HOST,
+        SMTP_PORT: parsed.SMTP_PORT,
+        SMTP_USER: parsed.SMTP_USER,
+        SMTP_PASS: parsed.SMTP_PASS,
         AUTH_EMAIL_FROM: parsed.AUTH_EMAIL_FROM,
       }
     : null;

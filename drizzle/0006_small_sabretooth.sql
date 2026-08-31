@@ -1,0 +1,1 @@
+ALTER TABLE "orders" ADD COLUMN "shipping_method" text DEFAULT 'postnl_parcel' NOT NULL;

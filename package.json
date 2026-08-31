@@ -9,7 +9,7 @@
     "start": "vinxi start",
     "preview": "vinxi preview",
     "typecheck": "tsc --noEmit",
-    "security:check": "npm audit --audit-level=high && npm ls esbuild brace-expansion",
+    "security:check": "npm audit --audit-level=high && npm ls esbuild brace-expansion browserslist nanoid",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -27,6 +27,7 @@
     "better-auth": "^1.6.23",
     "drizzle-orm": "^0.45.2",
     "gsap": "^3.15.0",
+    "nodemailer": "9.0.6",
     "pg": "8.22.0",
     "postgres": "^3.4.9",
     "qrcode": "1.5.4",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.20.0",
+    "@types/nodemailer": "8.0.1",
     "@types/pg": "8.20.0",
     "@types/qrcode": "1.5.6",
     "dotenv": "^17.4.2",
@@ -49,7 +51,9 @@
   "overrides": {
     "h3": "^1.15.11",
     "esbuild": "0.28.1",
-    "brace-expansion": "5.0.8",
+    "brace-expansion": "5.0.9",
+    "browserslist": "4.28.7",
+    "nanoid": "3.3.18",
     "postcss": "8.5.24",
     "tar": "7.5.22"
   }

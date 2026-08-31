@@ -71,7 +71,6 @@ export default function Navbar() {
             <li><A href="/" class={styles.navLink}>Home</A></li>
             <li><A href="/products" class={styles.navLink}>Shop</A></li>
             <li><A href="/categories" class={styles.navLink}>Categories</A></li>
-            <li><A href="/the-vault" class={styles.navLink}>The Vault</A></li>
           </ul>
         </nav>
 
@@ -93,25 +92,17 @@ export default function Navbar() {
               onInput={e => setQuery(e.currentTarget.value)}
             />
             <button
-              type="button"
+              type={searchOpen() ? "submit" : "button"}
               class={`${styles.iconBtn} ${styles.searchTrigger}`}
-              aria-label={searchOpen() ? "Close search" : "Search"}
-              onClick={() => (searchOpen() ? closeSearch() : openSearch())}
+              aria-label={searchOpen() ? "Submit search" : "Open search"}
+              onClick={() => {
+                if (!searchOpen()) openSearch();
+              }}
             >
-              <Show
-                when={!searchOpen()}
-                fallback={
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="M6 6l12 12" />
-                  </svg>
-                }
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-              </Show>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
             </button>
           </form>
 

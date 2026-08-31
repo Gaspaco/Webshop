@@ -44,8 +44,8 @@ Schema: `src/db/schema.ts`
 2. Add this repository as an application service.
 3. Set `DATABASE_URL` from the PostgreSQL service reference.
 4. Set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `PUBLIC_APP_URL`,
-   `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`,
-   `AUTH_EMAIL_FROM`, and `MOLLIE_API_KEY`.
+   `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `SMTP_HOST`, `SMTP_PORT`,
+   `SMTP_USER`, `SMTP_PASS`, `AUTH_EMAIL_FROM`, and `MOLLIE_API_KEY`.
 5. Deploy. `railway.toml` builds the app, applies migrations before deploy, and
    checks `/api/health`.
 

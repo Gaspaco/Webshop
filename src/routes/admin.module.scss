@@ -2106,6 +2106,333 @@
   }
 }
 
+.storeSetupNotice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(#f6c85f, 0.24);
+  background: rgba(#f6c85f, 0.055);
+
+  strong {
+    color: #f6d477;
+    font-size: 0.76rem;
+  }
+
+  p {
+    color: $gray-400;
+    font-size: 0.74rem;
+    line-height: 1.55;
+  }
+}
+
+.storeSetupForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(24rem, 0.9fr);
+  border: 1px solid rgba($white, 0.1);
+  background: #0d110f;
+
+  > section {
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+
+    & + section {
+      border-left: 1px solid rgba($white, 0.1);
+    }
+  }
+}
+
+.storeFormHeading {
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba($white, 0.09);
+
+  span {
+    color: $primary-light;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin-top: 0.45rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.35rem;
+  }
+}
+
+.storeFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+
+  label {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  label > span {
+    color: $gray-400;
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    border: 1px solid rgba($white, 0.12);
+    border-radius: $radius-md;
+    background: #080c0a;
+    color: $white;
+    font: inherit;
+
+    &:focus {
+      border-color: $primary;
+      outline: 0;
+    }
+  }
+
+  input {
+    min-height: 3rem;
+    padding: 0 0.8rem;
+  }
+
+  textarea {
+    padding: 0.8rem;
+    resize: vertical;
+  }
+}
+
+.carrierTags {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  span {
+    padding: 0.38rem 0.62rem;
+    border: 1px solid rgba($primary, 0.3);
+    border-radius: $radius-full;
+    color: $primary-light;
+    font-size: 0.66rem;
+    font-weight: 750;
+  }
+}
+
+.shippingRateGrid {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid rgba($white, 0.09);
+
+  label {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 7rem;
+    align-items: center;
+    gap: 0.35rem 1rem;
+    min-height: 4.4rem;
+    border-bottom: 1px solid rgba($white, 0.08);
+
+    > span {
+      color: $gray-200;
+      font-size: 0.74rem;
+      font-weight: 750;
+    }
+
+    > small {
+      color: $gray-600;
+      font-size: 0.64rem;
+    }
+
+    > div {
+      display: grid;
+      grid-column: 2;
+      grid-row: 1 / 3;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      min-height: 2.7rem;
+      border: 1px solid rgba($white, 0.12);
+      border-radius: $radius-md;
+      background: #080c0a;
+      overflow: hidden;
+    }
+
+    b {
+      padding-left: 0.7rem;
+      color: $gray-500;
+      font-size: 0.72rem;
+    }
+
+    input {
+      width: 100%;
+      height: 2.6rem;
+      padding: 0 0.65rem 0 0.35rem;
+      border: 0;
+      background: transparent;
+      color: $white;
+      font: inherit;
+      text-align: right;
+      outline: 0;
+    }
+  }
+}
+
+.internationalRateEditor {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba($white, 0.1);
+
+  h4 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.15rem;
+  }
+
+  > p {
+    max-width: 58ch;
+    margin: 0.45rem 0 1.25rem;
+    color: $gray-500;
+    font-size: 0.72rem;
+    line-height: 1.6;
+  }
+}
+
+.inboxCount {
+  color: $primary-light;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.contactInbox {
+  border-top: 1px solid rgba($white, 0.12);
+}
+
+.contactMessage {
+  padding: 1.4rem 0;
+  border-bottom: 1px solid rgba($white, 0.1);
+
+  > header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+
+    > div {
+      display: grid;
+      gap: 0.28rem;
+    }
+
+    > div:last-child {
+      justify-items: end;
+    }
+
+    strong {
+      color: $white;
+      font-family: $font-display;
+      font-size: 0.95rem;
+    }
+
+    a,
+    time {
+      color: $gray-500;
+      font-size: 0.72rem;
+    }
+
+    span {
+      padding: 0.25rem 0.5rem;
+      border-radius: $radius-full;
+      background: rgba($white, 0.07);
+      color: $gray-300;
+      font-size: 0.65rem;
+      font-weight: 750;
+      text-transform: capitalize;
+    }
+
+    span[data-status="unread"] {
+      background: rgba($primary, 0.13);
+      color: $primary-light;
+    }
+  }
+
+  > footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.1rem;
+
+    a,
+    button {
+      min-height: 2.35rem;
+      padding: 0 0.75rem;
+      border: 1px solid rgba($white, 0.12);
+      border-radius: $radius-md;
+      background: transparent;
+      color: $gray-200;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      border-color: rgba($primary, 0.35);
+      color: $primary-light;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.55;
+    }
+
+    .contactDelete {
+      margin-left: auto;
+      border-color: rgba(#ef6b6b, 0.24);
+      color: #f2a1a1;
+    }
+  }
+}
+
+.contactUnread {
+  background: linear-gradient(90deg, rgba($primary, 0.045), transparent 45%);
+}
+
+.contactBody {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.35fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.2rem;
+
+  h3 {
+    color: $gray-200;
+    font-family: $font-display;
+    font-size: 0.88rem;
+  }
+
+  p {
+    max-width: 72ch;
+    color: $gray-300;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+}
+
+.storeSetupActions {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba($white, 0.1);
+
+  p {
+    color: $gray-400;
+    font-size: 0.72rem;
+  }
+}
+
 @media (max-width: 900px) {
   .readinessHero,
   .readinessRoles {
@@ -2130,9 +2457,37 @@
       grid-row: 1 / 3;
     }
   }
+
+  .storeSetupForm {
+    grid-template-columns: 1fr;
+
+    > section + section {
+      border-top: 1px solid rgba($white, 0.1);
+      border-left: 0;
+    }
+  }
 }
 
 @media (max-width: 560px) {
+  .contactMessage > header {
+    align-items: start;
+    flex-direction: column;
+
+    > div:last-child {
+      justify-items: start;
+    }
+  }
+
+  .contactBody {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .contactMessage > footer .contactDelete {
+    width: 100%;
+    margin-left: 0;
+  }
+
   .readinessList article {
     grid-template-columns: 2rem minmax(0, 1fr);
 
@@ -2142,5 +2497,10 @@
       grid-row: auto;
       text-align: left;
     }
+  }
+
+  .storeSetupNotice,
+  .storeFields {
+    grid-template-columns: 1fr;
   }
 }

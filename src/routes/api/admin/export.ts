@@ -27,13 +27,14 @@ export async function GET(event: APIEvent) {
     const rows = await db.select().from(orders).orderBy(desc(orders.createdAt));
     fileName = "tcghaven-orders.csv";
     output = csv(
-      ["order", "email", "status", "subtotal", "shipping", "discount", "total", "tracking", "created"],
+      ["order", "email", "status", "subtotal", "shipping", "shipping_method", "discount", "total", "tracking", "created"],
       rows.map(order => [
         order.orderNumber,
         order.email,
         order.status,
         order.subtotalCents / 100,
         order.shippingCents / 100,
+        order.shippingMethod,
         order.discountCents / 100,
         order.totalCents / 100,
         order.trackingNumber,

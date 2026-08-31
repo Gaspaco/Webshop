@@ -14,15 +14,23 @@ import {
   Show,
 } from "solid-js";
 import { authClient } from "~/lib/auth-client";
+import { INTERNATIONAL_POSTNL_DESTINATIONS } from "~/lib/shipping";
+import {
+  DEFAULT_STORE_PROFILE,
+  parseStoreProfile,
+  type StoreProfile,
+} from "~/lib/store-profile";
 import styles from "../admin.module.scss";
 
 type AdminSection =
   | "overview"
   | "products"
   | "orders"
+  | "contacts"
   | "customers"
   | "discounts"
   | "storefront"
+  | "store"
   | "analytics"
   | "activity"
   | "imports"
@@ -79,6 +87,7 @@ type AdminOrder = {
   currency: string;
   subtotalCents: number;
   shippingCents: number;
+  shippingMethod: string;
   discountCode: string | null;
   discountCents: number;
   totalCents: number;
@@ -117,6 +126,18 @@ type AdminCustomer = {
   orderCount: number;
   spentCents: number;
   createdAt: string;
+};
+
+type AdminContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  topic: string;
+  message: string;
+  status: "unread" | "read" | "resolved";
+  notificationSent: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type AdminDiscount = {
@@ -173,13 +194,18 @@ type AdminDashboard = {
     openOrders: number;
     lowStock: number;
     customers: number;
+    unreadMessages: number;
   };
   products: AdminProduct[];
   orders: AdminOrder[];
   customers: AdminCustomer[];
+  contacts: AdminContactMessage[];
   imports: ImportJob[];
   discounts: AdminDiscount[];
-  content: { home?: Partial<StorefrontSettings> };
+  content: {
+    home?: Partial<StorefrontSettings>;
+    business?: StoreProfile;
+  };
   audit: AuditEntry[];
   analytics: {
     salesByDay: Array<{
@@ -255,9 +281,11 @@ const NAV_ITEMS: Array<{ id: AdminSection; label: string; short: string }> = [
   { id: "overview", label: "Overview", short: "Today" },
   { id: "products", label: "Catalogue", short: "Products and stock" },
   { id: "orders", label: "Orders", short: "Fulfilment" },
+  { id: "contacts", label: "Messages", short: "Customer inbox" },
   { id: "customers", label: "Customers", short: "Accounts" },
   { id: "discounts", label: "Discounts", short: "Campaigns" },
   { id: "storefront", label: "Storefront", short: "Homepage content" },
+  { id: "store", label: "Store setup", short: "Business and shipping" },
   { id: "analytics", label: "Analytics", short: "Sales performance" },
   { id: "activity", label: "Activity", short: "Security history" },
   { id: "imports", label: "Bulk import", short: "CSV tools" },
@@ -1060,6 +1088,7 @@ function OrderRow(props: {
                   <dl>
                     <div><dt>Subtotal</dt><dd>{formatMoney(props.order.subtotalCents)}</dd></div>
                     <div><dt>Shipping</dt><dd>{formatMoney(props.order.shippingCents)}</dd></div>
+                    <div><dt>Method</dt><dd>{props.order.shippingMethod.replaceAll("_", " ")}</dd></div>
                     <Show when={props.order.discountCents > 0}>
                       <div><dt>Discount {props.order.discountCode}</dt><dd>{formatMoney(0 - props.order.discountCents)}</dd></div>
                     </Show>
@@ -1318,6 +1347,142 @@ function CustomerRow(props: {
   );
 }
 
+function ContactInbox(props: {
+  messages: AdminContactMessage[];
+  onUpdated: () => unknown;
+}) {
+  const [busyId, setBusyId] = createSignal("");
+  const [message, setMessage] = createSignal("");
+
+  const updateStatus = async (
+    id: string,
+    status: AdminContactMessage["status"],
+  ) => {
+    setBusyId(id);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/contacts", {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setMessage(result.error ?? "The message could not be updated.");
+        return;
+      }
+      await Promise.resolve(props.onUpdated());
+    } catch {
+      setMessage("The message could not be updated.");
+    } finally {
+      setBusyId("");
+    }
+  };
+
+  const removeMessage = async (id: string) => {
+    if (!window.confirm("Permanently delete this contact message?")) return;
+    setBusyId(id);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/contacts", {
+        method: "DELETE",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, confirmation: "DELETE" }),
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setMessage(result.error ?? "The message could not be removed.");
+        return;
+      }
+      await Promise.resolve(props.onUpdated());
+    } catch {
+      setMessage("The message could not be removed.");
+    } finally {
+      setBusyId("");
+    }
+  };
+
+  return (
+    <>
+      <section class={styles.sectionIntro}>
+        <div>
+          <h2>Customer inbox</h2>
+          <p>Contact submissions are stored here even when SMTP notifications are unavailable.</p>
+        </div>
+        <span class={styles.inboxCount}>
+          {props.messages.filter(item => item.status === "unread").length} unread
+        </span>
+      </section>
+      <Show when={message()}>
+        <p class={styles.inlineMessage} role="alert">{message()}</p>
+      </Show>
+      <div class={styles.contactInbox}>
+        <For each={props.messages}>
+          {item => (
+            <article
+              class={styles.contactMessage}
+              classList={{ [styles.contactUnread]: item.status === "unread" }}
+            >
+              <header>
+                <div>
+                  <strong>{item.name}</strong>
+                  <a href={`mailto:${item.email}`}>{item.email}</a>
+                </div>
+                <div>
+                  <span data-status={item.status}>{item.status}</span>
+                  <time datetime={item.createdAt}>{formatDate(item.createdAt)}</time>
+                </div>
+              </header>
+              <div class={styles.contactBody}>
+                <h3>{item.topic}</h3>
+                <p>{item.message}</p>
+              </div>
+              <footer>
+                <a
+                  href={`mailto:${item.email}?subject=${encodeURIComponent(`Re: ${item.topic}`)}`}
+                >
+                  Reply by email
+                </a>
+                <Show when={item.status === "unread"}>
+                  <button
+                    type="button"
+                    disabled={busyId() === item.id}
+                    onClick={() => updateStatus(item.id, "read")}
+                  >
+                    Mark as read
+                  </button>
+                </Show>
+                <Show when={item.status !== "resolved"}>
+                  <button
+                    type="button"
+                    disabled={busyId() === item.id}
+                    onClick={() => updateStatus(item.id, "resolved")}
+                  >
+                    Resolve
+                  </button>
+                </Show>
+                <button
+                  type="button"
+                  class={styles.contactDelete}
+                  disabled={busyId() === item.id}
+                  onClick={() => removeMessage(item.id)}
+                >
+                  Delete permanently
+                </button>
+              </footer>
+            </article>
+          )}
+        </For>
+        <Show when={!props.messages.length}>
+          <div class={styles.empty}>No contact messages yet.</div>
+        </Show>
+      </div>
+    </>
+  );
+}
+
 function DiscountManager(props: {
   discounts: AdminDiscount[];
   onUpdated: () => unknown;
@@ -1566,6 +1731,209 @@ function StorefrontManager(props: {
           <Show when={message()}><p class={styles.inlineMessage}>{message()}</p></Show>
           <button type="submit" class={styles.primaryAction} disabled={busy()}>
             {busy() ? "Publishing changes" : "Publish storefront changes"}
+          </button>
+        </div>
+      </form>
+    </>
+  );
+}
+
+function StoreSetupManager(props: {
+  profile?: StoreProfile;
+  onUpdated: () => unknown;
+}) {
+  const [profile, setProfile] = createSignal<StoreProfile>(
+    parseStoreProfile(props.profile ?? DEFAULT_STORE_PROFILE),
+  );
+  const [busy, setBusy] = createSignal(false);
+  const [message, setMessage] = createSignal("");
+  const patch = <K extends keyof StoreProfile>(
+    key: K,
+    value: StoreProfile[K],
+  ) => setProfile(current => ({ ...current, [key]: value }));
+  const patchInternationalRate = (countryCode: string, value: number) =>
+    setProfile(current => ({
+      ...current,
+      internationalPostnlRates: {
+        ...current.internationalPostnlRates,
+        [countryCode]: value,
+      },
+    }));
+  const euros = (cents: number | null) =>
+    cents === null ? "" : (cents / 100).toFixed(2);
+  const cents = (value: string) => Math.max(0, Math.round(Number(value) * 100));
+
+  const save = async (event: SubmitEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/store-profile", {
+        method: "PUT",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile()),
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setMessage(result.error ?? "Store settings could not be saved.");
+        return;
+      }
+      await Promise.resolve(props.onUpdated());
+      setMessage("Store details and shipping prices saved");
+    } catch {
+      setMessage("Store settings are unavailable right now.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <section class={styles.sectionIntro}>
+        <div>
+          <h2>Store setup</h2>
+          <p>Manage public business details and owner-approved PostNL shipping prices.</p>
+        </div>
+        <A href="/shipping" target="_blank">Preview shipping page</A>
+      </section>
+
+      <Show when={!profile().businessAddress || !profile().returnAddress}>
+        <div class={styles.storeSetupNotice}>
+          <strong>Setup is not complete</strong>
+          <p>
+            Add the registered business address and Dutch return address before launch.
+          </p>
+        </div>
+      </Show>
+
+      <form class={styles.storeSetupForm} onSubmit={save}>
+        <section>
+          <div class={styles.storeFormHeading}>
+            <span>Business identity</span>
+            <h3>Public company details</h3>
+          </div>
+          <div class={styles.storeFields}>
+            <label>
+              <span>Company name</span>
+              <input required value={profile().companyName} onInput={event => patch("companyName", event.currentTarget.value)} />
+            </label>
+            <label>
+              <span>KVK number</span>
+              <input required inputmode="numeric" value={profile().kvkNumber} onInput={event => patch("kvkNumber", event.currentTarget.value)} />
+            </label>
+            <label>
+              <span>VAT ID</span>
+              <input required value={profile().vatId} onInput={event => patch("vatId", event.currentTarget.value.toUpperCase())} />
+            </label>
+            <label>
+              <span>Business email</span>
+              <input required type="email" value={profile().businessEmail} onInput={event => patch("businessEmail", event.currentTarget.value)} />
+            </label>
+            <label>
+              <span>Private contact notification email</span>
+              <input required type="email" autocomplete="off" value={profile().contactNotificationEmail} onInput={event => patch("contactNotificationEmail", event.currentTarget.value)} />
+              <small>Receives contact-form copies and is never shown publicly</small>
+            </label>
+            <label>
+              <span>Customer email sender</span>
+              <input required type="email" value={profile().customerEmailFrom} onInput={event => patch("customerEmailFrom", event.currentTarget.value)} />
+            </label>
+            <label>
+              <span>Phone number</span>
+              <input required type="tel" value={profile().phone} onInput={event => patch("phone", event.currentTarget.value)} />
+            </label>
+            <label class={styles.spanTwo}>
+              <span>Registered business address</span>
+              <textarea required rows="3" placeholder="Street, house number, postal code, city, Netherlands" value={profile().businessAddress} onInput={event => patch("businessAddress", event.currentTarget.value)} />
+            </label>
+            <label class={styles.spanTwo}>
+              <span>Dutch return address</span>
+              <textarea required rows="3" placeholder="Street, house number, postal code, city, Netherlands" value={profile().returnAddress} onInput={event => patch("returnAddress", event.currentTarget.value)} />
+            </label>
+          </div>
+        </section>
+
+        <section>
+          <div class={styles.storeFormHeading}>
+            <span>Shipping</span>
+            <h3>PostNL delivery prices</h3>
+          </div>
+          <div class={styles.carrierTags}>
+            <For each={profile().carriers}>{carrier => <span>{carrier}</span>}</For>
+          </div>
+          <div class={styles.shippingRateGrid}>
+            <label>
+              <span>Letter or postcard</span>
+              <div><b>€</b><input type="number" min="0" step="0.01" value={euros(profile().postnlLetterCents)} onInput={event => patch("postnlLetterCents", cents(event.currentTarget.value))} /></div>
+              <small>Up to 2 kg</small>
+            </label>
+            <label>
+              <span>Letterbox parcel</span>
+              <div><b>€</b><input type="number" min="0" step="0.01" value={euros(profile().postnlLetterboxCents)} onInput={event => patch("postnlLetterboxCents", cents(event.currentTarget.value))} /></div>
+              <small>38 × 26.5 × 3 cm</small>
+            </label>
+            <label>
+              <span>Small parcel</span>
+              <div><b>€</b><input type="number" min="0" step="0.01" value={euros(profile().postnlSmallParcelCents)} onInput={event => patch("postnlSmallParcelCents", cents(event.currentTarget.value))} /></div>
+              <small>Up to 3 kg</small>
+            </label>
+            <label>
+              <span>Medium parcel</span>
+              <div><b>€</b><input type="number" min="0" step="0.01" value={euros(profile().postnlParcelCents)} onInput={event => patch("postnlParcelCents", cents(event.currentTarget.value))} /></div>
+              <small>Up to 10 kg</small>
+            </label>
+            <label>
+              <span>Large parcel</span>
+              <div><b>€</b><input type="number" min="0" step="0.01" value={euros(profile().postnlLargeParcelCents)} onInput={event => patch("postnlLargeParcelCents", cents(event.currentTarget.value))} /></div>
+              <small>Up to 23 kg</small>
+            </label>
+            <label>
+              <span>Free shipping from</span>
+              <div><b>€</b><input required type="number" min="0" step="0.01" value={euros(profile().freeShippingThresholdCents)} onInput={event => patch("freeShippingThresholdCents", cents(event.currentTarget.value))} /></div>
+              <small>Based on cart subtotal</small>
+            </label>
+          </div>
+
+          <div class={styles.internationalRateEditor}>
+            <h4>International customer prices</h4>
+            <p>Checkout uses the delivery country and verifies this price on the server.</p>
+            <div class={styles.shippingRateGrid}>
+              <For each={INTERNATIONAL_POSTNL_DESTINATIONS}>
+                {destination => (
+                  <label>
+                    <span>{destination.name}</span>
+                    <div>
+                      <b>€</b>
+                      <input
+                        required
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={euros(
+                          profile().internationalPostnlRates[destination.code] ??
+                            destination.priceCents,
+                        )}
+                        onInput={event =>
+                          patchInternationalRate(
+                            destination.code,
+                            cents(event.currentTarget.value),
+                          )
+                        }
+                      />
+                    </div>
+                    <small>{destination.zone}</small>
+                  </label>
+                )}
+              </For>
+            </div>
+          </div>
+        </section>
+
+        <div class={styles.storeSetupActions}>
+          <Show when={message()}><p role="status">{message()}</p></Show>
+          <button type="submit" class={styles.primaryAction} disabled={busy()}>
+            {busy() ? "Saving store setup" : "Save store setup"}
           </button>
         </div>
       </form>
@@ -2198,6 +2566,10 @@ export default function Admin() {
                   </div>
                 </Show>
 
+                <Show when={section() === "contacts"}>
+                  <ContactInbox messages={data().contacts} onUpdated={refetch} />
+                </Show>
+
                 <Show when={section() === "customers"}>
                   <section class={styles.sectionIntro}>
                     <div>
@@ -2225,6 +2597,10 @@ export default function Admin() {
 
                 <Show when={section() === "storefront"}>
                   <StorefrontManager settings={data().content.home} onUpdated={refetch} />
+                </Show>
+
+                <Show when={section() === "store"}>
+                  <StoreSetupManager profile={data().content.business} onUpdated={refetch} />
                 </Show>
 
                 <Show when={section() === "analytics"}>

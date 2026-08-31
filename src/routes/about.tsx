@@ -138,7 +138,7 @@ export default function About() {
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
             </A>
-            <A href="/contact" class={styles.ctaSecondary}>Contact Alex</A>
+            <A href="/contact" class={styles.ctaSecondary}>Contact the shop</A>
           </div>
         </section>
       </div>

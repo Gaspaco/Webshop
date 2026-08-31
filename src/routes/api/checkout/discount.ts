@@ -3,9 +3,32 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { discountCodes } from "~/db/schema";
+import { checkRateLimit } from "~/lib/rate-limit.server";
+import { validateJsonRequest } from "~/lib/request-security.server";
 
 export async function POST(event: APIEvent) {
   try {
+    const invalidRequest = validateJsonRequest(event, { maxBytes: 4_000 });
+    if (invalidRequest) return invalidRequest;
+
+    if (
+      await checkRateLimit({
+        event,
+        namespace: "discount",
+        identity: "guest",
+        limit: 30,
+        windowMs: 5 * 60 * 1000,
+      })
+    ) {
+      return Response.json(
+        { error: "Too many discount attempts. Please wait before trying again." },
+        {
+          status: 429,
+          headers: { "Cache-Control": "no-store", "Retry-After": "300" },
+        },
+      );
+    }
+
     const input = z
       .object({
         code: z.string().trim().min(3).max(32),

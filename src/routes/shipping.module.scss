@@ -1,0 +1,401 @@
+@use "../styles/variables" as *;
+
+.page {
+  min-height: 100vh;
+  padding: clamp(7rem, 12vh, 10rem) 0 clamp(4rem, 8vh, 8rem);
+  background: #0a0e0c;
+  color: $white;
+}
+
+.wide {
+  width: min(92rem, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: end;
+  gap: 3rem;
+  padding-bottom: clamp(2rem, 5vw, 4rem);
+  border-bottom: 1px solid rgba($white, 0.13);
+
+  > div:first-child > span,
+  .heroFact span {
+    color: $gray-500;
+    font-size: 0.7rem;
+    font-weight: 750;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    max-width: 10ch;
+    margin-top: 1rem;
+    font-family: $font-display;
+    font-size: clamp(3.25rem, 7vw, 6rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 0.88;
+  }
+}
+
+.heroFact {
+  display: grid;
+  justify-items: end;
+  max-width: 20rem;
+  text-align: right;
+
+  strong {
+    color: $primary;
+    font-family: $font-display;
+    font-size: clamp(2.5rem, 5vw, 5rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  span {
+    margin-top: 0.5rem;
+    line-height: 1.55;
+  }
+}
+
+.rateSection {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.65fr) minmax(0, 1.35fr);
+  gap: clamp(3rem, 8vw, 8rem);
+  padding: clamp(4rem, 9vw, 8rem) 0;
+}
+
+.sectionIntro {
+  align-self: start;
+  position: sticky;
+  top: 7rem;
+
+  > span,
+  .carrierSection article > span,
+  .returnSection > div > span {
+    color: $primary-light;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    max-width: 10ch;
+    margin-top: 0.8rem;
+    font-family: $font-display;
+    font-size: clamp(2.4rem, 5vw, 5rem);
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+  }
+
+  p {
+    max-width: 33rem;
+    margin-top: 1.25rem;
+    color: $gray-400;
+    font-size: 0.84rem;
+    line-height: 1.7;
+  }
+}
+
+.rateList {
+  border-top: 1px solid rgba($white, 0.14);
+
+  article {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.25rem;
+    min-height: 7rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba($white, 0.11);
+
+    > span {
+      color: $gray-600;
+      font-family: $font-display;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    > div {
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    strong {
+      font-family: $font-display;
+      font-size: clamp(1rem, 2vw, 1.35rem);
+    }
+
+    small {
+      color: $gray-500;
+      font-size: 0.74rem;
+    }
+
+    b {
+      color: $primary-light;
+      font-family: $font-display;
+      font-size: clamp(1.25rem, 3vw, 2rem);
+    }
+  }
+}
+
+.carrierSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: rgba($white, 0.12);
+
+  article {
+    min-height: 18rem;
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+    background: #101512;
+
+    h2 {
+      margin-top: 2rem;
+      font-family: $font-display;
+      font-size: clamp(2rem, 4vw, 4rem);
+      letter-spacing: -0.04em;
+    }
+
+    p {
+      max-width: 35rem;
+      margin-top: 1rem;
+      color: $gray-400;
+      line-height: 1.7;
+    }
+  }
+}
+
+.internationalSection {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.65fr) minmax(0, 1.35fr);
+  gap: clamp(3rem, 8vw, 8rem);
+  padding: clamp(4rem, 9vw, 8rem) 0 0;
+}
+
+.internationalRates {
+  border-top: 1px solid rgba($white, 0.14);
+}
+
+.rateHeader,
+.internationalRate {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5rem 6rem;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rateHeader {
+  min-height: 3rem;
+  color: $gray-500;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+
+  span:last-child {
+    text-align: right;
+  }
+}
+
+.internationalRate {
+  min-height: 3.5rem;
+  border-top: 1px solid rgba($white, 0.08);
+
+  strong {
+    color: $gray-100;
+    font-size: 0.86rem;
+  }
+
+  span {
+    color: $gray-500;
+    font-size: 0.76rem;
+  }
+
+  b {
+    color: $primary-light;
+    font-size: 0.88rem;
+    text-align: right;
+  }
+}
+
+.destinationNote {
+  grid-column: 2;
+  max-width: 58ch;
+  margin-top: -1rem;
+  color: $gray-500;
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.returnSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 8vw, 8rem);
+  padding: clamp(4rem, 9vw, 8rem) 0 0;
+
+  h2 {
+    max-width: 13ch;
+    margin-top: 0.8rem;
+    font-family: $font-display;
+    font-size: clamp(2.4rem, 5vw, 5rem);
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+  }
+
+  > div:last-child {
+    align-self: end;
+
+    p {
+      max-width: 38rem;
+      color: $gray-300;
+      line-height: 1.75;
+    }
+
+    a {
+      display: inline-flex;
+      min-height: 3.5rem;
+      align-items: center;
+      margin-top: 1.5rem;
+      padding: 0 1.2rem;
+      border-radius: $radius-md;
+      background: $primary;
+      color: #06110d;
+      font-family: $font-display;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+  }
+}
+
+.returnPolicy {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.7fr) minmax(0, 1.3fr);
+  gap: clamp(2rem, 7vw, 7rem);
+  margin-top: clamp(3rem, 7vw, 6rem);
+  padding-top: clamp(2rem, 5vw, 4rem);
+  border-top: 1px solid rgba($white, 0.13);
+}
+
+.policyIntro {
+  h2 {
+    max-width: 12ch;
+    font-family: $font-display;
+    font-size: clamp(2rem, 4vw, 3.8rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    text-wrap: balance;
+  }
+
+  > p {
+    max-width: 34rem;
+    margin-top: 1.25rem;
+    color: $gray-300;
+    line-height: 1.75;
+  }
+
+  address {
+    display: grid;
+    gap: 0.3rem;
+    margin-top: 2rem;
+    color: $gray-300;
+    font-style: normal;
+    line-height: 1.6;
+    white-space: pre-line;
+
+    span {
+      margin-bottom: 0.35rem;
+      color: $gray-500;
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+
+    strong {
+      color: $white;
+    }
+  }
+}
+
+.policyDetails {
+  border-top: 1px solid rgba($white, 0.13);
+
+  article {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.45fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid rgba($white, 0.1);
+  }
+
+  h3 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1rem;
+  }
+
+  p {
+    max-width: 60ch;
+    color: $gray-400;
+    font-size: 0.88rem;
+    line-height: 1.75;
+  }
+}
+
+@media (max-width: $bp-lg) {
+  .rateSection,
+  .internationalSection {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionIntro {
+    position: static;
+  }
+
+  .destinationNote {
+    grid-column: 1;
+    margin-top: 0;
+  }
+}
+
+@media (max-width: $bp-md) {
+  .hero,
+  .carrierSection,
+  .returnSection,
+  .returnPolicy {
+    grid-template-columns: 1fr;
+  }
+
+  .heroFact {
+    justify-items: start;
+    text-align: left;
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .wide {
+    width: min(100% - 1.25rem, 92rem);
+  }
+
+  .rateList article {
+    grid-template-columns: 2rem minmax(0, 1fr);
+
+    b {
+      grid-column: 2;
+    }
+  }
+
+  .policyDetails article {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  .rateHeader,
+  .internationalRate {
+    grid-template-columns: minmax(0, 1fr) 4.2rem 4.8rem;
+    gap: 0.65rem;
+  }
+}

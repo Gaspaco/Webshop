@@ -63,7 +63,7 @@ export default function Categories() {
             </div>
             <div class={styles.stat}>
               <dd class={styles.statValue}>Free</dd>
-              <dt class={styles.statLabel}>EU shipping over €50</dt>
+              <dt class={styles.statLabel}>Free PostNL shipping over €300</dt>
             </div>
           </dl>
         </header>

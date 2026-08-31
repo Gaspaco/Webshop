@@ -4,13 +4,16 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  height: calc(100dvh - $header-height);
+  // Auth routes are chromeless, so there is no header height to subtract.
+  // Keep a vh fallback, then use the dynamic viewport on modern browsers.
+  height: 100vh;
+  height: 100dvh;
   min-height: 34rem;
   overflow: hidden;
 
   @media (max-width: $bp-lg) {
     grid-template-columns: 1fr;
-    min-height: calc(100dvh - $header-height);
+    min-height: 100dvh;
   }
 }
 

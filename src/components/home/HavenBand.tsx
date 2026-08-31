@@ -64,7 +64,7 @@ export default function HavenBand() {
               </svg>
             </span>
             <div class={styles.perkText}>
-              <h3>Fast NL shipping</h3>
+              <h3>PostNL delivery</h3>
               <p>Packed with care, shipped tracked from the Netherlands.</p>
             </div>
           </li>
