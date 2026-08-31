@@ -11,6 +11,10 @@
 }
 
 .header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
   margin-bottom: clamp(1.5rem, 3vh, 2rem);
 }
 
@@ -27,17 +31,21 @@
   font-size: 0.9375rem;
 }
 
+.allGames {
+  flex: 0 0 auto;
+  color: $primary-light;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
 .grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem;
-  height: clamp(28rem, 42vw, 34rem);
+  min-height: clamp(25rem, 34vw, 33rem);
 
   @media (max-width: $bp-lg) {
-    grid-template-columns: 1fr;
-    grid-template-rows: none;
-    height: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -46,7 +54,7 @@
   display: flex;
   overflow: hidden;
   min-height: 15rem;
-  border-radius: $radius-xl;
+  border-radius: $radius-lg;
   border: 1px solid rgba($white, 0.07);
   isolation: isolate;
   transition: transform $transition-base, border-color $transition-base;
@@ -62,25 +70,6 @@
     .tileCta svg {
       transform: translateX(3px);
     }
-  }
-}
-
-.tileFeatured {
-  grid-column: 1;
-  grid-row: 1 / 3;
-
-  @media (max-width: $bp-lg) {
-    grid-row: auto;
-    min-height: 18rem;
-  }
-
-  .tileName {
-    font-size: clamp(1.5rem, 2.6vw, 2rem);
-  }
-
-  .tileTagline {
-    font-size: 1rem;
-    max-width: 28ch;
   }
 }
 
@@ -106,7 +95,7 @@
   z-index: 0;
   right: -2.5rem;
   bottom: -2rem;
-  height: 120%;
+  height: 80%;
   width: auto;
   transform: rotate(8deg);
   filter: drop-shadow(0 20px 40px rgba(#000, 0.5));
@@ -147,6 +136,21 @@
   margin-bottom: 1.25rem;
 }
 
+.tileSets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.4rem;
+
+  > span {
+    padding: 0.3rem 0.5rem;
+    border: 1px solid rgba($white, 0.13);
+    border-radius: $radius-full;
+    color: $gray-300;
+    font-size: 0.62rem;
+  }
+}
+
 .tileCta {
   display: inline-flex;
   align-items: center;
@@ -161,5 +165,20 @@
     width: 1rem;
     height: 1rem;
     transition: transform $transition-fast;
+  }
+}
+
+@media (max-width: $bp-md) {
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tile {
+    min-height: 19rem;
   }
 }
