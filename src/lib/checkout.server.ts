@@ -32,7 +32,12 @@ const checkoutInputSchema = z.object({
     .array(
       z.object({
         id: z.string().trim().min(1).max(120),
-        variantId: z.string().uuid().optional(),
+        variantId: z
+          .union([
+            z.string().uuid(),
+            z.string().startsWith("static:").max(180),
+          ])
+          .optional(),
         quantity: z.number().int().min(1).max(99),
       }),
     )
@@ -119,30 +124,32 @@ export async function calculateTrustedCheckout(input: unknown) {
   }
   const storeProfile = await getStoreProfile();
   const lines = await Promise.all(parsed.items.map(async item => {
-    const [databaseProduct] = await db
-      .select({
-        id: products.id,
-        slug: products.slug,
-        name: products.name,
-        imageUrls: products.imageUrls,
-        variantId: productVariants.id,
-        sku: productVariants.sku,
-        priceCents: productVariants.priceCents,
-        stock: productVariants.stock,
-        reservedStock: productVariants.reservedStock,
-        status: products.status,
-      })
-      .from(products)
-      .innerJoin(productVariants, eq(productVariants.productId, products.id))
-      .where(
-        and(
-          eq(products.slug, item.id),
-          item.variantId
-            ? eq(productVariants.id, item.variantId)
-            : undefined,
-        ),
-      )
-      .limit(1);
+    const [databaseProduct] = item.variantId?.startsWith("static:")
+      ? []
+      : await db
+          .select({
+            id: products.id,
+            slug: products.slug,
+            name: products.name,
+            imageUrls: products.imageUrls,
+            variantId: productVariants.id,
+            sku: productVariants.sku,
+            priceCents: productVariants.priceCents,
+            stock: productVariants.stock,
+            reservedStock: productVariants.reservedStock,
+            status: products.status,
+          })
+          .from(products)
+          .innerJoin(productVariants, eq(productVariants.productId, products.id))
+          .where(
+            and(
+              eq(products.slug, item.id),
+              item.variantId
+                ? eq(productVariants.id, item.variantId)
+                : undefined,
+            ),
+          )
+          .limit(1);
 
     if (databaseProduct) {
       if (
@@ -164,24 +171,27 @@ export async function calculateTrustedCheckout(input: unknown) {
     }
 
     const staticProduct = findProduct(item.id);
+    const staticVariant = item.variantId
+      ? staticProduct?.variants?.find(variant => variant.id === item.variantId)
+      : staticProduct?.variants?.find(variant => variant.stock > 0);
+    const staticPriceCents = staticVariant?.priceCents ?? staticProduct?.priceCents;
     if (
       !staticProduct ||
-      staticProduct.priceCents === undefined ||
-      staticProduct.priceRangeCents
+      staticPriceCents === undefined ||
+      (staticProduct.priceRangeCents && !staticVariant) ||
+      (staticVariant && staticVariant.stock < item.quantity)
     ) {
       throw new Error(`Product is not purchasable: ${item.id}`);
     }
     return {
       id: staticProduct.id,
       variantId: null,
-      sku: staticProduct.id,
-      name: staticProduct.set
-        ? `${staticProduct.name} (${staticProduct.set})`
-        : staticProduct.name,
+      sku: staticVariant?.sku ?? staticProduct.id,
+      name: `${staticProduct.set ? `${staticProduct.name} (${staticProduct.set})` : staticProduct.name}${staticVariant ? `, ${staticVariant.name}` : ""}`,
       image: staticProduct.image ?? "",
       quantity: item.quantity,
-      unitPriceCents: staticProduct.priceCents,
-      totalCents: staticProduct.priceCents * item.quantity,
+      unitPriceCents: staticPriceCents,
+      totalCents: staticPriceCents * item.quantity,
     };
   }));
 

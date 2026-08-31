@@ -245,6 +245,7 @@ type ProductDraft = {
   productType: "single" | "sealed" | "graded" | "accessory";
   set: string;
   sku: string;
+  variantName: string;
   barcode: string;
   description: string;
   image: string;
@@ -256,6 +257,8 @@ type ProductDraft = {
   gradingCompany: string;
   grade: string;
   certificationNumber: string;
+  shipsFrom: string;
+  trailerUrl: string;
   finish: string;
   price: string;
   compareAtPrice: string;
@@ -263,6 +266,21 @@ type ProductDraft = {
   trackInventory: boolean;
   status: "draft" | "active";
 };
+
+type VariantDraft = {
+  name: string;
+  sku: string;
+  barcode: string;
+  condition: string;
+  language: string;
+  finish: string;
+  price: string;
+  compareAtPrice: string;
+  stock: string;
+  trackInventory: boolean;
+};
+
+type EditableVariantDraft = VariantDraft & { id: string };
 
 const emptyProduct: ProductDraft = {
   name: "",
@@ -272,6 +290,7 @@ const emptyProduct: ProductDraft = {
   productType: "single",
   set: "",
   sku: "",
+  variantName: "Default",
   barcode: "",
   description: "",
   image: "",
@@ -283,6 +302,8 @@ const emptyProduct: ProductDraft = {
   gradingCompany: "",
   grade: "",
   certificationNumber: "",
+  shipsFrom: "",
+  trailerUrl: "",
   finish: "",
   price: "",
   compareAtPrice: "",
@@ -290,6 +311,21 @@ const emptyProduct: ProductDraft = {
   trackInventory: true,
   status: "draft",
 };
+
+function createEmptyVariantDraft(): VariantDraft {
+  return {
+    name: "",
+    sku: "",
+    barcode: "",
+    condition: "Near Mint",
+    language: "English",
+    finish: "",
+    price: "",
+    compareAtPrice: "",
+    stock: "0",
+    trackInventory: true,
+  };
+}
 
 const NAV_ITEMS: Array<{ id: AdminSection; label: string; short: string }> = [
   { id: "overview", label: "Overview", short: "Today" },
@@ -359,6 +395,92 @@ function formatDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function eurosToCents(value: string) {
+  return Math.round(Number(value) * 100);
+}
+
+function optionalEurosToCents(value: string) {
+  return value.trim() ? eurosToCents(value) : null;
+}
+
+function centsToEuros(value: number | null | undefined) {
+  return value == null ? "" : (value / 100).toFixed(2);
+}
+
+function editableVariantFrom(variant: AdminVariant): EditableVariantDraft {
+  return {
+    id: variant.id,
+    name: variant.name,
+    sku: variant.sku,
+    barcode: variant.barcode ?? "",
+    condition: variant.condition ?? "",
+    language: variant.language ?? "",
+    finish: variant.finish ?? "",
+    price: centsToEuros(variant.priceCents),
+    compareAtPrice: centsToEuros(variant.compareAtPriceCents),
+    stock: String(variant.stock),
+    trackInventory: variant.trackInventory,
+  };
+}
+
+function matchesCatalogueFilters(
+  product: AdminProduct,
+  query: string,
+  game: string,
+  status: string,
+) {
+  if (game !== "all" && product.game !== game) return false;
+  if (status !== "all" && product.status !== status) return false;
+
+  const terms = query
+    .trim()
+    .toLocaleLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (terms.length === 0) return true;
+
+  const searchable = [
+    product.name,
+    product.slug,
+    product.brand,
+    product.game,
+    typeof product.metadata.set === "string" ? product.metadata.set : "",
+    ...product.variants.flatMap(variant => [
+      variant.name,
+      variant.sku,
+      variant.barcode,
+      variant.condition,
+      variant.language,
+      variant.finish,
+    ]),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(" ")
+    .toLocaleLowerCase();
+
+  return terms.every(term => searchable.includes(term));
+}
+
+function readProductImage(
+  file: File | undefined,
+  onLoad: (image: string) => void,
+  onError: (message: string) => void,
+) {
+  if (!file) return;
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    onError("Choose a JPG, PNG, or WebP image.");
+    return;
+  }
+  if (file.size > 850_000) {
+    onError("Use an image smaller than 850 KB.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => onLoad(String(reader.result ?? ""));
+  reader.readAsDataURL(file);
 }
 
 async function loadDashboard() {
@@ -460,7 +582,7 @@ function parseCsv(text: string) {
     productType: row[indexOf("productType")]?.trim().toLowerCase() ?? "",
     set: row[indexOf("set")]?.trim() ?? "",
     sku: row[indexOf("sku")]?.trim() ?? "",
-    priceCents: Math.round(Number(row[indexOf("price")] ?? 0) * 100),
+    priceCents: eurosToCents(row[indexOf("price")] ?? "0"),
     stock: Number(row[indexOf("stock")] ?? 0),
     image: row[indexOf("image")]?.trim() ?? "",
     status: row[indexOf("status")]?.trim().toLowerCase() || "draft",
@@ -470,6 +592,9 @@ function parseCsv(text: string) {
 function ProductRow(props: {
   product: AdminProduct;
   onSaved: () => unknown;
+  selectable?: boolean;
+  isSelected?: () => boolean;
+  onToggle?: () => void;
 }) {
   const metadata = () => props.product.metadata ?? {};
   const metadataText = (key: string) =>
@@ -504,27 +629,32 @@ function ProductRow(props: {
   const [certificationNumber, setCertificationNumber] = createSignal(
     metadataText("certificationNumber"),
   );
+  const [shipsFrom, setShipsFrom] = createSignal(metadataText("shipsFrom"));
   const [finish, setFinish] = createSignal(
     props.product.variants[0]?.finish ?? "",
   );
   const [sku, setSku] = createSignal(props.product.sku ?? "");
+  const [variantName, setVariantName] = createSignal(
+    props.product.variants[0]?.name ?? "Default",
+  );
   const [barcode, setBarcode] = createSignal(
     props.product.variants[0]?.barcode ?? "",
   );
   const [condition, setCondition] = createSignal(
-    props.product.condition ?? "Near Mint",
+    props.product.productType === "sealed"
+      ? "Sealed"
+      : props.product.condition ?? "Near Mint",
   );
   const [language, setLanguage] = createSignal(
     props.product.language ?? "English",
   );
   const [image, setImage] = createSignal(props.product.imageUrls[0] ?? "");
+  const [trailerUrl, setTrailerUrl] = createSignal(metadataText("trailerUrl"));
   const [price, setPrice] = createSignal(
-    ((props.product.priceCents ?? 0) / 100).toFixed(2),
+    centsToEuros(props.product.priceCents ?? 0),
   );
   const [compareAtPrice, setCompareAtPrice] = createSignal(
-    props.product.compareAtPriceCents === null
-      ? ""
-      : ((props.product.compareAtPriceCents ?? 0) / 100).toFixed(2),
+    centsToEuros(props.product.compareAtPriceCents),
   );
   const [stock, setStock] = createSignal(String(props.product.stock ?? 0));
   const [trackInventory, setTrackInventory] = createSignal(
@@ -534,45 +664,14 @@ function ProductRow(props: {
   const [saving, setSaving] = createSignal(false);
   const [message, setMessage] = createSignal("");
   const [variantOpen, setVariantOpen] = createSignal(false);
-  const [variantDraft, setVariantDraft] = createSignal({
-    name: "",
-    sku: "",
-    barcode: "",
-    condition: "Near Mint",
-    language: "English",
-    finish: "",
-    price: "",
-    compareAtPrice: "",
-    stock: "0",
-    trackInventory: true,
-  });
-  const [variantEditDraft, setVariantEditDraft] = createSignal<{
-    id: string;
-    name: string;
-    sku: string;
-    barcode: string;
-    condition: string;
-    language: string;
-    finish: string;
-    price: string;
-    compareAtPrice: string;
-    stock: string;
-    trackInventory: boolean;
-  } | null>(null);
+  const [variantDraft, setVariantDraft] = createSignal<VariantDraft>(
+    createEmptyVariantDraft(),
+  );
+  const [variantEditDraft, setVariantEditDraft] =
+    createSignal<EditableVariantDraft | null>(null);
 
   const loadImage = (file?: File) => {
-    if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setMessage("Choose a JPG, PNG, or WebP image.");
-      return;
-    }
-    if (file.size > 850_000) {
-      setMessage("Use an image smaller than 850 KB.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => setImage(String(reader.result ?? ""));
-    reader.readAsDataURL(file);
+    readProductImage(file, setImage, setMessage);
   };
 
   const save = async () => {
@@ -607,16 +706,17 @@ function ProductRow(props: {
         gradingCompany: gradingCompany(),
         grade: grade(),
         certificationNumber: certificationNumber(),
+        shipsFrom: shipsFrom(),
         finish: finish(),
         sku: sku(),
+        variantName: variantName(),
         barcode: barcode(),
         condition: condition(),
         language: language(),
         image: image(),
-        priceCents: Math.round(Number(price()) * 100),
-        compareAtPriceCents: compareAtPrice()
-          ? Math.round(Number(compareAtPrice()) * 100)
-          : null,
+        trailerUrl: trailerUrl(),
+        priceCents: eurosToCents(price()),
+        compareAtPriceCents: optionalEurosToCents(compareAtPrice()),
         stock: Number(stock()),
         trackInventory: trackInventory(),
         status: status(),
@@ -648,13 +748,11 @@ function ProductRow(props: {
         name: current.name,
         sku: current.sku,
         barcode: current.barcode,
-        condition: current.condition,
+        condition: productType() === "sealed" ? "Sealed" : current.condition,
         language: current.language,
         finish: current.finish,
-        priceCents: Math.round(Number(current.price) * 100),
-        compareAtPriceCents: current.compareAtPrice
-          ? Math.round(Number(current.compareAtPrice) * 100)
-          : null,
+        priceCents: eurosToCents(current.price),
+        compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
         stock: Number(current.stock),
         trackInventory: current.trackInventory,
       }),
@@ -666,39 +764,14 @@ function ProductRow(props: {
       return;
     }
     await Promise.resolve(props.onSaved());
-    setVariantDraft({
-      name: "",
-      sku: "",
-      barcode: "",
-      condition: "Near Mint",
-      language: "English",
-      finish: "",
-      price: "",
-      compareAtPrice: "",
-      stock: "0",
-      trackInventory: true,
-    });
+    setVariantDraft(createEmptyVariantDraft());
     setVariantOpen(false);
     setMessage("Variant added");
     setSaving(false);
   };
 
   const editVariant = (variant: AdminVariant) => {
-    setVariantEditDraft({
-      id: variant.id,
-      name: variant.name,
-      sku: variant.sku,
-      barcode: variant.barcode ?? "",
-      condition: variant.condition ?? "",
-      language: variant.language ?? "",
-      finish: variant.finish ?? "",
-      price: (variant.priceCents / 100).toFixed(2),
-      compareAtPrice: variant.compareAtPriceCents === null
-        ? ""
-        : (variant.compareAtPriceCents / 100).toFixed(2),
-      stock: String(variant.stock),
-      trackInventory: variant.trackInventory,
-    });
+    setVariantEditDraft(editableVariantFrom(variant));
   };
 
   const saveVariant = async (event: SubmitEvent) => {
@@ -717,13 +790,11 @@ function ProductRow(props: {
         name: current.name,
         sku: current.sku,
         barcode: current.barcode,
-        condition: current.condition,
+        condition: productType() === "sealed" ? "Sealed" : current.condition,
         language: current.language,
         finish: current.finish,
-        priceCents: Math.round(Number(current.price) * 100),
-        compareAtPriceCents: current.compareAtPrice
-          ? Math.round(Number(current.compareAtPrice) * 100)
-          : null,
+        priceCents: eurosToCents(current.price),
+        compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
         stock: Number(current.stock),
         trackInventory: current.trackInventory,
       }),
@@ -790,20 +861,31 @@ function ProductRow(props: {
     <>
       <tr>
         <td>
-          <div class={styles.productIdentity}>
-            <Show
-              when={image()}
-              fallback={<span class={styles.productFallback}>{name()[0]}</span>}
-            >
-              <img src={image()} alt="" />
+          <div class={styles.selectableCell}>
+            <Show when={props.selectable}>
+              <input
+                type="checkbox"
+                class={styles.rowCheckbox}
+                checked={props.isSelected?.() ?? false}
+                onChange={() => props.onToggle?.()}
+                aria-label={`Select ${name()}`}
+              />
             </Show>
-            <div>
-              <strong>{name()}</strong>
+            <div class={styles.productIdentity}>
+              <Show
+                when={image()}
+                fallback={<span class={styles.productFallback}>{name()[0]}</span>}
+              >
+                <img src={image()} alt="" />
+              </Show>
+              <div>
+                <strong>{name()}</strong>
               <span>
                 {metadataText("source") === "starter"
                   ? "Starter listing, save once to manage"
                   : sku() || "No SKU"}
               </span>
+              </div>
             </div>
           </div>
         </td>
@@ -905,7 +987,11 @@ function ProductRow(props: {
                 </label>
                 <label>
                   <span>Product type</span>
-                  <select value={productType()} onChange={event => setProductType(event.currentTarget.value as ProductDraft["productType"])}>
+                  <select value={productType()} onChange={event => {
+                    const nextType = event.currentTarget.value as ProductDraft["productType"];
+                    setProductType(nextType);
+                    if (nextType === "sealed") setCondition("Sealed");
+                  }}>
                     <option value="single">Single</option>
                     <option value="sealed">Sealed</option>
                     <option value="graded">Graded</option>
@@ -915,6 +1001,11 @@ function ProductRow(props: {
                 <label>
                   <span>Set or collection</span>
                   <input value={collection()} onInput={event => setCollection(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Set code</span>
+                  <input placeholder="MEW, BLCR, MH3" value={setCode()} onInput={event => setSetCode(event.currentTarget.value.toUpperCase())} />
+                  <small>The official code printed on products from this set.</small>
                 </label>
                 <label>
                   <span>Visibility</span>
@@ -931,6 +1022,11 @@ function ProductRow(props: {
                 <label>
                   <span>SKU</span>
                   <input value={sku()} onInput={event => setSku(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Format or variant name</span>
+                  <input placeholder={productType() === "sealed" ? "Booster pack" : "Default"} value={variantName()} onInput={event => setVariantName(event.currentTarget.value)} />
+                  <small>Customers use this to choose a pack, box, language, or printing.</small>
                 </label>
                 <label>
                   <span>Barcode</span>
@@ -956,7 +1052,7 @@ function ProductRow(props: {
                 </label>
                 <label>
                   <span>Condition</span>
-                  <input value={condition()} onInput={event => setCondition(event.currentTarget.value)} />
+                  <input value={productType() === "sealed" ? "Sealed" : condition()} disabled={productType() === "sealed"} onInput={event => setCondition(event.currentTarget.value)} />
                 </label>
                 <label>
                   <span>Language</span>
@@ -979,10 +1075,6 @@ function ProductRow(props: {
                   <input placeholder="025/165" value={cardNumber()} onInput={event => setCardNumber(event.currentTarget.value)} />
                 </label>
                 <label>
-                  <span>Set code</span>
-                  <input placeholder="MEW" value={setCode()} onInput={event => setSetCode(event.currentTarget.value)} />
-                </label>
-                <label>
                   <span>Rarity</span>
                   <input placeholder="Special illustration rare" value={rarity()} onInput={event => setRarity(event.currentTarget.value)} />
                 </label>
@@ -1002,6 +1094,10 @@ function ProductRow(props: {
                   <span>Certification number</span>
                   <input value={certificationNumber()} onInput={event => setCertificationNumber(event.currentTarget.value)} />
                 </label>
+                <label>
+                  <span>Ships from</span>
+                  <input placeholder="NL" value={shipsFrom()} onInput={event => setShipsFrom(event.currentTarget.value)} />
+                </label>
                 <div class={styles.editorSectionHeading}>
                   <span>Media and description</span>
                   <p>Use a clean product image and an accurate condition description.</p>
@@ -1019,6 +1115,18 @@ function ProductRow(props: {
                     onInput={event => setImage(event.currentTarget.value)}
                   />
                 </label>
+                <Show when={productType() === "sealed"}>
+                  <label class={styles.spanTwo}>
+                    <span>Set trailer URL</span>
+                    <input
+                      type="url"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      value={trailerUrl()}
+                      onInput={event => setTrailerUrl(event.currentTarget.value)}
+                    />
+                    <small>Optional. YouTube trailers appear only on sealed product pages.</small>
+                  </label>
+                </Show>
                 <label class={styles.spanTwo}>
                   <span>Description</span>
                   <textarea rows="4" value={description()} onInput={event => setDescription(event.currentTarget.value)} />
@@ -1049,7 +1157,7 @@ function ProductRow(props: {
                 <div class={styles.sectionHead}>
                   <div>
                     <h3>Variants</h3>
-                    <p>Manage language, condition, finish, price, and stock options.</p>
+                    <p>Manage pack, box, language, printing, price, and stock options.</p>
                   </div>
                   <button type="button" onClick={() => setVariantOpen(value => !value)}>
                     {variantOpen() ? "Close variant form" : "Add variant"}
@@ -1097,7 +1205,7 @@ function ProductRow(props: {
                       </label>
                       <label>
                         <span>Condition</span>
-                        <input value={current().condition} onInput={event => setVariantEditDraft(value => value && ({ ...value, condition: event.currentTarget.value }))} />
+                        <input value={productType() === "sealed" ? "Sealed" : current().condition} disabled={productType() === "sealed"} onInput={event => setVariantEditDraft(value => value && ({ ...value, condition: event.currentTarget.value }))} />
                       </label>
                       <label>
                         <span>Language</span>
@@ -1145,7 +1253,7 @@ function ProductRow(props: {
                     </label>
                     <label>
                       <span>Condition</span>
-                      <input value={variantDraft().condition} onInput={event => setVariantDraft(current => ({ ...current, condition: event.currentTarget.value }))} />
+                      <input value={productType() === "sealed" ? "Sealed" : variantDraft().condition} disabled={productType() === "sealed"} onInput={event => setVariantDraft(current => ({ ...current, condition: event.currentTarget.value }))} />
                     </label>
                     <label>
                       <span>Language</span>
@@ -2209,7 +2317,6 @@ function StoreSetupManager(props: {
 }
 
 export default function Admin() {
-  const session = authClient.useSession();
   const [clientReady, setClientReady] = createSignal(false);
   const [section, setSection] = createSignal<AdminSection>("overview");
   const [dashboard, { refetch }] = createResource(
@@ -2223,37 +2330,96 @@ export default function Admin() {
   const [draft, setDraft] = createSignal<ProductDraft>({ ...emptyProduct });
   const [productStatus, setProductStatus] = createSignal("");
   const [savingProduct, setSavingProduct] = createSignal(false);
-  const [orderMessage, setOrderMessage] = createSignal("");
   const [importMessage, setImportMessage] = createSignal("");
   const [importing, setImporting] = createSignal(false);
   let imageInput: HTMLInputElement | undefined;
-  const filteredProducts = () => {
-    const query = catalogSearch().trim().toLocaleLowerCase();
-    return (dashboard()?.products ?? []).filter(product => {
-      const searchable = [
-        product.name,
-        product.slug,
-        product.brand,
-        product.game,
-        typeof product.metadata.set === "string" ? product.metadata.set : "",
-        ...product.variants.flatMap(variant => [
-          variant.name,
-          variant.sku,
-          variant.barcode,
-          variant.condition,
-          variant.language,
-          variant.finish,
-        ]),
-      ]
-        .filter((value): value is string => Boolean(value))
-        .join(" ")
-        .toLocaleLowerCase();
-      return (
-        (!query || searchable.includes(query)) &&
-        (catalogGame() === "all" || product.game === catalogGame()) &&
-        (catalogStatus() === "all" || product.status === catalogStatus())
-      );
+  const [selectedVariantIds, setSelectedVariantIds] = createSignal<Set<string>>(
+    new Set(),
+  );
+  const [bulkStock, setBulkStock] = createSignal("");
+  const [bulkBusy, setBulkBusy] = createSignal(false);
+  const filteredProducts = () =>
+    (dashboard()?.products ?? []).filter(product =>
+      matchesCatalogueFilters(
+        product,
+        catalogSearch(),
+        catalogGame(),
+        catalogStatus(),
+      ),
+    );
+
+  // Bulk edit only targets managed products (real database variants) —
+  // starter/static listings must be saved once before they can be updated.
+  const isManaged = (product: AdminProduct) =>
+    !!product.variantId &&
+    !product.variantId.startsWith("static:") &&
+    !product.id.startsWith("static:");
+  const selectableProducts = () => filteredProducts().filter(isManaged);
+  const bulkTargets = () =>
+    selectableProducts().filter(product =>
+      selectedVariantIds().has(product.variantId!),
+    );
+  const allSelected = () => {
+    const selectable = selectableProducts();
+    return (
+      selectable.length > 0 &&
+      selectable.every(product => selectedVariantIds().has(product.variantId!))
+    );
+  };
+  const toggleSelect = (variantId: string) =>
+    setSelectedVariantIds(previous => {
+      const next = new Set(previous);
+      if (next.has(variantId)) next.delete(variantId);
+      else next.add(variantId);
+      return next;
     });
+  const toggleSelectAll = () =>
+    setSelectedVariantIds(
+      allSelected()
+        ? new Set<string>()
+        : new Set<string>(selectableProducts().map(product => product.variantId!)),
+    );
+  const clearSelection = () => setSelectedVariantIds(new Set<string>());
+
+  const applyBulk = async (patch: Record<string, unknown>) => {
+    const targets = bulkTargets();
+    if (!targets.length) return;
+    setBulkBusy(true);
+    try {
+      const results = await Promise.all(
+        targets.map(product =>
+          fetch("/api/admin/products", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: product.id,
+              variantId: product.variantId,
+              ...patch,
+            }),
+          })
+            .then(response => response.ok)
+            .catch(() => false),
+        ),
+      );
+      await refetch();
+      clearSelection();
+      setBulkStock("");
+      const failed = results.filter(ok => !ok).length;
+      if (failed) {
+        window.alert(
+          `${failed} of ${targets.length} products could not be updated.`,
+        );
+      }
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+  const applyBulkStatus = (status: "draft" | "active" | "archived") =>
+    applyBulk({ status });
+  const applyBulkStock = () => {
+    const value = Math.floor(Number(bulkStock()));
+    if (!Number.isFinite(value) || value < 0) return;
+    applyBulk({ stock: value });
   };
   const productTable = createSolidTable({
     get data() {
@@ -2294,18 +2460,11 @@ export default function Admin() {
   ) => setDraft(current => ({ ...current, [key]: value }));
 
   const loadProductImage = (file?: File) => {
-    if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setProductStatus("Choose a JPG, PNG, or WebP image.");
-      return;
-    }
-    if (file.size > 850_000) {
-      setProductStatus("Use an image smaller than 850 KB.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => patchDraft("image", String(reader.result ?? ""));
-    reader.readAsDataURL(file);
+    readProductImage(
+      file,
+      image => patchDraft("image", image),
+      setProductStatus,
+    );
   };
 
   const createProduct = async (event: SubmitEvent) => {
@@ -2319,10 +2478,8 @@ export default function Admin() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...current,
-        priceCents: Math.round(Number(current.price) * 100),
-        compareAtPriceCents: current.compareAtPrice
-          ? Math.round(Number(current.compareAtPrice) * 100)
-          : null,
+        priceCents: eurosToCents(current.price),
+        compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
         stock: Number(current.stock),
       }),
     });
@@ -2337,23 +2494,6 @@ export default function Admin() {
     if (imageInput) imageInput.value = "";
     setProductStatus("Product created. Publish it when the listing is ready.");
     setSavingProduct(false);
-  };
-
-  const updateOrder = async (id: string, status: string) => {
-    setOrderMessage("");
-    const response = await fetch("/api/admin/orders", {
-      method: "PATCH",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status }),
-    });
-    const result = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setOrderMessage(result.error ?? "Order could not be updated.");
-      return;
-    }
-    await refetch();
-    setOrderMessage("Order status updated.");
   };
 
   const importCsv = async (file?: File) => {
@@ -2796,6 +2936,10 @@ export default function Admin() {
                           <input value={draft().certificationNumber} onInput={event => patchDraft("certificationNumber", event.currentTarget.value)} />
                         </label>
                         <label>
+                          <span>Ships from</span>
+                          <input placeholder="NL" value={draft().shipsFrom} onInput={event => patchDraft("shipsFrom", event.currentTarget.value)} />
+                        </label>
+                        <label>
                           <span>Initial status</span>
                           <select value={draft().status} onChange={event => patchDraft("status", event.currentTarget.value as ProductDraft["status"])}>
                             <option value="draft">Save as draft</option>
@@ -2867,7 +3011,73 @@ export default function Admin() {
                     <span class={styles.catalogResultCount}>
                       {filteredProducts().length} of {data().products.length} products
                     </span>
+                    <Show when={selectableProducts().length}>
+                      <button
+                        type="button"
+                        class={styles.selectAllBtn}
+                        onClick={toggleSelectAll}
+                      >
+                        {allSelected() ? "Clear selection" : "Select all"}
+                      </button>
+                    </Show>
                   </section>
+
+                  <Show when={selectedVariantIds().size}>
+                    <div class={styles.bulkBar}>
+                      <span class={styles.bulkCount}>
+                        <strong>{bulkTargets().length}</strong> selected
+                      </span>
+                      <div class={styles.bulkActions}>
+                        <label class={styles.bulkField}>
+                          <span>Visibility</span>
+                          <select
+                            disabled={bulkBusy()}
+                            onChange={event => {
+                              const value = event.currentTarget.value;
+                              event.currentTarget.selectedIndex = 0;
+                              if (value) {
+                                applyBulkStatus(
+                                  value as "draft" | "active" | "archived",
+                                );
+                              }
+                            }}
+                          >
+                            <option value="">Set status…</option>
+                            <option value="active">Live</option>
+                            <option value="draft">Draft</option>
+                            <option value="archived">Archived</option>
+                          </select>
+                        </label>
+                        <label class={styles.bulkField}>
+                          <span>Stock</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="Qty"
+                            disabled={bulkBusy()}
+                            value={bulkStock()}
+                            onInput={event => setBulkStock(event.currentTarget.value)}
+                          />
+                          <button
+                            type="button"
+                            disabled={bulkBusy() || bulkStock() === ""}
+                            onClick={applyBulkStock}
+                          >
+                            Set
+                          </button>
+                        </label>
+                      </div>
+                      <button
+                        type="button"
+                        class={styles.bulkClear}
+                        disabled={bulkBusy()}
+                        onClick={clearSelection}
+                      >
+                        {bulkBusy() ? "Applying…" : "Clear"}
+                      </button>
+                    </div>
+                  </Show>
 
                   <div class={styles.tableWrap}>
                     <table>
@@ -2883,7 +3093,20 @@ export default function Admin() {
                       </thead>
                       <tbody>
                         <For each={productTable.getRowModel().rows}>
-                          {row => <ProductRow product={row.original} onSaved={refetch} />}
+                          {row => (
+                            <ProductRow
+                              product={row.original}
+                              onSaved={refetch}
+                              selectable={isManaged(row.original)}
+                              isSelected={() =>
+                                selectedVariantIds().has(row.original.variantId ?? "")
+                              }
+                              onToggle={() =>
+                                row.original.variantId &&
+                                toggleSelect(row.original.variantId)
+                              }
+                            />
+                          )}
                         </For>
                       </tbody>
                     </table>
@@ -2912,7 +3135,6 @@ export default function Admin() {
                       <p>Review items and addresses, dispatch parcels, print invoices, record returns, and issue Mollie refunds.</p>
                     </div>
                     <A href="/api/admin/export?type=orders" target="_blank">Export orders CSV</A>
-                    <Show when={orderMessage()}><p class={styles.inlineMessage}>{orderMessage()}</p></Show>
                   </section>
                   <div class={styles.tableWrap}>
                     <table>

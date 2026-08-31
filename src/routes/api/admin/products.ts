@@ -30,6 +30,25 @@ const imageSchema = z
     "Use an HTTPS image, a local image path, or upload a JPG, PNG, or WebP file.",
   );
 
+const trailerUrlSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .refine(value => {
+    if (!value) return true;
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" && [
+        "youtube.com",
+        "www.youtube.com",
+        "youtu.be",
+        "www.youtube-nocookie.com",
+      ].includes(url.hostname);
+    } catch {
+      return false;
+    }
+  }, "Use a valid HTTPS YouTube trailer URL.");
+
 const tcgFields = {
   cardNumber: z.string().trim().max(60).optional().default(""),
   rarity: z.string().trim().max(80).optional().default(""),
@@ -38,6 +57,7 @@ const tcgFields = {
   gradingCompany: z.string().trim().max(40).optional().default(""),
   grade: z.string().trim().max(20).optional().default(""),
   certificationNumber: z.string().trim().max(80).optional().default(""),
+  shipsFrom: z.string().trim().max(60).optional().default(""),
 };
 
 const createProductSchema = z.object({
@@ -49,9 +69,11 @@ const createProductSchema = z.object({
   productType: z.enum(["single", "sealed", "graded", "accessory"]),
   set: z.string().trim().max(120).optional().default(""),
   badge: z.string().trim().max(32).optional().default(""),
+  trailerUrl: trailerUrlSchema.optional().default(""),
   image: imageSchema.optional().default(""),
   status: statusSchema,
   sku: z.string().trim().max(80).optional().default(""),
+  variantName: z.string().trim().max(120).optional().default(""),
   barcode: z.string().trim().max(120).optional().default(""),
   condition: z.string().trim().max(60).optional().default("Near Mint"),
   language: z.string().trim().max(60).optional().default("English"),
@@ -128,6 +150,8 @@ export async function POST(event: APIEvent) {
             gradingCompany: input.gradingCompany || null,
             grade: input.grade || null,
             certificationNumber: input.certificationNumber || null,
+            shipsFrom: input.shipsFrom || null,
+            trailerUrl: input.trailerUrl || null,
           },
         })
         .returning();
@@ -143,8 +167,12 @@ export async function POST(event: APIEvent) {
           productId: createdProduct.id,
           sku,
           barcode: input.barcode || null,
-          name: input.condition || "Default",
-          condition: input.condition || null,
+          name:
+            input.variantName ||
+            (input.productType === "sealed" ? "Sealed product" : input.condition) ||
+            "Default",
+          condition:
+            input.productType === "sealed" ? "Sealed" : input.condition || null,
           language: input.language || null,
           finish: input.finish || null,
           priceCents: input.priceCents,
@@ -226,6 +254,8 @@ export async function PATCH(event: APIEvent) {
               gradingCompany: input.gradingCompany || null,
               grade: input.grade || null,
               certificationNumber: input.certificationNumber || null,
+              shipsFrom: input.shipsFrom || null,
+              trailerUrl: input.trailerUrl || null,
               source: "managed",
             },
           })
@@ -238,8 +268,12 @@ export async function PATCH(event: APIEvent) {
             productId: createdProduct.id,
             sku: input.sku,
             barcode: input.barcode || null,
-            name: input.condition || "Default",
-            condition: input.condition || null,
+            name:
+              input.variantName ||
+              (input.productType === "sealed" ? "Sealed product" : input.condition) ||
+              "Default",
+            condition:
+              input.productType === "sealed" ? "Sealed" : input.condition || null,
             language: input.language || null,
             finish: input.finish || null,
             priceCents: input.priceCents,
@@ -309,7 +343,9 @@ export async function PATCH(event: APIEvent) {
         input.illustrator !== undefined ||
         input.gradingCompany !== undefined ||
         input.grade !== undefined ||
-        input.certificationNumber !== undefined
+        input.certificationNumber !== undefined ||
+        input.shipsFrom !== undefined ||
+        input.trailerUrl !== undefined
       ) {
         const [stored] = await tx
           .select({ metadata: products.metadata })
@@ -335,6 +371,12 @@ export async function PATCH(event: APIEvent) {
           ...(input.certificationNumber !== undefined
             ? { certificationNumber: input.certificationNumber || null }
             : {}),
+          ...(input.shipsFrom !== undefined
+            ? { shipsFrom: input.shipsFrom || null }
+            : {}),
+          ...(input.trailerUrl !== undefined
+            ? { trailerUrl: input.trailerUrl || null }
+            : {}),
         };
       }
 
@@ -345,9 +387,16 @@ export async function PATCH(event: APIEvent) {
       const variantChanges: Partial<typeof productVariants.$inferInsert> = {};
       if (input.sku !== undefined) variantChanges.sku = input.sku;
       if (input.barcode !== undefined) variantChanges.barcode = input.barcode || null;
-      if (input.condition !== undefined) {
+      if (input.variantName !== undefined) {
+        variantChanges.name =
+          input.variantName ||
+          (input.productType === "sealed" ? "Sealed product" : input.condition) ||
+          "Default";
+      }
+      if (input.productType === "sealed") {
+        variantChanges.condition = "Sealed";
+      } else if (input.condition !== undefined) {
         variantChanges.condition = input.condition || null;
-        variantChanges.name = input.condition || "Default";
       }
       if (input.language !== undefined) variantChanges.language = input.language || null;
       if (input.finish !== undefined) variantChanges.finish = input.finish || null;

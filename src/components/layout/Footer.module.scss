@@ -184,3 +184,18 @@
     color: $white;
   }
 }
+
+.payments {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-block: 1.25rem;
+  border-top: 1px solid rgba($white, 0.06);
+}
+
+.paymentsNote {
+  color: $gray-500;
+  font-size: 0.75rem;
+}

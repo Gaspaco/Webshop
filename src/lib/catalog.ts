@@ -37,6 +37,13 @@ export function databaseProductToShopProduct(
     product.game === "magic"
       ? product.game
       : "pokemon";
+  const productType =
+    product.productType === "single" ||
+    product.productType === "sealed" ||
+    product.productType === "graded" ||
+    product.productType === "accessory"
+      ? product.productType
+      : undefined;
   const metadata = product.metadata ?? {};
   const availableStock = Math.max(product.stock - product.reservedStock, 0);
 
@@ -55,7 +62,7 @@ export function databaseProductToShopProduct(
     game: product.game ?? "other",
     gameName: gameNames[product.game ?? "other"] ?? "Other",
     description: product.description ?? undefined,
-    productType: product.productType ?? undefined,
+    productType,
     condition: product.condition ?? undefined,
     language: product.language ?? undefined,
     finish: product.finish ?? undefined,
@@ -65,6 +72,10 @@ export function databaseProductToShopProduct(
         : undefined,
     rarity: typeof metadata.rarity === "string" ? metadata.rarity : undefined,
     setCode: typeof metadata.setCode === "string" ? metadata.setCode : undefined,
+    trailerUrl:
+      typeof metadata.trailerUrl === "string"
+        ? metadata.trailerUrl
+        : undefined,
     illustrator:
       typeof metadata.illustrator === "string"
         ? metadata.illustrator
@@ -78,6 +89,8 @@ export function databaseProductToShopProduct(
       typeof metadata.certificationNumber === "string"
         ? metadata.certificationNumber
         : undefined,
+    shipsFrom:
+      typeof metadata.shipsFrom === "string" ? metadata.shipsFrom : undefined,
     stock: availableStock,
     variantId: product.variantId,
     sku: product.sku,

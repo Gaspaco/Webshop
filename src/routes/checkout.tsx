@@ -11,7 +11,7 @@ import {
 } from "solid-js";
 import { z } from "zod";
 import type { SavedAddress } from "~/lib/address";
-import { formatPrice, useCart, type CartItem } from "~/lib/cart";
+import { formatPrice, useCart } from "~/lib/cart";
 import {
   findShippingDestination,
   getInternationalPostnlPrice,
@@ -30,15 +30,6 @@ type ShippingMethod =
   | "postnl_parcel"
   | "postnl_international";
 type PaymentMethod = "mollie" | "bank";
-
-type CheckoutSnapshot = {
-  orderNumber: string;
-  email: string;
-  items: CartItem[];
-  subtotalCents: number;
-  shippingCents: number;
-  totalCents: number;
-};
 
 const checkoutSchema = z.object({
   email: z.string().trim().email().max(254),
@@ -92,7 +83,6 @@ export default function Checkout() {
   const [checkingDiscount, setCheckingDiscount] = createSignal(false);
   const [error, setError] = createSignal("");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
-  const [confirmation, setConfirmation] = createSignal<CheckoutSnapshot>();
 
   const subtotalCents = () => cart.subtotalCents();
   const shippingOptions = createMemo(() => {
@@ -310,10 +300,6 @@ export default function Checkout() {
           when={!searchParams.order}
           fallback={<PaymentReturn orderNumber={searchParams.order} />}
         >
-          <Show
-            when={!confirmation()}
-            fallback={<Confirmation order={confirmation()!} />}
-          >
             <header class={styles.header}>
               <span class={styles.kicker}>Secure checkout</span>
               <h1>Finish your order</h1>
@@ -615,7 +601,6 @@ export default function Checkout() {
               </aside>
               </form>
             </Show>
-          </Show>
         </Show>
       </div>
     </main>
@@ -637,58 +622,6 @@ function SummaryRow(props: { label: string; value: string }) {
       <span>{props.label}</span>
       <span>{props.value}</span>
     </div>
-  );
-}
-
-function Confirmation(props: { order: CheckoutSnapshot }) {
-  return (
-    <section class={styles.confirmation}>
-      <span class={styles.confirmIcon}>
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M20 6 9 17l-5-5" />
-        </svg>
-      </span>
-      <p class={styles.kicker}>Order placed</p>
-      <h1>Thanks, your cards are reserved.</h1>
-      <p>
-        Order {props.order.orderNumber} was created for {props.order.email}. A
-        real payment link can be wired to Mollie when the checkout backend is
-        ready.
-      </p>
-
-      <div class={styles.confirmSummary}>
-        <SummaryRow label="Items" value={`${props.order.items.length}`} />
-        <SummaryRow
-          label="Shipping"
-          value={
-            props.order.shippingCents === 0
-              ? "Free"
-              : formatPrice(props.order.shippingCents)
-          }
-        />
-        <div class={styles.total}>
-          <span>Total</span>
-          <strong>{formatPrice(props.order.totalCents)}</strong>
-        </div>
-      </div>
-
-      <div class={styles.confirmActions}>
-        <A href="/products" class={styles.primaryLink}>
-          Continue shopping
-        </A>
-        <A href="/account" class={styles.secondaryLink}>
-          View account
-        </A>
-      </div>
-    </section>
   );
 }
 

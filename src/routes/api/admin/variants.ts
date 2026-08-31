@@ -37,7 +37,11 @@ export async function POST(event: APIEvent) {
   try {
     const input = variantSchema.parse(await event.request.json());
     const [product] = await db
-      .select({ id: products.id, name: products.name })
+      .select({
+        id: products.id,
+        name: products.name,
+        productType: products.productType,
+      })
       .from(products)
       .where(eq(products.id, input.productId))
       .limit(1);
@@ -48,6 +52,8 @@ export async function POST(event: APIEvent) {
       .values({
         ...input,
         barcode: input.barcode || null,
+        condition:
+          product.productType === "sealed" ? "Sealed" : input.condition || null,
       })
       .returning();
     if (input.stock > 0) {
@@ -87,8 +93,12 @@ export async function PATCH(event: APIEvent) {
   try {
     const input = updateVariantSchema.parse(await event.request.json());
     const [current] = await db
-      .select({ stock: productVariants.stock })
+      .select({
+        stock: productVariants.stock,
+        productType: products.productType,
+      })
       .from(productVariants)
+      .innerJoin(products, eq(products.id, productVariants.productId))
       .where(
         and(
           eq(productVariants.id, input.id),
@@ -106,7 +116,8 @@ export async function PATCH(event: APIEvent) {
         name: input.name,
         sku: input.sku,
         barcode: input.barcode || null,
-        condition: input.condition || null,
+        condition:
+          current.productType === "sealed" ? "Sealed" : input.condition || null,
         language: input.language || null,
         finish: input.finish || null,
         priceCents: input.priceCents,
