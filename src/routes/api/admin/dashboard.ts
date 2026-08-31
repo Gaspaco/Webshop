@@ -3,6 +3,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "~/db";
 import {
   adminAuditLog,
+  contactMessages,
   customerAdminProfiles,
   discountCodes,
   importJobs,
@@ -18,6 +19,7 @@ import {
 import { apiJson, requireAdmin } from "~/lib/admin.server";
 import { ALL_PRODUCTS } from "~/lib/categories";
 import { getLaunchReadiness } from "~/lib/readiness.server";
+import { parseStoreProfile } from "~/lib/store-profile";
 
 export async function GET(event: APIEvent) {
   const guard = await requireAdmin(event);
@@ -32,6 +34,7 @@ export async function GET(event: APIEvent) {
     contentRows,
     auditRows,
     returnRows,
+    contactRows,
   ] = await Promise.all([
     db
       .select({
@@ -72,6 +75,7 @@ export async function GET(event: APIEvent) {
         shippingCents: orders.shippingCents,
         discountCode: orders.discountCode,
         discountCents: orders.discountCents,
+        shippingMethod: orders.shippingMethod,
         totalCents: orders.totalCents,
         shippingAddress: orders.shippingAddress,
         notes: orders.notes,
@@ -136,6 +140,21 @@ export async function GET(event: APIEvent) {
       .from(returnRequests)
       .orderBy(desc(returnRequests.createdAt))
       .limit(100),
+    db
+      .select({
+        id: contactMessages.id,
+        name: contactMessages.name,
+        email: contactMessages.email,
+        topic: contactMessages.topic,
+        message: contactMessages.message,
+        status: contactMessages.status,
+        notificationSent: contactMessages.notificationSent,
+        createdAt: contactMessages.createdAt,
+        updatedAt: contactMessages.updatedAt,
+      })
+      .from(contactMessages)
+      .orderBy(desc(contactMessages.createdAt))
+      .limit(150),
   ]);
 
   const orderIds = orderRows.map(order => order.id);
@@ -269,8 +288,13 @@ export async function GET(event: APIEvent) {
       };
     });
   const catalog = [...managedCatalog, ...starterCatalog];
+  const content = Object.fromEntries(
+    contentRows.map(contentRow => [contentRow.key, contentRow.value]),
+  );
+  const storeProfile = parseStoreProfile(content.business);
   const readiness = getLaunchReadiness({
     unconvertedStarterProducts: starterCatalog.length,
+    storeProfile,
   });
   const customers = customerRows.filter(customer => customer.role !== "admin");
   const paidRevenue = orderRows
@@ -323,6 +347,7 @@ export async function GET(event: APIEvent) {
           ),
       ).length,
       customers: customers.length,
+      unreadMessages: contactRows.filter(message => message.status === "unread").length,
     },
     products: catalog,
     orders: orderRows.map(order => ({
@@ -339,11 +364,10 @@ export async function GET(event: APIEvent) {
       orderCount: customerOrderCounts.get(customer.email)?.count ?? 0,
       spentCents: customerOrderCounts.get(customer.email)?.spentCents ?? 0,
     })),
+    contacts: contactRows,
     imports,
     discounts,
-    content: Object.fromEntries(
-      contentRows.map(content => [content.key, content.value]),
-    ),
+    content: { ...content, business: storeProfile },
     audit: auditRows,
     analytics: {
       salesByDay: [...salesByDay.entries()]

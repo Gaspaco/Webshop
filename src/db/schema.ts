@@ -178,6 +178,11 @@ export const returnStatus = pgEnum("return_status", [
   "rejected",
   "refunded",
 ]);
+export const contactMessageStatus = pgEnum("contact_message_status", [
+  "unread",
+  "read",
+  "resolved",
+]);
 
 export const categories = pgTable(
   "categories",
@@ -355,6 +360,7 @@ export const orders = pgTable(
     taxCents: integer("tax_cents").default(0).notNull(),
     discountCode: text("discount_code"),
     discountCents: integer("discount_cents").default(0).notNull(),
+    shippingMethod: text("shipping_method").default("postnl_parcel").notNull(),
     trackingNumber: text("tracking_number"),
     trackingUrl: text("tracking_url"),
     shippedAt: timestamp("shipped_at", { withTimezone: true }),
@@ -496,6 +502,27 @@ export const storefrontContent = pgTable(
     }),
     ...timestamps,
   },
+);
+
+export const contactMessages = pgTable(
+  "contact_messages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    topic: text("topic").notNull(),
+    message: text("message").notNull(),
+    status: contactMessageStatus("status").default("unread").notNull(),
+    notificationSent: boolean("notification_sent").default(false).notNull(),
+    updatedBy: uuid("updated_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    ...timestamps,
+  },
+  table => [
+    index("contact_message_status_idx").on(table.status),
+    index("contact_message_created_idx").on(table.createdAt),
+  ],
 );
 
 export const customerAdminProfiles = pgTable(

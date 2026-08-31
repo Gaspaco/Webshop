@@ -1,9 +1,12 @@
 import { Title } from "@solidjs/meta";
+import { useSearchParams } from "@solidjs/router";
 import {
+  createEffect,
   createMemo,
   createResource,
   createSignal,
   For,
+  on,
   onMount,
   Show,
 } from "solid-js";
@@ -50,7 +53,10 @@ function priceBucket(product: ShopProduct) {
 
 export default function Products() {
   const cart = useCart();
-  const [search, setSearch] = createSignal("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = createSignal(
+    typeof searchParams.q === "string" ? searchParams.q : "",
+  );
   const [game, setGame] = createSignal("all");
   const [type, setType] = createSignal("all");
   const [price, setPrice] = createSignal("all");
@@ -72,17 +78,56 @@ export default function Products() {
 
   onMount(() => setClientReady(true));
 
+  createEffect(
+    on(
+      () => searchParams.q,
+      query => setSearch(typeof query === "string" ? query : ""),
+      { defer: true },
+    ),
+  );
+
   const visible = createMemo(() => {
     const query = search().trim().toLocaleLowerCase();
+    const queryParts = query.split(/\s+/).filter(Boolean);
     const list = allProducts().filter(
-      product =>
-        (!query ||
-          product.name.toLocaleLowerCase().includes(query) ||
-          product.set?.toLocaleLowerCase().includes(query) ||
-          product.gameName.toLocaleLowerCase().includes(query)) &&
-        (game() === "all" || product.game === game()) &&
-        (type() === "all" || typeOf(product) === type()) &&
-        (price() === "all" || priceBucket(product) === price()),
+      product => {
+        const searchable = [
+          product.name,
+          product.set,
+          product.game,
+          product.gameName,
+          product.description,
+          product.productType,
+          product.condition,
+          product.language,
+          product.finish,
+          product.cardNumber,
+          product.rarity,
+          product.setCode,
+          product.illustrator,
+          product.gradingCompany,
+          product.grade,
+          product.certificationNumber,
+          product.sku,
+          ...(product.variants ?? []).flatMap(variant => [
+            variant.name,
+            variant.sku,
+            variant.condition,
+            variant.language,
+            variant.finish,
+          ]),
+        ]
+          .filter((value): value is string => Boolean(value))
+          .join(" ")
+          .toLocaleLowerCase();
+
+        return (
+          queryParts.every(part => searchable.includes(part)) &&
+          (game() === "all" || product.game === game()) &&
+          (type() === "all" || typeOf(product) === type()) &&
+          (price() === "all" || priceBucket(product) === price())
+        );
+      },
     );
 
     switch (sort()) {
@@ -102,6 +147,9 @@ export default function Products() {
 
   const clearFilters = () => {
     setSearch("");
+    if (searchParams.q) {
+      setSearchParams({ q: undefined }, { replace: true });
+    }
     setGame("all");
     setType("all");
     setPrice("all");

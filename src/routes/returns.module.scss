@@ -24,9 +24,9 @@
     max-width: 9ch;
     margin-top: 1rem;
     font-family: $font-display;
-    font-size: clamp(3.4rem, 7vw, 7.5rem);
+    font-size: clamp(3.25rem, 7vw, 6rem);
     font-weight: 800;
-    letter-spacing: -0.055em;
+    letter-spacing: -0.04em;
     line-height: 0.9;
   }
 }
@@ -122,6 +122,13 @@
     color: $gray-200;
     font-size: 0.76rem;
     font-weight: 750;
+
+    small {
+      margin-left: 0.35rem;
+      color: $gray-500;
+      font-size: inherit;
+      font-weight: 600;
+    }
   }
 
   small {
@@ -203,6 +210,16 @@
   line-height: 1.55;
 }
 
+.reference {
+  color: $gray-300;
+  font-size: 0.85rem;
+
+  strong {
+    color: $white;
+    overflow-wrap: anywhere;
+  }
+}
+
 .error {
   color: #ff9b9b;
 }
@@ -215,7 +232,7 @@
     max-width: 12ch;
     font-family: $font-display;
     font-size: clamp(2.2rem, 5vw, 4.6rem);
-    letter-spacing: -0.05em;
+    letter-spacing: -0.04em;
     line-height: 0.95;
   }
 

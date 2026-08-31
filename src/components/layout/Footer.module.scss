@@ -167,3 +167,20 @@
     }
   }
 }
+
+.businessDetails {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  flex-wrap: wrap;
+
+  span,
+  a {
+    color: $gray-600;
+    font-size: 0.7rem;
+  }
+
+  a:hover {
+    color: $white;
+  }
+}

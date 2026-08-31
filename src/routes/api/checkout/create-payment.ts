@@ -2,6 +2,8 @@ import type { APIEvent } from "@solidjs/start/server";
 import { z } from "zod";
 import { auth } from "~/lib/auth";
 import { createCheckoutPayment } from "~/lib/checkout.server";
+import { checkRateLimit } from "~/lib/rate-limit.server";
+import { validateJsonRequest } from "~/lib/request-security.server";
 
 function json(data: unknown, init?: ResponseInit) {
   return Response.json(data, {
@@ -15,10 +17,28 @@ function json(data: unknown, init?: ResponseInit) {
 
 export async function POST(event: APIEvent) {
   try {
-    const payload = await event.request.json();
+    const invalidRequest = validateJsonRequest(event, { maxBytes: 64_000 });
+    if (invalidRequest) return invalidRequest;
+
     const session = await auth.api.getSession({
       headers: event.request.headers,
     });
+    if (
+      await checkRateLimit({
+        event,
+        namespace: "checkout",
+        identity: session?.user.id ?? "guest",
+        limit: 10,
+        windowMs: 10 * 60 * 1000,
+      })
+    ) {
+      return json(
+        { error: "Too many checkout attempts. Please wait before trying again." },
+        { status: 429, headers: { "Retry-After": "600" } },
+      );
+    }
+
+    const payload = await event.request.json();
     const result = await createCheckoutPayment(payload, session?.user.id);
 
     if (!result.checkoutUrl) {
@@ -57,6 +77,14 @@ export async function POST(event: APIEvent) {
         { error: "One of these items is no longer available in that quantity. Refresh your cart and try again." },
         { status: 409 },
       );
+    }
+
+    if (
+      error instanceof Error &&
+      (error.message.startsWith("Shipping ") ||
+        error.message.startsWith("The selected shipping method"))
+    ) {
+      return json({ error: error.message }, { status: 400 });
     }
 
     console.error("Checkout payment creation failed", error);

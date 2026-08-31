@@ -4,6 +4,7 @@ import { db } from "~/db";
 import { customerAddresses } from "~/db/schema";
 import { savedAddressSchema } from "~/lib/address";
 import { auth } from "~/lib/auth";
+import { validateJsonRequest } from "~/lib/request-security.server";
 
 function json(data: unknown, init?: ResponseInit) {
   return Response.json(data, {
@@ -48,6 +49,9 @@ export async function GET(event: APIEvent) {
 }
 
 export async function PUT(event: APIEvent) {
+  const invalidRequest = validateJsonRequest(event, { maxBytes: 8_000 });
+  if (invalidRequest) return invalidRequest;
+
   const session = await getSession(event);
 
   if (!session) {

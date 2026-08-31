@@ -1,5 +1,9 @@
 import { Title } from "@solidjs/meta";
-import { createSignal, Show } from "solid-js";
+import { createSignal, onMount, Show } from "solid-js";
+import {
+  DEFAULT_STORE_PROFILE,
+  fetchStoreProfile,
+} from "~/lib/store-profile";
 import styles from "./contact.module.scss";
 
 export default function Contact() {
@@ -9,16 +13,40 @@ export default function Contact() {
   const [message, setMessage] = createSignal("");
   const [loading, setLoading] = createSignal(false);
   const [sent, setSent] = createSignal(false);
+  const [formError, setFormError] = createSignal("");
+  const [profile, setProfile] = createSignal(DEFAULT_STORE_PROFILE);
 
-  const onSubmit = (event: SubmitEvent) => {
+  onMount(async () => setProfile(await fetchStoreProfile()));
+
+  const onSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     if (!name().trim() || !email().trim() || !message().trim()) return;
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    setFormError("");
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name(),
+          email: email(),
+          topic: topic(),
+          message: message(),
+          website: "",
+        }),
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setFormError(result.error ?? "Your message could not be sent.");
+        return;
+      }
       setSent(true);
-    }, 700);
+    } catch {
+      setFormError("Your message could not be sent. Please email the shop directly.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,9 +76,21 @@ export default function Contact() {
                 </span>
                 <div>
                   <p class={styles.infoLabel}>Email</p>
-                  <a href="mailto:hello@mylittletcghaven.nl" class={styles.infoValue}>
-                    hello@mylittletcghaven.nl
+                  <a href={`mailto:${profile().businessEmail}`} class={styles.infoValue}>
+                    {profile().businessEmail}
                   </a>
+                </div>
+              </div>
+
+              <div class={styles.infoItem}>
+                <span class={styles.infoIcon}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z" />
+                  </svg>
+                </span>
+                <div>
+                  <p class={styles.infoLabel}>Phone</p>
+                  <a href={`tel:${profile().phone.replace(/\s+/g, "")}`} class={styles.infoValue}>{profile().phone}</a>
                 </div>
               </div>
 
@@ -118,7 +158,7 @@ export default function Contact() {
                       <path d="M20 6 9 17l-5-5" />
                     </svg>
                   </span>
-                  <p class={styles.successTitle}>Message sent</p>
+                  <p class={styles.successTitle}>Message received</p>
                   <p class={styles.successText}>
                     Thanks, {name() || "friend"}. We've got your message and
                     will reply to {email()} as soon as we can, usually within
@@ -192,6 +232,9 @@ export default function Contact() {
                   </Show>
                   {loading() ? "Sending…" : "Send message"}
                 </button>
+                <Show when={formError()}>
+                  <p class={styles.formError} role="alert">{formError()}</p>
+                </Show>
               </form>
             </Show>
           </div>

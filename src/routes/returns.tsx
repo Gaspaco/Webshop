@@ -13,6 +13,7 @@ export default function Returns() {
   const [confirmed, setConfirmed] = createSignal(false);
   const [status, setStatus] = createSignal<"idle" | "saving" | "success" | "error">("idle");
   const [message, setMessage] = createSignal("");
+  const [reference, setReference] = createSignal("");
 
   const submit = async (event: SubmitEvent) => {
     event.preventDefault();
@@ -30,14 +31,25 @@ export default function Returns() {
           confirmation: confirmed(),
         }),
       });
-      const result = (await response.json()) as { error?: string };
+      const result = (await response.json()) as {
+        error?: string;
+        reference?: string;
+        confirmationSent?: boolean;
+      };
       if (!response.ok) {
         setStatus("error");
         setMessage(result.error ?? "The request could not be submitted.");
         return;
       }
+      setReference(result.reference ?? "");
       setStatus("success");
-      setMessage("Your request has been recorded. The shop owner will contact you with the next step.");
+      setMessage(
+        result.confirmationSent === true
+          ? "Your request has been recorded. A confirmation was sent by email."
+          : result.confirmationSent === false
+            ? "Your request is saved, but the confirmation email could not be delivered. Keep this reference and contact the shop if you do not hear back."
+            : "Your request was already saved. Keep this reference for your records.",
+      );
     } catch {
       setStatus("error");
       setMessage("The return service is unavailable right now. Please try again later.");
@@ -46,17 +58,17 @@ export default function Returns() {
 
   return (
     <main class={styles.page}>
-      <Title>Cancel or return an order | TCGHaven</Title>
+      <Title>Withdraw from an order | TCGHaven</Title>
       <div class={styles.shell}>
         <section class={styles.intro}>
-          <p class={styles.eyebrow}>Order support</p>
-          <h1>Cancel or return an order</h1>
+          <p class={styles.eyebrow}>Statutory withdrawal and returns</p>
+          <h1>Withdraw from an order</h1>
           <p class={styles.lead}>
-            Send the request online. Nothing is refunded automatically and you should not send an item back until the shop owner provides instructions.
+            Notify TCGHaven within 14 days after delivery. You do not have to give a reason. After notifying us, you have another 14 days to send the products back.
           </p>
           <dl>
             <div><dt>01</dt><dd>Enter the order number from your confirmation email.</dd></div>
-            <div><dt>02</dt><dd>Explain what you want to cancel or return.</dd></div>
+            <div><dt>02</dt><dd>Identify the items you want to withdraw or return.</dd></div>
             <div><dt>03</dt><dd>The owner reviews the request and sends the return details.</dd></div>
           </dl>
           <p class={styles.help}>
@@ -72,6 +84,9 @@ export default function Returns() {
                 <span>Request received</span>
                 <h2>We have saved your request.</h2>
                 <p>{message()}</p>
+                <Show when={reference()}>
+                  <p class={styles.reference}>Reference: <strong>{reference()}</strong></p>
+                </Show>
                 <A href="/account">Open your account</A>
               </div>
             }
@@ -91,8 +106,8 @@ export default function Returns() {
                 <small>Required for guest orders. Signed-in customers can leave this empty.</small>
               </label>
               <label>
-                <span>What would you like to cancel or return?</span>
-                <textarea required minlength="10" maxlength="1000" rows="6" placeholder="Tell us which item and the reason for your request." value={reason()} onInput={event => setReason(event.currentTarget.value)} />
+                <span>Which items are included? <small>Reason optional</small></span>
+                <textarea maxlength="1000" rows="6" placeholder="List the items. You may add a reason, but you do not have to." value={reason()} onInput={event => setReason(event.currentTarget.value)} />
               </label>
               <label class={styles.consent}>
                 <input type="checkbox" required checked={confirmed()} onChange={event => setConfirmed(event.currentTarget.checked)} />
@@ -100,7 +115,7 @@ export default function Returns() {
               </label>
               <Show when={message()}><p class={styles.error} role="alert">{message()}</p></Show>
               <button type="submit" disabled={status() === "saving"}>
-                {status() === "saving" ? "Submitting request" : "Submit cancellation or return"}
+                {status() === "saving" ? "Submitting request" : "Submit withdrawal request"}
               </button>
               <p class={styles.privacy}>The form only reveals whether the supplied order details match. Requests are reviewed before any refund or stock change.</p>
             </form>

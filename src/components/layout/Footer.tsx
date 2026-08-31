@@ -1,6 +1,10 @@
 import { A } from "@solidjs/router";
 import { createSignal, onMount } from "solid-js";
 import { authClient } from "~/lib/auth-client";
+import {
+  DEFAULT_STORE_PROFILE,
+  fetchStoreProfile,
+} from "~/lib/store-profile";
 import styles from "./Footer.module.scss";
 
 export default function Footer() {
@@ -11,6 +15,7 @@ export default function Footer() {
     discord: "https://discord.com",
     instagram: "https://www.instagram.com",
   });
+  const [profile, setProfile] = createSignal(DEFAULT_STORE_PROFILE);
   const safeSocialUrl = (candidate: string | undefined, fallback: string) => {
     if (!candidate) return fallback;
     try {
@@ -26,6 +31,7 @@ export default function Footer() {
       : "/account";
 
   onMount(async () => {
+    void fetchStoreProfile().then(setProfile);
     try {
       const response = await fetch("/api/storefront/content");
       if (!response.ok) return;
@@ -94,7 +100,6 @@ export default function Footer() {
           <A href="/categories/pokemon">Pokémon</A>
           <A href="/categories/yugioh">Yu-Gi-Oh!</A>
           <A href="/categories/magic">Magic: The Gathering</A>
-          <A href="/the-vault">The Vault</A>
           <A href="/products">All products</A>
         </div>
 
@@ -111,12 +116,18 @@ export default function Footer() {
           <A href="/about">About us</A>
           <A href="/contact">Contact</A>
           <A href="/shipping">Shipping & returns</A>
-          <A href="/returns">Cancel or return an order</A>
+          <A href="/returns">Withdraw from an order</A>
         </div>
       </div>
 
       <div class={`${styles.wide} ${styles.bottom}`}>
-        <p>© {new Date().getFullYear()} My Little TCG Haven. All rights reserved.</p>
+        <div class={styles.businessDetails}>
+          <p>© {new Date().getFullYear()} {profile().companyName}. All rights reserved.</p>
+          <span>KVK {profile().kvkNumber}</span>
+          <span>VAT {profile().vatId}</span>
+          <a href={`mailto:${profile().businessEmail}`}>{profile().businessEmail}</a>
+          <a href={`tel:${profile().phone.replace(/\s+/g, "")}`}>{profile().phone}</a>
+        </div>
         <div class={styles.bottomLinks}>
           <A href="/privacy">Privacy</A>
           <A href="/terms">Terms</A>

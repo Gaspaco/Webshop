@@ -11,7 +11,6 @@ const STATIC_PATHS = [
   "/categories/pokemon",
   "/categories/yugioh",
   "/categories/magic",
-  "/the-vault",
   "/about",
   "/contact",
   "/shipping",

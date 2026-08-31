@@ -36,7 +36,7 @@ const SLIDES: Slide[] = [
     id: "charizard-base-set",
     set: "Base Set Originals",
     game: "Pokémon",
-    tag: "Vintage vault",
+    tag: "Base Set icon",
     title: "First-edition Charizard",
     blurb:
       "The 1999 holo that started it all. Honest grades, real photos, no surprises at checkout.",

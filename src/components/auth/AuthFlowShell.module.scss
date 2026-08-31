@@ -3,7 +3,8 @@
 .page {
   display: grid;
   grid-template-columns: minmax(20rem, 0.82fr) minmax(0, 1.18fr);
-  min-height: calc(100dvh - $header-height);
+  min-height: 100vh;
+  min-height: 100dvh;
   background: $background;
 
   @media (max-width: $bp-lg) {

@@ -18,33 +18,35 @@ Developer configures:
 - The public `/api/payments/mollie-webhook` endpoint
 - Amount verification, idempotent status changes, refunds, and inventory transitions
 
-### Resend transactional email
+### SMTP transactional email
 
 Owner provides:
 
-- Access to the sending domain
+- Access to the domain mailbox provider
 - The approved sender name and support address
 
 Developer configures:
 
-- `RESEND_API_KEY`
+- `SMTP_HOST`
+- `SMTP_PORT` set to `465` or `587`
+- `SMTP_USER`
+- `SMTP_PASS`, preferably an app-specific password
 - `AUTH_EMAIL_FROM`
-- SPF, DKIM, and DMARC records supplied by Resend
+- SPF, DKIM, and DMARC records supplied by the mailbox provider
 
 ### Shipping carrier
 
-Recommended first option for a Dutch webshop: MyParcel, connected to PostNL or another carrier through the owner's carrier contract.
+The owner selected PostNL as the only carrier. Dutch and international customer prices and the €300 free-shipping threshold are entered.
 
 Owner provides:
 
-- Carrier or MyParcel business account
-- API key
+- PostNL business account
+- Provider API keys or a team invitation for the developer
 - Shipping countries, rates, parcel sizes, free-shipping threshold, return method, and sender address
 
 Developer configures:
 
-- `SHIPPING_PROVIDER`
-- `SHIPPING_API_KEY`
+- `POSTNL_API_KEY`
 - Label creation, tracking updates, webhook authentication, and retry handling
 
 Do not build carrier-specific label creation until the owner chooses the provider.
@@ -101,28 +103,28 @@ The project already includes `robots.txt`, `sitemap.xml`, canonical product URLs
 
 ## Owner information required
 
-Request these values from the actual shop owner:
+Confirmed owner information:
 
-- Legal company name
-- KVK number
-- VAT ID
+- Legal company name: TCGHaven
+- KVK number: 88839621
+- VAT ID: NL004659858B77
+- Business email: info@tcghaven.com
+- Customer email sender: no-reply@tcghaven.com
+- Phone: +31 6 87888458
+- Carrier: PostNL
+- Free PostNL shipping from €300
+
+Still required from the owner:
+
 - Registered business address
 - Dutch return address
-- Customer-support email and phone number
 - Complaints process
 - Shipping zones, rates, packaging rules, and handling times
 - Return costs and legally reviewed exclusions
 - Standard VAT versus margin-scheme decision per product type
 - Final approval of terms, privacy notice, returns text, and checkout wording
 
-Environment placeholders:
-
-- `BUSINESS_LEGAL_NAME`
-- `BUSINESS_KVK_NUMBER`
-- `BUSINESS_VAT_ID`
-- `BUSINESS_ADDRESS`
-- `BUSINESS_RETURN_ADDRESS`
-- `BUSINESS_SUPPORT_EMAIL`
+The non-secret details are editable from Store setup in the owner dashboard. They are not stored in deployment environment variables.
 
 ## Sign-off flags
 

@@ -1,3 +1,5 @@
+import type { StoreProfile } from "~/lib/store-profile";
+
 export type LaunchReadinessItem = {
   id: string;
   category: "commerce" | "operations" | "legal" | "growth";
@@ -10,7 +12,10 @@ export type LaunchReadinessItem = {
 
 const present = (...keys: string[]) => keys.every(key => Boolean(process.env[key]?.trim()));
 
-export function getLaunchReadiness(input: { unconvertedStarterProducts: number }) {
+export function getLaunchReadiness(input: {
+  unconvertedStarterProducts: number;
+  storeProfile: StoreProfile;
+}) {
   const items: LaunchReadinessItem[] = [
     {
       id: "database",
@@ -55,18 +60,34 @@ export function getLaunchReadiness(input: { unconvertedStarterProducts: number }
       id: "email",
       category: "operations",
       label: "Transactional email",
-      detail: "Resend and a verified sending address are required for account and order messages.",
+      detail: "A TLS SMTP mailbox and authenticated sending address are required for account and order messages.",
       responsible: "owner",
-      configured: present("RESEND_API_KEY", "AUTH_EMAIL_FROM"),
+      configured: present(
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_USER",
+        "SMTP_PASS",
+        "AUTH_EMAIL_FROM",
+      ),
       blocking: true,
+    },
+    {
+      id: "shipping-rates",
+      category: "operations",
+      label: "PostNL shipping prices",
+      detail: "Dutch and international PostNL rates plus the free-shipping threshold are configured.",
+      responsible: "owner",
+      configured: Object.values(input.storeProfile.internationalPostnlRates)
+        .every(price => Number.isInteger(price) && price >= 0),
+      blocking: false,
     },
     {
       id: "shipping",
       category: "operations",
       label: "Shipping carrier account",
-      detail: "Choose PostNL or DHL and add the provider credentials, parcel rules, and owner-approved rates.",
+      detail: "Add the PostNL provider credentials before automatic label creation is enabled.",
       responsible: "owner",
-      configured: present("SHIPPING_PROVIDER", "SHIPPING_API_KEY"),
+      configured: present("POSTNL_API_KEY"),
       blocking: true,
     },
     {
@@ -104,13 +125,13 @@ export function getLaunchReadiness(input: { unconvertedStarterProducts: number }
       label: "Legal business identity",
       detail: "The owner must provide the legal name, KVK number, VAT ID, address, return address, and support email.",
       responsible: "owner",
-      configured: present(
-        "BUSINESS_LEGAL_NAME",
-        "BUSINESS_KVK_NUMBER",
-        "BUSINESS_VAT_ID",
-        "BUSINESS_ADDRESS",
-        "BUSINESS_RETURN_ADDRESS",
-        "BUSINESS_SUPPORT_EMAIL",
+      configured: Boolean(
+        input.storeProfile.companyName &&
+          input.storeProfile.kvkNumber &&
+          input.storeProfile.vatId &&
+          input.storeProfile.businessAddress &&
+          input.storeProfile.returnAddress &&
+          input.storeProfile.businessEmail,
       ),
       blocking: true,
     },
