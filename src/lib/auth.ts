@@ -28,7 +28,16 @@ import {
 const authEnv = getAuthEnv();
 const emailEnv = getEmailEnv();
 const googleAuthEnv = getGoogleAuthEnv();
-const usesHttps = new URL(authEnv.BETTER_AUTH_URL).protocol === "https:";
+const authUrl = new URL(authEnv.BETTER_AUTH_URL);
+const usesHttps = authUrl.protocol === "https:";
+const trustedOrigins = new Set([authUrl.origin]);
+
+// The storefront is reachable with and without www. Better Auth compares the
+// Origin header exactly, so both owned production origins must be explicit.
+if (process.env.NODE_ENV === "production") {
+  trustedOrigins.add("https://tcghaven.com");
+  trustedOrigins.add("https://www.tcghaven.com");
+}
 
 export const auth = betterAuth({
   appName: "TCGHaven",
@@ -88,7 +97,7 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: [authEnv.BETTER_AUTH_URL],
+  trustedOrigins: [...trustedOrigins],
   ...(googleAuthEnv
     ? {
         socialProviders: {
