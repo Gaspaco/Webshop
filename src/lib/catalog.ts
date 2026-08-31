@@ -16,6 +16,7 @@ export type DatabaseCatalogProduct = {
   language: string | null;
   finish: string | null;
   priceCents: number;
+  compareAtPriceCents: number | null;
   stock: number;
   reservedStock: number;
 };
@@ -46,6 +47,7 @@ export function databaseProductToShopProduct(
     image: product.imageUrls[0] || undefined,
     theme: game,
     priceCents: product.priceCents,
+    compareAtPriceCents: product.compareAtPriceCents ?? undefined,
     rating:
       typeof metadata.rating === "number" ? metadata.rating : undefined,
     href: `/products/${product.slug}`,
@@ -88,6 +90,7 @@ export function databaseProductToShopProduct(
         language: product.language ?? undefined,
         finish: product.finish ?? undefined,
         priceCents: product.priceCents,
+        compareAtPriceCents: product.compareAtPriceCents ?? undefined,
         stock: availableStock,
       },
     ],
@@ -125,6 +128,7 @@ export async function fetchDatabaseCatalogState(
     grouped.set(mapped.id, {
       ...existing,
       priceCents: Math.min(...variants.map(variant => variant.priceCents)),
+      compareAtPriceCents: firstAvailable?.compareAtPriceCents,
       stock: variants.reduce((total, variant) => total + variant.stock, 0),
       variantId: firstAvailable?.id,
       sku: firstAvailable?.sku,

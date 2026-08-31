@@ -316,6 +316,18 @@
   line-height: 1.2;
 }
 
+.cardPricing {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cardPricing del {
+  color: $gray-500;
+  font-size: 0.7rem;
+}
+
 .addBtn {
   display: inline-flex;
   align-items: center;
