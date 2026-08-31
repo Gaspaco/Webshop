@@ -1,5 +1,6 @@
 import { A } from "@solidjs/router";
 import { createSignal, onMount } from "solid-js";
+import PaymentMethods from "~/components/layout/PaymentMethods";
 import { authClient } from "~/lib/auth-client";
 import {
   DEFAULT_STORE_PROFILE,
@@ -118,6 +119,11 @@ export default function Footer() {
           <A href="/shipping">Shipping & returns</A>
           <A href="/returns">Withdraw from an order</A>
         </div>
+      </div>
+
+      <div class={`${styles.wide} ${styles.payments}`}>
+        <PaymentMethods />
+        <span class={styles.paymentsNote}>Secure payments processed by Mollie</span>
       </div>
 
       <div class={`${styles.wide} ${styles.bottom}`}>

@@ -2699,3 +2699,145 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Catalogue bulk edit ---------- */
+
+.selectableCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rowCheckbox {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  accent-color: $primary;
+  cursor: pointer;
+}
+
+.selectAllBtn {
+  color: $primary-light;
+  font-size: 0.68rem;
+  font-weight: 750;
+  transition: color 180ms ease;
+}
+
+.selectAllBtn:hover {
+  color: $white;
+}
+
+.bulkBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid rgba($primary, 0.32);
+  border-radius: 0.6rem;
+  background: rgba($primary, 0.08);
+}
+
+.bulkCount {
+  color: $gray-300;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.bulkCount strong {
+  color: $primary-light;
+}
+
+.bulkActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.bulkField {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bulkField > span {
+  color: $gray-500;
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+
+.bulkField select,
+.bulkField input {
+  min-height: 2.2rem;
+  border: 1px solid rgba($white, 0.14);
+  border-radius: 0.4rem;
+  outline: none;
+  background: #090c0a;
+  color: $white;
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+.bulkField select {
+  min-width: 8.5rem;
+  padding: 0 2rem 0 0.6rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 0.95rem;
+  cursor: pointer;
+}
+
+.bulkField input {
+  width: 5rem;
+  padding: 0 0.6rem;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.bulkField input::-webkit-outer-spin-button,
+.bulkField input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bulkField select:focus,
+.bulkField input:focus {
+  border-color: $primary;
+}
+
+.bulkField button {
+  min-height: 2.2rem;
+  padding: 0 0.85rem;
+  border-radius: 0.4rem;
+  background: $primary;
+  color: #06120c;
+  font-size: 0.68rem;
+  font-weight: 800;
+  transition: background 180ms ease;
+}
+
+.bulkField button:hover:not(:disabled) {
+  background: $primary-light;
+}
+
+.bulkField button:disabled,
+.bulkClear:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bulkClear {
+  color: $gray-400;
+  font-size: 0.68rem;
+  font-weight: 750;
+  transition: color 180ms ease;
+}
+
+.bulkClear:hover:not(:disabled) {
+  color: $white;
+}

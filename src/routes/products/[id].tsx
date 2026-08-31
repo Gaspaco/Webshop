@@ -275,7 +275,7 @@ export default function ProductDetail() {
                   <div class={styles.stageFacts} aria-label="Product highlights">
                     <span>{conditionFor(item())}</span>
                     <span>{item().language ?? "English"}</span>
-                    <span>Ships from NL</span>
+                    <span>Ships from {item().shipsFrom ?? "NL"}</span>
                   </div>
                 </div>
 
@@ -466,7 +466,7 @@ export default function ProductDetail() {
                 <Show when={item().gradingCompany}><div><dt>Grading company</dt><dd>{item().gradingCompany}</dd></div></Show>
                 <Show when={item().grade}><div><dt>Grade</dt><dd>{item().grade}</dd></div></Show>
                 <Show when={item().certificationNumber}><div><dt>Certification</dt><dd>{item().certificationNumber}</dd></div></Show>
-                <div><dt>Ships from</dt><dd>Netherlands</dd></div>
+                <div><dt>Ships from</dt><dd>{item().shipsFrom ?? "Netherlands"}</dd></div>
               </dl>
             </section>
 
