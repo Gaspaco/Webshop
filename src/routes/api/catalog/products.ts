@@ -27,6 +27,7 @@ export async function GET(event: APIEvent) {
         condition: productVariants.condition,
         language: productVariants.language,
         finish: productVariants.finish,
+        variantImageUrl: productVariants.imageUrl,
         priceCents: productVariants.priceCents,
         compareAtPriceCents: productVariants.compareAtPriceCents,
         stock: productVariants.stock,

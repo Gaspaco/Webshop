@@ -57,6 +57,7 @@ export async function GET(event: APIEvent) {
         condition: productVariants.condition,
         language: productVariants.language,
         finish: productVariants.finish,
+        variantImageUrl: productVariants.imageUrl,
         priceCents: productVariants.priceCents,
         compareAtPriceCents: productVariants.compareAtPriceCents,
         stock: productVariants.stock,
@@ -206,6 +207,7 @@ export async function GET(event: APIEvent) {
       condition: string | null;
       language: string | null;
       finish: string | null;
+      imageUrl: string | null;
       priceCents: number;
       compareAtPriceCents: number | null;
       stock: number;
@@ -225,6 +227,7 @@ export async function GET(event: APIEvent) {
         condition: product.condition,
         language: product.language,
         finish: product.finish,
+        imageUrl: product.variantImageUrl,
         priceCents: product.priceCents,
         compareAtPriceCents: product.compareAtPriceCents,
         stock: product.stock ?? 0,
@@ -256,6 +259,7 @@ export async function GET(event: APIEvent) {
         condition: product.variants?.[0]?.condition ?? product.condition ?? null,
         language: product.variants?.[0]?.language ?? product.language ?? "English",
         finish: product.variants?.[0]?.finish ?? product.finish ?? null,
+        imageUrl: product.variants?.[0]?.image ?? null,
         priceCents: product.variants?.[0]?.priceCents ?? priceCents,
         compareAtPriceCents: null,
         stock: product.stock ?? 1,

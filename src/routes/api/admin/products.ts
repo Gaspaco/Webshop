@@ -49,6 +49,14 @@ const trailerUrlSchema = z
     }
   }, "Use a valid HTTPS YouTube trailer URL.");
 
+const releaseDateSchema = z
+  .string()
+  .trim()
+  .refine(
+    value => value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value),
+    "Use a valid release date.",
+  );
+
 const tcgFields = {
   cardNumber: z.string().trim().max(60).optional().default(""),
   rarity: z.string().trim().max(80).optional().default(""),
@@ -70,6 +78,8 @@ const createProductSchema = z.object({
   set: z.string().trim().max(120).optional().default(""),
   badge: z.string().trim().max(32).optional().default(""),
   trailerUrl: trailerUrlSchema.optional().default(""),
+  releaseDate: releaseDateSchema.optional().default(""),
+  preorder: z.boolean().optional().default(false),
   image: imageSchema.optional().default(""),
   status: statusSchema,
   sku: z.string().trim().max(80).optional().default(""),
@@ -152,6 +162,8 @@ export async function POST(event: APIEvent) {
             certificationNumber: input.certificationNumber || null,
             shipsFrom: input.shipsFrom || null,
             trailerUrl: input.trailerUrl || null,
+            releaseDate: input.releaseDate || null,
+            preorder: input.preorder,
           },
         })
         .returning();
@@ -256,6 +268,8 @@ export async function PATCH(event: APIEvent) {
               certificationNumber: input.certificationNumber || null,
               shipsFrom: input.shipsFrom || null,
               trailerUrl: input.trailerUrl || null,
+              releaseDate: input.releaseDate || null,
+              preorder: input.preorder,
               source: "managed",
             },
           })
@@ -345,7 +359,9 @@ export async function PATCH(event: APIEvent) {
         input.grade !== undefined ||
         input.certificationNumber !== undefined ||
         input.shipsFrom !== undefined ||
-        input.trailerUrl !== undefined
+        input.trailerUrl !== undefined ||
+        input.releaseDate !== undefined ||
+        input.preorder !== undefined
       ) {
         const [stored] = await tx
           .select({ metadata: products.metadata })
@@ -376,6 +392,12 @@ export async function PATCH(event: APIEvent) {
             : {}),
           ...(input.trailerUrl !== undefined
             ? { trailerUrl: input.trailerUrl || null }
+            : {}),
+          ...(input.releaseDate !== undefined
+            ? { releaseDate: input.releaseDate || null }
+            : {}),
+          ...(input.preorder !== undefined
+            ? { preorder: input.preorder }
             : {}),
         };
       }
@@ -452,7 +474,35 @@ export async function DELETE(event: APIEvent) {
   if (guard.response) return guard.response;
 
   try {
-    const input = z.object({ id: z.string().uuid() }).parse(await event.request.json());
+    const input = z
+      .object({
+        id: z.string().uuid(),
+        confirmation: z.literal("DELETE").optional(),
+      })
+      .parse(await event.request.json());
+
+    if (input.confirmation === "DELETE") {
+      const [removed] = await db
+        .delete(products)
+        .where(eq(products.id, input.id))
+        .returning({ id: products.id, name: products.name });
+
+      if (!removed) {
+        return apiJson({ error: "Product not found." }, { status: 404 });
+      }
+
+      await writeAuditLog({
+        event,
+        actorId: guard.session!.user.id,
+        action: "product.deleted",
+        entityType: "product",
+        entityId: removed.id,
+        summary: `${removed.name} permanently deleted from the catalogue.`,
+      });
+
+      return apiJson({ ok: true });
+    }
+
     const [archived] = await db
       .update(products)
       .set({ status: "archived" })

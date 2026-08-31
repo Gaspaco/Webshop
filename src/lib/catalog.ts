@@ -15,6 +15,7 @@ export type DatabaseCatalogProduct = {
   condition: string | null;
   language: string | null;
   finish: string | null;
+  variantImageUrl: string | null;
   priceCents: number;
   compareAtPriceCents: number | null;
   stock: number;
@@ -76,6 +77,11 @@ export function databaseProductToShopProduct(
       typeof metadata.trailerUrl === "string"
         ? metadata.trailerUrl
         : undefined,
+    releaseDate:
+      typeof metadata.releaseDate === "string"
+        ? metadata.releaseDate
+        : undefined,
+    preorder: metadata.preorder === true,
     illustrator:
       typeof metadata.illustrator === "string"
         ? metadata.illustrator
@@ -102,6 +108,7 @@ export function databaseProductToShopProduct(
         condition: product.condition ?? undefined,
         language: product.language ?? undefined,
         finish: product.finish ?? undefined,
+        image: product.variantImageUrl ?? undefined,
         priceCents: product.priceCents,
         compareAtPriceCents: product.compareAtPriceCents ?? undefined,
         stock: availableStock,

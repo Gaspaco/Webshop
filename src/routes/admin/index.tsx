@@ -44,6 +44,7 @@ type AdminVariant = {
   condition: string | null;
   language: string | null;
   finish: string | null;
+  imageUrl: string | null;
   priceCents: number;
   compareAtPriceCents: number | null;
   stock: number;
@@ -259,6 +260,8 @@ type ProductDraft = {
   certificationNumber: string;
   shipsFrom: string;
   trailerUrl: string;
+  releaseDate: string;
+  preorder: boolean;
   finish: string;
   price: string;
   compareAtPrice: string;
@@ -274,6 +277,7 @@ type VariantDraft = {
   condition: string;
   language: string;
   finish: string;
+  imageUrl: string;
   price: string;
   compareAtPrice: string;
   stock: string;
@@ -304,6 +308,8 @@ const emptyProduct: ProductDraft = {
   certificationNumber: "",
   shipsFrom: "",
   trailerUrl: "",
+  releaseDate: "",
+  preorder: false,
   finish: "",
   price: "",
   compareAtPrice: "",
@@ -320,6 +326,7 @@ function createEmptyVariantDraft(): VariantDraft {
     condition: "Near Mint",
     language: "English",
     finish: "",
+    imageUrl: "",
     price: "",
     compareAtPrice: "",
     stock: "0",
@@ -418,6 +425,7 @@ function editableVariantFrom(variant: AdminVariant): EditableVariantDraft {
     condition: variant.condition ?? "",
     language: variant.language ?? "",
     finish: variant.finish ?? "",
+    imageUrl: variant.imageUrl ?? "",
     price: centsToEuros(variant.priceCents),
     compareAtPrice: centsToEuros(variant.compareAtPriceCents),
     stock: String(variant.stock),
@@ -650,6 +658,8 @@ function ProductRow(props: {
   );
   const [image, setImage] = createSignal(props.product.imageUrls[0] ?? "");
   const [trailerUrl, setTrailerUrl] = createSignal(metadataText("trailerUrl"));
+  const [releaseDate, setReleaseDate] = createSignal(metadataText("releaseDate"));
+  const [preorder, setPreorder] = createSignal(metadata().preorder === true);
   const [price, setPrice] = createSignal(
     centsToEuros(props.product.priceCents ?? 0),
   );
@@ -715,6 +725,8 @@ function ProductRow(props: {
         language: language(),
         image: image(),
         trailerUrl: trailerUrl(),
+        releaseDate: releaseDate(),
+        preorder: preorder(),
         priceCents: eurosToCents(price()),
         compareAtPriceCents: optionalEurosToCents(compareAtPrice()),
         stock: Number(stock()),
@@ -751,6 +763,7 @@ function ProductRow(props: {
         condition: productType() === "sealed" ? "Sealed" : current.condition,
         language: current.language,
         finish: current.finish,
+        imageUrl: current.imageUrl,
         priceCents: eurosToCents(current.price),
         compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
         stock: Number(current.stock),
@@ -793,6 +806,7 @@ function ProductRow(props: {
         condition: productType() === "sealed" ? "Sealed" : current.condition,
         language: current.language,
         finish: current.finish,
+        imageUrl: current.imageUrl,
         priceCents: eurosToCents(current.price),
         compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
         stock: Number(current.stock),
@@ -835,7 +849,7 @@ function ProductRow(props: {
     setSaving(false);
   };
 
-  const removeVariant = async (variant: AdminVariant) => {
+  const removeVariant = async (variant: Pick<AdminVariant, "id" | "sku">) => {
     if (!window.confirm(`Remove variant ${variant.sku}?`)) return;
     setMessage("");
     const response = await fetch("/api/admin/variants", {
@@ -854,6 +868,7 @@ function ProductRow(props: {
       return;
     }
     await Promise.resolve(props.onSaved());
+    setVariantEditDraft(null);
     setMessage("Variant removed");
   };
 
@@ -1014,6 +1029,16 @@ function ProductRow(props: {
                     <option value="active">Live in shop</option>
                     <option value="archived">Archived</option>
                   </select>
+                </label>
+                <label>
+                  <span>Release date</span>
+                  <input type="date" value={releaseDate()} onInput={event => setReleaseDate(event.currentTarget.value)} />
+                  <small>Future dates place this item under upcoming releases.</small>
+                </label>
+                <label class={styles.editorToggle}>
+                  <input type="checkbox" checked={preorder()} onChange={event => setPreorder(event.currentTarget.checked)} />
+                  <span>Accept as pre-order</span>
+                  <small>Shows this product in the upcoming release shelf.</small>
                 </label>
                 <div class={styles.editorSectionHeading}>
                   <span>Pricing and inventory</span>
@@ -1216,6 +1241,30 @@ function ProductRow(props: {
                         <input value={current().finish} onInput={event => setVariantEditDraft(value => value && ({ ...value, finish: event.currentTarget.value }))} />
                       </label>
                       <label>
+                        <span>Variant photo</span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          onChange={event => readProductImage(
+                            event.currentTarget.files?.[0],
+                            imageUrl => setVariantEditDraft(value => value && ({ ...value, imageUrl })),
+                            setMessage,
+                          )}
+                        />
+                      </label>
+                      <label>
+                        <span>Variant image URL</span>
+                        <input
+                          type="url"
+                          placeholder="https://"
+                          value={current().imageUrl.startsWith("data:") ? "" : current().imageUrl}
+                          onInput={event => setVariantEditDraft(value => value && ({ ...value, imageUrl: event.currentTarget.value }))}
+                        />
+                      </label>
+                      <Show when={current().imageUrl}>
+                        <img class={styles.variantImagePreview} src={current().imageUrl} alt="Selected variant preview" />
+                      </Show>
+                      <label>
                         <span>Selling price</span>
                         <input required type="number" min="0" step="0.01" value={current().price} onInput={event => setVariantEditDraft(value => value && ({ ...value, price: event.currentTarget.value }))} />
                       </label>
@@ -1233,6 +1282,14 @@ function ProductRow(props: {
                       </label>
                       <button type="submit" class={styles.primaryAction} disabled={saving()}>
                         {saving() ? "Saving variant" : "Save variant"}
+                      </button>
+                      <button
+                        type="button"
+                        class={styles.variantDeleteAction}
+                        disabled={saving()}
+                        onClick={() => removeVariant(current())}
+                      >
+                        Delete selected variant
                       </button>
                     </form>
                   )}
@@ -1263,6 +1320,30 @@ function ProductRow(props: {
                       <span>Finish</span>
                       <input value={variantDraft().finish} onInput={event => setVariantDraft(current => ({ ...current, finish: event.currentTarget.value }))} />
                     </label>
+                    <label>
+                      <span>Variant photo</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={event => readProductImage(
+                          event.currentTarget.files?.[0],
+                          imageUrl => setVariantDraft(current => ({ ...current, imageUrl })),
+                          setMessage,
+                        )}
+                      />
+                    </label>
+                    <label>
+                      <span>Variant image URL</span>
+                      <input
+                        type="url"
+                        placeholder="https://"
+                        value={variantDraft().imageUrl.startsWith("data:") ? "" : variantDraft().imageUrl}
+                        onInput={event => setVariantDraft(current => ({ ...current, imageUrl: event.currentTarget.value }))}
+                      />
+                    </label>
+                    <Show when={variantDraft().imageUrl}>
+                      <img class={styles.variantImagePreview} src={variantDraft().imageUrl} alt="New variant preview" />
+                    </Show>
                     <label>
                       <span>Price in EUR</span>
                       <input required type="number" min="0" step="0.01" value={variantDraft().price} onInput={event => setVariantDraft(current => ({ ...current, price: event.currentTarget.value }))} />
@@ -1728,6 +1809,51 @@ function ContactInbox(props: {
 }) {
   const [busyId, setBusyId] = createSignal("");
   const [message, setMessage] = createSignal("");
+  const [replyingTo, setReplyingTo] = createSignal("");
+  const [reply, setReply] = createSignal("");
+
+  const openReply = (item: AdminContactMessage) => {
+    setMessage("");
+    setReply("");
+    setReplyingTo(current => current === item.id ? "" : item.id);
+  };
+
+  const sendReply = async (
+    event: SubmitEvent,
+    item: AdminContactMessage,
+  ) => {
+    event.preventDefault();
+    const replyText = reply().trim();
+    if (replyText.length < 2) {
+      setMessage("Write a reply before sending it.");
+      return;
+    }
+
+    setBusyId(item.id);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/contacts", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: item.id, reply: replyText }),
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setMessage(result.error ?? "The reply could not be sent.");
+        return;
+      }
+
+      setReply("");
+      setReplyingTo("");
+      setMessage(`Reply sent to ${item.email}.`);
+      await Promise.resolve(props.onUpdated());
+    } catch {
+      setMessage("The reply could not be sent. Check your connection and try again.");
+    } finally {
+      setBusyId("");
+    }
+  };
 
   const updateStatus = async (
     id: string,
@@ -1803,7 +1929,14 @@ function ContactInbox(props: {
               <header>
                 <div>
                   <strong>{item.name}</strong>
-                  <a href={`mailto:${item.email}`}>{item.email}</a>
+                  <button
+                    type="button"
+                    class={styles.contactEmailButton}
+                    title={`Reply to ${item.email}`}
+                    onClick={() => openReply(item)}
+                  >
+                    {item.email}
+                  </button>
                 </div>
                 <div>
                   <span data-status={item.status}>{item.status}</span>
@@ -1815,10 +1948,20 @@ function ContactInbox(props: {
                 <p>{item.message}</p>
               </div>
               <footer>
+                <button
+                  type="button"
+                  class={styles.contactReplyButton}
+                  aria-expanded={replyingTo() === item.id}
+                  aria-controls={`contact-reply-${item.id}`}
+                  onClick={() => openReply(item)}
+                >
+                  {replyingTo() === item.id ? "Close reply" : "Reply here"}
+                </button>
                 <a
                   href={`mailto:${item.email}?subject=${encodeURIComponent(`Re: ${item.topic}`)}`}
+                  title={`Open your mail app and email ${item.email}`}
                 >
-                  Reply by email
+                  Open mail app
                 </a>
                 <Show when={item.status === "unread"}>
                   <button
@@ -1847,6 +1990,48 @@ function ContactInbox(props: {
                   Delete permanently
                 </button>
               </footer>
+              <Show when={replyingTo() === item.id}>
+                <form
+                  id={`contact-reply-${item.id}`}
+                  class={styles.contactReplyForm}
+                  onSubmit={event => sendReply(event, item)}
+                >
+                  <div class={styles.contactReplyHeading}>
+                    <div>
+                      <strong>Reply to {item.name}</strong>
+                      <span>{item.email}</span>
+                    </div>
+                    <span>Re: {item.topic}</span>
+                  </div>
+                  <label for={`contact-reply-message-${item.id}`}>Message</label>
+                  <textarea
+                    id={`contact-reply-message-${item.id}`}
+                    value={reply()}
+                    maxLength={5_000}
+                    rows={7}
+                    placeholder={`Write your reply to ${item.name}…`}
+                    disabled={busyId() === item.id}
+                    onInput={event => setReply(event.currentTarget.value)}
+                    required
+                  />
+                  <div class={styles.contactReplyActions}>
+                    <span>{reply().length.toLocaleString()} / 5,000</span>
+                    <button
+                      type="button"
+                      disabled={busyId() === item.id}
+                      onClick={() => setReplyingTo("")}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={busyId() === item.id || reply().trim().length < 2}
+                    >
+                      {busyId() === item.id ? "Sending…" : "Send email"}
+                    </button>
+                  </div>
+                </form>
+              </Show>
             </article>
           )}
         </For>
@@ -2421,6 +2606,40 @@ export default function Admin() {
     if (!Number.isFinite(value) || value < 0) return;
     applyBulk({ stock: value });
   };
+  const deleteSelectedProducts = async () => {
+    const targets = bulkTargets();
+    if (!targets.length) return;
+    if (!window.confirm(
+      `Permanently delete ${targets.length} selected product${targets.length === 1 ? "" : "s"}? They will be removed from the catalogue and public shop. Existing order records stay intact.`,
+    )) return;
+
+    setBulkBusy(true);
+    try {
+      const results = await Promise.all(
+        targets.map(product =>
+          fetch("/api/admin/products", {
+            method: "DELETE",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: product.id,
+              confirmation: "DELETE",
+            }),
+          })
+            .then(response => response.ok)
+            .catch(() => false),
+        ),
+      );
+      await refetch();
+      clearSelection();
+      const failed = results.filter(ok => !ok).length;
+      if (failed) {
+        window.alert(`${failed} selected product${failed === 1 ? "" : "s"} could not be deleted.`);
+      }
+    } finally {
+      setBulkBusy(false);
+    }
+  };
   const productTable = createSolidTable({
     get data() {
       return filteredProducts();
@@ -2864,7 +3083,17 @@ export default function Admin() {
                         </label>
                         <label>
                           <span>Product type</span>
-                          <select value={draft().productType} onChange={event => patchDraft("productType", event.currentTarget.value as ProductDraft["productType"])}>
+                          <select value={draft().productType} onChange={event => {
+                            const nextType = event.currentTarget.value as ProductDraft["productType"];
+                            setDraft(current => ({
+                              ...current,
+                              productType: nextType,
+                              variantName:
+                                nextType === "sealed" && current.variantName === "Default"
+                                  ? "Booster pack"
+                                  : current.variantName,
+                            }));
+                          }}>
                             <option value="single">Single</option>
                             <option value="sealed">Sealed</option>
                             <option value="graded">Graded</option>
@@ -2876,8 +3105,16 @@ export default function Admin() {
                           <input value={draft().set} onInput={event => patchDraft("set", event.currentTarget.value)} />
                         </label>
                         <label>
+                          <span>Set code</span>
+                          <input placeholder="MEW, BLCR, MH3" value={draft().setCode} onInput={event => patchDraft("setCode", event.currentTarget.value.toUpperCase())} />
+                        </label>
+                        <label>
                           <span>SKU</span>
                           <input placeholder="Created automatically if empty" value={draft().sku} onInput={event => patchDraft("sku", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>Format or variant name</span>
+                          <input required placeholder={draft().productType === "sealed" ? "Booster pack" : "Default"} value={draft().variantName} onInput={event => patchDraft("variantName", event.currentTarget.value)} />
                         </label>
                         <label>
                           <span>Barcode</span>
@@ -2906,10 +3143,6 @@ export default function Admin() {
                         <label>
                           <span>Card number</span>
                           <input placeholder="025/165" value={draft().cardNumber} onInput={event => patchDraft("cardNumber", event.currentTarget.value)} />
-                        </label>
-                        <label>
-                          <span>Set code</span>
-                          <input placeholder="MEW" value={draft().setCode} onInput={event => patchDraft("setCode", event.currentTarget.value)} />
                         </label>
                         <label>
                           <span>Rarity</span>
@@ -2946,10 +3179,31 @@ export default function Admin() {
                             <option value="active">Publish now</option>
                           </select>
                         </label>
+                        <label>
+                          <span>Release date</span>
+                          <input type="date" value={draft().releaseDate} onInput={event => patchDraft("releaseDate", event.currentTarget.value)} />
+                          <small>Future dates appear as upcoming releases.</small>
+                        </label>
+                        <label class={styles.editorToggle}>
+                          <input type="checkbox" checked={draft().preorder} onChange={event => patchDraft("preorder", event.currentTarget.checked)} />
+                          <span>Accept as pre-order</span>
+                        </label>
                         <label class={styles.spanTwo}>
                           <span>Description</span>
                           <textarea rows="4" value={draft().description} onInput={event => patchDraft("description", event.currentTarget.value)} />
                         </label>
+                        <Show when={draft().productType === "sealed"}>
+                          <label class={styles.spanTwo}>
+                            <span>Set trailer URL</span>
+                            <input
+                              type="url"
+                              placeholder="https://www.youtube.com/watch?v=..."
+                              value={draft().trailerUrl}
+                              onInput={event => patchDraft("trailerUrl", event.currentTarget.value)}
+                            />
+                            <small>Optional YouTube trailer, shown only on the sealed product page.</small>
+                          </label>
+                        </Show>
                         <label class={styles.imageField}>
                           <span>Product image</span>
                           <input
@@ -3075,6 +3329,14 @@ export default function Admin() {
                         onClick={clearSelection}
                       >
                         {bulkBusy() ? "Applying…" : "Clear"}
+                      </button>
+                      <button
+                        type="button"
+                        class={styles.bulkDelete}
+                        disabled={bulkBusy()}
+                        onClick={deleteSelectedProducts}
+                      >
+                        Delete selected
                       </button>
                     </div>
                   </Show>

@@ -7,6 +7,7 @@ export type ShopVariant = {
   condition?: string;
   language?: string;
   finish?: string;
+  image?: string;
   priceCents: number;
   compareAtPriceCents?: number;
   stock: number;
@@ -17,6 +18,8 @@ type CategoryProduct = SectionProduct & {
   condition?: string;
   setCode?: string;
   trailerUrl?: string;
+  releaseDate?: string;
+  preorder?: boolean;
   variants?: ShopVariant[];
 };
 
@@ -132,6 +135,8 @@ export type ShopProduct = CategoryProduct & {
   rarity?: string;
   setCode?: string;
   trailerUrl?: string;
+  releaseDate?: string;
+  preorder?: boolean;
   illustrator?: string;
   gradingCompany?: string;
   grade?: string;

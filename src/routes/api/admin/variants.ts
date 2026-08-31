@@ -13,6 +13,19 @@ import {
   writeAuditLog,
 } from "~/lib/admin.server";
 
+const variantImageSchema = z
+  .string()
+  .trim()
+  .max(1_200_000)
+  .refine(
+    value =>
+      value === "" ||
+      value.startsWith("/") ||
+      value.startsWith("https://") ||
+      /^data:image\/(?:webp|jpeg|png);base64,/i.test(value),
+    "Use an HTTPS image, a local image path, or upload a JPG, PNG, or WebP file.",
+  );
+
 const variantSchema = z.object({
   productId: z.string().uuid(),
   name: z.string().trim().min(1).max(120),
@@ -21,6 +34,7 @@ const variantSchema = z.object({
   language: z.string().trim().max(60),
   condition: z.string().trim().max(60),
   finish: z.string().trim().max(60),
+  imageUrl: variantImageSchema.optional().default(""),
   priceCents: z.number().int().min(0).max(100_000_000),
   compareAtPriceCents: z.number().int().min(0).max(100_000_000).nullable().optional(),
   stock: z.number().int().min(0).max(1_000_000),
@@ -52,6 +66,7 @@ export async function POST(event: APIEvent) {
       .values({
         ...input,
         barcode: input.barcode || null,
+        imageUrl: input.imageUrl || null,
         condition:
           product.productType === "sealed" ? "Sealed" : input.condition || null,
       })
@@ -120,6 +135,7 @@ export async function PATCH(event: APIEvent) {
           current.productType === "sealed" ? "Sealed" : input.condition || null,
         language: input.language || null,
         finish: input.finish || null,
+        imageUrl: input.imageUrl || null,
         priceCents: input.priceCents,
         compareAtPriceCents: input.compareAtPriceCents ?? null,
         stock: input.stock,
