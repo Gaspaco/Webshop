@@ -8,6 +8,7 @@ type Game = {
   href: string;
   theme: string;
   art?: string;
+  sets: string[];
 };
 
 const GAMES: Game[] = [
@@ -17,18 +18,21 @@ const GAMES: Game[] = [
     href: "/categories/pokemon",
     theme: "pokemon",
     art: "/images/cards/venusaur.png",
+    sets: ["Base Set", "Crown Zenith", "Scarlet & Violet"],
   },
   {
     name: "Yu-Gi-Oh!",
     tagline: "Old favourites and the newest sets",
     href: "/categories/yugioh",
     theme: "yugioh",
+    sets: ["Crystal Revenge", "Legendary Duelists", "Structure Decks"],
   },
   {
     name: "Magic: The Gathering",
     tagline: "Commander, Standard, and more",
     href: "/categories/magic",
     theme: "magic",
+    sets: ["Bloomburrow", "Modern Horizons 3", "Commander Masters"],
   },
 ];
 
@@ -36,11 +40,11 @@ export default function GameTiles() {
   return (
     <div class={styles.grid}>
       <For each={GAMES}>
-        {(game, i) => (
+        {game => (
           <A
             href={game.href}
             class={styles.tile}
-            classList={{ [styles[game.theme]]: true, [styles.tileFeatured]: i() === 0 }}
+            classList={{ [styles[game.theme]]: true }}
           >
             {game.art && (
               <img class={styles.tileArt} src={game.art} alt="" draggable={false} />
@@ -49,8 +53,11 @@ export default function GameTiles() {
             <div class={styles.tileBody}>
               <h3 class={styles.tileName}>{game.name}</h3>
               <p class={styles.tileTagline}>{game.tagline}</p>
+              <span class={styles.tileSets}>
+                <For each={game.sets}>{set => <span>{set}</span>}</For>
+              </span>
               <span class={styles.tileCta}>
-                Shop now
+                Open game page
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>

@@ -6,8 +6,11 @@ export default function ShopByGame() {
     <section class={styles.section}>
       <div class={styles.wide}>
         <header class={styles.header}>
-          <h2 class={styles.heading}>Shop by game</h2>
-          <p class={styles.sub}>One shelf, every kind of collector.</p>
+          <div>
+            <h2 class={styles.heading}>Choose your game</h2>
+            <p class={styles.sub}>Each game has its own releases, sets, singles, and sealed catalogue.</p>
+          </div>
+          <a href="/categories" class={styles.allGames}>Browse all game pages</a>
         </header>
 
         <GameTiles />

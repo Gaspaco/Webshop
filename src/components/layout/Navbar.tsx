@@ -70,7 +70,7 @@ export default function Navbar() {
           <ul class={styles.nav}>
             <li><A href="/" class={styles.navLink}>Home</A></li>
             <li><A href="/products" class={styles.navLink}>Shop</A></li>
-            <li><A href="/categories" class={styles.navLink}>Categories</A></li>
+            <li><A href="/categories" class={styles.navLink}>Games</A></li>
           </ul>
         </nav>
 
