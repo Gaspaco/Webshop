@@ -8,8 +8,7 @@ import styles from "./PaymentMethods.module.scss";
 export default function PaymentMethods() {
   return (
     <div class={styles.methods}>
-      <span class={styles.label}>We accept</span>
-      <ul class={styles.list}>
+      <ul class={styles.list} aria-label="Accepted payment methods">
         <li class={styles.badge} title="iDEAL">
           <svg viewBox="0 0 40 26" role="img" aria-label="iDEAL">
             <rect width="40" height="26" rx="3" fill="#fff" />

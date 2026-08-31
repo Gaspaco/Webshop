@@ -1492,27 +1492,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts:6"
     },
     {
-      "id": "file::footer",
-      "label": "Footer.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:1"
-    },
-    {
-      "id": "Footer::safesocialurl",
-      "label": "safeSocialUrl",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:20"
-    },
-    {
-      "id": "Footer::accounthref",
-      "label": "accountHref",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:29"
-    },
-    {
       "id": "file::entry_client",
       "label": "entry-client.tsx",
       "fileType": "code",
@@ -2218,6 +2197,27 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:189"
+    },
+    {
+      "id": "file::footer",
+      "label": "Footer.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:1"
+    },
+    {
+      "id": "Footer::safesocialurl",
+      "label": "safeSocialUrl",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:20"
+    },
+    {
+      "id": "Footer::accounthref",
+      "label": "accountHref",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:29"
     },
     {
       "id": "file::paymentmethods",
@@ -3552,24 +3552,6 @@
       "weight": 1
     },
     {
-      "source": "file::footer",
-      "target": "Footer::safesocialurl",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:20",
-      "weight": 1
-    },
-    {
-      "source": "file::footer",
-      "target": "Footer::accounthref",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:29",
-      "weight": 1
-    },
-    {
       "source": "file::catalog",
       "target": "catalog::databaseproducttoshopproduct",
       "relation": "contains",
@@ -4387,12 +4369,30 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:189",
       "weight": 1
+    },
+    {
+      "source": "file::footer",
+      "target": "Footer::safesocialurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:20",
+      "weight": 1
+    },
+    {
+      "source": "file::footer",
+      "target": "Footer::accounthref",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:29",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 89,
     "nodes": 318,
     "edges": 240,
-    "builtAt": "2026-08-31T13:29:59.852Z"
+    "builtAt": "2026-08-31T13:38:33.571Z"
   }
 }

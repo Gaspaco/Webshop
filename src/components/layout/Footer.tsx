@@ -127,14 +127,16 @@ export default function Footer() {
       </div>
 
       <div class={`${styles.wide} ${styles.bottom}`}>
+        {/* Company registration details (KVK, VAT, address) live on the Terms
+            and Privacy pages, which are linked below from every page. That
+            keeps them "permanently accessible" per Art. 3:15d BW without
+            printing them across the whole site. */}
         <div class={styles.businessDetails}>
           <p>© {new Date().getFullYear()} {profile().companyName}. All rights reserved.</p>
-          <span>KVK {profile().kvkNumber}</span>
-          <span>VAT {profile().vatId}</span>
           <a href={`mailto:${profile().businessEmail}`}>{profile().businessEmail}</a>
-          <a href={`tel:${profile().phone.replace(/\s+/g, "")}`}>{profile().phone}</a>
         </div>
         <div class={styles.bottomLinks}>
+          <A href="/terms">Business details</A>
           <A href="/privacy">Privacy</A>
           <A href="/terms">Terms</A>
         </div>
