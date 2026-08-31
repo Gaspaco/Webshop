@@ -1677,6 +1677,30 @@
   margin: 0;
 }
 
+.variantForm .variantDeleteAction {
+  min-height: 2.55rem;
+  border: 1px solid rgba(#f87171, 0.42);
+  border-radius: 0.4rem;
+  color: #fca5a5;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.variantForm .variantDeleteAction:hover:not(:disabled) {
+  border-color: #f87171;
+  background: rgba(#f87171, 0.1);
+  color: $white;
+}
+
+.variantImagePreview {
+  width: 4.5rem;
+  height: 4.5rem;
+  align-self: end;
+  border-radius: 0.4rem;
+  object-fit: contain;
+  background: #070a08;
+}
+
 .variantEditForm {
   margin-top: 0.75rem;
   padding: 1rem;
@@ -2528,9 +2552,28 @@
     }
 
     a,
+    .contactEmailButton,
     time {
       color: $gray-500;
       font-size: 0.72rem;
+    }
+
+    .contactEmailButton {
+      width: fit-content;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      text-decoration: underline;
+      text-decoration-color: transparent;
+      text-underline-offset: 0.2rem;
+      transition: color 160ms ease, text-decoration-color 160ms ease;
+
+      &:hover,
+      &:focus-visible {
+        color: $primary-light;
+        text-decoration-color: currentColor;
+      }
     }
 
     span {
@@ -2570,7 +2613,11 @@
     a {
       display: inline-flex;
       align-items: center;
-      border-color: rgba($primary, 0.35);
+    }
+
+    .contactReplyButton {
+      border-color: rgba($primary, 0.38);
+      background: rgba($primary, 0.08);
       color: $primary-light;
     }
 
@@ -2584,6 +2631,116 @@
       border-color: rgba(#ef6b6b, 0.24);
       color: #f2a1a1;
     }
+  }
+}
+
+.contactReplyForm {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba($primary, 0.26);
+  border-radius: $radius-lg;
+  background: rgba($primary, 0.035);
+
+  label {
+    color: $gray-300;
+    font-size: 0.7rem;
+    font-weight: 750;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 10rem;
+    resize: vertical;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba($white, 0.14);
+    border-radius: $radius-md;
+    outline: none;
+    background: rgba(#050806, 0.58);
+    color: $white;
+    font: inherit;
+    font-size: 0.82rem;
+    line-height: 1.65;
+
+    &::placeholder {
+      color: $gray-600;
+    }
+
+    &:focus {
+      border-color: rgba($primary, 0.62);
+      box-shadow: 0 0 0 3px rgba($primary, 0.09);
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+  }
+}
+
+.contactReplyHeading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+
+  > div {
+    display: grid;
+    gap: 0.22rem;
+  }
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.82rem;
+  }
+
+  span {
+    color: $gray-500;
+    font-size: 0.68rem;
+  }
+
+  > span {
+    max-width: 50%;
+    color: $gray-400;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+}
+
+.contactReplyActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+
+  > span {
+    margin-right: auto;
+    color: $gray-600;
+    font-size: 0.65rem;
+  }
+
+  button {
+    min-height: 2.4rem;
+    padding: 0 0.9rem;
+    border: 1px solid rgba($white, 0.13);
+    border-radius: $radius-md;
+    background: transparent;
+    color: $gray-200;
+    font-size: 0.7rem;
+    font-weight: 750;
+  }
+
+  button[type="submit"] {
+    border-color: $primary;
+    background: $primary;
+    color: #04110b;
+  }
+
+  button:disabled {
+    cursor: wait;
+    opacity: 0.55;
   }
 }
 
@@ -2681,6 +2838,15 @@
   .contactMessage > footer .contactDelete {
     width: 100%;
     margin-left: 0;
+  }
+
+  .contactReplyHeading {
+    flex-direction: column;
+
+    > span {
+      max-width: 100%;
+      text-align: left;
+    }
   }
 
   .readinessList article {
@@ -2826,7 +2992,8 @@
 }
 
 .bulkField button:disabled,
-.bulkClear:disabled {
+.bulkClear:disabled,
+.bulkDelete:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
@@ -2839,5 +3006,22 @@
 }
 
 .bulkClear:hover:not(:disabled) {
+  color: $white;
+}
+
+.bulkDelete {
+  min-height: 2.2rem;
+  padding: 0 0.8rem;
+  border: 1px solid rgba(#f87171, 0.45);
+  border-radius: 0.4rem;
+  color: #fca5a5;
+  font-size: 0.68rem;
+  font-weight: 800;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.bulkDelete:hover:not(:disabled) {
+  border-color: #f87171;
+  background: rgba(#f87171, 0.1);
   color: $white;
 }

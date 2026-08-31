@@ -13,12 +13,29 @@ import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories
 import { formatPrice, useCart } from "~/lib/cart";
 import styles from "./[id].module.scss";
 
-// Replace this id with the shop's own inspection video when it is ready.
-const VIDEO_ID = "aqz-KE-bpKQ";
+function isSealedProduct(product: ShopProduct) {
+  return product.productType === "sealed" || Boolean(product.priceRangeCents);
+}
+
+function youtubeEmbedUrl(value?: string) {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    const videoId = url.hostname === "youtu.be"
+      ? url.pathname.split("/").filter(Boolean)[0]
+      : url.searchParams.get("v") ??
+        (url.pathname.startsWith("/embed/") ? url.pathname.split("/")[2] : null);
+    return videoId && /^[A-Za-z0-9_-]{6,20}$/.test(videoId)
+      ? `https://www.youtube-nocookie.com/embed/${videoId}`
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 function describe(product: ShopProduct) {
   if (product.description) return product.description;
-  if (product.priceRangeCents) {
+  if (isSealedProduct(product)) {
     return `A factory-sealed ${product.gameName} release, stored carefully and shipped tracked from the Netherlands.`;
   }
 
@@ -26,12 +43,9 @@ function describe(product: ShopProduct) {
 }
 
 function conditionFor(product: ShopProduct) {
+  if (isSealedProduct(product)) return "Sealed";
   return product.condition ??
-    (product.priceRangeCents || product.productType === "sealed"
-      ? "Factory sealed"
-      : product.productType === "graded"
-        ? "Professionally graded"
-        : "Near Mint");
+    (product.productType === "graded" ? "Professionally graded" : "Near Mint");
 }
 
 const SERVICE_NOTES = [
@@ -122,8 +136,10 @@ export default function ProductDetail() {
       condition: variant.condition,
       language: variant.language,
       finish: variant.finish,
+      image: variant.image ?? current.image,
       priceCents: variant.priceCents,
       compareAtPriceCents: variant.compareAtPriceCents,
+      priceRangeCents: undefined,
       stock: variant.stock,
     };
   };
@@ -166,11 +182,12 @@ export default function ProductDetail() {
   };
 
   const addMain = (item: ShopProduct) => {
-    if (item.priceRangeCents || item.priceCents === undefined) return;
+    if (item.priceCents === undefined) return;
 
-    const variantLabel = [item.condition, item.language, item.finish]
-      .filter(Boolean)
-      .join(", ");
+    const selected = selectedVariant();
+    const variantLabel = isSealedProduct(item)
+      ? selected?.name ?? ""
+      : [item.condition, item.language, item.finish].filter(Boolean).join(", ");
     cart.addItem(
       {
         id: item.id,
@@ -237,7 +254,10 @@ export default function ProductDetail() {
               <span>{item().name}</span>
             </nav>
 
-            <section class={`${styles.hero} ${styles[item().theme]}`}>
+            <section
+              class={`${styles.hero} ${styles[item().theme]}`}
+              classList={{ [styles.sealedHero]: isSealedProduct(item()) }}
+            >
               <div class={styles.heroTopline}>
                 <A href={`/categories/${item().game}`} class={styles.gameLink}>
                   {item().gameName}
@@ -258,18 +278,20 @@ export default function ProductDetail() {
                   </div>
 
                   <div class={styles.productMedia}>
-                    <span class={styles.mediaIndex} aria-hidden="true">MLTH / 001</span>
+                    <span class={styles.mediaIndex} aria-hidden="true">
+                      {item().setCode ? `SET / ${item().setCode}` : "TCGH / PRODUCT"}
+                    </span>
                     <Show
-                      when={item().image}
+                      when={activeProduct()?.image}
                       fallback={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
                     >
                       <img
-                        src={item().image}
+                        src={activeProduct()!.image}
                         alt={item().set ? `${item().name}, ${item().set}` : item().name}
                         draggable={false}
                       />
                     </Show>
-                    <span class={styles.mediaNote}>{item().badge ?? conditionFor(item())}</span>
+                    <span class={styles.mediaNote}>{selectedVariant()?.name ?? item().badge ?? conditionFor(item())}</span>
                   </div>
 
                   <div class={styles.stageFacts} aria-label="Product highlights">
@@ -305,7 +327,7 @@ export default function ProductDetail() {
                   </Show>
                   <p class={styles.price}>
                     <Show
-                      when={item().priceRangeCents}
+                      when={!selectedVariant() && item().priceRangeCents}
                       fallback={formatPrice(activeProduct()?.priceCents ?? 0)}
                     >
                       {formatPrice(item().priceRangeCents![0])} to {formatPrice(item().priceRangeCents![1])}
@@ -315,9 +337,7 @@ export default function ProductDetail() {
 
                 <div class={styles.stockLine}>
                   <span />
-                  {item().priceRangeCents
-                    ? "Available in multiple formats"
-                    : activeProduct()?.stock === 0
+                  {activeProduct()?.stock === 0
                       ? "Currently out of stock"
                       : "In stock, ready to ship"}
                 </div>
@@ -326,7 +346,7 @@ export default function ProductDetail() {
 
                 <Show when={(item().variants?.length ?? 0) > 1}>
                   <fieldset class={styles.variantPicker}>
-                    <legend>Choose your card</legend>
+                    <legend>{isSealedProduct(item()) ? "Choose a format" : "Choose your card"}</legend>
                     <div>
                       <For each={item().variants}>
                         {variant => (
@@ -337,7 +357,6 @@ export default function ProductDetail() {
                                 selectedVariant()?.id === variant.id,
                             }}
                             aria-pressed={selectedVariant()?.id === variant.id}
-                            disabled={variant.stock === 0}
                             onClick={() => {
                               setSelectedVariantId(variant.id);
                               setQuantity(1);
@@ -346,7 +365,9 @@ export default function ProductDetail() {
                             <span>
                               <strong>{variant.name}</strong>
                               <small>
-                                {[variant.condition, variant.language, variant.finish]
+                                {(isSealedProduct(item())
+                                  ? [variant.language, variant.finish]
+                                  : [variant.condition, variant.language, variant.finish])
                                   .filter(Boolean)
                                   .join(" · ") || variant.sku}
                               </small>
@@ -363,11 +384,11 @@ export default function ProductDetail() {
                 </Show>
 
                 <Show
-                  when={!item().priceRangeCents}
+                  when={activeProduct()?.priceCents !== undefined}
                   fallback={
-                    <div class={styles.optionActions}>
-                      <A href={`/categories/${item().game}`} class={styles.primaryButton}>View available formats</A>
-                      <A href="/cart" class={styles.secondaryButton}>View cart</A>
+                    <div class={styles.unavailablePanel} role="status">
+                      <strong>Formats are being prepared</strong>
+                      <p>This listing stays on this page until the owner adds a purchasable pack, box, or product format.</p>
                     </div>
                   }
                 >
@@ -433,7 +454,7 @@ export default function ProductDetail() {
               </div>
 
               <a href="#product-story" class={styles.scrollCue}>
-                Explore the card
+                {isSealedProduct(item()) ? "Explore the set" : "Explore the card"}
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <path d="M12 4v16M6 14l6 6 6-6" />
                 </svg>
@@ -442,11 +463,11 @@ export default function ProductDetail() {
 
             <section class={styles.detailsSection} id="product-story">
               <div class={styles.detailsIntro}>
-                <span class={styles.sectionLabel}>The card</span>
-                <h2>Every detail, shown clearly.</h2>
+                <span class={styles.sectionLabel}>{isSealedProduct(item()) ? "The sealed release" : "The card"}</span>
+                <h2>{isSealedProduct(item()) ? "Know exactly what you are opening." : "Every detail, shown clearly."}</h2>
                 <p>{describe(item())}</p>
                 <p>
-                  {item().priceRangeCents
+                  {isSealedProduct(item())
                     ? "Stored unopened in a smoke-free, climate-stable room until dispatch."
                     : "Stored in a penny sleeve and top loader from the moment it is listed, then packed in a rigid mailer for dispatch."}
                 </p>
@@ -455,7 +476,7 @@ export default function ProductDetail() {
               <dl class={styles.specifications}>
                 <div><dt>Game</dt><dd>{item().gameName}</dd></div>
                 <div><dt>Set</dt><dd>{item().set ?? "Various"}</dd></div>
-                <div><dt>Product type</dt><dd>{item().productType ? item().productType : item().priceRangeCents ? "Sealed product" : "Single card"}</dd></div>
+                <div><dt>Product type</dt><dd>{isSealedProduct(item()) ? "Sealed product" : item().productType ?? "Single card"}</dd></div>
                 <div><dt>Condition</dt><dd>{conditionFor(item())}</dd></div>
                 <div><dt>Language</dt><dd>{item().language ?? "English"}</dd></div>
                 <Show when={item().finish}><div><dt>Finish</dt><dd>{item().finish}</dd></div></Show>
@@ -470,25 +491,27 @@ export default function ProductDetail() {
               </dl>
             </section>
 
-            <section class={styles.videoSection}>
-              <div class={styles.videoCopy}>
-                <span class={styles.sectionLabel}>Closer look</span>
-                <h2>Inspect it before it reaches your collection.</h2>
-                <p>
-                  Check the surface, corners, centering, and finish at a larger scale before buying.
-                </p>
-              </div>
+            <Show when={isSealedProduct(item()) && youtubeEmbedUrl(item().trailerUrl)}>
+              {trailerUrl => (
+                <section class={styles.videoSection}>
+                  <div class={styles.videoCopy}>
+                    <span class={styles.sectionLabel}>Set trailer</span>
+                    <h2>See what this release brings to the table.</h2>
+                    <p>The official set trailer is provided for collectors who want a closer look before choosing a pack or display.</p>
+                  </div>
 
-              <div class={styles.videoFrame}>
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}`}
-                  title={`${item().name} product video`}
-                  loading="lazy"
-                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen
-                />
-              </div>
-            </section>
+                  <div class={styles.videoFrame}>
+                    <iframe
+                      src={trailerUrl()}
+                      title={`${item().name} set trailer`}
+                      loading="lazy"
+                      allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen
+                    />
+                  </div>
+                </section>
+              )}
+            </Show>
 
             <section class={styles.serviceBand} aria-label="Service information">
               <For each={SERVICE_NOTES}>

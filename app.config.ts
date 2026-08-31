@@ -14,6 +14,7 @@ const securityHeaders = {
     "font-src 'self' data: https://fonts.gstatic.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "script-src 'self' 'unsafe-inline'",
+    "frame-src 'self' https://www.youtube-nocookie.com",
     `connect-src 'self' https://api.mollie.com${
       isProduction ? "" : " ws://localhost:* ws://127.0.0.1:*"
     }`,

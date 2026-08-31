@@ -115,6 +115,54 @@
   padding-top: 4.25rem;
 }
 
+.sealedHero {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(25rem, 30rem);
+  }
+
+  .stage {
+    background:
+      linear-gradient(115deg, rgba($white, 0.025) 0 42%, transparent 42% 100%);
+  }
+
+  .titleBlock {
+    max-width: min(54rem, 74%);
+
+    h1 {
+      max-width: 15ch;
+      font-size: clamp(2.75rem, 4.4vw, 5.2rem);
+      line-height: 0.96;
+    }
+  }
+
+  .productMedia {
+    align-items: flex-end;
+    padding: 8rem 2rem 5.5rem;
+
+    &::before {
+      width: min(34vw, 31rem);
+      border-radius: $radius-lg;
+      transform: rotate(-4deg);
+    }
+
+    &::after {
+      width: min(25vw, 22rem);
+      border-radius: $radius-lg;
+      transform: rotate(5deg);
+    }
+
+    img {
+      max-width: min(43vw, 39rem);
+      max-height: min(58vh, 31rem);
+    }
+
+    > div {
+      width: min(40vw, 35rem);
+      height: min(55vh, 29rem);
+    }
+  }
+}
+
 .stage {
   position: relative;
   display: grid;
@@ -509,8 +557,7 @@
   }
 }
 
-.primaryButton,
-.secondaryButton {
+.primaryButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -558,21 +605,24 @@
   background: $primary-light;
 }
 
-.secondaryButton {
-  border: 1px solid rgba($white, 0.16);
-  color: $white;
-
-  &:hover {
-    border-color: rgba($white, 0.32);
-    background: rgba($white, 0.06);
-  }
-}
-
-.optionActions {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
+.unavailablePanel {
   margin-top: 2rem;
+  padding: 1rem 0;
+  border-block: 1px solid rgba($white, 0.12);
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9rem;
+  }
+
+  p {
+    max-width: 38ch;
+    margin-top: 0.4rem;
+    color: $gray-400;
+    font-size: 0.78rem;
+    line-height: 1.55;
+  }
 }
 
 .cartLink {
@@ -954,6 +1004,10 @@
     grid-template-columns: 1fr;
   }
 
+  .sealedHero .heroGrid {
+    grid-template-columns: 1fr;
+  }
+
   .stage {
     min-height: 46rem;
     border-right: 0;
@@ -1077,6 +1131,26 @@
     }
   }
 
+  .sealedHero {
+    .titleBlock {
+      max-width: 92%;
+    }
+
+    .productMedia {
+      padding: 9rem 1rem 4.5rem;
+
+      img {
+        max-width: min(82vw, 27rem);
+        max-height: 24rem;
+      }
+
+      > div {
+        width: min(82vw, 27rem);
+        height: 23rem;
+      }
+    }
+  }
+
   .mediaIndex,
   .mediaNote {
     display: none;
@@ -1137,11 +1211,6 @@
     width: 100%;
   }
 
-  .optionActions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
   .purchaseFoot {
     grid-template-columns: 1fr;
   }
@@ -1183,7 +1252,6 @@
   .productMedia img,
   .saveButton,
   .primaryButton,
-  .secondaryButton,
   .gameLink svg,
   .relatedHead svg {
     transition-duration: 0.01ms;
@@ -1194,7 +1262,6 @@
   .saveButton:active,
   .primaryButton:hover,
   .primaryButton:active,
-  .secondaryButton:active,
   .gameLink:hover svg,
   .relatedHead a:hover svg {
     transform: none;
