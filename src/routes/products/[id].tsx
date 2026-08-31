@@ -123,6 +123,7 @@ export default function ProductDetail() {
       language: variant.language,
       finish: variant.finish,
       priceCents: variant.priceCents,
+      compareAtPriceCents: variant.compareAtPriceCents,
       stock: variant.stock,
     };
   };
@@ -298,14 +299,19 @@ export default function ProductDetail() {
                   </button>
                 </div>
 
-                <p class={styles.price}>
-                  <Show
-                    when={item().priceRangeCents}
-                    fallback={formatPrice(activeProduct()?.priceCents ?? 0)}
-                  >
-                    {formatPrice(item().priceRangeCents![0])} to {formatPrice(item().priceRangeCents![1])}
+                <div class={styles.priceBlock}>
+                  <Show when={activeProduct()?.compareAtPriceCents && activeProduct()!.compareAtPriceCents! > (activeProduct()?.priceCents ?? 0)}>
+                    <del>{formatPrice(activeProduct()!.compareAtPriceCents!)}</del>
                   </Show>
-                </p>
+                  <p class={styles.price}>
+                    <Show
+                      when={item().priceRangeCents}
+                      fallback={formatPrice(activeProduct()?.priceCents ?? 0)}
+                    >
+                      {formatPrice(item().priceRangeCents![0])} to {formatPrice(item().priceRangeCents![1])}
+                    </Show>
+                  </p>
+                </div>
 
                 <div class={styles.stockLine}>
                   <span />

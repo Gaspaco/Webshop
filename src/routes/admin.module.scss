@@ -537,6 +537,52 @@
   display: block;
 }
 
+.catalogToolbar {
+  display: grid;
+  margin-bottom: 0.85rem;
+  padding: 0.85rem;
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 0.65rem;
+  grid-template-columns: minmax(15rem, 1fr) 10rem 10rem auto;
+  align-items: end;
+  gap: 0.75rem;
+  background: #0e1210;
+}
+
+.catalogToolbar label > span {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: $gray-500;
+  font-size: 0.56rem;
+  font-weight: 750;
+}
+
+.catalogToolbar input,
+.catalogToolbar select {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0 0.7rem;
+  border: 1px solid rgba($white, 0.1);
+  border-radius: 0.4rem;
+  outline: none;
+  background: #080b09;
+  color: $white;
+  font-size: 0.65rem;
+}
+
+.catalogToolbar input:focus,
+.catalogToolbar select:focus {
+  border-color: $primary;
+}
+
+.catalogResultCount {
+  min-width: max-content;
+  padding-bottom: 0.62rem;
+  color: $gray-500;
+  font-size: 0.6rem;
+  text-align: right;
+}
+
 .productGuide strong {
   color: $white;
   font-size: 0.7rem;
@@ -913,6 +959,70 @@
   font-weight: 700;
 }
 
+.editorGrid label > small {
+  display: block;
+  margin-top: 0.35rem;
+  color: $gray-600;
+  font-size: 0.56rem;
+  line-height: 1.45;
+}
+
+.editorSectionHeading {
+  display: flex;
+  min-height: 2.6rem;
+  align-items: end;
+  justify-content: space-between;
+  padding: 0.85rem 0 0.55rem;
+  border-bottom: 1px solid rgba($white, 0.08);
+  grid-column: 1 / -1;
+  gap: 1rem;
+}
+
+.editorSectionHeading:first-child {
+  padding-top: 0;
+}
+
+.editorSectionHeading span {
+  color: $white;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.editorSectionHeading p {
+  color: $gray-600;
+  font-size: 0.56rem;
+  text-align: right;
+}
+
+.editorToggle {
+  display: grid;
+  min-height: 2.7rem;
+  align-content: center;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba($white, 0.1);
+  border-radius: 0.4rem;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  gap: 0 0.6rem;
+  background: #090c0a;
+}
+
+.editorToggle input[type="checkbox"] {
+  width: 1rem;
+  min-height: 1rem;
+  padding: 0;
+  grid-row: 1 / span 2;
+  align-self: center;
+  accent-color: $primary;
+}
+
+.editorToggle > span {
+  margin: 0 !important;
+}
+
+.editorToggle > small {
+  margin-top: 0.12rem !important;
+}
+
 .editorGrid input[type="file"] {
   padding: 0.58rem;
   font-size: 0.62rem;
@@ -925,12 +1035,20 @@
   gap: 0.75rem;
 }
 
-.editorActions > button:first-child {
+.editorActions > button:not(.primaryAction) {
   min-height: 2.7rem;
   padding: 0 0.9rem;
   color: $gray-400;
   font-size: 0.68rem;
   font-weight: 700;
+}
+
+.editorActions .archiveAction {
+  margin-right: auto;
+  border: 1px solid rgba(#ef4444, 0.25);
+  border-radius: 0.42rem;
+  background: rgba(#ef4444, 0.06);
+  color: #fca5a5;
 }
 
 .catalogEmpty {
@@ -1530,6 +1648,16 @@
 
 .variantList button {
   margin: 0;
+  color: $primary-light;
+}
+
+.variantActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.variantActions button:last-child {
   color: #fca5a5;
 }
 
@@ -1547,6 +1675,55 @@
 .variantForm button {
   align-self: end;
   margin: 0;
+}
+
+.variantEditForm {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgba($primary, 0.2);
+  border-radius: 0.55rem;
+  background: rgba($primary, 0.035);
+}
+
+.variantFormHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  grid-column: 1 / -1;
+}
+
+.variantFormHeading strong {
+  color: $white;
+  font-size: 0.7rem;
+}
+
+.variantFormHeading button {
+  min-height: auto;
+  color: $gray-500;
+}
+
+.variantToggle {
+  display: flex !important;
+  min-height: 2.55rem;
+  align-items: center;
+  align-self: end;
+  gap: 0.55rem;
+  padding: 0 0.7rem;
+  border: 1px solid rgba($white, 0.1);
+  border-radius: 0.4rem;
+  background: #070a08;
+}
+
+.variantToggle input {
+  width: 1rem;
+  height: 1rem !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  accent-color: $primary;
+}
+
+.variantToggle span {
+  margin: 0 !important;
 }
 
 .discountForm,
@@ -1794,6 +1971,16 @@
     grid-template-columns: 1fr;
   }
 
+  .catalogToolbar {
+    grid-template-columns: minmax(12rem, 1fr) 9rem 9rem;
+  }
+
+  .catalogResultCount {
+    grid-column: 1 / -1;
+    padding: 0;
+    text-align: left;
+  }
+
   .formActions {
     grid-column: 1;
   }
@@ -1881,6 +2068,14 @@
 
   .formGrid {
     grid-template-columns: 1fr;
+  }
+
+  .catalogToolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogResultCount {
+    grid-column: auto;
   }
 
   .editorGrid,

@@ -877,9 +877,22 @@ function ProductRow(props: {
                 </Show>
               </div>
               <div class={styles.editorGrid}>
+                <div class={styles.editorSectionHeading}>
+                  <span>Listing</span>
+                  <p>Customer-facing identity, URL, and visibility.</p>
+                </div>
                 <label class={styles.spanTwo}>
                   <span>Product name</span>
                   <input value={name()} onInput={event => setName(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>URL slug</span>
+                  <input required placeholder="umbreon-vmax" value={slug()} onInput={event => setSlug(event.currentTarget.value)} />
+                  <small>/products/{slug() || "product-name"}</small>
+                </label>
+                <label>
+                  <span>Brand or manufacturer</span>
+                  <input placeholder="The Pokémon Company" value={brand()} onInput={event => setBrand(event.currentTarget.value)} />
                 </label>
                 <label>
                   <span>Game</span>
@@ -904,8 +917,42 @@ function ProductRow(props: {
                   <input value={collection()} onInput={event => setCollection(event.currentTarget.value)} />
                 </label>
                 <label>
+                  <span>Visibility</span>
+                  <select value={status()} onChange={event => setStatus(event.currentTarget.value as AdminProduct["status"])}>
+                    <option value="draft">Draft, private</option>
+                    <option value="active">Live in shop</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </label>
+                <div class={styles.editorSectionHeading}>
+                  <span>Pricing and inventory</span>
+                  <p>The first variant shown in the catalogue row.</p>
+                </div>
+                <label>
                   <span>SKU</span>
                   <input value={sku()} onInput={event => setSku(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Barcode</span>
+                  <input placeholder="EAN, UPC, or internal barcode" value={barcode()} onInput={event => setBarcode(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Selling price in EUR</span>
+                  <input required type="number" min="0" step="0.01" value={price()} onInput={event => setPrice(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Original price in EUR</span>
+                  <input type="number" min="0" step="0.01" placeholder="Optional sale comparison" value={compareAtPrice()} onInput={event => setCompareAtPrice(event.currentTarget.value)} />
+                </label>
+                <label>
+                  <span>Physical stock</span>
+                  <input required type="number" min="0" step="1" value={stock()} onInput={event => setStock(event.currentTarget.value)} />
+                  <small>{props.product.reservedStock ?? 0} currently reserved at checkout</small>
+                </label>
+                <label class={styles.editorToggle}>
+                  <input type="checkbox" checked={trackInventory()} onChange={event => setTrackInventory(event.currentTarget.checked)} />
+                  <span>Track and reserve inventory</span>
+                  <small>Disable only for products that cannot sell out.</small>
                 </label>
                 <label>
                   <span>Condition</span>
@@ -915,6 +962,14 @@ function ProductRow(props: {
                   <span>Language</span>
                   <input value={language()} onInput={event => setLanguage(event.currentTarget.value)} />
                 </label>
+                <label>
+                  <span>Finish</span>
+                  <input placeholder="Holofoil" value={finish()} onInput={event => setFinish(event.currentTarget.value)} />
+                </label>
+                <div class={styles.editorSectionHeading}>
+                  <span>Card and grading details</span>
+                  <p>Optional collector data shown on eligible product pages.</p>
+                </div>
                 <label>
                   <span>Badge</span>
                   <input placeholder="New, Vintage, PSA 10" value={badge()} onInput={event => setBadge(event.currentTarget.value)} />
@@ -932,10 +987,6 @@ function ProductRow(props: {
                   <input placeholder="Special illustration rare" value={rarity()} onInput={event => setRarity(event.currentTarget.value)} />
                 </label>
                 <label>
-                  <span>Finish</span>
-                  <input placeholder="Holofoil" value={finish()} onInput={event => setFinish(event.currentTarget.value)} />
-                </label>
-                <label>
                   <span>Illustrator</span>
                   <input value={illustrator()} onInput={event => setIllustrator(event.currentTarget.value)} />
                 </label>
@@ -951,6 +1002,10 @@ function ProductRow(props: {
                   <span>Certification number</span>
                   <input value={certificationNumber()} onInput={event => setCertificationNumber(event.currentTarget.value)} />
                 </label>
+                <div class={styles.editorSectionHeading}>
+                  <span>Media and description</span>
+                  <p>Use a clean product image and an accurate condition description.</p>
+                </div>
                 <label>
                   <span>Replace image</span>
                   <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => loadImage(event.currentTarget.files?.[0])} />
@@ -970,6 +1025,11 @@ function ProductRow(props: {
                 </label>
               </div>
               <div class={styles.editorActions}>
+                <Show when={metadataText("source") !== "starter" && status() !== "archived"}>
+                  <button type="button" class={styles.archiveAction} onClick={archiveProduct} disabled={saving()}>
+                    Archive product
+                  </button>
+                </Show>
                 <button type="button" onClick={() => setEditing(false)}>Cancel</button>
                 <button type="button" class={styles.primaryAction} onClick={save} disabled={saving()}>
                   {saving() ? "Saving changes" : "Save all changes"}
@@ -1008,11 +1068,67 @@ function ProductRow(props: {
                         <span>{variant.finish || "Standard"}</span>
                         <span>{formatMoney(variant.priceCents)}</span>
                         <span>{variant.stock - variant.reservedStock} available</span>
-                        <button type="button" onClick={() => removeVariant(variant)}>Remove</button>
+                        <span class={styles.variantActions}>
+                          <button type="button" onClick={() => editVariant(variant)}>Edit</button>
+                          <button type="button" onClick={() => removeVariant(variant)}>Remove</button>
+                        </span>
                       </div>
                     )}
                   </For>
                 </div>
+                <Show when={variantEditDraft()}>
+                  {current => (
+                    <form class={`${styles.variantForm} ${styles.variantEditForm}`} onSubmit={saveVariant}>
+                      <div class={styles.variantFormHeading}>
+                        <strong>Edit variant</strong>
+                        <button type="button" onClick={() => setVariantEditDraft(null)}>Cancel</button>
+                      </div>
+                      <label>
+                        <span>Variant name</span>
+                        <input required value={current().name} onInput={event => setVariantEditDraft(value => value && ({ ...value, name: event.currentTarget.value }))} />
+                      </label>
+                      <label>
+                        <span>SKU</span>
+                        <input required value={current().sku} onInput={event => setVariantEditDraft(value => value && ({ ...value, sku: event.currentTarget.value }))} />
+                      </label>
+                      <label>
+                        <span>Barcode</span>
+                        <input value={current().barcode} onInput={event => setVariantEditDraft(value => value && ({ ...value, barcode: event.currentTarget.value }))} />
+                      </label>
+                      <label>
+                        <span>Condition</span>
+                        <input value={current().condition} onInput={event => setVariantEditDraft(value => value && ({ ...value, condition: event.currentTarget.value }))} />
+                      </label>
+                      <label>
+                        <span>Language</span>
+                        <input value={current().language} onInput={event => setVariantEditDraft(value => value && ({ ...value, language: event.currentTarget.value }))} />
+                      </label>
+                      <label>
+                        <span>Finish</span>
+                        <input value={current().finish} onInput={event => setVariantEditDraft(value => value && ({ ...value, finish: event.currentTarget.value }))} />
+                      </label>
+                      <label>
+                        <span>Selling price</span>
+                        <input required type="number" min="0" step="0.01" value={current().price} onInput={event => setVariantEditDraft(value => value && ({ ...value, price: event.currentTarget.value }))} />
+                      </label>
+                      <label>
+                        <span>Original price</span>
+                        <input type="number" min="0" step="0.01" value={current().compareAtPrice} onInput={event => setVariantEditDraft(value => value && ({ ...value, compareAtPrice: event.currentTarget.value }))} />
+                      </label>
+                      <label>
+                        <span>Physical stock</span>
+                        <input required type="number" min="0" step="1" value={current().stock} onInput={event => setVariantEditDraft(value => value && ({ ...value, stock: event.currentTarget.value }))} />
+                      </label>
+                      <label class={styles.variantToggle}>
+                        <input type="checkbox" checked={current().trackInventory} onChange={event => setVariantEditDraft(value => value && ({ ...value, trackInventory: event.currentTarget.checked }))} />
+                        <span>Track inventory</span>
+                      </label>
+                      <button type="submit" class={styles.primaryAction} disabled={saving()}>
+                        {saving() ? "Saving variant" : "Save variant"}
+                      </button>
+                    </form>
+                  )}
+                </Show>
                 <Show when={variantOpen()}>
                   <form class={styles.variantForm} onSubmit={addVariant}>
                     <label>
@@ -1022,6 +1138,10 @@ function ProductRow(props: {
                     <label>
                       <span>SKU</span>
                       <input required value={variantDraft().sku} onInput={event => setVariantDraft(current => ({ ...current, sku: event.currentTarget.value }))} />
+                    </label>
+                    <label>
+                      <span>Barcode</span>
+                      <input value={variantDraft().barcode} onInput={event => setVariantDraft(current => ({ ...current, barcode: event.currentTarget.value }))} />
                     </label>
                     <label>
                       <span>Condition</span>
@@ -1040,8 +1160,16 @@ function ProductRow(props: {
                       <input required type="number" min="0" step="0.01" value={variantDraft().price} onInput={event => setVariantDraft(current => ({ ...current, price: event.currentTarget.value }))} />
                     </label>
                     <label>
+                      <span>Original price in EUR</span>
+                      <input type="number" min="0" step="0.01" value={variantDraft().compareAtPrice} onInput={event => setVariantDraft(current => ({ ...current, compareAtPrice: event.currentTarget.value }))} />
+                    </label>
+                    <label>
                       <span>Opening stock</span>
                       <input required type="number" min="0" step="1" value={variantDraft().stock} onInput={event => setVariantDraft(current => ({ ...current, stock: event.currentTarget.value }))} />
+                    </label>
+                    <label class={styles.variantToggle}>
+                      <input type="checkbox" checked={variantDraft().trackInventory} onChange={event => setVariantDraft(current => ({ ...current, trackInventory: event.currentTarget.checked }))} />
+                      <span>Track inventory</span>
                     </label>
                     <button type="submit" class={styles.primaryAction} disabled={saving()}>
                       {saving() ? "Adding variant" : "Add variant"}
@@ -2089,6 +2217,9 @@ export default function Admin() {
     loadDashboard,
   );
   const [composerOpen, setComposerOpen] = createSignal(false);
+  const [catalogSearch, setCatalogSearch] = createSignal("");
+  const [catalogGame, setCatalogGame] = createSignal("all");
+  const [catalogStatus, setCatalogStatus] = createSignal("all");
   const [draft, setDraft] = createSignal<ProductDraft>({ ...emptyProduct });
   const [productStatus, setProductStatus] = createSignal("");
   const [savingProduct, setSavingProduct] = createSignal(false);
@@ -2096,9 +2227,37 @@ export default function Admin() {
   const [importMessage, setImportMessage] = createSignal("");
   const [importing, setImporting] = createSignal(false);
   let imageInput: HTMLInputElement | undefined;
+  const filteredProducts = () => {
+    const query = catalogSearch().trim().toLocaleLowerCase();
+    return (dashboard()?.products ?? []).filter(product => {
+      const searchable = [
+        product.name,
+        product.slug,
+        product.brand,
+        product.game,
+        typeof product.metadata.set === "string" ? product.metadata.set : "",
+        ...product.variants.flatMap(variant => [
+          variant.name,
+          variant.sku,
+          variant.barcode,
+          variant.condition,
+          variant.language,
+          variant.finish,
+        ]),
+      ]
+        .filter((value): value is string => Boolean(value))
+        .join(" ")
+        .toLocaleLowerCase();
+      return (
+        (!query || searchable.includes(query)) &&
+        (catalogGame() === "all" || product.game === catalogGame()) &&
+        (catalogStatus() === "all" || product.status === catalogStatus())
+      );
+    });
+  };
   const productTable = createSolidTable({
     get data() {
-      return dashboard()?.products ?? [];
+      return filteredProducts();
     },
     columns: productColumns,
     getCoreRowModel: getCoreRowModel(),
@@ -2161,6 +2320,9 @@ export default function Admin() {
       body: JSON.stringify({
         ...current,
         priceCents: Math.round(Number(current.price) * 100),
+        compareAtPriceCents: current.compareAtPrice
+          ? Math.round(Number(current.compareAtPrice) * 100)
+          : null,
         stock: Number(current.stock),
       }),
     });
@@ -2523,8 +2685,8 @@ export default function Admin() {
                       <span>Use the green button for cards, sealed products, graded cards, and accessories.</span>
                     </div>
                     <div>
-                      <strong>Edit anything later</strong>
-                      <span>Use Edit details in a product row to change its image, name, set, condition, or description.</span>
+                      <strong>Full product workspace</strong>
+                      <span>Edit identity, URL, pricing, stock, barcode, card data, media, and every variant.</span>
                     </div>
                     <div>
                       <strong>Choose when it appears</strong>
@@ -2542,6 +2704,14 @@ export default function Admin() {
                         <label class={styles.spanTwo}>
                           <span>Product name</span>
                           <input required value={draft().name} onInput={event => patchDraft("name", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>URL slug</span>
+                          <input placeholder="Created from the name if empty" value={draft().slug} onInput={event => patchDraft("slug", event.currentTarget.value)} />
+                        </label>
+                        <label>
+                          <span>Brand or manufacturer</span>
+                          <input placeholder="The Pokémon Company" value={draft().brand} onInput={event => patchDraft("brand", event.currentTarget.value)} />
                         </label>
                         <label>
                           <span>Game</span>
@@ -2570,12 +2740,24 @@ export default function Admin() {
                           <input placeholder="Created automatically if empty" value={draft().sku} onInput={event => patchDraft("sku", event.currentTarget.value)} />
                         </label>
                         <label>
+                          <span>Barcode</span>
+                          <input placeholder="EAN, UPC, or internal barcode" value={draft().barcode} onInput={event => patchDraft("barcode", event.currentTarget.value)} />
+                        </label>
+                        <label>
                           <span>Price in EUR</span>
                           <input required type="number" min="0" step="0.01" value={draft().price} onInput={event => patchDraft("price", event.currentTarget.value)} />
                         </label>
                         <label>
+                          <span>Original price in EUR</span>
+                          <input type="number" min="0" step="0.01" placeholder="Optional sale comparison" value={draft().compareAtPrice} onInput={event => patchDraft("compareAtPrice", event.currentTarget.value)} />
+                        </label>
+                        <label>
                           <span>Stock</span>
                           <input required type="number" min="0" step="1" value={draft().stock} onInput={event => patchDraft("stock", event.currentTarget.value)} />
+                        </label>
+                        <label class={styles.editorToggle}>
+                          <input type="checkbox" checked={draft().trackInventory} onChange={event => patchDraft("trackInventory", event.currentTarget.checked)} />
+                          <span>Track and reserve inventory</span>
                         </label>
                         <label>
                           <span>Badge</span>
@@ -2653,6 +2835,40 @@ export default function Admin() {
                     </form>
                   </Show>
 
+                  <section class={styles.catalogToolbar} aria-label="Catalogue filters">
+                    <label class={styles.catalogSearch}>
+                      <span>Search catalogue</span>
+                      <input
+                        type="search"
+                        placeholder="Name, SKU, barcode, set, or slug"
+                        value={catalogSearch()}
+                        onInput={event => setCatalogSearch(event.currentTarget.value)}
+                      />
+                    </label>
+                    <label>
+                      <span>Game</span>
+                      <select value={catalogGame()} onChange={event => setCatalogGame(event.currentTarget.value)}>
+                        <option value="all">All games</option>
+                        <option value="pokemon">Pokémon</option>
+                        <option value="yugioh">Yu-Gi-Oh!</option>
+                        <option value="magic">Magic</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Visibility</span>
+                      <select value={catalogStatus()} onChange={event => setCatalogStatus(event.currentTarget.value)}>
+                        <option value="all">Every status</option>
+                        <option value="active">Live</option>
+                        <option value="draft">Draft</option>
+                        <option value="archived">Archived</option>
+                      </select>
+                    </label>
+                    <span class={styles.catalogResultCount}>
+                      {filteredProducts().length} of {data().products.length} products
+                    </span>
+                  </section>
+
                   <div class={styles.tableWrap}>
                     <table>
                       <thead>
@@ -2671,13 +2887,19 @@ export default function Admin() {
                         </For>
                       </tbody>
                     </table>
-                    <Show when={!data().products.length}>
+                    <Show when={!filteredProducts().length}>
                       <div class={styles.catalogEmpty}>
-                        <strong>Your managed catalogue is empty</strong>
-                        <p>Add one product here, or use Bulk import for a full inventory file.</p>
-                        <button type="button" onClick={() => setComposerOpen(true)}>
-                          + Add the first product
-                        </button>
+                        <strong>{data().products.length ? "No products match these filters" : "Your managed catalogue is empty"}</strong>
+                        <p>{data().products.length ? "Try a different name, SKU, game, or visibility." : "Add one product here, or use Bulk import for a full inventory file."}</p>
+                        <Show when={data().products.length} fallback={
+                          <button type="button" onClick={() => setComposerOpen(true)}>+ Add the first product</button>
+                        }>
+                          <button type="button" onClick={() => {
+                            setCatalogSearch("");
+                            setCatalogGame("all");
+                            setCatalogStatus("all");
+                          }}>Clear catalogue filters</button>
+                        </Show>
                       </div>
                     </Show>
                   </div>

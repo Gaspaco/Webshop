@@ -77,6 +77,7 @@ export type ShopVariant = {
   language?: string;
   finish?: string;
   priceCents: number;
+  compareAtPriceCents?: number;
   stock: number;
 };
 

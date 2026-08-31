@@ -12,6 +12,7 @@ export type SectionProduct = {
   image?: string;
   theme?: BoxTheme;
   priceCents?: number;
+  compareAtPriceCents?: number;
   priceRangeCents?: [number, number];
   rating?: number;
   href: string;
@@ -84,17 +85,22 @@ export default function ProductCard(props: ProductCardProps) {
         </A>
 
         <div class={styles.cardFooter}>
-          <span class={styles.cardPrice}>
-            <Show
-              when={!p.priceRangeCents}
-              fallback={
-                <>
-                  {formatPrice(p.priceRangeCents![0])} to {formatPrice(p.priceRangeCents![1])}
-                </>
-              }
-            >
-              {formatPrice(p.priceCents ?? 0)}
+          <span class={styles.cardPricing}>
+            <Show when={p.compareAtPriceCents && p.compareAtPriceCents > (p.priceCents ?? 0)}>
+              <del>{formatPrice(p.compareAtPriceCents!)}</del>
             </Show>
+            <span class={styles.cardPrice}>
+              <Show
+                when={!p.priceRangeCents}
+                fallback={
+                  <>
+                    {formatPrice(p.priceRangeCents![0])} to {formatPrice(p.priceRangeCents![1])}
+                  </>
+                }
+              >
+                {formatPrice(p.priceCents ?? 0)}
+              </Show>
+            </span>
           </span>
 
           <Show

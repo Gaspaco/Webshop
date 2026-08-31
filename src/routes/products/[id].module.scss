@@ -340,13 +340,23 @@
 }
 
 .price {
-  margin-top: clamp(2rem, 4vh, 3rem);
   color: $white;
   font-family: $font-display;
   font-size: clamp(2.6rem, 3.5vw, 4rem);
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1;
+}
+
+.priceBlock {
+  margin-top: clamp(2rem, 4vh, 3rem);
+}
+
+.priceBlock del {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: $gray-500;
+  font-size: 0.92rem;
 }
 
 .stockLine {
