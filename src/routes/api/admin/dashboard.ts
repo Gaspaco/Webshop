@@ -42,6 +42,7 @@ export async function GET(event: APIEvent) {
         name: products.name,
         slug: products.slug,
         description: products.description,
+        brand: products.brand,
         game: products.game,
         productType: products.productType,
         status: products.status,
@@ -51,6 +52,7 @@ export async function GET(event: APIEvent) {
         updatedAt: products.updatedAt,
         variantId: productVariants.id,
         sku: productVariants.sku,
+        barcode: productVariants.barcode,
         variantName: productVariants.name,
         condition: productVariants.condition,
         language: productVariants.language,
@@ -59,6 +61,7 @@ export async function GET(event: APIEvent) {
         compareAtPriceCents: productVariants.compareAtPriceCents,
         stock: productVariants.stock,
         reservedStock: productVariants.reservedStock,
+        trackInventory: productVariants.trackInventory,
       })
       .from(products)
       .leftJoin(productVariants, eq(productVariants.productId, products.id))
@@ -198,13 +201,16 @@ export async function GET(event: APIEvent) {
     Array<{
       id: string;
       sku: string;
+      barcode: string | null;
       name: string;
       condition: string | null;
       language: string | null;
       finish: string | null;
       priceCents: number;
+      compareAtPriceCents: number | null;
       stock: number;
       reservedStock: number;
+      trackInventory: boolean;
     }>
   >();
   for (const product of productRows) {
@@ -214,13 +220,16 @@ export async function GET(event: APIEvent) {
       variants.push({
         id: product.variantId,
         sku: product.sku,
+        barcode: product.barcode,
         name: product.variantName ?? product.condition ?? "Default",
         condition: product.condition,
         language: product.language,
         finish: product.finish,
         priceCents: product.priceCents,
+        compareAtPriceCents: product.compareAtPriceCents,
         stock: product.stock ?? 0,
         reservedStock: product.reservedStock ?? 0,
+        trackInventory: product.trackInventory ?? true,
       });
       variantsByProduct.set(product.id, variants);
     }
@@ -242,19 +251,23 @@ export async function GET(event: APIEvent) {
       const variant = {
         id: `static:${product.id}`,
         sku,
+        barcode: null,
         name: product.condition ?? "Default",
         condition: product.condition ?? null,
         language: product.language ?? "English",
         finish: product.finish ?? null,
         priceCents,
+        compareAtPriceCents: null,
         stock: product.stock ?? 1,
         reservedStock: 0,
+        trackInventory: true,
       };
       return {
         id: `static:${product.id}`,
         name: product.name,
         slug: product.id,
         description: product.description ?? null,
+        brand: null,
         game: product.game,
         productType:
           product.productType ?? (product.image ? "single" : "sealed"),
@@ -276,6 +289,7 @@ export async function GET(event: APIEvent) {
         updatedAt: new Date(0),
         variantId: variant.id,
         sku: variant.sku,
+        barcode: null,
         variantName: variant.name,
         condition: variant.condition,
         language: variant.language,
@@ -284,6 +298,7 @@ export async function GET(event: APIEvent) {
         compareAtPriceCents: null,
         stock: variant.stock,
         reservedStock: variant.reservedStock,
+        trackInventory: true,
         variants: [variant],
       };
     });

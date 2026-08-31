@@ -39,13 +39,16 @@ type AdminSection =
 type AdminVariant = {
   id: string;
   sku: string;
+  barcode: string | null;
   name: string;
   condition: string | null;
   language: string | null;
   finish: string | null;
   priceCents: number;
+  compareAtPriceCents: number | null;
   stock: number;
   reservedStock: number;
+  trackInventory: boolean;
 };
 
 type AdminProduct = {
@@ -53,6 +56,7 @@ type AdminProduct = {
   name: string;
   slug: string;
   description: string | null;
+  brand: string | null;
   game: string | null;
   productType: string | null;
   status: "draft" | "active" | "archived";
@@ -235,10 +239,13 @@ type AdminDashboard = {
 
 type ProductDraft = {
   name: string;
+  slug: string;
+  brand: string;
   game: "pokemon" | "yugioh" | "magic" | "other";
   productType: "single" | "sealed" | "graded" | "accessory";
   set: string;
   sku: string;
+  barcode: string;
   description: string;
   image: string;
   badge: string;
@@ -251,16 +258,21 @@ type ProductDraft = {
   certificationNumber: string;
   finish: string;
   price: string;
+  compareAtPrice: string;
   stock: string;
+  trackInventory: boolean;
   status: "draft" | "active";
 };
 
 const emptyProduct: ProductDraft = {
   name: "",
+  slug: "",
+  brand: "",
   game: "pokemon",
   productType: "single",
   set: "",
   sku: "",
+  barcode: "",
   description: "",
   image: "",
   badge: "",
@@ -273,7 +285,9 @@ const emptyProduct: ProductDraft = {
   certificationNumber: "",
   finish: "",
   price: "",
+  compareAtPrice: "",
   stock: "1",
+  trackInventory: true,
   status: "draft",
 };
 
@@ -462,6 +476,8 @@ function ProductRow(props: {
     typeof metadata()[key] === "string" ? metadata()[key] as string : "";
   const [editing, setEditing] = createSignal(false);
   const [name, setName] = createSignal(props.product.name);
+  const [slug, setSlug] = createSignal(props.product.slug);
+  const [brand, setBrand] = createSignal(props.product.brand ?? "");
   const [description, setDescription] = createSignal(
     props.product.description ?? "",
   );
@@ -492,6 +508,9 @@ function ProductRow(props: {
     props.product.variants[0]?.finish ?? "",
   );
   const [sku, setSku] = createSignal(props.product.sku ?? "");
+  const [barcode, setBarcode] = createSignal(
+    props.product.variants[0]?.barcode ?? "",
+  );
   const [condition, setCondition] = createSignal(
     props.product.condition ?? "Near Mint",
   );
@@ -502,7 +521,15 @@ function ProductRow(props: {
   const [price, setPrice] = createSignal(
     ((props.product.priceCents ?? 0) / 100).toFixed(2),
   );
+  const [compareAtPrice, setCompareAtPrice] = createSignal(
+    props.product.compareAtPriceCents === null
+      ? ""
+      : ((props.product.compareAtPriceCents ?? 0) / 100).toFixed(2),
+  );
   const [stock, setStock] = createSignal(String(props.product.stock ?? 0));
+  const [trackInventory, setTrackInventory] = createSignal(
+    props.product.variants[0]?.trackInventory ?? true,
+  );
   const [status, setStatus] = createSignal(props.product.status);
   const [saving, setSaving] = createSignal(false);
   const [message, setMessage] = createSignal("");
@@ -510,12 +537,28 @@ function ProductRow(props: {
   const [variantDraft, setVariantDraft] = createSignal({
     name: "",
     sku: "",
+    barcode: "",
     condition: "Near Mint",
     language: "English",
     finish: "",
     price: "",
+    compareAtPrice: "",
     stock: "0",
+    trackInventory: true,
   });
+  const [variantEditDraft, setVariantEditDraft] = createSignal<{
+    id: string;
+    name: string;
+    sku: string;
+    barcode: string;
+    condition: string;
+    language: string;
+    finish: string;
+    price: string;
+    compareAtPrice: string;
+    stock: string;
+    trackInventory: boolean;
+  } | null>(null);
 
   const loadImage = (file?: File) => {
     if (!file) return;
@@ -550,6 +593,8 @@ function ProductRow(props: {
         id: props.product.id,
         variantId: props.product.variantId,
         name: name(),
+        slug: slug(),
+        brand: brand(),
         description: description(),
         game: game(),
         productType: productType(),
@@ -564,11 +609,16 @@ function ProductRow(props: {
         certificationNumber: certificationNumber(),
         finish: finish(),
         sku: sku(),
+        barcode: barcode(),
         condition: condition(),
         language: language(),
         image: image(),
         priceCents: Math.round(Number(price()) * 100),
+        compareAtPriceCents: compareAtPrice()
+          ? Math.round(Number(compareAtPrice()) * 100)
+          : null,
         stock: Number(stock()),
+        trackInventory: trackInventory(),
         status: status(),
       }),
     });
@@ -597,11 +647,16 @@ function ProductRow(props: {
         productId: props.product.id,
         name: current.name,
         sku: current.sku,
+        barcode: current.barcode,
         condition: current.condition,
         language: current.language,
         finish: current.finish,
         priceCents: Math.round(Number(current.price) * 100),
+        compareAtPriceCents: current.compareAtPrice
+          ? Math.round(Number(current.compareAtPrice) * 100)
+          : null,
         stock: Number(current.stock),
+        trackInventory: current.trackInventory,
       }),
     });
     const result = (await response.json()) as { error?: string };
@@ -614,14 +669,98 @@ function ProductRow(props: {
     setVariantDraft({
       name: "",
       sku: "",
+      barcode: "",
       condition: "Near Mint",
       language: "English",
       finish: "",
       price: "",
+      compareAtPrice: "",
       stock: "0",
+      trackInventory: true,
     });
     setVariantOpen(false);
     setMessage("Variant added");
+    setSaving(false);
+  };
+
+  const editVariant = (variant: AdminVariant) => {
+    setVariantEditDraft({
+      id: variant.id,
+      name: variant.name,
+      sku: variant.sku,
+      barcode: variant.barcode ?? "",
+      condition: variant.condition ?? "",
+      language: variant.language ?? "",
+      finish: variant.finish ?? "",
+      price: (variant.priceCents / 100).toFixed(2),
+      compareAtPrice: variant.compareAtPriceCents === null
+        ? ""
+        : (variant.compareAtPriceCents / 100).toFixed(2),
+      stock: String(variant.stock),
+      trackInventory: variant.trackInventory,
+    });
+  };
+
+  const saveVariant = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const current = variantEditDraft();
+    if (!current) return;
+    setSaving(true);
+    setMessage("");
+    const response = await fetch("/api/admin/variants", {
+      method: "PATCH",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: current.id,
+        productId: props.product.id,
+        name: current.name,
+        sku: current.sku,
+        barcode: current.barcode,
+        condition: current.condition,
+        language: current.language,
+        finish: current.finish,
+        priceCents: Math.round(Number(current.price) * 100),
+        compareAtPriceCents: current.compareAtPrice
+          ? Math.round(Number(current.compareAtPrice) * 100)
+          : null,
+        stock: Number(current.stock),
+        trackInventory: current.trackInventory,
+      }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Variant could not be saved.");
+      setSaving(false);
+      return;
+    }
+    await Promise.resolve(props.onSaved());
+    setVariantEditDraft(null);
+    setMessage("Variant saved");
+    setSaving(false);
+  };
+
+  const archiveProduct = async () => {
+    if (metadataText("source") === "starter") return;
+    if (!window.confirm(`Archive ${name()}? It will disappear from the shop but remain recoverable.`)) return;
+    setSaving(true);
+    setMessage("");
+    const response = await fetch("/api/admin/products", {
+      method: "DELETE",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: props.product.id }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Product could not be archived.");
+      setSaving(false);
+      return;
+    }
+    setStatus("archived");
+    await Promise.resolve(props.onSaved());
+    setEditing(false);
+    setMessage("Product archived");
     setSaving(false);
   };
 
