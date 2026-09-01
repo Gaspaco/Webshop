@@ -1641,6 +1641,17 @@
   color: $white;
 }
 
+.variantList .mainVariantBadge {
+  display: inline-flex;
+  margin: 0 0 0 0.4rem;
+  padding: 0.14rem 0.38rem;
+  border-radius: $radius-full;
+  background: rgba($primary, 0.14);
+  color: $primary-light;
+  font-size: 0.52rem;
+  vertical-align: middle;
+}
+
 .variantList small {
   margin-top: 0.15rem;
   color: $gray-600;
@@ -1748,6 +1759,11 @@
 
 .variantToggle span {
   margin: 0 !important;
+}
+
+.variantToggle small {
+  color: $gray-500;
+  font-size: 0.55rem;
 }
 
 .discountForm,

@@ -239,6 +239,7 @@ export const productVariants = pgTable(
     condition: text("condition"),
     finish: text("finish"),
     imageUrl: text("image_url"),
+    isDefault: boolean("is_default").default(false).notNull(),
     priceCents: integer("price_cents").notNull(),
     compareAtPriceCents: integer("compare_at_price_cents"),
     stock: integer("stock").default(0).notNull(),

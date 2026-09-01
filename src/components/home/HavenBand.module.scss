@@ -72,7 +72,8 @@
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 1.25rem;
   }
 }
 
@@ -214,6 +215,9 @@
 }
 
 .newsletterBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   height: 3.125rem;
   padding-inline: 1.5rem;
   border-radius: $radius-md;
@@ -233,6 +237,24 @@
     outline: 3px solid $accent-gold;
     outline-offset: 3px;
   }
+}
+
+.accountActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.loginLink {
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba($white, 0.3);
+  color: $white;
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  &:hover { color: $primary-light; }
+  &:focus-visible { outline: 2px solid $accent-gold; outline-offset: 4px; }
 }
 
 .newsletterDone {

@@ -45,6 +45,7 @@ type AdminVariant = {
   language: string | null;
   finish: string | null;
   imageUrl: string | null;
+  isDefault: boolean;
   priceCents: number;
   compareAtPriceCents: number | null;
   stock: number;
@@ -242,7 +243,15 @@ type ProductDraft = {
   name: string;
   slug: string;
   brand: string;
-  game: "pokemon" | "yugioh" | "magic" | "other";
+  game:
+    | "pokemon"
+    | "yugioh"
+    | "magic"
+    | "lorcana"
+    | "riftbound"
+    | "digimon"
+    | "cyberpunk"
+    | "other";
   productType: "single" | "sealed" | "graded" | "accessory";
   set: string;
   sku: string;
@@ -278,6 +287,7 @@ type VariantDraft = {
   language: string;
   finish: string;
   imageUrl: string;
+  isDefault: boolean;
   price: string;
   compareAtPrice: string;
   stock: string;
@@ -327,6 +337,7 @@ function createEmptyVariantDraft(): VariantDraft {
     language: "English",
     finish: "",
     imageUrl: "",
+    isDefault: false,
     price: "",
     compareAtPrice: "",
     stock: "0",
@@ -426,6 +437,7 @@ function editableVariantFrom(variant: AdminVariant): EditableVariantDraft {
     language: variant.language ?? "",
     finish: variant.finish ?? "",
     imageUrl: variant.imageUrl ?? "",
+    isDefault: variant.isDefault,
     price: centsToEuros(variant.priceCents),
     compareAtPrice: centsToEuros(variant.compareAtPriceCents),
     stock: String(variant.stock),
@@ -764,6 +776,7 @@ function ProductRow(props: {
         language: current.language,
         finish: current.finish,
         imageUrl: current.imageUrl,
+        isDefault: current.isDefault,
         priceCents: eurosToCents(current.price),
         compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
         stock: Number(current.stock),
@@ -807,6 +820,7 @@ function ProductRow(props: {
         language: current.language,
         finish: current.finish,
         imageUrl: current.imageUrl,
+        isDefault: current.isDefault,
         priceCents: eurosToCents(current.price),
         compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
         stock: Number(current.stock),
@@ -997,6 +1011,10 @@ function ProductRow(props: {
                     <option value="pokemon">Pokémon</option>
                     <option value="yugioh">Yu-Gi-Oh!</option>
                     <option value="magic">Magic</option>
+                    <option value="lorcana">Disney Lorcana</option>
+                    <option value="riftbound">Riftbound</option>
+                    <option value="digimon">Digimon</option>
+                    <option value="cyberpunk">Cyberpunk</option>
                     <option value="other">Other</option>
                   </select>
                 </label>
@@ -1193,7 +1211,12 @@ function ProductRow(props: {
                     {variant => (
                       <div>
                         <span>
-                          <strong>{variant.name}</strong>
+                          <strong>
+                            {variant.name}
+                            <Show when={variant.isDefault}>
+                              <small class={styles.mainVariantBadge}>Main</small>
+                            </Show>
+                          </strong>
                           <small>{variant.sku}</small>
                         </span>
                         <span>{variant.condition ?? "No condition"}</span>
@@ -1264,6 +1287,20 @@ function ProductRow(props: {
                       <Show when={current().imageUrl}>
                         <img class={styles.variantImagePreview} src={current().imageUrl} alt="Selected variant preview" />
                       </Show>
+                      <label class={styles.variantToggle}>
+                        <input
+                          type="checkbox"
+                          checked={current().isDefault}
+                          disabled={current().isDefault}
+                          onChange={event => setVariantEditDraft(value => value && ({ ...value, isDefault: event.currentTarget.checked }))}
+                        />
+                        <span>Use as the main variant</span>
+                        <small>
+                          {current().isDefault
+                            ? "Already main. Choose another variant to replace it."
+                            : "This price and image appear first in product lists."}
+                        </small>
+                      </label>
                       <label>
                         <span>Selling price</span>
                         <input required type="number" min="0" step="0.01" value={current().price} onInput={event => setVariantEditDraft(value => value && ({ ...value, price: event.currentTarget.value }))} />
@@ -1344,6 +1381,15 @@ function ProductRow(props: {
                     <Show when={variantDraft().imageUrl}>
                       <img class={styles.variantImagePreview} src={variantDraft().imageUrl} alt="New variant preview" />
                     </Show>
+                    <label class={styles.variantToggle}>
+                      <input
+                        type="checkbox"
+                        checked={variantDraft().isDefault}
+                        onChange={event => setVariantDraft(current => ({ ...current, isDefault: event.currentTarget.checked }))}
+                      />
+                      <span>Make this the main variant</span>
+                      <small>Show this price and photo as the product default.</small>
+                    </label>
                     <label>
                       <span>Price in EUR</span>
                       <input required type="number" min="0" step="0.01" value={variantDraft().price} onInput={event => setVariantDraft(current => ({ ...current, price: event.currentTarget.value }))} />
@@ -2615,9 +2661,11 @@ export default function Admin() {
 
     setBulkBusy(true);
     try {
-      const results = await Promise.all(
-        targets.map(product =>
-          fetch("/api/admin/products", {
+      const failures: string[] = [];
+      let removed = 0;
+      for (const product of targets) {
+        try {
+          const response = await fetch("/api/admin/products", {
             method: "DELETE",
             credentials: "same-origin",
             headers: { "Content-Type": "application/json" },
@@ -2625,17 +2673,26 @@ export default function Admin() {
               id: product.id,
               confirmation: "DELETE",
             }),
-          })
-            .then(response => response.ok)
-            .catch(() => false),
-        ),
-      );
+          });
+          const result = (await response.json().catch(() => ({}))) as {
+            error?: string;
+          };
+          if (!response.ok) {
+            failures.push(`${product.name}: ${result.error ?? `request failed (${response.status})`}`);
+          } else {
+            removed += 1;
+          }
+        } catch {
+          failures.push(`${product.name}: network request failed`);
+        }
+      }
       await refetch();
       clearSelection();
-      const failed = results.filter(ok => !ok).length;
-      if (failed) {
-        window.alert(`${failed} selected product${failed === 1 ? "" : "s"} could not be deleted.`);
-      }
+      window.alert(
+        failures.length
+          ? `${removed} deleted. ${failures.length} failed:\n\n${failures.slice(0, 5).join("\n")}`
+          : `${removed} product${removed === 1 ? "" : "s"} permanently deleted.`,
+      );
     } finally {
       setBulkBusy(false);
     }
@@ -3078,6 +3135,10 @@ export default function Admin() {
                             <option value="pokemon">Pokémon</option>
                             <option value="yugioh">Yu-Gi-Oh!</option>
                             <option value="magic">Magic</option>
+                            <option value="lorcana">Disney Lorcana</option>
+                            <option value="riftbound">Riftbound</option>
+                            <option value="digimon">Digimon</option>
+                            <option value="cyberpunk">Cyberpunk</option>
                             <option value="other">Other</option>
                           </select>
                         </label>
@@ -3250,6 +3311,10 @@ export default function Admin() {
                         <option value="pokemon">Pokémon</option>
                         <option value="yugioh">Yu-Gi-Oh!</option>
                         <option value="magic">Magic</option>
+                        <option value="lorcana">Disney Lorcana</option>
+                        <option value="riftbound">Riftbound</option>
+                        <option value="digimon">Digimon</option>
+                        <option value="cyberpunk">Cyberpunk</option>
                         <option value="other">Other</option>
                       </select>
                     </label>

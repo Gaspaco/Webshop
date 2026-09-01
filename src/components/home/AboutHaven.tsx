@@ -17,32 +17,30 @@ export default function AboutHaven() {
           </div>
 
           <div class={styles.copy}>
-            <span class={styles.eyebrow}>The person behind it</span>
-            <h2 class={styles.heading}>Built by one collector, for collectors.</h2>
+            <h2 class={styles.heading}>A Dutch card shop with stock you can actually buy.</h2>
             <p class={styles.blurb}>
-              My Little TCG Haven is a one-person shop, run by Alex. It started
-              with a single card, then a shoebox, then a spare room that ran out
-              of shelves. Alex grades every card by hand and keeps stock counts
-              honest, so what you see is exactly what lands on your doorstep.
+              TCGHaven keeps singles and sealed products together in one clear
+              catalogue. Product formats, conditions, prices, and available
+              quantities are shown before you add anything to your cart.
             </p>
 
             <div class={styles.statRow}>
               <div class={styles.stat}>
-                <span class={styles.statNumber}>10K+</span>
-                <span class={styles.statLabel}>Cards in stock</span>
+                <span class={styles.statNumber}>In hand</span>
+                <span class={styles.statLabel}>Real stock shown online</span>
               </div>
               <div class={styles.stat}>
-                <span class={styles.statNumber}>3</span>
-                <span class={styles.statLabel}>Games we carry</span>
+                <span class={styles.statNumber}>PostNL</span>
+                <span class={styles.statLabel}>Tracked delivery options</span>
               </div>
               <div class={styles.stat}>
-                <span class={styles.statNumber}>NL</span>
-                <span class={styles.statLabel}>Based & shipped</span>
+                <span class={styles.statNumber}>Mollie</span>
+                <span class={styles.statLabel}>Secure payment processing</span>
               </div>
             </div>
 
             <A href="/about" class={styles.cta}>
-              Read our story
+              About TCGHaven
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>

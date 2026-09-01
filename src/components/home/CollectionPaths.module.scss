@@ -1,0 +1,270 @@
+@use "../../styles/variables" as *;
+
+.section {
+  padding: clamp(4rem, 8vh, 7rem) 0.5rem;
+  background: #0d0e0d;
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: clamp(2rem, 4vw, 3.25rem);
+
+  h2 {
+    max-width: 13ch;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(2.4rem, 4.6vw, 4.5rem);
+    font-weight: 850;
+    letter-spacing: -0.04em;
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+
+  p {
+    max-width: 48ch;
+    color: $gray-400;
+    font-size: 1rem;
+    line-height: 1.65;
+    text-wrap: pretty;
+  }
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(20rem, 0.82fr) minmax(18rem, 0.72fr);
+  gap: 1rem;
+  min-height: 42rem;
+}
+
+.collection {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba($white, 0.1);
+  background: $surface;
+  isolation: isolate;
+  transition: border-color $transition-base, transform $transition-base;
+
+  &:hover {
+    border-color: rgba($primary, 0.55);
+    transform: translateY(-3px);
+
+    strong svg { transform: translateX(4px); }
+  }
+
+  &:focus-visible {
+    outline: 3px solid $primary-light;
+    outline-offset: 3px;
+  }
+}
+
+.collectionCopy {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  padding: clamp(1.5rem, 3vw, 2.75rem);
+
+  > span {
+    margin-bottom: 0.8rem;
+    color: $primary-light;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  h3 {
+    max-width: 17ch;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.65rem, 2.6vw, 2.8rem);
+    font-weight: 820;
+    letter-spacing: -0.035em;
+    line-height: 1.03;
+    text-wrap: balance;
+  }
+
+  p {
+    max-width: 40ch;
+    margin-top: 0.85rem;
+    color: $gray-300;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: fit-content;
+    margin-top: 1.45rem;
+    color: $white;
+    font-size: 0.82rem;
+    font-weight: 750;
+
+    svg { width: 1rem; transition: transform $transition-fast; }
+  }
+}
+
+.singles {
+  background:
+    radial-gradient(circle at 70% 30%, rgba(#f07b39, 0.22), transparent 35%),
+    linear-gradient(150deg, #1f1711, #0d0f0e 75%);
+
+  .collectionCopy {
+    padding-top: 24rem;
+    background: linear-gradient(0deg, rgba(#090a09, 0.98), rgba(#090a09, 0.14) 76%, transparent);
+  }
+}
+
+.cardFan {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 82%;
+  height: 57%;
+  transform: translateX(-50%);
+
+  img {
+    position: absolute;
+    height: 93%;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 1.2rem 1.15rem rgba(#000, 0.54));
+    transition: transform 650ms cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:first-child { transform: translateX(-45%) rotate(-10deg) scale(0.9); }
+    &:nth-child(2) { z-index: 2; transform: translateY(-3%) rotate(1deg); }
+    &:last-child { transform: translateX(45%) rotate(10deg) scale(0.9); }
+  }
+}
+
+.singles:hover .cardFan img {
+  &:first-child { transform: translateX(-52%) rotate(-13deg) scale(0.93); }
+  &:nth-child(2) { transform: translateY(-6%) rotate(0deg) scale(1.03); }
+  &:last-child { transform: translateX(52%) rotate(13deg) scale(0.93); }
+}
+
+.stack {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 1rem;
+}
+
+.sealed {
+  background:
+    radial-gradient(circle at 90% 10%, rgba(#8b5cf6, 0.34), transparent 43%),
+    #17131d;
+}
+
+.graded {
+  background:
+    radial-gradient(circle at 90% 10%, rgba($primary, 0.25), transparent 45%),
+    #101917;
+}
+
+.stack .collectionCopy {
+  padding-top: 8rem;
+
+  h3 { font-size: clamp(1.35rem, 2vw, 2rem); }
+}
+
+.collectionCode {
+  position: absolute;
+  top: 0.15em;
+  right: -0.05em;
+  color: rgba(#c4b5fd, 0.12);
+  font-family: $font-display;
+  font-size: clamp(5rem, 9vw, 9rem);
+  font-weight: 900;
+  letter-spacing: -0.07em;
+  line-height: 0.8;
+}
+
+.slab {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  width: 6.5rem;
+  height: 9rem;
+  border: 2px solid rgba($primary-light, 0.28);
+  background: rgba(#050605, 0.4);
+  transform: rotate(7deg);
+
+  &::before {
+    position: absolute;
+    inset: 0.45rem 0.45rem auto;
+    height: 1.4rem;
+    background: rgba($primary, 0.22);
+    content: "";
+  }
+
+  i {
+    position: absolute;
+    inset: 2.25rem 0.7rem 0.7rem;
+    background: linear-gradient(145deg, rgba($primary, 0.28), rgba(#000, 0.2));
+  }
+}
+
+.releases {
+  background:
+    radial-gradient(circle at 50% 15%, rgba(#facc15, 0.2), transparent 38%),
+    #19180f;
+
+  .collectionCopy { padding-top: 14rem; }
+  .collectionCopy > span { color: #fde047; }
+}
+
+.releaseMark {
+  position: absolute;
+  top: 0.55em;
+  left: 50%;
+  color: rgba(#fde047, 0.11);
+  font-family: $font-display;
+  font-size: clamp(5.5rem, 8.5vw, 9.5rem);
+  font-weight: 900;
+  letter-spacing: -0.07em;
+  line-height: 0.85;
+  transform: translateX(-50%) rotate(-90deg) translateX(-20%);
+}
+
+@media (max-width: $bp-xl) {
+  .layout { grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.8fr); }
+  .releases { grid-column: 1 / -1; min-height: 23rem; }
+  .releases .collectionCopy { padding-top: 8rem; }
+  .releaseMark { transform: translateX(-50%); }
+}
+
+@media (max-width: $bp-lg) {
+  .header { align-items: flex-start; flex-direction: column; }
+  .layout { grid-template-columns: 1fr; min-height: 0; }
+  .singles { min-height: 38rem; }
+  .stack { min-height: 34rem; }
+}
+
+@media (max-width: $bp-sm) {
+  .wide { width: min(100% - 2rem, 110rem); }
+  .singles { min-height: 34rem; }
+  .singles .collectionCopy { padding-top: 19rem; }
+  .stack { min-height: 31rem; }
+  .releases { min-height: 21rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collection,
+  .cardFan img,
+  .collection strong svg { transition-duration: 0.01ms; }
+}

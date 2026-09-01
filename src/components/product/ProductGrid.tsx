@@ -1,12 +1,19 @@
 import { createMemo, createSignal, For } from "solid-js";
 import { useCart } from "~/lib/cart";
-import ProductCard, { type SectionProduct } from "./ProductCard";
+import ProductCard, {
+  type ProductVariantOption,
+  type SectionProduct,
+} from "./ProductCard";
 import styles from "./ProductGrid.module.scss";
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "name";
 
 function priceOf(product: SectionProduct) {
-  return product.priceRangeCents ? product.priceRangeCents[0] : product.priceCents ?? 0;
+  const mainVariant =
+    product.variants?.find(variant => variant.isDefault) ??
+    product.variants?.find(variant => variant.id === product.variantId) ??
+    product.variants?.[0];
+  return mainVariant?.priceCents ?? product.priceCents ?? product.priceRangeCents?.[0] ?? 0;
 }
 
 export default function ProductGrid(props: { products: SectionProduct[] }) {
@@ -28,13 +35,18 @@ export default function ProductGrid(props: { products: SectionProduct[] }) {
     }
   });
 
-  const addToCart = (product: SectionProduct) => {
-    if (product.priceRangeCents || product.priceCents === undefined) return;
+  const addToCart = (
+    product: SectionProduct,
+    variant?: ProductVariantOption,
+  ) => {
+    const priceCents = variant?.priceCents ?? product.priceCents;
+    if (priceCents === undefined) return;
     cart.addItem({
       id: product.id,
-      name: product.set ? `${product.name} · ${product.set}` : product.name,
-      image: product.image ?? "/images/logo-mark.png",
-      priceCents: product.priceCents,
+      variantId: variant?.id,
+      name: `${product.set ? `${product.name} · ${product.set}` : product.name}${variant ? ` (${variant.name})` : ""}`,
+      image: variant?.image ?? product.image ?? "/images/logo-mark.png",
+      priceCents,
     });
     setJustAdded(prev => new Set(prev).add(product.id));
     setTimeout(() => {

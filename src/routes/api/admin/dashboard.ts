@@ -1,5 +1,5 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { desc, eq, inArray } from "drizzle-orm";
+import { asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "~/db";
 import {
   adminAuditLog,
@@ -58,6 +58,7 @@ export async function GET(event: APIEvent) {
         language: productVariants.language,
         finish: productVariants.finish,
         variantImageUrl: productVariants.imageUrl,
+        isDefault: productVariants.isDefault,
         priceCents: productVariants.priceCents,
         compareAtPriceCents: productVariants.compareAtPriceCents,
         stock: productVariants.stock,
@@ -66,7 +67,11 @@ export async function GET(event: APIEvent) {
       })
       .from(products)
       .leftJoin(productVariants, eq(productVariants.productId, products.id))
-      .orderBy(desc(products.updatedAt))
+      .orderBy(
+        desc(products.updatedAt),
+        desc(productVariants.isDefault),
+        asc(productVariants.createdAt),
+      )
       .limit(250),
     db
       .select({
@@ -208,6 +213,7 @@ export async function GET(event: APIEvent) {
       language: string | null;
       finish: string | null;
       imageUrl: string | null;
+      isDefault: boolean;
       priceCents: number;
       compareAtPriceCents: number | null;
       stock: number;
@@ -228,6 +234,7 @@ export async function GET(event: APIEvent) {
         language: product.language,
         finish: product.finish,
         imageUrl: product.variantImageUrl,
+        isDefault: product.isDefault ?? false,
         priceCents: product.priceCents,
         compareAtPriceCents: product.compareAtPriceCents,
         stock: product.stock ?? 0,
@@ -260,6 +267,7 @@ export async function GET(event: APIEvent) {
         language: product.variants?.[0]?.language ?? product.language ?? "English",
         finish: product.variants?.[0]?.finish ?? product.finish ?? null,
         imageUrl: product.variants?.[0]?.image ?? null,
+        isDefault: true,
         priceCents: product.variants?.[0]?.priceCents ?? priceCents,
         compareAtPriceCents: null,
         stock: product.stock ?? 1,

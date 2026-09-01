@@ -16,7 +16,16 @@ import {
 import { findProduct } from "~/lib/categories";
 
 const statusSchema = z.enum(["draft", "active", "archived"]);
-const gameSchema = z.enum(["pokemon", "yugioh", "magic", "other"]);
+const gameSchema = z.enum([
+  "pokemon",
+  "yugioh",
+  "magic",
+  "lorcana",
+  "riftbound",
+  "digimon",
+  "cyberpunk",
+  "other",
+]);
 const imageSchema = z
   .string()
   .trim()
@@ -187,6 +196,8 @@ export async function POST(event: APIEvent) {
             input.productType === "sealed" ? "Sealed" : input.condition || null,
           language: input.language || null,
           finish: input.finish || null,
+          imageUrl: input.image || null,
+          isDefault: true,
           priceCents: input.priceCents,
           compareAtPriceCents: input.compareAtPriceCents ?? null,
           stock: input.stock,
@@ -290,6 +301,8 @@ export async function PATCH(event: APIEvent) {
               input.productType === "sealed" ? "Sealed" : input.condition || null,
             language: input.language || null,
             finish: input.finish || null,
+            imageUrl: input.image || null,
+            isDefault: true,
             priceCents: input.priceCents,
             compareAtPriceCents: input.compareAtPriceCents ?? null,
             stock: input.stock,
