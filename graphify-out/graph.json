@@ -701,20 +701,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx:32"
     },
     {
-      "id": "file::_game_",
-      "label": "[game].tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:1"
-    },
-    {
-      "id": "[game]::category",
-      "label": "category",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:17"
-    },
-    {
       "id": "file::auth",
       "label": "auth.ts",
       "fileType": "code",
@@ -2316,6 +2302,55 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/SetCollections.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/SetCollections.tsx:1"
+    },
+    {
+      "id": "file::_game_",
+      "label": "[game].tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:1"
+    },
+    {
+      "id": "_game_::releasetime",
+      "label": "releaseTime",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:65"
+    },
+    {
+      "id": "_game_::isupcoming",
+      "label": "isUpcoming",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:71"
+    },
+    {
+      "id": "_game_::formatreleasedate",
+      "label": "formatReleaseDate",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:77"
+    },
+    {
+      "id": "[game]::category",
+      "label": "category",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:90"
+    },
+    {
+      "id": "[game]::identity",
+      "label": "identity",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:91"
+    },
+    {
+      "id": "[game]::chooseset",
+      "label": "chooseSet",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:166"
     }
   ],
   "edges": [
@@ -2947,15 +2982,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/verify-email.tsx:32",
-      "weight": 1
-    },
-    {
-      "source": "file::_game_",
-      "target": "[game]::category",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:17",
       "weight": 1
     },
     {
@@ -4577,12 +4603,66 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/CollectionPaths.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/CollectionPaths.tsx:12",
       "weight": 1
+    },
+    {
+      "source": "file::_game_",
+      "target": "_game_::releasetime",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:65",
+      "weight": 1
+    },
+    {
+      "source": "file::_game_",
+      "target": "_game_::isupcoming",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:71",
+      "weight": 1
+    },
+    {
+      "source": "file::_game_",
+      "target": "_game_::formatreleasedate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:77",
+      "weight": 1
+    },
+    {
+      "source": "file::_game_",
+      "target": "[game]::category",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:90",
+      "weight": 1
+    },
+    {
+      "source": "file::_game_",
+      "target": "[game]::identity",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:91",
+      "weight": 1
+    },
+    {
+      "source": "file::_game_",
+      "target": "[game]::chooseset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:166",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 92,
-    "nodes": 331,
-    "edges": 251,
-    "builtAt": "2026-09-01T21:46:59.120Z"
+    "files": 91,
+    "nodes": 336,
+    "edges": 256,
+    "builtAt": "2026-09-01T21:56:04.534Z"
   }
 }
