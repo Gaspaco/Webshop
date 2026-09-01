@@ -14,7 +14,7 @@ type Slide = {
   href: string;
   image: string;
   alt: string;
-  theme: string;
+  theme: string; // accent used for the slide wash
 };
 
 const SLIDES: Slide[] = [
@@ -22,42 +22,77 @@ const SLIDES: Slide[] = [
     id: "umbreon-vmax-alt-art",
     set: "Evolving Skies",
     game: "Pokémon",
-    tag: "Alt-art single",
+    tag: "Alt-art singles",
     title: "Umbreon VMAX has landed",
-    blurb: "A collector favourite, photographed honestly and ready to ship from our Dutch stock.",
+    blurb:
+      "The moonlit alt-art everyone chases, freshly graded and ready to ship from our Dutch stock.",
     priceCents: 18995,
     href: "/categories/pokemon",
     image: "/images/cards/umbreon.png",
-    alt: "Umbreon VMAX alternate-art card",
-    theme: "#6d4bc3",
+    alt: "Umbreon VMAX alternate-art card under a moonlit rainbow sky",
+    theme: "#5b3aa6",
   },
   {
     id: "charizard-base-set",
-    set: "Base Set",
+    set: "Base Set Originals",
     game: "Pokémon",
-    tag: "Vintage icon",
-    title: "The original Charizard",
-    blurb: "The Base Set holo collectors never stopped chasing, with the condition stated clearly before you buy.",
+    tag: "Base Set icon",
+    title: "First-edition Charizard",
+    blurb:
+      "The 1999 holo that started it all. Honest grades, real photos, no surprises at checkout.",
     priceCents: 24995,
     href: "/categories/pokemon",
     image: "/images/cards/charizard.png",
-    alt: "Base Set Charizard holographic card",
-    theme: "#d35a23",
+    alt: "First-edition Base Set Charizard holographic card",
+    theme: "#c2410c",
   },
   {
     id: "rayquaza-vmax",
     set: "Silver Tempest",
     game: "Pokémon",
-    tag: "Back in stock",
-    title: "Rayquaza VMAX returns",
-    blurb: "A vivid modern chase card, packed carefully and dispatched with PostNL tracking.",
+    tag: "New arrivals",
+    title: "Rayquaza VMAX restock",
+    blurb:
+      "Back on the shelf in near-mint and PSA-ready condition. Limited copies, weekly drops.",
     priceCents: 15995,
     href: "/categories/pokemon",
     image: "/images/cards/rayquaza.png",
-    alt: "Rayquaza VMAX card",
-    theme: "#0f9f75",
+    alt: "Rayquaza VMAX alternate-art card",
+    theme: "#047857",
   },
 ];
+
+type Product = {
+  id: string;
+  name: string;
+  game: string;
+  image: string;
+  rating: number;
+  priceCents: number;
+  href: string;
+};
+
+const BESTSELLERS: Product[] = [
+  { id: "umbreon-vmax-alt-art", name: "Umbreon VMAX Alt Art", game: "Pokémon", image: "/images/cards/umbreon.png", rating: 5, priceCents: 18995, href: "/products" },
+  { id: "charizard-base-set", name: "Charizard · Base Set", game: "Pokémon", image: "/images/cards/charizard.png", rating: 5, priceCents: 24995, href: "/products" },
+  { id: "pikachu-crown-zenith", name: "Pikachu · Crown Zenith", game: "Pokémon", image: "/images/cards/pikachu.png", rating: 4, priceCents: 2495, href: "/products" },
+  { id: "blastoise-base-set", name: "Blastoise · Base Set", game: "Pokémon", image: "/images/cards/blastoise.png", rating: 4, priceCents: 11995, href: "/products" },
+  { id: "mewtwo-base-set", name: "Mewtwo · Base Set", game: "Pokémon", image: "/images/cards/mewtwo.png", rating: 5, priceCents: 8995, href: "/products" },
+];
+
+function Stars(props: { rating: number }) {
+  return (
+    <span class={styles.stars} aria-label={`${props.rating} out of 5 stars`}>
+      <For each={[1, 2, 3, 4, 5]}>
+        {n => (
+          <svg viewBox="0 0 24 24" classList={{ [styles.starOn]: n <= props.rating }} aria-hidden="true">
+            <path d="m12 2 2.9 6.3 6.9.7-5.1 4.6 1.4 6.7L12 17.8 5.9 20.6l1.4-6.7L2.2 9.3l6.9-.7L12 2Z" />
+          </svg>
+        )}
+      </For>
+    </span>
+  );
+}
 
 export default function Hero(props: {
   managedTitle?: string;
@@ -66,127 +101,182 @@ export default function Hero(props: {
   const cart = useCart();
   const [active, setActive] = createSignal(0);
   const [paused, setPaused] = createSignal(false);
-  const [justAdded, setJustAdded] = createSignal(false);
-
-  const selectSlide = (index: number) => {
-    setActive(index);
-    setJustAdded(false);
-  };
+  const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
 
   onMount(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setInterval(() => {
-      if (!paused()) selectSlide((active() + 1) % SLIDES.length);
-    }, 6800);
-    onCleanup(() => window.clearInterval(id));
+    const id = setInterval(() => {
+      if (!paused()) setActive(i => (i + 1) % SLIDES.length);
+    }, 6000);
+    onCleanup(() => clearInterval(id));
   });
 
-  const addActiveToCart = () => {
-    const slide = SLIDES[active()];
+  const flashAdded = (id: string) => {
+    setJustAdded(prev => new Set(prev).add(id));
+    setTimeout(() => {
+      setJustAdded(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 1400);
+  };
+
+  const addSlideToCart = (slide: Slide) => {
     cart.addItem({
       id: slide.id,
       name: slide.title,
       image: slide.image,
       priceCents: slide.priceCents,
     });
-    setJustAdded(true);
-    window.setTimeout(() => setJustAdded(false), 1500);
+    flashAdded(slide.id);
+  };
+
+  const addProductToCart = (product: Product) => {
+    cart.addItem({
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      priceCents: product.priceCents,
+    });
+    flashAdded(product.id);
   };
 
   return (
-    <section
-      class={styles.hero}
-      style={{ "--hero-accent": SLIDES[active()].theme }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      <div class={styles.atmosphere} aria-hidden="true" />
-      <div class={styles.shell}>
-        <div class={styles.topline}>
-          <span>Rotterdam card supply</span>
-          <span class={styles.toplineRule} />
-          <span>Drop {String(active() + 1).padStart(2, "0")} / {String(SLIDES.length).padStart(2, "0")}</span>
-        </div>
+    <section class={styles.showcase}>
+      <div class={styles.grid}>
+        <div
+          class={styles.featured}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          <For each={SLIDES}>
+            {(slide, i) => (
+              <article
+                class={styles.slide}
+                classList={{ [styles.slideActive]: i() === active() }}
+                style={{ "--theme": slide.theme }}
+                aria-hidden={i() === active() ? "false" : "true"}
+              >
+                <div class={styles.slideWash} />
+                <img class={styles.slideArt} src={slide.image} alt={slide.alt} draggable={false} />
+                <div class={styles.slideScrim} />
 
-        <div class={styles.composition}>
-          <div class={styles.copy}>
-            <span class={styles.kicker}>{SLIDES[active()].tag}</span>
-            <h1>{props.managedTitle || SLIDES[active()].title}</h1>
-            <p>{props.managedCopy || SLIDES[active()].blurb}</p>
+                <div class={styles.slideBody}>
+                  <div class={styles.slideTags}>
+                    <span class={styles.gameTag}>{slide.game}</span>
+                    <span class={styles.setTag}>{slide.tag}</span>
+                  </div>
+                  <h2 class={styles.slideTitle}>
+                    {i() === 0 && props.managedTitle
+                      ? props.managedTitle
+                      : slide.title}
+                  </h2>
+                  <p class={styles.slideBlurb}>
+                    {i() === 0 && props.managedCopy
+                      ? props.managedCopy
+                      : slide.blurb}
+                  </p>
+                  <div class={styles.slideFooter}>
+                    <A href={slide.href} class={styles.slideCta}>
+                      Shop {slide.set}
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6" />
+                      </svg>
+                    </A>
+                    <button
+                      type="button"
+                      class={styles.slideAddBtn}
+                      classList={{ [styles.addBtnDone]: justAdded().has(slide.id) }}
+                      onClick={() => addSlideToCart(slide)}
+                      aria-label={`Add ${slide.title} to cart`}
+                    >
+                      <Show
+                        when={!justAdded().has(slide.id)}
+                        fallback={
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
+                        }
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="9" cy="20" r="1.4" />
+                          <circle cx="18" cy="20" r="1.4" />
+                          <path d="M2 3h2.2l2.3 11.4a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 7H6" />
+                        </svg>
+                      </Show>
+                    </button>
+                    <span class={styles.slidePrice}>From {formatPrice(slide.priceCents)}</span>
+                  </div>
+                </div>
+              </article>
+            )}
+          </For>
 
-            <div class={styles.actions}>
-              <A href={SLIDES[active()].href} class={styles.primaryAction}>
-                Shop {SLIDES[active()].set}
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </A>
-              <A href="/products" class={styles.secondaryAction}>Browse all cards</A>
-            </div>
-
-            <dl class={styles.facts}>
-              <div><dt>Condition</dt><dd>Checked by hand</dd></div>
-              <div><dt>Dispatch</dt><dd>From the Netherlands</dd></div>
-            </dl>
-          </div>
-
-          <div class={styles.cardStage} aria-live="polite">
-            <div class={styles.orbit} aria-hidden="true"><span /></div>
+          <div class={styles.dots} role="tablist" aria-label="Featured sets">
             <For each={SLIDES}>
-              {(slide, index) => (
-                <img
-                  class={styles.cardArt}
-                  classList={{ [styles.cardArtActive]: index() === active() }}
-                  src={slide.image}
-                  alt={index() === active() ? slide.alt : ""}
-                  aria-hidden={index() === active() ? "false" : "true"}
-                  draggable={false}
+              {(slide, i) => (
+                <button
+                  type="button"
+                  role="tab"
+                  class={styles.dot}
+                  classList={{ [styles.dotActive]: i() === active() }}
+                  aria-selected={i() === active() ? "true" : "false"}
+                  aria-label={`Show ${slide.set}`}
+                  onClick={() => setActive(i())}
                 />
               )}
             </For>
-
-            <div class={styles.priceTicket}>
-              <span>Available now</span>
-              <strong>{formatPrice(SLIDES[active()].priceCents)}</strong>
-              <button
-                type="button"
-                onClick={addActiveToCart}
-                classList={{ [styles.added]: justAdded() }}
-              >
-                <Show when={!justAdded()} fallback="Added to cart">
-                  Add featured card
-                </Show>
-              </button>
-            </div>
           </div>
+        </div>
 
-          <nav class={styles.dropNav} aria-label="Featured card drops">
-            <For each={SLIDES}>
-              {(slide, index) => (
-                <button
-                  type="button"
-                  class={styles.dropButton}
-                  classList={{ [styles.dropButtonActive]: index() === active() }}
-                  onClick={() => selectSlide(index())}
-                  aria-current={index() === active() ? "true" : undefined}
-                >
-                  <span class={styles.dropNumber}>{String(index() + 1).padStart(2, "0")}</span>
-                  <span class={styles.dropText}>
-                    <strong>{slide.title}</strong>
-                    <small>{slide.game} · {slide.set}</small>
-                  </span>
-                  <span class={styles.dropArrow} aria-hidden="true">↗</span>
-                </button>
+        <aside class={styles.bestsellers} aria-label="Bestsellers">
+          <header class={styles.bestHeader}>
+            <h2>Bestsellers</h2>
+            <A href="/products" class={styles.viewAll}>View all</A>
+          </header>
+
+          <ul class={styles.bestList}>
+            <For each={BESTSELLERS}>
+              {product => (
+                <li class={styles.bestItem}>
+                  <A href={product.href} class={styles.bestLink}>
+                    <span class={styles.bestThumb}>
+                      <img src={product.image} alt="" draggable={false} loading="lazy" />
+                    </span>
+                    <span class={styles.bestInfo}>
+                      <span class={styles.bestName}>{product.name}</span>
+                      <span class={styles.bestRating}>
+                        <Stars rating={product.rating} />
+                      </span>
+                      <span class={styles.bestPrice}>{formatPrice(product.priceCents)}</span>
+                    </span>
+                  </A>
+                  <button
+                    type="button"
+                    class={styles.addBtn}
+                    classList={{ [styles.addBtnDone]: justAdded().has(product.id) }}
+                    onClick={() => addProductToCart(product)}
+                    aria-label={`Add ${product.name} to cart`}
+                  >
+                    <Show
+                      when={!justAdded().has(product.id)}
+                      fallback={
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                      }
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </Show>
+                  </button>
+                </li>
               )}
             </For>
-          </nav>
-        </div>
-
-        <div class={styles.serviceBar}>
-          <span><i aria-hidden="true" /> Real stock, no supplier listings</span>
-          <span><i aria-hidden="true" /> PostNL delivery with tracking</span>
-          <span><i aria-hidden="true" /> Free shipping from €300</span>
-        </div>
+          </ul>
+        </aside>
       </div>
     </section>
   );
