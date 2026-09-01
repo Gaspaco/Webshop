@@ -1,0 +1,166 @@
+@use "../../styles/variables" as *;
+
+.section {
+  padding: clamp(4rem, 8vh, 6.5rem) 0.5rem;
+  border-bottom: 1px solid rgba($white, 0.07);
+  background: #151615;
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2.25rem;
+
+  h2 {
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(2rem, 3.7vw, 3.7rem);
+    font-weight: 840;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  p {
+    max-width: 57ch;
+    margin-top: 0.8rem;
+    color: $gray-400;
+    line-height: 1.6;
+  }
+}
+
+.viewAll {
+  flex: 0 0 auto;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba($primary, 0.65);
+  color: $primary-light;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.collection {
+  --set-accent: #{$primary};
+  position: relative;
+  display: flex;
+  min-height: clamp(21rem, 26vw, 29rem);
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 1.5rem;
+  border: 1px solid rgba($white, 0.1);
+  background:
+    radial-gradient(circle at 82% 8%, color-mix(in srgb, var(--set-accent) 32%, transparent), transparent 42%),
+    #101210;
+  transition: border-color $transition-base, transform $transition-base;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--set-accent) 60%, transparent);
+    transform: translateY(-4px);
+
+    .code { transform: translateY(-0.15em); color: color-mix(in srgb, var(--set-accent) 22%, transparent); }
+    .open svg { transform: translateX(4px); }
+  }
+
+  &:focus-visible { outline: 3px solid var(--set-accent); outline-offset: 3px; }
+
+  h3 {
+    max-width: 11ch;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.55rem, 2.25vw, 2.5rem);
+    font-weight: 820;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+
+  p {
+    max-width: 27ch;
+    margin-top: 0.7rem;
+    color: $gray-400;
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+}
+
+.pokemon { --set-accent: #2ed39a; }
+.yugioh { --set-accent: #a78bfa; }
+.magic { --set-accent: #f28753; }
+.upcoming { --set-accent: #facc15; }
+
+.code {
+  position: absolute;
+  top: 0.5em;
+  right: -0.06em;
+  color: rgba($white, 0.055);
+  font-family: $font-display;
+  font-size: clamp(5rem, 8.5vw, 10rem);
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  line-height: 0.8;
+  transition: color $transition-slow, transform $transition-slow;
+}
+
+.game {
+  position: relative;
+  z-index: 1;
+  color: color-mix(in srgb, var(--set-accent) 68%, $white);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: $white;
+  font-size: 0.78rem;
+  font-weight: 750;
+
+  svg { width: 1rem; transition: transform $transition-fast; }
+}
+
+@media (max-width: $bp-xl) {
+  .rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .collection { min-height: 23rem; }
+}
+
+@media (max-width: $bp-md) {
+  .header { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: $bp-sm) {
+  .wide { width: min(100% - 2rem, 110rem); }
+  .rail {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .collection {
+    min-height: 21rem;
+    min-width: min(82vw, 20rem);
+    scroll-snap-align: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collection,
+  .code,
+  .open svg { transition-duration: 0.01ms; }
+}

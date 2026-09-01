@@ -17,7 +17,16 @@ import {
 
 const rowSchema = z.object({
   name: z.string().trim().min(2).max(140),
-  game: z.enum(["pokemon", "yugioh", "magic", "other"]),
+  game: z.enum([
+    "pokemon",
+    "yugioh",
+    "magic",
+    "lorcana",
+    "riftbound",
+    "digimon",
+    "cyberpunk",
+    "other",
+  ]),
   productType: z.enum(["single", "sealed", "graded", "accessory"]),
   set: z.string().trim().max(120).optional().default(""),
   sku: z.string().trim().min(1).max(80),
@@ -82,6 +91,8 @@ export async function POST(event: APIEvent) {
               name: "Default",
               condition: row.productType === "single" ? "Near Mint" : null,
               language: "English",
+              imageUrl: row.image || null,
+              isDefault: true,
               priceCents: row.priceCents,
               stock: row.stock,
             })

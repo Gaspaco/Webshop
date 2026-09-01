@@ -64,6 +64,13 @@
       "when": 1788186755079,
       "tag": "0008_jittery_the_professor",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788298389103,
+      "tag": "0009_third_power_pack",
+      "breakpoints": true
     }
   ]
 }

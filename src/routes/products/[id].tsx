@@ -7,7 +7,12 @@ import {
   onMount,
   Show,
 } from "solid-js";
-import ProductCard, { BoxArt, Stars, type SectionProduct } from "~/components/product/ProductCard";
+import ProductCard, {
+  BoxArt,
+  Stars,
+  type ProductVariantOption,
+  type SectionProduct,
+} from "~/components/product/ProductCard";
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories";
 import { formatPrice, useCart } from "~/lib/cart";
@@ -118,16 +123,26 @@ export default function ProductDetail() {
 
   const selectedVariant = () => {
     const variants = product()?.variants ?? [];
+    return variants.find(variant => variant.id === selectedVariantId());
+  };
+
+  const mainVariant = () => {
+    const current = product();
+    const variants = current?.variants ?? [];
     return (
-      variants.find(variant => variant.id === selectedVariantId()) ??
-      variants.find(variant => variant.stock > 0) ??
+      variants.find(variant => variant.isDefault) ??
+      variants.find(variant => variant.id === current?.variantId) ??
       variants[0]
     );
   };
 
+  const displayVariant = () => {
+    return selectedVariant() ?? mainVariant();
+  };
+
   const activeProduct = () => {
     const current = product();
-    const variant = selectedVariant();
+    const variant = displayVariant();
     if (!current || !variant) return current;
     return {
       ...current,
@@ -203,14 +218,19 @@ export default function ProductDetail() {
     setTimeout(() => setAdded(false), 1600);
   };
 
-  const addRelated = (item: SectionProduct) => {
-    if (item.priceRangeCents || item.priceCents === undefined) return;
+  const addRelated = (
+    item: SectionProduct,
+    variant?: ProductVariantOption,
+  ) => {
+    const priceCents = variant?.priceCents ?? item.priceCents;
+    if (priceCents === undefined) return;
 
     cart.addItem({
       id: item.id,
-      name: item.set ? `${item.name} · ${item.set}` : item.name,
-      image: item.image ?? "/images/logo-mark.png",
-      priceCents: item.priceCents,
+      variantId: variant?.id,
+      name: `${item.set ? `${item.name} · ${item.set}` : item.name}${variant ? ` (${variant.name})` : ""}`,
+      image: variant?.image ?? item.image ?? "/images/logo-mark.png",
+      priceCents,
     });
 
     setJustAdded(previous => new Set(previous).add(item.id));
@@ -291,7 +311,7 @@ export default function ProductDetail() {
                         draggable={false}
                       />
                     </Show>
-                    <span class={styles.mediaNote}>{selectedVariant()?.name ?? item().badge ?? conditionFor(item())}</span>
+                    <span class={styles.mediaNote}>{displayVariant()?.name ?? item().badge ?? conditionFor(item())}</span>
                   </div>
 
                   <div class={styles.stageFacts} aria-label="Product highlights">
@@ -327,7 +347,7 @@ export default function ProductDetail() {
                   </Show>
                   <p class={styles.price}>
                     <Show
-                      when={!selectedVariant() && item().priceRangeCents}
+                      when={!displayVariant() && item().priceRangeCents}
                       fallback={formatPrice(activeProduct()?.priceCents ?? 0)}
                     >
                       {formatPrice(item().priceRangeCents![0])} to {formatPrice(item().priceRangeCents![1])}
@@ -354,9 +374,10 @@ export default function ProductDetail() {
                             type="button"
                             classList={{
                               [styles.variantActive]:
-                                selectedVariant()?.id === variant.id,
+                                selectedVariantId() === variant.id,
                             }}
-                            aria-pressed={selectedVariant()?.id === variant.id}
+                            aria-pressed={selectedVariantId() === variant.id}
+                            disabled={variant.stock <= 0}
                             onClick={() => {
                               setSelectedVariantId(variant.id);
                               setQuantity(1);
@@ -416,7 +437,10 @@ export default function ProductDetail() {
                       type="button"
                       class={styles.primaryButton}
                       classList={{ [styles.primaryButtonDone]: added() }}
-                      disabled={activeProduct()?.stock === 0}
+                      disabled={
+                        activeProduct()?.stock === 0 ||
+                        ((item().variants?.length ?? 0) > 1 && !selectedVariant())
+                      }
                       onClick={() => {
                         const current = activeProduct();
                         if (current) addMain(current);
@@ -433,7 +457,9 @@ export default function ProductDetail() {
                           </>
                         }
                       >
-                        Add to cart
+                        {(item().variants?.length ?? 0) > 1 && !selectedVariant()
+                          ? "Choose a variant"
+                          : "Add to cart"}
                       </Show>
                     </button>
                   </div>

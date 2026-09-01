@@ -66,6 +66,30 @@
     #17140f;
 }
 
+.lorcana {
+  background:
+    radial-gradient(circle at 41% 52%, rgba(#c084fc, 0.24), transparent 0 29%, rgba(#c084fc, 0.05) 52%, transparent 70%),
+    #171019;
+}
+
+.riftbound {
+  background:
+    radial-gradient(circle at 41% 52%, rgba(#38bdf8, 0.25), transparent 0 29%, rgba(#38bdf8, 0.05) 52%, transparent 70%),
+    #0d171b;
+}
+
+.digimon {
+  background:
+    radial-gradient(circle at 41% 52%, rgba(#3b82f6, 0.24), transparent 0 29%, rgba(#3b82f6, 0.05) 52%, transparent 70%),
+    #0d1420;
+}
+
+.cyberpunk {
+  background:
+    radial-gradient(circle at 41% 52%, rgba(#f5e600, 0.25), transparent 0 29%, rgba(#f5e600, 0.05) 52%, transparent 70%),
+    #171709;
+}
+
 .heroTopline {
   position: absolute;
   z-index: 3;
@@ -137,7 +161,7 @@
 
   .productMedia {
     align-items: flex-end;
-    padding: 8rem 2rem 5.5rem;
+    padding: 6.5rem 2rem 4.5rem;
 
     &::before {
       width: min(34vw, 31rem);
@@ -152,8 +176,11 @@
     }
 
     img {
+      width: min(43vw, 39rem);
+      height: min(58vh, 31rem);
       max-width: min(43vw, 39rem);
       max-height: min(58vh, 31rem);
+      object-fit: contain;
     }
 
     > div {
@@ -168,7 +195,7 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-width: 0;
-  min-height: 46rem;
+  min-height: 43rem;
   padding: clamp(2rem, 4vw, 4.5rem) clamp(1.25rem, 3vw, 3.5rem) 2rem;
   border-right: 1px solid rgba($white, 0.1);
 }
@@ -200,7 +227,7 @@
 .productMedia {
   position: absolute;
   z-index: 1;
-  inset: 4.25rem 0 0;
+  inset: 3rem 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -228,9 +255,10 @@
   img {
     position: relative;
     z-index: 2;
-    width: auto;
+    width: min(31vw, 29rem);
+    height: min(62vh, 35rem);
     max-width: min(31vw, 29rem);
-    max-height: min(68vh, 38rem);
+    max-height: min(62vh, 35rem);
     object-fit: contain;
     filter: drop-shadow(0 1.3rem 1rem rgba(#000, 0.5));
     animation: product-arrive 900ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;

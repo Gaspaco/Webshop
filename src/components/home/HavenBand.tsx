@@ -1,26 +1,17 @@
 import { A } from "@solidjs/router";
-import { createSignal, For, Show } from "solid-js";
+import { For } from "solid-js";
 import styles from "./HavenBand.module.scss";
 
 const TRENDING = [
-  { name: "Charizard", image: "/images/cards/charizard.png", href: "/products" },
-  { name: "Umbreon VMAX", image: "/images/cards/umbreon.png", href: "/products" },
-  { name: "Pikachu", image: "/images/cards/pikachu.png", href: "/products" },
-  { name: "Rayquaza VMAX", image: "/images/cards/rayquaza.png", href: "/products" },
-  { name: "Palkia V", image: "/images/cards/palkia.png", href: "/products" },
-  { name: "Venusaur", image: "/images/cards/venusaur.png", href: "/products" },
+  { name: "Charizard", image: "/images/cards/charizard.png", href: "/products/charizard-base-set" },
+  { name: "Umbreon VMAX", image: "/images/cards/umbreon.png", href: "/products/umbreon-vmax-alt-art" },
+  { name: "Pikachu", image: "/images/cards/pikachu.png", href: "/products/pikachu-crown-zenith" },
+  { name: "Rayquaza VMAX", image: "/images/cards/rayquaza.png", href: "/products/rayquaza-vmax-st" },
+  { name: "Palkia V", image: "/images/cards/palkia.png", href: "/products/palkia-v-astral" },
+  { name: "Venusaur", image: "/images/cards/venusaur.png", href: "/products/venusaur-base" },
 ];
 
 export default function HavenBand() {
-  const [email, setEmail] = createSignal("");
-  const [subscribed, setSubscribed] = createSignal(false);
-
-  const onSubscribe = (event: SubmitEvent) => {
-    event.preventDefault();
-    if (!email().trim()) return;
-    setSubscribed(true);
-  };
-
   return (
     <section class={styles.section}>
       <div class={styles.wide}>
@@ -93,42 +84,19 @@ export default function HavenBand() {
           </li>
         </ul>
 
-        {/* Newsletter */}
+        {/* Account CTA */}
         <div class={styles.newsletter}>
           <div class={styles.newsletterCopy}>
-            <h2 class={styles.newsletterTitle}>Join the Haven</h2>
+            <h2 class={styles.newsletterTitle}>Keep every order in one place</h2>
             <p class={styles.newsletterBlurb}>
-              New drops, restocks, and preorder windows straight to your inbox.
-              No spam, ever.
+              Create an account for order history, saved addresses, your wishlist,
+              and faster checkout next time.
             </p>
           </div>
-
-          <Show
-            when={!subscribed()}
-            fallback={
-              <p class={styles.newsletterDone} role="status">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
-                You're in. See you at the next drop.
-              </p>
-            }
-          >
-            <form class={styles.newsletterForm} onSubmit={onSubscribe}>
-              <input
-                type="email"
-                class={styles.newsletterInput}
-                placeholder="you@example.com"
-                aria-label="Email address"
-                required
-                value={email()}
-                onInput={event => setEmail(event.currentTarget.value)}
-              />
-              <button type="submit" class={styles.newsletterBtn}>
-                Sign me up
-              </button>
-            </form>
-          </Show>
+          <div class={styles.accountActions}>
+            <A href="/signup" class={styles.newsletterBtn}>Create an account</A>
+            <A href="/login" class={styles.loginLink}>Sign in</A>
+          </div>
         </div>
       </div>
     </section>

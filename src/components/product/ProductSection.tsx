@@ -1,7 +1,10 @@
 import { A } from "@solidjs/router";
 import { createSignal, For, Show } from "solid-js";
 import { useCart } from "~/lib/cart";
-import ProductCard, { type SectionProduct } from "./ProductCard";
+import ProductCard, {
+  type ProductVariantOption,
+  type SectionProduct,
+} from "./ProductCard";
 import styles from "./ProductSection.module.scss";
 
 export type { BoxTheme, SectionProduct } from "./ProductCard";
@@ -24,13 +27,18 @@ export default function ProductSection(props: ProductSectionProps) {
     trackRef.scrollBy({ left: dir * amount, behavior: "smooth" });
   };
 
-  const addToCart = (product: SectionProduct) => {
-    if (product.priceRangeCents || product.priceCents === undefined) return;
+  const addToCart = (
+    product: SectionProduct,
+    variant?: ProductVariantOption,
+  ) => {
+    const priceCents = variant?.priceCents ?? product.priceCents;
+    if (priceCents === undefined) return;
     cart.addItem({
       id: product.id,
-      name: product.set ? `${product.name} · ${product.set}` : product.name,
-      image: product.image ?? "/images/logo-mark.png",
-      priceCents: product.priceCents,
+      variantId: variant?.id,
+      name: `${product.set ? `${product.name} · ${product.set}` : product.name}${variant ? ` (${variant.name})` : ""}`,
+      image: variant?.image ?? product.image ?? "/images/logo-mark.png",
+      priceCents,
     });
     setJustAdded(prev => new Set(prev).add(product.id));
     setTimeout(() => {

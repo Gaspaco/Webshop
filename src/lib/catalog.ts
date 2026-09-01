@@ -16,6 +16,7 @@ export type DatabaseCatalogProduct = {
   language: string | null;
   finish: string | null;
   variantImageUrl: string | null;
+  isDefault: boolean;
   priceCents: number;
   compareAtPriceCents: number | null;
   stock: number;
@@ -26,6 +27,10 @@ const gameNames: Record<string, string> = {
   pokemon: "Pokémon",
   yugioh: "Yu-Gi-Oh!",
   magic: "Magic: The Gathering",
+  lorcana: "Disney Lorcana",
+  riftbound: "Riftbound",
+  digimon: "Digimon Card Game",
+  cyberpunk: "Cyberpunk",
   other: "Other",
 };
 
@@ -35,7 +40,11 @@ export function databaseProductToShopProduct(
   const game =
     product.game === "pokemon" ||
     product.game === "yugioh" ||
-    product.game === "magic"
+    product.game === "magic" ||
+    product.game === "lorcana" ||
+    product.game === "riftbound" ||
+    product.game === "digimon" ||
+    product.game === "cyberpunk"
       ? product.game
       : "pokemon";
   const productType =
@@ -109,6 +118,7 @@ export function databaseProductToShopProduct(
         language: product.language ?? undefined,
         finish: product.finish ?? undefined,
         image: product.variantImageUrl ?? undefined,
+        isDefault: product.isDefault,
         priceCents: product.priceCents,
         compareAtPriceCents: product.compareAtPriceCents ?? undefined,
         stock: availableStock,
@@ -144,17 +154,21 @@ export async function fetchDatabaseCatalogState(
     }
 
     const variants = [...(existing.variants ?? []), ...(mapped.variants ?? [])];
-    const firstAvailable = variants.find(variant => variant.stock > 0) ?? variants[0];
+    const mainVariant =
+      variants.find(variant => variant.isDefault) ??
+      variants.find(variant => variant.stock > 0) ??
+      variants[0];
     grouped.set(mapped.id, {
       ...existing,
-      priceCents: Math.min(...variants.map(variant => variant.priceCents)),
-      compareAtPriceCents: firstAvailable?.compareAtPriceCents,
+      image: mainVariant?.image ?? existing.image,
+      priceCents: mainVariant?.priceCents,
+      compareAtPriceCents: mainVariant?.compareAtPriceCents,
       stock: variants.reduce((total, variant) => total + variant.stock, 0),
-      variantId: firstAvailable?.id,
-      sku: firstAvailable?.sku,
-      condition: firstAvailable?.condition,
-      language: firstAvailable?.language,
-      finish: firstAvailable?.finish,
+      variantId: mainVariant?.id,
+      sku: mainVariant?.sku,
+      condition: mainVariant?.condition,
+      language: mainVariant?.language,
+      finish: mainVariant?.finish,
       variants,
     });
   }

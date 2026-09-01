@@ -163,11 +163,39 @@
     linear-gradient(120deg, #1c1207 0%, transparent 70%);
 }
 
+.lorcana::before {
+  background:
+    radial-gradient(ellipse 60% 120% at 90% 50%, rgba(#c084fc, 0.42) 0%, transparent 60%),
+    linear-gradient(120deg, #351440 0%, transparent 70%);
+}
+
+.riftbound::before {
+  background:
+    radial-gradient(ellipse 60% 120% at 90% 50%, rgba(#38bdf8, 0.38) 0%, transparent 60%),
+    linear-gradient(120deg, #073f54 0%, transparent 70%);
+}
+
+.digimon::before {
+  background:
+    radial-gradient(ellipse 60% 120% at 90% 50%, rgba(#3b82f6, 0.4) 0%, transparent 60%),
+    linear-gradient(120deg, #102f63 0%, transparent 70%);
+}
+
+.cyberpunk::before {
+  background:
+    radial-gradient(ellipse 60% 120% at 90% 50%, rgba(#f5e600, 0.42) 0%, transparent 60%),
+    linear-gradient(120deg, #4f4a00 0%, transparent 70%);
+}
+
 // tint the quicknav pills to match each game on hover
 .quicklink {
   &.pokemon:hover { border-color: rgba($primary, 0.6); background: rgba($primary, 0.12); }
   &.yugioh:hover { border-color: rgba(#7c3aed, 0.6); background: rgba(#7c3aed, 0.16); }
   &.magic:hover { border-color: rgba($accent-gold, 0.55); background: rgba($accent-gold, 0.12); }
+  &.lorcana:hover { border-color: rgba(#c084fc, 0.62); background: rgba(#c084fc, 0.14); }
+  &.riftbound:hover { border-color: rgba(#38bdf8, 0.62); background: rgba(#38bdf8, 0.13); }
+  &.digimon:hover { border-color: rgba(#3b82f6, 0.62); background: rgba(#3b82f6, 0.14); }
+  &.cyberpunk:hover { border-color: rgba(#f5e600, 0.68); background: rgba(#f5e600, 0.12); }
 }
 
 .sectionHeadText {

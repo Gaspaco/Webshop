@@ -1,8 +1,11 @@
 import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
-import { createSignal, For } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import { formatPrice, useCart } from "~/lib/cart";
-import ProductCard, { type SectionProduct } from "~/components/product/ProductCard";
+import ProductCard, {
+  type ProductVariantOption,
+  type SectionProduct,
+} from "~/components/product/ProductCard";
 import { CATEGORY_LIST } from "~/lib/categories";
 import styles from "./index.module.scss";
 
@@ -11,7 +14,7 @@ function priceOf(product: SectionProduct) {
 }
 
 function fromPrice(products: SectionProduct[]) {
-  return Math.min(...products.map(priceOf));
+  return products.length ? Math.min(...products.map(priceOf)) : null;
 }
 
 const totalProducts = CATEGORY_LIST.reduce((sum, c) => sum + c.products.length, 0);
@@ -20,13 +23,18 @@ export default function Categories() {
   const cart = useCart();
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
 
-  const addToCart = (product: SectionProduct) => {
-    if (product.priceRangeCents || product.priceCents === undefined) return;
+  const addToCart = (
+    product: SectionProduct,
+    variant?: ProductVariantOption,
+  ) => {
+    const priceCents = variant?.priceCents ?? product.priceCents;
+    if (priceCents === undefined) return;
     cart.addItem({
       id: product.id,
-      name: product.set ? `${product.name} · ${product.set}` : product.name,
-      image: product.image ?? "/images/logo-mark.png",
-      priceCents: product.priceCents,
+      variantId: variant?.id,
+      name: `${product.set ? `${product.name} · ${product.set}` : product.name}${variant ? ` (${variant.name})` : ""}`,
+      image: variant?.image ?? product.image ?? "/images/logo-mark.png",
+      priceCents,
     });
     setJustAdded(prev => new Set(prev).add(product.id));
     setTimeout(() => {
@@ -91,7 +99,12 @@ export default function Categories() {
                   <span class={styles.meta}>
                     <strong>{game.products.length}</strong> products
                     <span class={styles.metaSep} aria-hidden="true">·</span>
-                    from <strong class={styles.price}>{formatPrice(fromPrice(game.products))}</strong>
+                    <Show
+                      when={fromPrice(game.products)}
+                      fallback={<strong class={styles.price}>Coming soon</strong>}
+                    >
+                      {value => <>from <strong class={styles.price}>{formatPrice(value())}</strong></>}
+                    </Show>
                   </span>
                   <A href={`/categories/${game.slug}`} class={styles.viewAll}>
                     View all

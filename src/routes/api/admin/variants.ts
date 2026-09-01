@@ -35,6 +35,7 @@ const variantSchema = z.object({
   condition: z.string().trim().max(60),
   finish: z.string().trim().max(60),
   imageUrl: variantImageSchema.optional().default(""),
+  isDefault: z.boolean().optional().default(false),
   priceCents: z.number().int().min(0).max(100_000_000),
   compareAtPriceCents: z.number().int().min(0).max(100_000_000).nullable().optional(),
   stock: z.number().int().min(0).max(1_000_000),
@@ -61,16 +62,24 @@ export async function POST(event: APIEvent) {
       .limit(1);
     if (!product) return apiJson({ error: "Product not found." }, { status: 404 });
 
-    const [variant] = await db
-      .insert(productVariants)
-      .values({
-        ...input,
-        barcode: input.barcode || null,
-        imageUrl: input.imageUrl || null,
-        condition:
-          product.productType === "sealed" ? "Sealed" : input.condition || null,
-      })
-      .returning();
+    const [variant] = await db.transaction(async tx => {
+      if (input.isDefault) {
+        await tx
+          .update(productVariants)
+          .set({ isDefault: false })
+          .where(eq(productVariants.productId, input.productId));
+      }
+      return tx
+        .insert(productVariants)
+        .values({
+          ...input,
+          barcode: input.barcode || null,
+          imageUrl: input.imageUrl || null,
+          condition:
+            product.productType === "sealed" ? "Sealed" : input.condition || null,
+        })
+        .returning();
+    });
     if (input.stock > 0) {
       await db.insert(inventoryMovements).values({
         variantId: variant!.id,
@@ -110,6 +119,7 @@ export async function PATCH(event: APIEvent) {
     const [current] = await db
       .select({
         stock: productVariants.stock,
+        isDefault: productVariants.isDefault,
         productType: products.productType,
       })
       .from(productVariants)
@@ -124,30 +134,45 @@ export async function PATCH(event: APIEvent) {
     if (!current) {
       return apiJson({ error: "Variant not found." }, { status: 404 });
     }
+    if (current.isDefault && !input.isDefault) {
+      return apiJson(
+        { error: "Choose another variant as main before changing this one." },
+        { status: 400 },
+      );
+    }
 
-    const [variant] = await db
-      .update(productVariants)
-      .set({
-        name: input.name,
-        sku: input.sku,
-        barcode: input.barcode || null,
-        condition:
-          current.productType === "sealed" ? "Sealed" : input.condition || null,
-        language: input.language || null,
-        finish: input.finish || null,
-        imageUrl: input.imageUrl || null,
-        priceCents: input.priceCents,
-        compareAtPriceCents: input.compareAtPriceCents ?? null,
-        stock: input.stock,
-        trackInventory: input.trackInventory,
-      })
-      .where(
-        and(
-          eq(productVariants.id, input.id),
-          eq(productVariants.productId, input.productId),
-        ),
-      )
-      .returning();
+    const [variant] = await db.transaction(async tx => {
+      if (input.isDefault) {
+        await tx
+          .update(productVariants)
+          .set({ isDefault: false })
+          .where(eq(productVariants.productId, input.productId));
+      }
+      return tx
+        .update(productVariants)
+        .set({
+          name: input.name,
+          sku: input.sku,
+          barcode: input.barcode || null,
+          condition:
+            current.productType === "sealed" ? "Sealed" : input.condition || null,
+          language: input.language || null,
+          finish: input.finish || null,
+          imageUrl: input.imageUrl || null,
+          isDefault: input.isDefault,
+          priceCents: input.priceCents,
+          compareAtPriceCents: input.compareAtPriceCents ?? null,
+          stock: input.stock,
+          trackInventory: input.trackInventory,
+        })
+        .where(
+          and(
+            eq(productVariants.id, input.id),
+            eq(productVariants.productId, input.productId),
+          ),
+        )
+        .returning();
+    });
 
     if (input.stock !== current.stock) {
       await db.insert(inventoryMovements).values({
@@ -195,7 +220,7 @@ export async function DELETE(event: APIEvent) {
       })
       .parse(await event.request.json());
     const variants = await db
-      .select({ id: productVariants.id })
+      .select({ id: productVariants.id, isDefault: productVariants.isDefault })
       .from(productVariants)
       .where(eq(productVariants.productId, input.productId));
     if (variants.length <= 1) {
@@ -214,6 +239,15 @@ export async function DELETE(event: APIEvent) {
       )
       .returning({ id: productVariants.id, sku: productVariants.sku });
     if (!removed) return apiJson({ error: "Variant not found." }, { status: 404 });
+    if (variants.find(variant => variant.id === input.id)?.isDefault) {
+      const replacement = variants.find(variant => variant.id !== input.id);
+      if (replacement) {
+        await db
+          .update(productVariants)
+          .set({ isDefault: true })
+          .where(eq(productVariants.id, replacement.id));
+      }
+    }
     await writeAuditLog({
       event,
       actorId: guard.session!.user.id,

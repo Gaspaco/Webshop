@@ -1,5 +1,5 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "~/db";
 import { products, productVariants } from "~/db/schema";
 
@@ -28,6 +28,7 @@ export async function GET(event: APIEvent) {
         language: productVariants.language,
         finish: productVariants.finish,
         variantImageUrl: productVariants.imageUrl,
+        isDefault: productVariants.isDefault,
         priceCents: productVariants.priceCents,
         compareAtPriceCents: productVariants.compareAtPriceCents,
         stock: productVariants.stock,
@@ -36,7 +37,11 @@ export async function GET(event: APIEvent) {
       .from(products)
       .innerJoin(productVariants, eq(productVariants.productId, products.id))
       .where(where)
-      .orderBy(asc(products.createdAt))
+      .orderBy(
+        asc(products.createdAt),
+        desc(productVariants.isDefault),
+        asc(productVariants.createdAt),
+      )
       .limit(slug ? 50 : 250),
     db
       .select({ slug: products.slug })

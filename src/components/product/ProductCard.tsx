@@ -1,9 +1,31 @@
 import { A } from "@solidjs/router";
-import { For, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, For, onCleanup, Show } from "solid-js";
+import { Portal } from "solid-js/web";
 import { formatPrice } from "~/lib/cart";
 import styles from "./ProductSection.module.scss";
 
-export type BoxTheme = "pokemon" | "yugioh" | "magic";
+export type BoxTheme =
+  | "pokemon"
+  | "yugioh"
+  | "magic"
+  | "lorcana"
+  | "riftbound"
+  | "digimon"
+  | "cyberpunk";
+
+export type ProductVariantOption = {
+  id: string;
+  name: string;
+  sku: string;
+  condition?: string;
+  language?: string;
+  finish?: string;
+  image?: string;
+  isDefault?: boolean;
+  priceCents: number;
+  compareAtPriceCents?: number;
+  stock: number;
+};
 
 export type SectionProduct = {
   id: string;
@@ -17,6 +39,8 @@ export type SectionProduct = {
   rating?: number;
   href: string;
   badge?: string;
+  variants?: ProductVariantOption[];
+  variantId?: string;
 };
 
 export function Stars(props: { rating: number }) {
@@ -50,12 +74,56 @@ export function BoxArt(props: { theme: BoxTheme; label: string }) {
 type ProductCardProps = {
   product: SectionProduct;
   isJustAdded: () => boolean;
-  onAdd: (product: SectionProduct) => void;
+  onAdd: (product: SectionProduct, variant?: ProductVariantOption) => void;
   fill?: boolean;
 };
 
 export default function ProductCard(props: ProductCardProps) {
   const p = props.product;
+  const [quickViewOpen, setQuickViewOpen] = createSignal(false);
+  const [selectedVariantId, setSelectedVariantId] = createSignal("");
+  const selectedVariant = createMemo(() =>
+    p.variants?.find(variant => variant.id === selectedVariantId()),
+  );
+  const mainVariant = createMemo(() =>
+    p.variants?.find(variant => variant.isDefault) ??
+    p.variants?.find(variant => variant.id === p.variantId) ??
+    p.variants?.[0],
+  );
+  const displayVariant = createMemo(() => selectedVariant() ?? mainVariant());
+  const displayPrice = createMemo(
+    () => displayVariant()?.priceCents ?? p.priceCents ?? p.priceRangeCents?.[0] ?? 0,
+  );
+  const displayCompareAtPrice = createMemo(
+    () => displayVariant()?.compareAtPriceCents ?? p.compareAtPriceCents,
+  );
+  const hasChoices = () => (p.variants?.length ?? 0) > 1;
+
+  const openQuickView = () => {
+    setSelectedVariantId("");
+    setQuickViewOpen(true);
+  };
+
+  const confirmVariant = () => {
+    const variant = selectedVariant();
+    if (!variant || variant.stock <= 0) return;
+    props.onAdd(p, variant);
+    setQuickViewOpen(false);
+  };
+
+  createEffect(() => {
+    if (!quickViewOpen()) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setQuickViewOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    onCleanup(() => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    });
+  });
 
   return (
     <article
@@ -86,38 +154,29 @@ export default function ProductCard(props: ProductCardProps) {
 
         <div class={styles.cardFooter}>
           <span class={styles.cardPricing}>
-            <Show when={p.compareAtPriceCents && p.compareAtPriceCents > (p.priceCents ?? 0)}>
-              <del>{formatPrice(p.compareAtPriceCents!)}</del>
+            <Show when={displayCompareAtPrice() && displayCompareAtPrice()! > displayPrice()}>
+              <del>{formatPrice(displayCompareAtPrice()!)}</del>
             </Show>
             <span class={styles.cardPrice}>
-              <Show
-                when={!p.priceRangeCents}
-                fallback={
-                  <>
-                    {formatPrice(p.priceRangeCents![0])} to {formatPrice(p.priceRangeCents![1])}
-                  </>
-                }
-              >
-                {formatPrice(p.priceCents ?? 0)}
-              </Show>
+              {formatPrice(displayPrice())}
             </span>
           </span>
 
           <Show
-            when={!p.priceRangeCents}
+            when={!hasChoices()}
             fallback={
-              <A href={p.href} class={styles.addBtn} aria-label={`View ${p.name} options`}>
+              <button type="button" class={styles.addBtn} aria-label={`Choose ${p.name} options`} onClick={openQuickView}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
+                  <path d="M12 5v14M5 12h14" />
                 </svg>
-              </A>
+              </button>
             }
           >
             <button
               type="button"
               class={styles.addBtn}
               classList={{ [styles.addBtnDone]: props.isJustAdded() }}
-              onClick={() => props.onAdd(p)}
+              onClick={() => props.onAdd(p, p.variants?.[0])}
               aria-label={`Add ${p.name} to cart`}
             >
               <Show
@@ -136,6 +195,83 @@ export default function ProductCard(props: ProductCardProps) {
           </Show>
         </div>
       </div>
+
+      <Show when={quickViewOpen()}>
+        <Portal>
+          <div
+            class={styles.quickViewBackdrop}
+            role="presentation"
+            onClick={event => {
+              if (event.target === event.currentTarget) setQuickViewOpen(false);
+            }}
+          >
+            <section
+              class={styles.quickView}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={`quick-view-title-${p.id}`}
+            >
+              <button
+                type="button"
+                class={styles.quickViewClose}
+                aria-label="Close product options"
+                onClick={() => setQuickViewOpen(false)}
+              >
+                ×
+              </button>
+
+              <div class={styles.quickViewMedia}>
+                <Show
+                  when={displayVariant()?.image ?? p.image}
+                  fallback={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}
+                >
+                  {image => <img src={image()} alt="" />}
+                </Show>
+              </div>
+
+              <div class={styles.quickViewBody}>
+                <span class={styles.quickViewSet}>{p.set ?? "Choose a format"}</span>
+                <h2 id={`quick-view-title-${p.id}`}>{p.name}</h2>
+                <p>Select the exact format before adding this product to your cart.</p>
+
+                <div class={styles.quickVariants}>
+                  <For each={p.variants}>
+                    {variant => (
+                      <button
+                        type="button"
+                        disabled={variant.stock <= 0}
+                        classList={{ [styles.quickVariantActive]: selectedVariantId() === variant.id }}
+                        onClick={() => setSelectedVariantId(variant.id)}
+                      >
+                        <span>
+                          <strong>{variant.name}</strong>
+                          <small>
+                            {[variant.condition, variant.language, variant.finish].filter(Boolean).join(" · ") || variant.sku}
+                          </small>
+                        </span>
+                        <span>
+                          <strong>{formatPrice(variant.priceCents)}</strong>
+                          <small>{variant.stock > 0 ? `${variant.stock} available` : "Sold out"}</small>
+                        </span>
+                      </button>
+                    )}
+                  </For>
+                </div>
+
+                <button
+                  type="button"
+                  class={styles.quickAdd}
+                  disabled={!selectedVariant() || selectedVariant()!.stock <= 0}
+                  onClick={confirmVariant}
+                >
+                  {selectedVariant() ? `Add ${selectedVariant()!.name} to cart` : "Choose a variant"}
+                </button>
+                <A href={p.href} class={styles.quickDetails}>View full product details</A>
+              </div>
+            </section>
+          </div>
+        </Portal>
+      </Show>
     </article>
   );
 }
