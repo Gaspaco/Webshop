@@ -1,0 +1,132 @@
+@use "../../styles/variables" as *;
+
+.page {
+  min-height: calc(100dvh - $header-height);
+  padding-bottom: clamp(4rem, 9vh, 7rem);
+  background: $background;
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+.header {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba($white, 0.1);
+  background: #0a0b0a;
+  isolation: isolate;
+}
+
+.glow {
+  position: absolute;
+  top: -18rem;
+  right: -8rem;
+  z-index: -1;
+  width: 42rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--game-accent-strong) 18%, transparent);
+  filter: blur(8rem);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  min-height: 3.75rem;
+  border-bottom: 1px solid rgba($white, 0.08);
+  color: rgba($white, 0.42);
+  font-size: 0.7rem;
+
+  a { color: rgba($white, 0.64); &:hover { color: $white; } }
+}
+
+.headingRow {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  padding-block: clamp(3rem, 7vh, 5rem);
+}
+
+.code {
+  color: color-mix(in srgb, var(--game-accent) 36%, transparent);
+  font-family: $font-display;
+  font-size: clamp(4rem, 8vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -0.07em;
+  line-height: 0.75;
+}
+
+.headingRow h1 {
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(2.75rem, 5.8vw, 5.5rem);
+  font-weight: 870;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.headingRow p {
+  max-width: 58ch;
+  margin-top: 0.8rem;
+  color: rgba($white, 0.58);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.tabs {
+  position: sticky;
+  top: $header-height;
+  z-index: calc($z-sticky - 1);
+  display: flex;
+  min-height: 4rem;
+  align-items: stretch;
+  gap: 1.5rem;
+  overflow-x: auto;
+  border-bottom: 1px solid rgba($white, 0.1);
+  background: rgba($background, 0.95);
+  backdrop-filter: blur(10px);
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  a {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    color: $gray-500;
+    font-size: 0.75rem;
+    font-weight: 750;
+
+    &:hover { color: $white; }
+  }
+
+  .active {
+    color: $white;
+
+    &::after {
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 2px;
+      background: var(--game-accent-strong);
+      content: "";
+    }
+  }
+}
+
+.content {
+  padding-top: clamp(3rem, 7vh, 5rem);
+}
+
+@media (max-width: $bp-sm) {
+  .wide { width: calc(100% - 2rem); }
+  .headingRow { align-items: flex-start; flex-direction: column; }
+  .code { font-size: 4rem; }
+  .tabs { width: 100%; padding-inline: 1rem; }
+}
