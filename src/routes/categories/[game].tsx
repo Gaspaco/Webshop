@@ -24,6 +24,44 @@ const FILTERS: Array<{ value: ProductFilter; label: string }> = [
   { value: "accessory", label: "Accessories" },
 ];
 
+const GAME_IDENTITIES: Record<string, { code: string; descriptor: string; releaseCopy: string }> = {
+  pokemon: {
+    code: "PKM",
+    descriptor: "Vintage icons, modern chase cards, sealed sets, and graded slabs.",
+    releaseCopy: "Pokémon expansions, restocks, and preorder windows.",
+  },
+  yugioh: {
+    code: "YGO",
+    descriptor: "Booster displays, structure decks, reprints, and competitive staples.",
+    releaseCopy: "Yu-Gi-Oh! sets, reprints, and first-edition releases.",
+  },
+  magic: {
+    code: "MTG",
+    descriptor: "Commander decks, play boosters, collector boxes, and singles.",
+    releaseCopy: "Magic releases across Commander, Standard, and collector products.",
+  },
+  lorcana: {
+    code: "LRC",
+    descriptor: "Disney characters, enchanted cards, starter decks, and booster displays.",
+    releaseCopy: "Lorcana expansions, starter products, and announced sets.",
+  },
+  riftbound: {
+    code: "RFB",
+    descriptor: "Champion decks, League of Legends sets, boosters, and sealed displays.",
+    releaseCopy: "Riftbound champion decks and the next Runeterra releases.",
+  },
+  digimon: {
+    code: "DGM",
+    descriptor: "Tamer decks, alternate arts, booster sets, and collector cards.",
+    releaseCopy: "Digimon booster sets, decks, and scheduled releases.",
+  },
+  cyberpunk: {
+    code: "CPK",
+    descriptor: "Night City releases, sealed products, and collector cards.",
+    releaseCopy: "Cyberpunk products and announced releases from Night City.",
+  },
+};
+
 function releaseTime(product: ShopProduct) {
   if (!product.releaseDate) return 0;
   const time = Date.parse(`${product.releaseDate}T12:00:00`);
@@ -50,6 +88,12 @@ function formatReleaseDate(value?: string) {
 export default function CategoryPage() {
   const params = useParams();
   const category = () => CATEGORIES[params.game ?? ""];
+  const identity = () =>
+    GAME_IDENTITIES[params.game ?? ""] ?? {
+      code: "TCG",
+      descriptor: "Singles, sealed products, and upcoming releases.",
+      releaseCopy: "Announced products and preorder windows.",
+    };
   const [clientReady, setClientReady] = createSignal(false);
   const [productFilter, setProductFilter] = createSignal<ProductFilter>("all");
   const [selectedSet, setSelectedSet] = createSignal("all");
@@ -144,7 +188,7 @@ export default function CategoryPage() {
       }
     >
       {cat => (
-        <main class={styles.page}>
+        <main class={`${styles.page} ${styles[cat().theme]}`}>
           <Title>{cat().name} cards and sealed products | TCGHaven</Title>
 
           <section class={`${styles.hero} ${styles[cat().theme]}`}>
@@ -158,8 +202,13 @@ export default function CategoryPage() {
                   <span>/</span>
                   <span>{cat().name}</span>
                 </nav>
+                <div class={styles.gameIdentity}>
+                  <span>{identity().code}</span>
+                  <span>Dedicated game store</span>
+                </div>
                 <h1>{cat().name}</h1>
-                <p>{cat().blurb}</p>
+                <p class={styles.identityLead}>{identity().descriptor}</p>
+                <p class={styles.heroBlurb}>{cat().blurb}</p>
                 <div class={styles.heroActions}>
                   <a href="#latest" class={styles.primaryLink}>Browse new releases</a>
                   <a href="#catalogue" class={styles.secondaryLink}>Shop everything</a>
@@ -171,7 +220,16 @@ export default function CategoryPage() {
                 </ul>
               </div>
 
-              <Show when={heroProduct()}>
+              <Show
+                when={heroProduct()}
+                fallback={
+                  <div class={styles.identityStage} aria-label={`${cat().name} release page`}>
+                    <span aria-hidden="true">{identity().code}</span>
+                    <strong>{cat().name}</strong>
+                    <p>Products, sets, and releases added from the owner dashboard appear here automatically.</p>
+                  </div>
+                }
+              >
                 {product => (
                   <A href={product().href} class={styles.heroProduct}>
                     <span class={styles.heroProductMeta}>
@@ -201,7 +259,7 @@ export default function CategoryPage() {
             <header class={styles.sectionHeader}>
               <div>
                 <h2>Upcoming releases</h2>
-                <p>Pre-orders and announced sets for {cat().name}.</p>
+                <p>{identity().releaseCopy}</p>
               </div>
               <Show when={upcoming().length}>
                 <span>{upcoming().length} announced</span>
@@ -237,12 +295,26 @@ export default function CategoryPage() {
           </section>
 
           <section id="latest" class={styles.latestSection}>
-            <ProductSection
-              heading="Latest releases"
-              sub={`Recently added ${cat().name} products, singles, and sealed sets.`}
-              products={latest()}
-              viewAllHref={`/products?q=${encodeURIComponent(cat().name)}`}
-            />
+            <Show
+              when={latest().length}
+              fallback={
+                <div class={`${styles.wide} ${styles.latestEmpty}`}>
+                  <span>{identity().code}</span>
+                  <div>
+                    <h2>Latest releases</h2>
+                    <p>The first {cat().name} products will appear here once they are published from the dashboard.</p>
+                  </div>
+                  <A href="/products">Browse all products</A>
+                </div>
+              }
+            >
+              <ProductSection
+                heading="Latest releases"
+                sub={`Recently added ${cat().name} products, singles, and sealed sets.`}
+                products={latest()}
+                viewAllHref={`/products?q=${encodeURIComponent(cat().name)}`}
+              />
+            </Show>
           </section>
 
           <section id="sets" class={`${styles.wide} ${styles.setSection}`}>
@@ -252,17 +324,30 @@ export default function CategoryPage() {
                 <p>Jump straight into a release, expansion, or collection.</p>
               </div>
             </header>
-            <div class={styles.setDirectory}>
-              <For each={sets()}>
-                {set => (
-                  <button type="button" onClick={() => chooseSet(set.name)}>
-                    <span>{set.code ?? "Set"}</span>
-                    <strong>{set.name}</strong>
-                    <small>{set.count} {set.count === 1 ? "product" : "products"}</small>
-                  </button>
-                )}
-              </For>
-            </div>
+            <Show
+              when={sets().length}
+              fallback={
+                <div class={styles.setEmpty}>
+                  <span aria-hidden="true">{identity().code}</span>
+                  <div>
+                    <strong>No set collection has been published yet.</strong>
+                    <p>Adding a set name and set code to a product creates its collection here.</p>
+                  </div>
+                </div>
+              }
+            >
+              <div class={styles.setDirectory}>
+                <For each={sets()}>
+                  {set => (
+                    <button type="button" onClick={() => chooseSet(set.name)}>
+                      <span>{set.code ?? "Set"}</span>
+                      <strong>{set.name}</strong>
+                      <small>{set.count} {set.count === 1 ? "product" : "products"}</small>
+                    </button>
+                  )}
+                </For>
+              </div>
+            </Show>
           </section>
 
           <section id="catalogue" class={`${styles.wide} ${styles.catalogue}`}>
