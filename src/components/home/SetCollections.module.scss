@@ -21,10 +21,10 @@
   h2 {
     color: $white;
     font-family: $font-display;
-    font-size: clamp(2rem, 3.7vw, 3.7rem);
-    font-weight: 840;
-    letter-spacing: -0.04em;
-    line-height: 1;
+    font-size: clamp(1.9rem, 3.2vw, 2.9rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.04;
   }
 
   p {
@@ -54,7 +54,7 @@
   --set-accent: #{$primary};
   position: relative;
   display: flex;
-  min-height: clamp(21rem, 26vw, 29rem);
+  min-height: clamp(15rem, 19vw, 20rem);
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;

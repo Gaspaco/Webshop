@@ -733,3 +733,49 @@
     transition: none;
   }
 }
+
+// Auth pages hide the site nav, so they need their own way out.
+.backLink {
+  // Block-level so it sits on its own row above the wordmark; the logo is
+  // inline-flex and they would otherwise share a line.
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  margin-bottom: 1.25rem;
+  color: $gray-400;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  transition: color $transition-fast;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    transition: transform $transition-base;
+  }
+
+  &:hover {
+    color: $white;
+  }
+
+  &:hover svg {
+    transform: translateX(-3px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 3px;
+    border-radius: $radius-sm;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backLink svg {
+    transition: none;
+  }
+
+  .backLink:hover svg {
+    transform: none;
+  }
+}

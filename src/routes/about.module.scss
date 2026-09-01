@@ -14,14 +14,9 @@
 // ---------- Hero ----------
 
 .hero {
-  max-width: none;
-  min-height: clamp(20rem, 42vh, 31rem);
-  padding: clamp(2.5rem, 6vw, 6rem);
-  margin-bottom: clamp(4rem, 9vh, 7rem);
-  border-block: 1px solid rgba($white, 0.12);
-  background:
-    radial-gradient(circle at 77% 50%, rgba($primary, 0.2), transparent 0 18%, transparent 48%),
-    #111512;
+  max-width: 48rem;
+  padding-block: clamp(2rem, 5vh, 3.25rem) clamp(2rem, 5vh, 3rem);
+  margin-bottom: clamp(2.5rem, 6vh, 4rem);
 }
 
 .eyebrow {
@@ -38,19 +33,21 @@
 }
 
 .heading {
-  max-width: 10ch;
-  font-size: clamp(4rem, 9vw, 6rem);
+  font-family: $font-display;
+  font-size: clamp(2.4rem, 5vw, 3.75rem);
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
   color: $white;
   margin-bottom: 1rem;
 }
 
 .lead {
-  max-width: 58ch;
+  max-width: 56ch;
+  margin-top: 1rem;
   color: $gray-300;
-  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
-  line-height: 1.7;
+  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  line-height: 1.65;
 }
 
 // ---------- Story ----------
@@ -106,125 +103,58 @@
 
 .storyHeading {
   font-family: $font-display;
-  font-size: clamp(2.5rem, 4vw, 4.5rem);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.028em;
   color: #101712;
-  line-height: 0.98;
+  line-height: 1.05;
   margin-bottom: 0.25rem;
 }
 
-// ---------- Stats ----------
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  margin-bottom: clamp(3rem, 7vh, 5rem);
-  padding: clamp(1.75rem, 3vw, 2.5rem);
-  border-radius: 0;
-  border: 1px solid rgba($white, 0.07);
-  background: $surface;
-
-  @media (max-width: $bp-sm) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.75rem;
-
-    .stat {
-      padding-inline: 0;
-      border-right: 0;
-    }
-  }
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  padding-inline: clamp(1rem, 2vw, 2rem);
-  border-right: 1px solid rgba($white, 0.08);
-
-  &:last-child {
-    border-right: 0;
-  }
-}
-
-.statNumber {
-  font-family: $font-display;
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: $primary;
-  line-height: 1;
-}
-
-.statLabel {
-  font-size: 0.875rem;
-  color: $gray-400;
-}
-
-// ---------- Values ----------
+// ---------- How I run it ----------
+// A plain definition list. Four identical icon-tile cards read as a template,
+// and the icons carried no information the headings didn't already.
 
 .values {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  margin-bottom: clamp(3rem, 7vh, 5rem);
-
-  @media (max-width: $bp-lg) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (max-width: $bp-sm) {
-    grid-template-columns: 1fr;
-  }
+  padding-block: clamp(2rem, 5vh, 3rem);
+  border-top: 1px solid rgba($white, 0.1);
+  margin-bottom: clamp(2.5rem, 6vh, 4rem);
 }
 
-.valueCard {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  border-radius: 0;
-  background: transparent;
-  border-block: 1px solid rgba($white, 0.1);
-  border-right: 1px solid rgba($white, 0.1);
-  transition: border-color $transition-base, transform $transition-base;
-
-  &:hover {
-    border-color: rgba($primary, 0.3);
-    transform: translateY(-3px);
-  }
-}
-
-.valueIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: $radius-md;
-  background: rgba($primary, 0.12);
-  border: 1px solid rgba($primary, 0.24);
-  color: $primary-light;
-
-  svg {
-    width: 1.375rem;
-    height: 1.375rem;
-  }
-}
-
-.valueTitle {
-  font-family: $font-display;
-  font-size: 1.0625rem;
-  font-weight: 700;
+.valuesHeading {
   color: $white;
+  font-family: $font-display;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: clamp(1.5rem, 3vh, 2rem);
 }
 
-.valueText {
-  color: $gray-400;
-  font-size: 0.875rem;
-  line-height: 1.6;
+.valueList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: clamp(1.5rem, 3vw, 2.75rem) clamp(2rem, 4vw, 4rem);
+  margin: 0;
+}
+
+.value {
+  min-width: 0;
+
+  dt {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.0625rem;
+    font-weight: 750;
+    letter-spacing: -0.01em;
+  }
+
+  dd {
+    max-width: 46ch;
+    margin: 0.5rem 0 0;
+    color: $gray-400;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+  }
 }
 
 // ---------- CTA ----------

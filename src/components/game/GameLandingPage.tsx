@@ -54,80 +54,90 @@ export default function GameLandingPage() {
           <Title>{cat().name} | TCGHaven</Title>
 
           <section class={styles.hero}>
-            <div class={styles.heroGlow} aria-hidden="true" />
             <div class={styles.wide}>
               <nav class={styles.breadcrumb} aria-label="Breadcrumb">
                 <A href="/">Home</A>
-                <span>/</span>
+                <span aria-hidden="true">/</span>
                 <A href="/categories">Games</A>
-                <span>/</span>
+                <span aria-hidden="true">/</span>
                 <span>{cat().name}</span>
               </nav>
 
-              <div class={styles.heroGrid}>
-                <div class={styles.heroCopy}>
-                  <span class={styles.gameCode}>{identity().code}</span>
+              <div class={styles.masthead}>
+                <div class={styles.intro}>
                   <h1>{cat().name}</h1>
                   <p class={styles.descriptor}>{identity().descriptor}</p>
                   <p class={styles.blurb}>{cat().blurb}</p>
+
                   <div class={styles.actions}>
                     <A href={`/categories/${game()}/products`} class={styles.primaryAction}>
-                      Shop {cat().name}
+                      Enter the shop
                       <Arrow />
                     </A>
                     <A href={`/categories/${game()}/releases`} class={styles.secondaryAction}>
-                      View releases
+                      Release calendar
                     </A>
                   </div>
+
+                  <p class={styles.stockLine}>
+                    <Show
+                      when={products().length}
+                      fallback="No products published yet."
+                    >
+                      <strong>{products().length}</strong>
+                      {products().length === 1 ? " product" : " products"}
+                      {" across "}
+                      <strong>{sets().length}</strong>
+                      {sets().length === 1 ? " set" : " sets"}
+                      <Show when={upcoming().length}>
+                        {", "}
+                        <strong>{upcoming().length}</strong> arriving soon
+                      </Show>
+                    </Show>
+                  </p>
                 </div>
 
                 <Show
                   when={featured()}
                   fallback={
-                    <div class={styles.emptyFeature}>
-                      <span aria-hidden="true">{identity().code}</span>
-                      <div>
-                        <strong>{cat().name} catalogue</strong>
-                        <p>Products will appear here when the owner publishes them.</p>
-                      </div>
+                    <div class={styles.emptyArtwork}>
+                      <strong>Nothing on the shelf yet</strong>
+                      <p>The first published {cat().name} product will show up here.</p>
                     </div>
                   }
                 >
                   {product => (
-                    <A href={product().href} class={styles.featuredProduct}>
-                      <div class={styles.featuredTopline}>
-                        <span>{isUpcoming(product()) ? "Upcoming" : "Featured"}</span>
-                        <span>{product().setCode ?? identity().code}</span>
-                      </div>
-                      <img src={product().image} alt={product().name} />
-                      <div class={styles.featuredCopy}>
+                    <A href={product().href} class={styles.showcase}>
+                      <img src={product().image} alt={product().name} draggable={false} />
+                      <div class={styles.showcaseCaption}>
+                        <span>{isUpcoming(product()) ? "Next release" : "In stock now"}</span>
                         <strong>{product().name}</strong>
-                        <span>{product().set ?? cat().name}</span>
+                        <small>{product().setCode ?? product().set ?? cat().name}</small>
                       </div>
                     </A>
                   )}
                 </Show>
               </div>
+
+              <nav class={styles.destinations} aria-label={`${cat().name} store pages`}>
+                <A href={`/categories/${game()}/products`}>
+                  <strong>Catalogue</strong>
+                  <small>{products().length ? `${products().length} products in stock` : "Shop everything"}</small>
+                  <Arrow />
+                </A>
+                <A href={`/categories/${game()}/sets`}>
+                  <strong>Set archive</strong>
+                  <small>{sets().length ? `${sets().length} collections` : "Browse expansions"}</small>
+                  <Arrow />
+                </A>
+                <A href={`/categories/${game()}/releases`}>
+                  <strong>Releases</strong>
+                  <small>{upcoming().length ? `${upcoming().length} arriving soon` : "View the calendar"}</small>
+                  <Arrow />
+                </A>
+              </nav>
             </div>
           </section>
-
-          <nav class={`${styles.wide} ${styles.destinations}`} aria-label={`${cat().name} store pages`}>
-            <A href={`/categories/${game()}/releases`}>
-              <span>Releases</span>
-              <strong>{upcoming().length ? `${upcoming().length} upcoming` : "Release calendar"}</strong>
-              <Arrow />
-            </A>
-            <A href={`/categories/${game()}/sets`}>
-              <span>Sets</span>
-              <strong>{sets().length ? `${sets().length} collections` : "Browse expansions"}</strong>
-              <Arrow />
-            </A>
-            <A href={`/categories/${game()}/products`}>
-              <span>Catalogue</span>
-              <strong>{products().length ? `${products().length} products` : "All products"}</strong>
-              <Arrow />
-            </A>
-          </nav>
         </main>
       )}
     </Show>

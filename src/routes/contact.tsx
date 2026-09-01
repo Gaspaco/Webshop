@@ -55,7 +55,6 @@ export default function Contact() {
         <Title>Contact | TCGHaven</Title>
 
         <header class={styles.header}>
-          <span class={styles.eyebrow}>Contact</span>
           <h1 class={styles.heading}>Get in touch</h1>
           <p class={styles.sub}>
             Question about an order, a card's condition, or something else?
@@ -68,12 +67,6 @@ export default function Contact() {
           <aside class={styles.info}>
             <div class={styles.infoList}>
               <div class={styles.infoItem}>
-                <span class={styles.infoIcon}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="5" width="18" height="14" rx="2" />
-                    <path d="m3 7 9 6 9-6" />
-                  </svg>
-                </span>
                 <div>
                   <p class={styles.infoLabel}>Email</p>
                   <a href={`mailto:${profile().businessEmail}`} class={styles.infoValue}>
@@ -83,11 +76,6 @@ export default function Contact() {
               </div>
 
               <div class={styles.infoItem}>
-                <span class={styles.infoIcon}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z" />
-                  </svg>
-                </span>
                 <div>
                   <p class={styles.infoLabel}>Phone</p>
                   <a href={`tel:${profile().phone.replace(/\s+/g, "")}`} class={styles.infoValue}>{profile().phone}</a>
@@ -95,12 +83,6 @@ export default function Contact() {
               </div>
 
               <div class={styles.infoItem}>
-                <span class={styles.infoIcon}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 7v5l3 3" />
-                  </svg>
-                </span>
                 <div>
                   <p class={styles.infoLabel}>Response time</p>
                   <p class={styles.infoValue}>Usually within one business day</p>
@@ -108,12 +90,6 @@ export default function Contact() {
               </div>
 
               <div class={styles.infoItem}>
-                <span class={styles.infoIcon}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 10c0 6-8 11-8 11s-8-5-8-11a8 8 0 0 1 16 0Z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
-                </span>
                 <div>
                   <p class={styles.infoLabel}>Based in</p>
                   <p class={styles.infoValue}>The Netherlands · ships across the EU</p>

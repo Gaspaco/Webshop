@@ -6,7 +6,6 @@
   z-index: $z-sticky;
   height: $header-height;
   background: rgba($background, 0.96);
-  border-bottom: 1px solid rgba($white, 0.1);
   backdrop-filter: blur(14px);
 }
 
@@ -232,5 +231,18 @@
 
   .wishlistBtn {
     display: none;
+  }
+}
+
+// Appears only while the search field is expanded, so there's an obvious way
+// out besides Escape or clicking away.
+.searchClose {
+  flex-shrink: 0;
+  margin-right: 0.25rem;
+  color: $gray-400;
+
+  &:hover {
+    color: $white;
+    background: rgba($white, 0.07);
   }
 }

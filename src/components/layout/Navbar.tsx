@@ -104,6 +104,18 @@ export default function Navbar() {
                 <path d="m21 21-4.35-4.35" />
               </svg>
             </button>
+            <Show when={searchOpen()}>
+              <button
+                type="button"
+                class={`${styles.iconBtn} ${styles.searchClose}`}
+                aria-label="Close search"
+                onClick={closeSearch}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </Show>
           </form>
 
           <A

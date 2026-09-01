@@ -7,42 +7,18 @@ const VALUES = [
   {
     title: "Honest grading",
     text: "Every card is graded by hand with real photos and real conditions. No stock images, no surprises at your door.",
-    icon: () => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 3l7 4v5c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V7l7-4Z" />
-        <path d="M9 12l2 2 4-4" />
-      </svg>
-    ),
   },
   {
     title: "Fair prices",
     text: "No marketplace mark-ups or hidden fees. Prices are set by one person who actually knows the cards.",
-    icon: () => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-      </svg>
-    ),
   },
   {
     title: "Shipped from NL",
     text: "Packed with care and posted quickly from the Netherlands, with tracking across the EU.",
-    icon: () => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z" />
-        <circle cx="7" cy="17" r="1.6" />
-        <circle cx="17.5" cy="17" r="1.6" />
-      </svg>
-    ),
   },
   {
     title: "A real person",
     text: "When you message the shop, you're talking to Alex, not a call centre. Same collector, every time.",
-    icon: () => (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
-      </svg>
-    ),
   },
 ];
 
@@ -92,35 +68,18 @@ export default function About() {
           </div>
         </section>
 
-        <section class={styles.stats}>
-          <div class={styles.stat}>
-            <span class={styles.statNumber}>10K+</span>
-            <span class={styles.statLabel}>Cards in stock</span>
-          </div>
-          <div class={styles.stat}>
-            <span class={styles.statNumber}>3</span>
-            <span class={styles.statLabel}>Games carried</span>
-          </div>
-          <div class={styles.stat}>
-            <span class={styles.statNumber}>1</span>
-            <span class={styles.statLabel}>Collector behind it</span>
-          </div>
-          <div class={styles.stat}>
-            <span class={styles.statNumber}>NL</span>
-            <span class={styles.statLabel}>Based &amp; shipped</span>
-          </div>
-        </section>
-
         <section class={styles.values}>
-          <For each={VALUES}>
-            {value => (
-              <div class={styles.valueCard}>
-                <span class={styles.valueIcon}>{value.icon()}</span>
-                <h3 class={styles.valueTitle}>{value.title}</h3>
-                <p class={styles.valueText}>{value.text}</p>
-              </div>
-            )}
-          </For>
+          <h2 class={styles.valuesHeading}>How I run it</h2>
+          <dl class={styles.valueList}>
+            <For each={VALUES}>
+              {value => (
+                <div class={styles.value}>
+                  <dt>{value.title}</dt>
+                  <dd>{value.text}</dd>
+                </div>
+              )}
+            </For>
+          </dl>
         </section>
 
         <section class={styles.cta}>

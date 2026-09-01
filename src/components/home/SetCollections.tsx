@@ -57,7 +57,6 @@ export default function SetCollections() {
                 class={styles.collection}
                 classList={{ [styles[collection.theme]]: true }}
               >
-                <span class={styles.code} aria-hidden="true">{collection.code}</span>
                 <span class={styles.game}>{collection.game}</span>
                 <div>
                   <h3>{collection.title}</h3>

@@ -1,11 +1,8 @@
 import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
-import { createSignal, For, Show } from "solid-js";
-import { formatPrice, useCart } from "~/lib/cart";
-import ProductCard, {
-  type ProductVariantOption,
-  type SectionProduct,
-} from "~/components/product/ProductCard";
+import { For, Show } from "solid-js";
+import { formatPrice } from "~/lib/cart";
+import type { SectionProduct } from "~/components/product/ProductCard";
 import { CATEGORY_LIST } from "~/lib/categories";
 import styles from "./index.module.scss";
 
@@ -20,116 +17,90 @@ function fromPrice(products: SectionProduct[]) {
 const totalProducts = CATEGORY_LIST.reduce((sum, c) => sum + c.products.length, 0);
 
 export default function Categories() {
-  const cart = useCart();
-  const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
-
-  const addToCart = (
-    product: SectionProduct,
-    variant?: ProductVariantOption,
-  ) => {
-    const priceCents = variant?.priceCents ?? product.priceCents;
-    if (priceCents === undefined) return;
-    cart.addItem({
-      id: product.id,
-      variantId: variant?.id,
-      name: `${product.set ? `${product.name} · ${product.set}` : product.name}${variant ? ` (${variant.name})` : ""}`,
-      image: variant?.image ?? product.image ?? "/images/logo-mark.png",
-      priceCents,
-    });
-    setJustAdded(prev => new Set(prev).add(product.id));
-    setTimeout(() => {
-      setJustAdded(prev => {
-        const next = new Set(prev);
-        next.delete(product.id);
-        return next;
-      });
-    }, 1400);
-  };
-
   return (
     <main class={styles.page}>
-      <Title>Categories | TCGHaven</Title>
+      <Title>Browse by game | TCGHaven</Title>
 
       <div class={styles.wide}>
         <header class={styles.hero}>
-          <div class={styles.heroText}>
-            <h1 class={styles.heading}>Browse by game</h1>
-            <p class={styles.sub}>
-              Every game we stock, in one place, with a taste of what's on each
-              shelf. Condition-checked and ready to ship from the Netherlands.
-            </p>
-          </div>
-
-          <dl class={styles.stats}>
-            <div class={styles.stat}>
-              <dd class={styles.statValue}>{CATEGORY_LIST.length}</dd>
-              <dt class={styles.statLabel}>Games</dt>
-            </div>
-            <div class={styles.stat}>
-              <dd class={styles.statValue}>{totalProducts}</dd>
-              <dt class={styles.statLabel}>In stock</dt>
-            </div>
-            <div class={styles.stat}>
-              <dd class={styles.statValue}>Free</dd>
-              <dt class={styles.statLabel}>Free PostNL shipping over €300</dt>
-            </div>
-          </dl>
+          <h1 class={styles.heading}>Browse by game</h1>
+          <p class={styles.sub}>
+            Every game we stock, each with its own storefront. Condition-checked
+            and shipped from the Netherlands.
+          </p>
+          <p class={styles.stockLine}>
+            <strong>{totalProducts}</strong> products across{" "}
+            <strong>{CATEGORY_LIST.length}</strong> games &middot; free PostNL
+            shipping over &euro;300
+          </p>
         </header>
 
-        <nav class={styles.quicknav} aria-label="Jump to game">
+        <ul class={styles.directory}>
           <For each={CATEGORY_LIST}>
-            {game => (
-              <a href={`#${game.slug}`} class={`${styles.quicklink} ${styles[game.theme]}`}>
-                {game.name}
-              </a>
-            )}
-          </For>
-        </nav>
+            {game => {
+              const preview = game.products.filter(product => product.image).slice(0, 3);
+              const from = fromPrice(game.products);
 
-        <For each={CATEGORY_LIST}>
-          {game => (
-            <section id={game.slug} class={styles.gameSection}>
-              <header class={`${styles.sectionHead} ${styles[game.theme]}`}>
-                <div class={styles.sectionHeadText}>
-                  <h2 class={styles.gameName}>{game.name}</h2>
-                  <p class={styles.gameTagline}>{game.tagline}</p>
-                </div>
+              return (
+                <li>
+                  <A
+                    href={`/categories/${game.slug}`}
+                    class={`${styles.card} ${styles[game.theme]}`}
+                  >
+                    <div class={styles.cardTop}>
+                      <div class={styles.cardText}>
+                        <h2>{game.name}</h2>
+                        <p>{game.tagline}</p>
+                      </div>
 
-                <div class={styles.sectionHeadMeta}>
-                  <span class={styles.meta}>
-                    <strong>{game.products.length}</strong> products
-                    <span class={styles.metaSep} aria-hidden="true">·</span>
-                    <Show
-                      when={fromPrice(game.products)}
-                      fallback={<strong class={styles.price}>Coming soon</strong>}
-                    >
-                      {value => <>from <strong class={styles.price}>{formatPrice(value())}</strong></>}
-                    </Show>
-                  </span>
-                  <A href={`/categories/${game.slug}`} class={styles.viewAll}>
-                    View all
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
+                      <Show when={preview.length}>
+                        <div class={styles.preview} aria-hidden="true">
+                          <For each={preview}>
+                            {(product, index) => (
+                              <img
+                                src={product.image}
+                                alt=""
+                                draggable={false}
+                                style={{ "--i": `${index()}` }}
+                              />
+                            )}
+                          </For>
+                        </div>
+                      </Show>
+                    </div>
+
+                    <div class={styles.cardFoot}>
+                      <span class={styles.meta}>
+                        <Show
+                          when={game.products.length}
+                          fallback="Coming soon"
+                        >
+                          <strong>{game.products.length}</strong>
+                          {game.products.length === 1 ? " product" : " products"}
+                          <Show when={from}>
+                            {value => (
+                              <>
+                                <span class={styles.dot} aria-hidden="true">&middot;</span>
+                                from <strong>{formatPrice(value())}</strong>
+                              </>
+                            )}
+                          </Show>
+                        </Show>
+                      </span>
+
+                      <span class={styles.enter}>
+                        Shop
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M5 12h14M13 6l6 6-6 6" />
+                        </svg>
+                      </span>
+                    </div>
                   </A>
-                </div>
-              </header>
-
-              <div class={styles.productGrid}>
-                <For each={game.products.slice(0, 4)}>
-                  {product => (
-                    <ProductCard
-                      product={product}
-                      isJustAdded={() => justAdded().has(product.id)}
-                      onAdd={addToCart}
-                      fill
-                    />
-                  )}
-                </For>
-              </div>
-            </section>
-          )}
-        </For>
+                </li>
+              );
+            }}
+          </For>
+        </ul>
       </div>
     </main>
   );

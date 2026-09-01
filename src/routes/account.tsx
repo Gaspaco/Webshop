@@ -685,13 +685,6 @@ export default function Account() {
         {data => (
           <div class={styles.account}>
             <aside class={styles.sidebar}>
-              <A href="/" class={styles.backLink}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M19 12H5M11 18l-6-6 6-6" />
-                </svg>
-                Back to store
-              </A>
-
               <div class={styles.identity}>
                 <span class={styles.avatar}>
                   <Show when={profileImage()} fallback={initials() || "?"}>
@@ -726,6 +719,12 @@ export default function Account() {
 
               <div class={styles.sidebarFooter}>
                 <span>Member since {formatDate(data().user.createdAt)}</span>
+                <A href="/" class={styles.backLink}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M19 12H5M11 18l-6-6 6-6" />
+                  </svg>
+                  Back to store
+                </A>
                 <button type="button" class={styles.signOut} onClick={signOut}>
                   Sign out
                   <svg
