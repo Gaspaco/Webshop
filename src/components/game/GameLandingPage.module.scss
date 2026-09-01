@@ -1,0 +1,271 @@
+@use "../../styles/variables" as *;
+
+.page {
+  min-height: calc(100dvh - $header-height);
+  padding-bottom: clamp(3rem, 7vh, 5rem);
+  background: #0d0e0d;
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba($white, 0.1);
+  background: #0a0b0a;
+  isolation: isolate;
+}
+
+.heroGlow {
+  position: absolute;
+  top: -22rem;
+  right: -10rem;
+  z-index: -1;
+  width: min(55vw, 52rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--game-accent-strong) 20%, transparent);
+  filter: blur(8rem);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 4.25rem;
+  border-bottom: 1px solid rgba($white, 0.09);
+  color: rgba($white, 0.42);
+  font-size: 0.72rem;
+
+  a {
+    color: rgba($white, 0.64);
+    &:hover { color: $white; }
+  }
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(22rem, 0.72fr);
+  align-items: center;
+  gap: clamp(3rem, 7vw, 8rem);
+  min-height: clamp(31rem, 61vh, 42rem);
+  padding-block: clamp(3rem, 7vh, 5.5rem);
+}
+
+.heroCopy {
+  max-width: 49rem;
+
+  h1 {
+    max-width: 11ch;
+    margin-block: 1rem 1.1rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(3.5rem, 7.2vw, 6rem);
+    font-weight: 880;
+    letter-spacing: -0.04em;
+    line-height: 0.94;
+    text-wrap: balance;
+  }
+}
+
+.gameCode {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  padding-inline: 0.65rem;
+  background: var(--game-accent-strong);
+  color: var(--game-ink);
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.descriptor {
+  max-width: 48ch;
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(1.05rem, 1.4vw, 1.28rem);
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.blurb {
+  max-width: 62ch;
+  margin-top: 0.75rem;
+  color: rgba($white, 0.56);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  min-height: 3.2rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1.25rem;
+  border-radius: $radius-md;
+  font-size: 0.83rem;
+  font-weight: 800;
+
+  &:focus-visible { outline: 3px solid $white; outline-offset: 3px; }
+}
+
+.primaryAction {
+  gap: 0.6rem;
+  background: var(--game-accent-strong);
+  color: var(--game-ink);
+
+  svg { width: 1rem; transition: transform $transition-fast; }
+  &:hover svg { transform: translateX(3px); }
+}
+
+.secondaryAction {
+  border: 1px solid rgba($white, 0.18);
+  color: $white;
+  &:hover { border-color: rgba($white, 0.45); }
+}
+
+.featuredProduct,
+.emptyFeature {
+  position: relative;
+  min-height: 27rem;
+  overflow: hidden;
+  border: 1px solid rgba($white, 0.13);
+  background: rgba(#121412, 0.82);
+}
+
+.featuredProduct {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 1.2rem;
+  color: $white;
+  transition: border-color $transition-base, transform $transition-base;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--game-accent) 55%, transparent);
+    transform: translateY(-3px);
+  }
+
+  img {
+    width: 100%;
+    height: 19rem;
+    padding: 1.25rem;
+    object-fit: contain;
+    filter: drop-shadow(0 1.25rem 1rem rgba(#000, 0.52));
+  }
+}
+
+.featuredTopline {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba($white, 0.1);
+  color: var(--game-accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.featuredCopy {
+  display: grid;
+  gap: 0.25rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba($white, 0.1);
+
+  strong { font-family: $font-display; font-size: 1rem; }
+  span { color: $gray-500; font-size: 0.72rem; }
+}
+
+.emptyFeature {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.5rem;
+
+  > span {
+    position: absolute;
+    top: 0.08em;
+    right: -0.04em;
+    color: color-mix(in srgb, var(--game-accent) 16%, transparent);
+    font-family: $font-display;
+    font-size: clamp(7rem, 13vw, 13rem);
+    font-weight: 900;
+    letter-spacing: -0.08em;
+    line-height: 0.8;
+  }
+
+  strong { color: $white; font-family: $font-display; font-size: 1.35rem; }
+  p { max-width: 32ch; margin-top: 0.45rem; color: $gray-500; font-size: 0.8rem; line-height: 1.55; }
+}
+
+.destinations {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-left: 1px solid rgba($white, 0.1);
+
+  > a {
+    position: relative;
+    display: grid;
+    min-height: 10rem;
+    align-content: space-between;
+    padding: 1.4rem;
+    border-right: 1px solid rgba($white, 0.1);
+    border-bottom: 1px solid rgba($white, 0.1);
+    color: $white;
+    transition: background $transition-fast;
+
+    &:hover { background: color-mix(in srgb, var(--game-accent-strong) 8%, transparent); }
+    &:focus-visible { outline: 3px solid var(--game-accent); outline-offset: -3px; }
+
+    > span { color: var(--game-accent); font-size: 0.7rem; font-weight: 800; }
+    > strong { max-width: 18ch; align-self: end; font-family: $font-display; font-size: 1.05rem; }
+    > svg { position: absolute; right: 1.25rem; bottom: 1.25rem; width: 1rem; }
+  }
+}
+
+.missing {
+  display: grid;
+  min-height: 70dvh;
+  place-content: center;
+  gap: 1rem;
+  background: $background;
+  color: $white;
+  text-align: center;
+
+  a { color: $primary-light; }
+}
+
+@media (max-width: $bp-lg) {
+  .heroGrid { grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem); gap: 2.5rem; }
+}
+
+@media (max-width: $bp-md) {
+  .heroGrid { grid-template-columns: 1fr; }
+  .featuredProduct,
+  .emptyFeature { min-height: 21rem; }
+  .featuredProduct img { height: 14rem; }
+}
+
+@media (max-width: $bp-sm) {
+  .wide { width: calc(100% - 2rem); }
+  .heroGrid { min-height: 0; padding-block: 2.5rem; }
+  .heroCopy h1 { font-size: clamp(3.2rem, 16vw, 4.7rem); }
+  .destinations { grid-template-columns: 1fr; }
+  .destinations > a { min-height: 8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featuredProduct,
+  .primaryAction svg { transition: none; }
+}

@@ -68,8 +68,8 @@ export default function Footer() {
             <span class={styles.logoText}>TCG<span class={styles.logoAccent}>Haven</span></span>
           </A>
           <p class={styles.blurb}>
-            A haven for collectors. Pokémon, Yu-Gi-Oh!, and Magic singles,
-            sealed product, and accessories, shipped fast from the Netherlands.
+            A haven for collectors. Singles, sealed product, and accessories
+            across the games you play, shipped fast from the Netherlands.
           </p>
 
           <nav class={styles.socials} aria-label="Social media">
@@ -101,7 +101,7 @@ export default function Footer() {
           <A href="/categories/pokemon">Pokémon</A>
           <A href="/categories/yugioh">Yu-Gi-Oh!</A>
           <A href="/categories/magic">Magic: The Gathering</A>
-          <A href="/products">All products</A>
+          <A href="/categories">All games</A>
         </div>
 
         <div class={styles.linkCol}>

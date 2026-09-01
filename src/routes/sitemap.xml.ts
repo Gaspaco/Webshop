@@ -2,15 +2,29 @@ import type { APIEvent } from "@solidjs/start/server";
 import { eq } from "drizzle-orm";
 import { db } from "~/db";
 import { products } from "~/db/schema";
-import { ALL_PRODUCTS } from "~/lib/categories";
+import { ALL_PRODUCTS, CATEGORY_LIST } from "~/lib/categories";
+import { groupProductsBySet } from "~/lib/game-storefront";
+
+const GAME_PATHS = CATEGORY_LIST.flatMap(category => {
+  const root = `/categories/${category.slug}`;
+  const setPaths = groupProductsBySet(
+    ALL_PRODUCTS.filter(product => product.game === category.slug),
+  ).map(set => `${root}/sets/${set.path}`);
+
+  return [
+    root,
+    `${root}/releases`,
+    `${root}/sets`,
+    `${root}/products`,
+    ...setPaths,
+  ];
+});
 
 const STATIC_PATHS = [
   "",
   "/products",
   "/categories",
-  "/categories/pokemon",
-  "/categories/yugioh",
-  "/categories/magic",
+  ...GAME_PATHS,
   "/about",
   "/contact",
   "/shipping",
