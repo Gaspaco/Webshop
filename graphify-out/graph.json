@@ -792,34 +792,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:18"
     },
     {
-      "id": "file::hero",
-      "label": "Hero.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:1"
-    },
-    {
-      "id": "Hero::flashadded",
-      "label": "flashAdded",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:114"
-    },
-    {
-      "id": "Hero::addslidetocart",
-      "label": "addSlideToCart",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:125"
-    },
-    {
-      "id": "Hero::addproducttocart",
-      "label": "addProductToCart",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:135"
-    },
-    {
       "id": "file::auth",
       "label": "auth.ts",
       "fileType": "code",
@@ -2164,27 +2136,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:333"
     },
     {
-      "id": "file::gametiles",
-      "label": "GameTiles.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/GameTiles.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/GameTiles.tsx:1"
-    },
-    {
-      "id": "file::shopbygame",
-      "label": "ShopByGame.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx:1"
-    },
-    {
-      "id": "shopbygame::shopbygame",
-      "label": "ShopByGame",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx:4"
-    },
-    {
       "id": "file::navbar",
       "label": "Navbar.tsx",
       "fileType": "code",
@@ -2267,6 +2218,48 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx:54"
+    },
+    {
+      "id": "file::gametiles",
+      "label": "GameTiles.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/GameTiles.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/GameTiles.tsx:1"
+    },
+    {
+      "id": "file::hero",
+      "label": "Hero.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:1"
+    },
+    {
+      "id": "Hero::selectslide",
+      "label": "selectSlide",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:71"
+    },
+    {
+      "id": "Hero::addactivetocart",
+      "label": "addActiveToCart",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:84"
+    },
+    {
+      "id": "file::shopbygame",
+      "label": "ShopByGame.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx:1"
+    },
+    {
+      "id": "shopbygame::shopbygame",
+      "label": "ShopByGame",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx:4"
     }
   ],
   "edges": [
@@ -2961,33 +2954,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:18",
-      "weight": 1
-    },
-    {
-      "source": "file::hero",
-      "target": "Hero::flashadded",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:114",
-      "weight": 1
-    },
-    {
-      "source": "file::hero",
-      "target": "Hero::addslidetocart",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:125",
-      "weight": 1
-    },
-    {
-      "source": "file::hero",
-      "target": "Hero::addproducttocart",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:135",
       "weight": 1
     },
     {
@@ -4395,15 +4361,6 @@
       "weight": 1
     },
     {
-      "source": "file::shopbygame",
-      "target": "shopbygame::shopbygame",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx:4",
-      "weight": 1
-    },
-    {
       "source": "file::navbar",
       "target": "Navbar::accounthref",
       "relation": "contains",
@@ -4483,12 +4440,39 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx:54",
       "weight": 1
+    },
+    {
+      "source": "file::hero",
+      "target": "Hero::selectslide",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:71",
+      "weight": 1
+    },
+    {
+      "source": "file::hero",
+      "target": "Hero::addactivetocart",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:84",
+      "weight": 1
+    },
+    {
+      "source": "file::shopbygame",
+      "target": "shopbygame::shopbygame",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx:4",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 90,
-    "nodes": 324,
-    "edges": 246,
-    "builtAt": "2026-08-31T17:16:08.392Z"
+    "files": 89,
+    "nodes": 323,
+    "edges": 245,
+    "builtAt": "2026-09-01T19:59:45.334Z"
   }
 }

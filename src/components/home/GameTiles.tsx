@@ -4,6 +4,7 @@ import styles from "./ShopByGame.module.scss";
 
 type Game = {
   name: string;
+  code: string;
   tagline: string;
   href: string;
   theme: string;
@@ -14,6 +15,7 @@ type Game = {
 const GAMES: Game[] = [
   {
     name: "Pokémon",
+    code: "PKM",
     tagline: "Singles, sealed, and graded rares",
     href: "/categories/pokemon",
     theme: "pokemon",
@@ -22,6 +24,7 @@ const GAMES: Game[] = [
   },
   {
     name: "Yu-Gi-Oh!",
+    code: "YGO",
     tagline: "Old favourites and the newest sets",
     href: "/categories/yugioh",
     theme: "yugioh",
@@ -29,6 +32,7 @@ const GAMES: Game[] = [
   },
   {
     name: "Magic: The Gathering",
+    code: "MTG",
     tagline: "Commander, Standard, and more",
     href: "/categories/magic",
     theme: "magic",
@@ -46,13 +50,16 @@ export default function GameTiles() {
             class={styles.tile}
             classList={{ [styles[game.theme]]: true }}
           >
+            <span class={styles.gameCode} aria-hidden="true">{game.code}</span>
             {game.art && (
               <img class={styles.tileArt} src={game.art} alt="" draggable={false} />
             )}
             <div class={styles.tileScrim} />
             <div class={styles.tileBody}>
-              <h3 class={styles.tileName}>{game.name}</h3>
-              <p class={styles.tileTagline}>{game.tagline}</p>
+              <div class={styles.tileHeading}>
+                <h3 class={styles.tileName}>{game.name}</h3>
+                <p class={styles.tileTagline}>{game.tagline}</p>
+              </div>
               <span class={styles.tileSets}>
                 <For each={game.sets}>{set => <span>{set}</span>}</For>
               </span>
