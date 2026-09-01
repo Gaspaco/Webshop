@@ -58,32 +58,52 @@
   background: #090c0a;
 }
 
+// Sits in the sidebar footer beside Sign out: both are ways out of the
+// dashboard, so they read as a pair instead of one squatting in the brand slot.
 .backLink {
   display: flex;
+  min-height: 2.75rem;
   align-items: center;
   gap: 0.6rem;
-  min-height: 4.5rem;
-  padding-inline: 1.5rem;
-  border-bottom: 1px solid rgba($white, 0.08);
-  color: $gray-400;
-  font-size: 0.8rem;
-  font-weight: 700;
-  transition: color $transition-fast;
+  padding-inline: 0.75rem;
+  border-radius: 0.5rem;
+  color: $gray-500;
+  font-size: 0.75rem;
+  font-weight: 650;
+  transition:
+    color 180ms ease,
+    background 180ms ease;
 }
 
 .backLink svg {
-  width: 1.05rem;
-  height: 1.05rem;
+  width: 1rem;
+  height: 1rem;
   flex-shrink: 0;
-  transition: transform $transition-base;
+  transition: transform 180ms ease;
 }
 
 .backLink:hover {
+  background: rgba($white, 0.045);
   color: $white;
 }
 
 .backLink:hover svg {
   transform: translateX(-3px);
+}
+
+.backLink:focus-visible {
+  outline: 2px solid $primary-light;
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backLink svg {
+    transition: none;
+  }
+
+  .backLink:hover svg {
+    transform: none;
+  }
 }
 
 .identity {

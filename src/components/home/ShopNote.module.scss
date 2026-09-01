@@ -1,0 +1,138 @@
+@use "../../styles/variables" as *;
+
+.section {
+  padding-block: clamp(2.5rem, 6vh, 4.5rem);
+  padding-inline: 0.5rem;
+}
+
+.wide {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+.panel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.62fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  overflow: hidden;
+  padding: clamp(1.75rem, 4vw, 3.25rem);
+  border-radius: $radius-xl;
+  background:
+    radial-gradient(
+      ellipse 70% 90% at 18% 40%,
+      rgba($primary, 0.14) 0%,
+      transparent 62%
+    ),
+    #0d100e;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr;
+    gap: clamp(1.75rem, 5vh, 2.5rem);
+  }
+}
+
+.art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: clamp(11rem, 20vw, 16rem);
+    height: auto;
+    border-radius: 0.6rem;
+    transform: rotate(-5deg);
+    filter: drop-shadow(0 1.75rem 3.25rem rgba(0, 0, 0, 0.62));
+    transition: transform $transition-slow;
+  }
+
+  @media (max-width: $bp-lg) {
+    justify-content: flex-start;
+  }
+}
+
+.panel:hover .art img {
+  transform: rotate(-3deg) translateY(-6px);
+}
+
+.note {
+  min-width: 0;
+
+  p {
+    max-width: 54ch;
+    margin-top: 1rem;
+    color: $gray-300;
+    font-size: 1rem;
+    line-height: 1.75;
+    text-wrap: pretty;
+  }
+}
+
+.heading {
+  max-width: 22ch;
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(1.6rem, 2.8vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+// Reads as a sign-off rather than another paragraph.
+.signature {
+  margin-top: 1.5rem !important;
+  color: $white;
+  font-family: $font-display;
+  font-size: 1.0625rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: 0.9375rem;
+  font-weight: 750;
+  transition: color $transition-fast;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform $transition-base;
+  }
+
+  &:hover {
+    color: $primary;
+  }
+
+  &:hover svg {
+    transform: translateX(3px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 3px;
+    border-radius: $radius-sm;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art img,
+  .link svg {
+    transition: none;
+  }
+
+  .panel:hover .art img {
+    transform: rotate(-5deg);
+  }
+
+  .link:hover svg {
+    transform: none;
+  }
+}

@@ -1,6 +1,6 @@
 import { Title } from "@solidjs/meta";
 import { createMemo, createSignal, onMount, Show } from "solid-js";
-import AboutHaven from "~/components/home/AboutHaven";
+import ShopNote from "~/components/home/ShopNote";
 import HavenBand from "~/components/home/HavenBand";
 import Hero from "~/components/home/Hero";
 import SetCollections from "~/components/home/SetCollections";
@@ -122,7 +122,7 @@ export default function Home() {
         products={featuredProducts()}
       />
       <CollectionPaths />
-      <AboutHaven />
+      <ShopNote />
       <HavenBand />
     </main>
   );

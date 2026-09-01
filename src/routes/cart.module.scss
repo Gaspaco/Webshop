@@ -5,17 +5,16 @@
   min-height: calc(100dvh - $header-height);
 }
 
+// A cart is a task, not a landing page. The title states where you are and
+// gets out of the way of the line items.
 .heading {
-  display: flex;
-  align-items: flex-end;
-  min-height: clamp(12rem, 26vh, 18rem);
-  padding: clamp(2rem, 5vw, 4rem);
-  border-block: 1px solid rgba($white, 0.12);
-  background: #111512;
-  font-size: clamp(3.5rem, 8vw, 6rem);
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(2rem, 3.6vw, 2.75rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  margin-bottom: clamp(2rem, 5vh, 4rem);
+  line-height: 1.05;
+  margin-bottom: clamp(1.5rem, 3.5vh, 2.25rem);
   animation: cartFadeUp 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -143,8 +142,9 @@
 
 .thumb {
   flex-shrink: 0;
-  width: 4.5rem;
-  height: 6rem;
+  // The card art is how you recognise the line item, so give it real size.
+  width: 6rem;
+  height: 8rem;
   border-radius: $radius-md;
   overflow: hidden;
   background: $surface-raised;

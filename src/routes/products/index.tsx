@@ -196,34 +196,16 @@ export default function Products() {
 
       <div class={styles.wide}>
         <header class={styles.header}>
-          <div class={styles.headerCopy}>
-            <h1>Shop</h1>
-            <p>Browse singles, sealed products, and decks across every game we carry.</p>
-          </div>
-
-          <div class={styles.inventoryPanel} aria-label={`${allProducts().length} products available`}>
-            <div class={styles.inventoryTop}>
-              <span>Live catalogue</span>
-              <span class={styles.inventoryStatus}>
-                <i aria-hidden="true" />
-                Updated daily
-              </span>
-            </div>
-
-            <div class={styles.inventoryCount}>
-              <strong>{allProducts().length}</strong>
-              <span>
-                Curated products
-                <small>ready to discover</small>
-              </span>
-            </div>
-
-            <div class={styles.inventoryTypes} aria-hidden="true">
-              <span>Singles</span>
-              <span>Sealed</span>
-              <span>Graded</span>
-            </div>
-          </div>
+          <h1>Everything in stock</h1>
+          <p>
+            Singles, sealed product, and decks across every game we carry, each
+            one condition-checked before it ships.
+          </p>
+          <p class={styles.stockLine}>
+            <strong>{allProducts().length}</strong>
+            {allProducts().length === 1 ? " product" : " products"} listed
+            &middot; updated daily
+          </p>
         </header>
 
         <section class={styles.filters} aria-label="Shop filters">

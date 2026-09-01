@@ -35,7 +35,6 @@ export default function CollectionPaths() {
 
           <div class={styles.stack}>
             <A href="/products?q=sealed" class={`${styles.collection} ${styles.sealed}`}>
-              <span class={styles.collectionCode} aria-hidden="true">BOX</span>
               <div class={styles.collectionCopy}>
                 <span>Sealed products</span>
                 <h3>Booster boxes, packs, and decks</h3>
@@ -54,7 +53,6 @@ export default function CollectionPaths() {
           </div>
 
           <A href="/products?q=pre-order" class={`${styles.collection} ${styles.releases}`}>
-            <span class={styles.releaseMark} aria-hidden="true">NEXT</span>
             <div class={styles.collectionCopy}>
               <span>Release desk</span>
               <h3>See upcoming sets by game.</h3>
