@@ -1,471 +1,466 @@
 @use "../../styles/variables" as *;
 
-.showcase {
-  padding-top: clamp(0.75rem, 2.5vh, 1.5rem);
-  padding-bottom: clamp(1.5rem, 4vh, 2.75rem);
-}
-
-.grid {
-  width: min(110rem, calc(100% - #{$container-padding} * 2));
-  margin-inline: auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-  gap: clamp(1rem, 2vw, 1.75rem);
-  align-items: stretch;
-
-  @media (max-width: $bp-lg) {
-    grid-template-columns: 1fr;
-  }
-}
-
-// ---------- Featured carousel ----------
-
-.featured {
+.hero {
+  --hero-accent: #{$primary};
   position: relative;
-  border-radius: $radius-xl;
+  min-height: min(52rem, calc(100svh - 4.5rem));
   overflow: hidden;
-  min-height: clamp(360px, 52vh, 520px);
-  background: $surface;
-  border: 1px solid rgba($white, 0.06);
+  border-bottom: 1px solid rgba($white, 0.08);
+  background: #0a0c0b;
   isolation: isolate;
 }
 
-.slide {
+.atmosphere {
   position: absolute;
   inset: 0;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.7s ease, visibility 0.7s ease;
-  pointer-events: none;
-}
-
-.slideActive {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-
-  .slideBody > * {
-    animation: riseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-  .slideTags { animation-delay: 0.05s; }
-  .slideTitle { animation-delay: 0.12s; }
-  .slideBlurb { animation-delay: 0.19s; }
-  .slideFooter { animation-delay: 0.26s; }
-
-  .slideArt {
-    animation: artIn 1s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-}
-
-// Colored wash unique per slide
-.slideWash {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+  z-index: -1;
   background:
-    radial-gradient(120% 130% at 88% 18%, color-mix(in oklab, var(--theme) 70%, transparent) 0%, transparent 55%),
-    linear-gradient(115deg, #0c0f0d 18%, color-mix(in oklab, var(--theme) 22%, #0c0f0d) 100%);
-}
+    radial-gradient(circle at 57% 42%, color-mix(in srgb, var(--hero-accent) 34%, transparent) 0, transparent 30%),
+    linear-gradient(90deg, rgba(#000, 0.58) 0 34%, transparent 62%),
+    linear-gradient(135deg, #101512 0%, #080a09 62%, #11100d 100%);
 
-.slideArt {
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  right: clamp(4rem, 10vw, 9rem);
-  height: 88%;
-  width: auto;
-  transform: translateY(-50%) rotate(5deg);
-  filter: drop-shadow(0 30px 50px rgba(#000, 0.62));
-  user-select: none;
-
-  @media (max-width: $bp-md) {
-    height: 82%;
-    right: -2.5rem;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.14;
+    background-image:
+      linear-gradient(rgba($white, 0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba($white, 0.15) 1px, transparent 1px);
+    background-size: 5rem 5rem;
+    mask-image: linear-gradient(90deg, transparent 0%, #000 40%, #000 100%);
   }
 
-  @media (max-width: $bp-sm) {
-    right: -3rem;
-    height: 70%;
-    opacity: 0.5;
+  &::after {
+    content: "";
+    position: absolute;
+    width: min(42vw, 40rem);
+    aspect-ratio: 1;
+    left: 55%;
+    top: 45%;
+    transform: translate(-50%, -50%);
+    border: 1px solid color-mix(in srgb, var(--hero-accent) 32%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 8rem color-mix(in srgb, var(--hero-accent) 18%, transparent);
   }
 }
 
-.slideScrim {
-  position: absolute;
-  inset: 0;
+.shell {
+  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  min-height: inherit;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.topline {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 3.4rem;
+  color: rgba($white, 0.58);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.toplineRule {
+  width: 2.5rem;
+  height: 1px;
+  background: rgba($white, 0.2);
+}
+
+.composition {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.85fr) minmax(23rem, 1.05fr) minmax(16rem, 0.62fr);
+  align-items: center;
+  gap: clamp(1.5rem, 3.2vw, 4.5rem);
+  padding-block: clamp(2rem, 5vh, 4.5rem);
+}
+
+.copy {
+  position: relative;
   z-index: 2;
-  background: linear-gradient(
-    100deg,
-    rgba(#070908, 0.94) 0%,
-    rgba(#070908, 0.88) 34%,
-    rgba(#070908, 0.55) 54%,
-    rgba(#070908, 0.12) 72%,
-    transparent 88%
-  );
-}
 
-.slideBody {
-  position: absolute;
-  z-index: 3;
-  left: 0;
-  bottom: 0;
-  width: min(30rem, 78%);
-  padding: clamp(1.5rem, 3vw, 2.75rem);
+  h1 {
+    max-width: 10ch;
+    margin-block: 1rem 1.15rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(3rem, 5.2vw, 5.7rem);
+    font-weight: 850;
+    letter-spacing: -0.04em;
+    line-height: 0.94;
+    text-wrap: balance;
+  }
 
-  @media (max-width: $bp-sm) {
-    width: 100%;
+  > p {
+    max-width: 38ch;
+    color: $gray-300;
+    font-size: clamp(1rem, 1.15vw, 1.15rem);
+    line-height: 1.65;
+    text-wrap: pretty;
   }
 }
 
-.slideTags {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.gameTag,
-.setTag {
+.kicker {
   display: inline-flex;
   align-items: center;
-  height: 1.75rem;
-  padding-inline: 0.75rem;
-  border-radius: $radius-full;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-.gameTag {
-  background: $primary;
-  color: #06120d;
-}
-
-.setTag {
-  background: rgba($white, 0.12);
-  color: $white;
-  backdrop-filter: blur(4px);
-}
-
-.slideTitle {
-  font-size: clamp(1.75rem, 3.4vw, 2.85rem);
+  gap: 0.6rem;
+  color: color-mix(in srgb, var(--hero-accent) 64%, $white);
+  font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  color: $white;
-  margin-bottom: 0.75rem;
-  max-width: 16ch;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  &::before {
+    content: "";
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--hero-accent);
+    box-shadow: 0 0 1rem var(--hero-accent);
+  }
 }
 
-.slideBlurb {
-  font-size: clamp(0.9375rem, 1.1vw, 1.0625rem);
-  line-height: 1.6;
-  color: $gray-300;
-  max-width: 32ch;
-  margin-bottom: 1.75rem;
-}
-
-.slideFooter {
+.actions {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
   flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 2rem;
 }
 
-.slideCta {
+.primaryAction,
+.secondaryAction {
+  min-height: 3.35rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  height: 3rem;
-  padding-inline: 1.5rem;
+  justify-content: center;
   border-radius: $radius-md;
-  background: $primary;
-  color: #06120d;
   font-family: $font-display;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  transition: background $transition-base, transform $transition-base;
+  font-size: 0.9rem;
+  font-weight: 750;
+  transition: transform $transition-fast, background $transition-fast, color $transition-fast;
+
+  &:focus-visible {
+    outline: 3px solid $accent-gold;
+    outline-offset: 3px;
+  }
+}
+
+.primaryAction {
+  gap: 0.65rem;
+  padding-inline: 1.35rem;
+  color: #06120d;
+  background: $primary;
 
   svg {
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1.05rem;
     fill: none;
     stroke: currentColor;
     stroke-width: 2.2;
     stroke-linecap: round;
-    stroke-linejoin: round;
     transition: transform $transition-fast;
   }
 
   &:hover {
     background: $primary-light;
+    transform: translateY(-2px);
+
     svg { transform: translateX(3px); }
   }
-
-  &:focus-visible {
-    outline: 3px solid $accent-gold;
-    outline-offset: 3px;
-  }
 }
 
-.slideAddBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  flex-shrink: 0;
-  border-radius: $radius-md;
-  background: rgba($white, 0.08);
+.secondaryAction {
+  padding-inline: 1rem;
+  color: $white;
+
+  &:hover { color: $primary-light; }
+}
+
+.facts {
+  display: flex;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  margin-top: clamp(2.2rem, 5vh, 4rem);
+
+  div { display: grid; gap: 0.25rem; }
+  dt { color: $gray-500; font-size: 0.72rem; }
+  dd { color: $gray-200; font-size: 0.82rem; font-weight: 650; }
+}
+
+.cardStage {
+  position: relative;
+  min-height: clamp(31rem, 58vh, 39rem);
+  display: grid;
+  place-items: center;
+}
+
+.orbit {
+  position: absolute;
+  width: min(35vw, 31rem);
+  aspect-ratio: 1;
   border: 1px solid rgba($white, 0.12);
-  color: $white;
-  transition: background $transition-base, border-color $transition-base, transform 160ms ease-out;
+  border-radius: 50%;
+  animation: orbit 18s linear infinite;
 
-  svg {
-    width: 1.15rem;
-    height: 1.15rem;
+  &::before,
+  &::after,
+  span {
+    content: "";
+    position: absolute;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--hero-accent);
+    box-shadow: 0 0 1rem var(--hero-accent);
   }
 
-  &:hover {
-    background: rgba($white, 0.14);
-    border-color: rgba($white, 0.22);
-  }
-
-  &:active {
-    transform: scale(0.92);
-  }
-
-  &:focus-visible {
-    outline: 3px solid $accent-gold;
-    outline-offset: 3px;
-  }
+  &::before { top: 12%; left: 17%; }
+  &::after { right: 5%; top: 58%; }
+  span { left: 35%; bottom: -0.28rem; }
 }
 
-.addBtnDone {
-  background: $primary !important;
-  border-color: $primary !important;
-  color: #06120d !important;
+.cardArt {
+  position: absolute;
+  z-index: 2;
+  width: auto;
+  height: min(58vh, 35rem);
+  max-width: 84%;
+  object-fit: contain;
+  opacity: 0;
+  transform: translateY(1.5rem) rotate(2deg) scale(0.94);
+  filter: drop-shadow(0 2.5rem 2.2rem rgba(#000, 0.58));
+  transition: opacity 420ms ease, transform 850ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.slidePrice {
-  font-family: $font-display;
-  font-size: 1.0625rem;
-  font-weight: 700;
-  color: $white;
+.cardArtActive {
+  opacity: 1;
+  transform: translateY(-0.5rem) rotate(-3deg) scale(1);
 }
 
-.dots {
+.priceTicket {
   position: absolute;
   z-index: 4;
-  right: clamp(1.25rem, 3vw, 2rem);
-  bottom: clamp(1.25rem, 3vw, 1.75rem);
-  display: flex;
-  gap: 0.5rem;
-}
+  right: -1rem;
+  bottom: 2rem;
+  display: grid;
+  min-width: 12rem;
+  padding: 1rem;
+  background: rgba(#0b0d0c, 0.92);
+  border-top: 2px solid var(--hero-accent);
 
-.dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: $radius-full;
-  background: rgba($white, 0.3);
-  transition: background $transition-fast, width $transition-base;
-
-  &:hover { background: rgba($white, 0.6); }
-
-  &:focus-visible {
-    outline: 2px solid $primary-light;
-    outline-offset: 3px;
+  > span {
+    color: $gray-400;
+    font-size: 0.7rem;
   }
-}
 
-.dotActive {
-  width: 1.5rem;
-  background: $primary;
-
-  &:hover { background: $primary; }
-}
-
-// ---------- Bestsellers ----------
-
-.bestsellers {
-  display: flex;
-  flex-direction: column;
-  padding: clamp(1.25rem, 2vw, 1.75rem);
-  padding-right: clamp(1.5rem, 2.4vw, 2.125rem);
-  border-radius: $radius-xl;
-  background: $surface;
-  border: 1px solid rgba($white, 0.06);
-}
-
-.bestHeader {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba($white, 0.07);
-
-  h2 {
-    font-size: 1.25rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+  strong {
+    margin-block: 0.15rem 0.7rem;
     color: $white;
+    font-family: $font-display;
+    font-size: 1.45rem;
+  }
+
+  button {
+    min-height: 2.65rem;
+    padding-inline: 0.9rem;
+    border-radius: $radius-sm;
+    background: $white;
+    color: #0a0c0b;
+    font-size: 0.76rem;
+    font-weight: 800;
+    transition: background $transition-fast, color $transition-fast;
+
+    &:hover { background: $primary; }
+    &:focus-visible { outline: 3px solid $accent-gold; outline-offset: 2px; }
+  }
+
+  .added {
+    background: $primary;
+    color: #04130c;
   }
 }
 
-.viewAll {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: $primary-light;
-
-  &:hover { color: $primary; }
-}
-
-.bestList {
+.dropNav {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  border-top: 1px solid rgba($white, 0.11);
 }
 
-.bestItem {
-  display: flex;
+.dropButton {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 0.5rem;
-  margin-inline: -0.5rem;
-  border-radius: $radius-md;
-  transition: background $transition-fast;
+  gap: 0.85rem;
+  width: 100%;
+  padding: 1.1rem 0.25rem;
+  border-bottom: 1px solid rgba($white, 0.11);
+  color: $gray-500;
+  text-align: left;
+  transition: color $transition-fast, padding $transition-base;
 
-  &:hover {
-    background: rgba($white, 0.04);
+  &:hover,
+  &:focus-visible {
+    color: $white;
+    padding-left: 0.6rem;
+  }
 
-    .bestThumb img { transform: scale(1.06) rotate(-2deg); }
-    .bestName { color: $primary-light; }
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
   }
 }
 
-.bestLink {
-  display: flex;
-  align-items: center;
-  flex: 1;
+.dropButtonActive {
+  color: $white;
+
+  .dropNumber { color: var(--hero-accent); }
+  .dropArrow { opacity: 1; transform: translate(0); }
+}
+
+.dropNumber {
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.dropText {
   min-width: 0;
-  gap: 1.125rem;
-  padding-block: 0.25rem;
-
-  &:focus-visible {
-    outline: 2px solid $primary-light;
-    outline-offset: 2px;
-    border-radius: $radius-sm;
-  }
-}
-
-.addBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  flex-shrink: 0;
-  border-radius: $radius-full;
-  background: rgba($white, 0.06);
-  border: 1px solid rgba($white, 0.1);
-  color: $gray-300;
-  transition: background $transition-base, border-color $transition-base, color $transition-fast, transform 160ms ease-out;
-
-  svg {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  &:hover {
-    background: rgba($primary, 0.16);
-    border-color: rgba($primary, 0.4);
-    color: $primary-light;
-  }
-
-  &:active {
-    transform: scale(0.9);
-  }
-
-  &:focus-visible {
-    outline: 2px solid $primary-light;
-    outline-offset: 2px;
-  }
-}
-
-.bestThumb {
-  flex-shrink: 0;
-  width: 3.5rem;
-  height: 4.625rem;
-  border-radius: $radius-sm;
-  overflow: hidden;
-  background: $surface-raised;
-  box-shadow: 0 4px 10px rgba(#000, 0.35);
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform $transition-base;
-  }
-}
-
-.bestInfo {
   display: grid;
   gap: 0.2rem;
-  min-width: 0;
+
+  strong {
+    overflow: hidden;
+    font-family: $font-display;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small { color: $gray-500; font-size: 0.7rem; }
 }
 
-.bestName {
-  font-family: $font-display;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: $white;
-  letter-spacing: -0.01em;
-  transition: color $transition-fast;
+.dropArrow {
+  opacity: 0;
+  transform: translate(-0.35rem, 0.35rem);
+  color: var(--hero-accent);
+  transition: opacity $transition-fast, transform $transition-base;
 }
 
-.bestRating {
-  display: flex;
+.serviceBar {
+  min-height: 4.25rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   align-items: center;
-}
+  border-top: 1px solid rgba($white, 0.1);
 
-.stars {
-  display: inline-flex;
-  gap: 0.0625rem;
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    min-height: 2rem;
+    padding-inline: 1rem;
+    color: $gray-300;
+    font-size: 0.76rem;
+    font-weight: 650;
 
-  svg {
-    width: 0.8125rem;
-    height: 0.8125rem;
-    fill: rgba($white, 0.16);
+    & + span { border-left: 1px solid rgba($white, 0.1); }
+  }
+
+  i {
+    width: 0.45rem;
+    height: 0.45rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: $primary;
   }
 }
 
-.starOn {
-  fill: $accent-gold !important;
+@keyframes orbit { to { transform: rotate(360deg); } }
+
+@media (max-width: 1180px) {
+  .composition {
+    grid-template-columns: minmax(18rem, 0.9fr) minmax(22rem, 1fr);
+  }
+
+  .dropNav {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dropButton {
+    border-top: 1px solid rgba($white, 0.11);
+    border-bottom: 0;
+    padding-inline: 0.8rem;
+
+    & + .dropButton { border-left: 1px solid rgba($white, 0.11); }
+  }
 }
 
-.bestPrice {
-  font-family: $font-display;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: $primary;
+@media (max-width: $bp-md) {
+  .hero { min-height: auto; }
+  .topline { min-height: 3rem; }
+
+  .composition {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-block: 2.5rem 1.5rem;
+  }
+
+  .copy {
+    h1 { max-width: 12ch; font-size: clamp(2.75rem, 12vw, 4.75rem); }
+    > p { font-size: 1rem; }
+  }
+
+  .facts { display: none; }
+  .cardStage { min-height: 28rem; }
+  .cardArt { height: min(25rem, 68vw); }
+  .orbit { width: min(24rem, 78vw); }
+  .priceTicket { right: 0; bottom: 1rem; }
+
+  .dropNav {
+    grid-column: auto;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .dropButton {
+    flex: 0 0 16rem;
+    &:first-child { border-left: 0; }
+  }
+
+  .serviceBar {
+    grid-template-columns: 1fr;
+    padding-block: 0.8rem;
+
+    span {
+      justify-content: flex-start;
+      & + span { border-left: 0; }
+    }
+  }
 }
 
-@keyframes riseIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes artIn {
-  from { opacity: 0; transform: translateY(-50%) translateX(40px) rotate(8deg); }
-  to { opacity: 1; transform: translateY(-50%) rotate(4deg); }
+@media (max-width: $bp-sm) {
+  .shell { width: min(100% - 2rem, 110rem); }
+  .topline { font-size: 0.62rem; }
+  .toplineRule { flex: 1; }
+  .actions { align-items: stretch; flex-direction: column; }
+  .primaryAction, .secondaryAction { width: 100%; }
+  .cardStage { min-height: 25rem; }
+  .cardArt { max-width: 72vw; height: 22rem; }
+  .priceTicket { min-width: 10.5rem; padding: 0.8rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .slide { transition: opacity 0.2s ease; }
-  .slideActive .slideBody > *,
-  .slideActive .slideArt {
-    animation: none;
-  }
+  .orbit { animation: none; }
+  .cardArt, .dropButton, .dropArrow, .primaryAction, .primaryAction svg { transition-duration: 0.01ms; }
 }
