@@ -40,7 +40,6 @@
 .panel {
   display: grid;
   grid-template-columns: minmax(0, 25rem) minmax(0, 1fr);
-  border: 1px solid rgba($white, 0.12);
   background: $surface;
   overflow: hidden;
 

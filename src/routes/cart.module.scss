@@ -111,7 +111,6 @@
   flex-direction: column;
   border-radius: 0;
   background: #0a0b0a;
-  border: 1px solid rgba($white, 0.12);
   overflow: hidden;
   animation: cartFadeUp 620ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
 }
@@ -259,7 +258,6 @@
   padding: clamp(1.5rem, 2.5vw, 2rem);
   border-radius: 0;
   background: #111512;
-  border: 1px solid rgba($white, 0.12);
   position: sticky;
   top: calc($header-height + 1.5rem);
   animation: cartFadeUp 620ms cubic-bezier(0.22, 1, 0.36, 1) 170ms both;

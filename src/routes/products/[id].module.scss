@@ -238,7 +238,6 @@
     position: absolute;
     width: min(38vw, 34rem);
     aspect-ratio: 1;
-    border: 1px solid rgba($white, 0.09);
     border-radius: $radius-full;
     content: "";
   }
@@ -247,7 +246,6 @@
     position: absolute;
     width: min(26vw, 23rem);
     aspect-ratio: 1;
-    border: 1px solid rgba($white, 0.06);
     border-radius: $radius-full;
     content: "";
   }
@@ -406,6 +404,7 @@
 }
 
 .saveButtonActive {
+  border: 1px solid rgba($white, 0.12);
   border-color: $primary;
   background: rgba($primary, 0.14);
   color: $primary-light;
@@ -494,7 +493,6 @@
     width: 100%;
     min-height: 4rem;
     padding: 0.8rem 0.9rem;
-    border: 1px solid rgba($white, 0.13);
     border-radius: $radius-md;
     background: rgba($white, 0.025);
     color: $white;
@@ -536,6 +534,7 @@
 }
 
 .variantActive {
+  border: 1px solid rgba($white, 0.12);
   border-color: $primary !important;
   background: rgba($primary, 0.11) !important;
 
@@ -629,6 +628,7 @@
 }
 
 .primaryButtonDone {
+  border: 1px solid rgba($white, 0.12);
   border-color: $primary-light;
   background: $primary-light;
 }

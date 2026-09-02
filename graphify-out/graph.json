@@ -2241,13 +2241,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/CollectionPaths.tsx:12"
     },
     {
-      "id": "file::gametiles",
-      "label": "GameTiles.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/GameTiles.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/GameTiles.tsx:1"
-    },
-    {
       "id": "file::hero",
       "label": "Hero.tsx",
       "fileType": "code",
@@ -2575,6 +2568,62 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Reviews.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Reviews.tsx:1"
+    },
+    {
+      "id": "file::gametiles",
+      "label": "GameTiles.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/GameTiles.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/GameTiles.tsx:1"
+    },
+    {
+      "id": "file::shopnote",
+      "label": "ShopNote.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx:1"
+    },
+    {
+      "id": "shopnote::shopnote",
+      "label": "ShopNote",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx:10"
+    },
+    {
+      "id": "file::motion",
+      "label": "motion.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:1"
+    },
+    {
+      "id": "motion::setup",
+      "label": "setup",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:12"
+    },
+    {
+      "id": "motion::prefersreducedmotion",
+      "label": "prefersReducedMotion",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:18"
+    },
+    {
+      "id": "motion::revealonscroll",
+      "label": "revealOnScroll",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:36"
+    },
+    {
+      "id": "motion::dealcard",
+      "label": "dealCard",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:85"
     }
   ],
   "edges": [
@@ -5106,12 +5155,57 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx:168",
       "weight": 1
+    },
+    {
+      "source": "file::shopnote",
+      "target": "shopnote::shopnote",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx:10",
+      "weight": 1
+    },
+    {
+      "source": "file::motion",
+      "target": "motion::setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:12",
+      "weight": 1
+    },
+    {
+      "source": "file::motion",
+      "target": "motion::prefersreducedmotion",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:18",
+      "weight": 1
+    },
+    {
+      "source": "file::motion",
+      "target": "motion::revealonscroll",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:36",
+      "weight": 1
+    },
+    {
+      "source": "file::motion",
+      "target": "motion::dealcard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:85",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 101,
-    "nodes": 368,
-    "edges": 281,
-    "builtAt": "2026-09-01T23:43:34.888Z"
+    "files": 102,
+    "nodes": 375,
+    "edges": 286,
+    "builtAt": "2026-09-02T08:42:04.281Z"
   }
 }

@@ -1,5 +1,6 @@
 import { A } from "@solidjs/router";
-import { For, Show } from "solid-js";
+import { For, onCleanup, onMount, Show } from "solid-js";
+import { revealOnScroll } from "~/lib/motion";
 import styles from "./ShopByGameDirectory.module.scss";
 
 type Game = {
@@ -67,8 +68,18 @@ const GAMES: Game[] = [
 const [FEATURED, ...REST] = GAMES;
 
 export default function GameTiles() {
+  let rootRef: HTMLDivElement | undefined;
+
+  onMount(() => {
+    // A real list, so a stagger reads as sequence rather than decoration.
+    const stop = rootRef
+      ? revealOnScroll(rootRef, { children: `.${styles.feature}, li`, y: 20, stagger: 0.06 })
+      : undefined;
+    onCleanup(() => stop?.());
+  });
+
   return (
-    <div class={styles.directory}>
+    <div class={styles.directory} ref={rootRef}>
       <A
         href={FEATURED.href}
         class={`${styles.feature} ${styles[FEATURED.theme]}`}

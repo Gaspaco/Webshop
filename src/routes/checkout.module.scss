@@ -67,7 +67,6 @@
 .confirmation {
   border-radius: 0;
   background: #0a0b0a;
-  border: 1px solid rgba($white, 0.12);
   animation: checkoutIn 620ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
 }
 
@@ -165,6 +164,7 @@
 }
 
 .option {
+  border: 1px solid rgba($white, 0.12);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.85rem;
@@ -172,7 +172,6 @@
   padding: 1rem;
   border-radius: 0;
   background: $surface-raised;
-  border: 1px solid rgba($white, 0.08);
   color: $gray-300;
   transition:
     border-color $transition-fast,
@@ -310,6 +309,7 @@
 }
 
 .discount {
+  border: 1px solid rgba($white, 0.12);
   display: grid;
   gap: 0.45rem;
 
@@ -330,7 +330,6 @@
     min-width: 0;
     height: 2.75rem;
     padding: 0 0.8rem;
-    border: 1px solid rgba($white, 0.13);
     border-radius: 0.45rem 0 0 0.45rem;
     outline: none;
     background: rgba(#050706, 0.5);
@@ -403,6 +402,7 @@
 .submit,
 .primaryLink,
 .secondaryLink {
+  border: 1px solid rgba($white, 0.12);
   display: inline-flex;
   align-items: center;
   justify-content: center;
