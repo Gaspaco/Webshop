@@ -98,6 +98,8 @@ export default function ProductCard(props: ProductCardProps) {
     () => displayVariant()?.compareAtPriceCents ?? p.compareAtPriceCents,
   );
   const hasChoices = () => (p.variants?.length ?? 0) > 1;
+  const isUnavailable = () =>
+    !hasChoices() && Boolean(mainVariant() && mainVariant()!.stock <= 0);
 
   const openQuickView = () => {
     setSelectedVariantId("");
@@ -166,8 +168,9 @@ export default function ProductCard(props: ProductCardProps) {
             when={!hasChoices()}
             fallback={
               <button type="button" class={styles.addBtn} aria-label={`Choose ${p.name} options`} onClick={openQuickView}>
+                <span>Choose</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 5v14M5 12h14" />
+                  <path d="m9 6 6 6-6 6" />
                 </svg>
               </button>
             }
@@ -177,7 +180,8 @@ export default function ProductCard(props: ProductCardProps) {
               class={styles.addBtn}
               classList={{ [styles.addBtnDone]: props.isJustAdded() }}
               onClick={() => props.onAdd(p, p.variants?.[0])}
-              aria-label={`Add ${p.name} to cart`}
+              disabled={isUnavailable()}
+              aria-label={isUnavailable() ? `${p.name} is sold out` : `Add ${p.name} to cart`}
             >
               <Show
                 when={!props.isJustAdded()}
@@ -187,9 +191,13 @@ export default function ProductCard(props: ProductCardProps) {
                   </svg>
                 }
               >
+                <span>{isUnavailable() ? "Sold out" : "Add"}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 5v14M5 12h14" />
                 </svg>
+              </Show>
+              <Show when={props.isJustAdded()}>
+                <span>Added</span>
               </Show>
             </button>
           </Show>
