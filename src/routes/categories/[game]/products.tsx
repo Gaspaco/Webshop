@@ -10,9 +10,9 @@ import styles from "./game-pages.module.scss";
 type ProductFilter = "all" | "single" | "sealed" | "graded" | "accessory";
 
 const FILTERS: Array<{ value: ProductFilter; label: string }> = [
-  { value: "all", label: "All products" },
   { value: "sealed", label: "Sealed" },
   { value: "single", label: "Singles" },
+  { value: "all", label: "Everything" },
   { value: "graded", label: "Graded" },
   { value: "accessory", label: "Accessories" },
 ];
@@ -22,7 +22,7 @@ export default function GameProductsPage() {
   const game = () => params.game ?? "";
   const category = () => CATEGORIES[game()];
   const { products } = createGameCatalog(game);
-  const [filter, setFilter] = createSignal<ProductFilter>("all");
+  const [filter, setFilter] = createSignal<ProductFilter>("sealed");
   const visible = createMemo(() =>
     products().filter(product => filter() === "all" || product.productType === filter()),
   );

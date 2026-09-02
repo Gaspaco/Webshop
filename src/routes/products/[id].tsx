@@ -9,7 +9,6 @@ import {
 } from "solid-js";
 import ProductCard, {
   BoxArt,
-  Stars,
   type ProductVariantOption,
   type SectionProduct,
 } from "~/components/product/ProductCard";
@@ -275,91 +274,83 @@ export default function ProductDetail() {
             </nav>
 
             <section
-              class={`${styles.hero} ${styles[item().theme]}`}
-              classList={{ [styles.sealedHero]: isSealedProduct(item()) }}
+              class={styles.hero}
+              classList={{
+                [styles.sealedHero]: isSealedProduct(item()),
+                [styles.variableHero]: (item().variants?.length ?? 0) > 1,
+              }}
             >
-              <div class={styles.heroTopline}>
-                <A href={`/categories/${item().game}`} class={styles.gameLink}>
-                  {item().gameName}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                </A>
-                <span>{item().image ? "Exact item photographed" : "Product preview"}</span>
+              <div class={styles.mediaPanel}>
+                <div class={styles.mediaHeader}>
+                  <A href={`/categories/${item().game}/products`}>{item().gameName}</A>
+                  <span>{item().setCode ?? item().sku ?? "TCGH"}</span>
+                </div>
+
+                <div class={styles.productMedia}>
+                  <Show
+                    when={activeProduct()?.image}
+                    fallback={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
+                  >
+                    <img
+                      src={activeProduct()!.image}
+                      alt={item().set ? `${item().name}, ${item().set}` : item().name}
+                      draggable={false}
+                    />
+                  </Show>
+                </div>
+
+                <div class={styles.mediaFooter}>
+                  <span>{item().image ? "Product image" : "Product preview"}</span>
+                  <strong>{displayVariant()?.name ?? item().badge ?? conditionFor(item())}</strong>
+                </div>
               </div>
 
-              <div class={styles.heroGrid}>
-                <div class={styles.stage}>
-                  <div class={styles.titleBlock}>
+              <aside class={styles.purchase}>
+                <header class={styles.purchaseHeader}>
+                  <div class={styles.productKicker}>
+                    <span>{isSealedProduct(item()) ? "Sealed product" : item().productType ?? "Single card"}</span>
                     <Show when={item().set}>
-                      <p class={styles.setName}>{item().set}</p>
+                      <A href={`/categories/${item().game}/sets`}>{item().set}</A>
                     </Show>
+                  </div>
+                  <div class={styles.titleRow}>
                     <h1>{item().name}</h1>
-                  </div>
-
-                  <div class={styles.productMedia}>
-                    <span class={styles.mediaIndex} aria-hidden="true">
-                      {item().setCode ? `SET / ${item().setCode}` : "TCGH / PRODUCT"}
-                    </span>
-                    <Show
-                      when={activeProduct()?.image}
-                      fallback={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
+                    <button
+                      type="button"
+                      class={styles.saveButton}
+                      classList={{ [styles.saveButtonActive]: saved() }}
+                      aria-label={saved() ? `Remove ${item().name} from wishlist` : `Save ${item().name} to wishlist`}
+                      aria-pressed={saved()}
+                      onClick={() => setSaved(value => !value)}
                     >
-                      <img
-                        src={activeProduct()!.image}
-                        alt={item().set ? `${item().name}, ${item().set}` : item().name}
-                        draggable={false}
-                      />
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+                      </svg>
+                    </button>
+                  </div>
+                </header>
+
+                <div class={styles.priceStockRow}>
+                  <div class={styles.priceBlock}>
+                    <Show when={activeProduct()?.compareAtPriceCents && activeProduct()!.compareAtPriceCents! > (activeProduct()?.priceCents ?? 0)}>
+                      <del>{formatPrice(activeProduct()!.compareAtPriceCents!)}</del>
                     </Show>
-                    <span class={styles.mediaNote}>{displayVariant()?.name ?? item().badge ?? conditionFor(item())}</span>
+                    <p class={styles.price}>
+                      <Show
+                        when={!displayVariant() && item().priceRangeCents}
+                        fallback={formatPrice(activeProduct()?.priceCents ?? 0)}
+                      >
+                        {formatPrice(item().priceRangeCents![0])} to {formatPrice(item().priceRangeCents![1])}
+                      </Show>
+                    </p>
                   </div>
 
-                  <div class={styles.stageFacts} aria-label="Product highlights">
-                    <span>{conditionFor(item())}</span>
-                    <span>{item().language ?? "English"}</span>
-                    <span>Ships from {item().shipsFrom ?? "NL"}</span>
+                  <div class={styles.stockLine}>
+                    <span />
+                    {activeProduct()?.stock === 0
+                      ? "Out of stock"
+                      : "In stock"}
                   </div>
-                </div>
-
-                <aside class={styles.purchase}>
-                <div class={styles.purchaseTopline}>
-                  <div class={styles.ratingRow}>
-                    <Stars rating={item().rating ?? 5} />
-                    <span>{(item().rating ?? 5).toFixed(1)} collector rating</span>
-                  </div>
-                  <button
-                    type="button"
-                    class={styles.saveButton}
-                    classList={{ [styles.saveButtonActive]: saved() }}
-                    aria-label={saved() ? `Remove ${item().name} from wishlist` : `Save ${item().name} to wishlist`}
-                    aria-pressed={saved()}
-                    onClick={() => setSaved(value => !value)}
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
-                    </svg>
-                  </button>
-                </div>
-
-                <div class={styles.priceBlock}>
-                  <Show when={activeProduct()?.compareAtPriceCents && activeProduct()!.compareAtPriceCents! > (activeProduct()?.priceCents ?? 0)}>
-                    <del>{formatPrice(activeProduct()!.compareAtPriceCents!)}</del>
-                  </Show>
-                  <p class={styles.price}>
-                    <Show
-                      when={!displayVariant() && item().priceRangeCents}
-                      fallback={formatPrice(activeProduct()?.priceCents ?? 0)}
-                    >
-                      {formatPrice(item().priceRangeCents![0])} to {formatPrice(item().priceRangeCents![1])}
-                    </Show>
-                  </p>
-                </div>
-
-                <div class={styles.stockLine}>
-                  <span />
-                  {activeProduct()?.stock === 0
-                      ? "Currently out of stock"
-                      : "In stock, ready to ship"}
                 </div>
 
                 <p class={styles.description}>{describe(item())}</p>
@@ -472,19 +463,15 @@ export default function ProductDetail() {
                     <strong>{activeProduct() ? conditionFor(activeProduct()!) : conditionFor(item())}</strong>
                   </div>
                   <div>
+                    <span>Language</span>
+                    <strong>{activeProduct()?.language ?? item().language ?? "English"}</strong>
+                  </div>
+                  <div>
                     <span>Dispatch</span>
                     <strong>Within 1 business day</strong>
                   </div>
                 </div>
-                </aside>
-              </div>
-
-              <a href="#product-story" class={styles.scrollCue}>
-                {isSealedProduct(item()) ? "Explore the set" : "Explore the card"}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="M12 4v16M6 14l6 6 6-6" />
-                </svg>
-              </a>
+              </aside>
             </section>
 
             <section class={styles.detailsSection} id="product-story">

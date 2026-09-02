@@ -696,6 +696,30 @@ function ProductRow(props: {
     readProductImage(file, setImage, setMessage);
   };
 
+  const duplicateProduct = async () => {
+    setSaving(true);
+    setMessage("Creating draft copy");
+    const response = await fetch("/api/admin/duplicate-product", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: props.product.id }),
+    });
+    const result = (await response.json()) as {
+      error?: string;
+      product?: { name: string; slug: string };
+    };
+    if (!response.ok) {
+      setMessage(result.error ?? "Product could not be duplicated.");
+      setSaving(false);
+      return;
+    }
+
+    await Promise.resolve(props.onSaved());
+    setMessage(`${result.product?.name ?? "Product copy"} created as a draft`);
+    setSaving(false);
+  };
+
   const save = async () => {
     if (!props.product.variantId) return;
     if (
@@ -957,6 +981,15 @@ function ProductRow(props: {
         </td>
         <td>
           <div class={styles.rowActions}>
+            <button
+              type="button"
+              class={styles.duplicateAction}
+              disabled={saving()}
+              title="Create an editable draft copy"
+              onClick={duplicateProduct}
+            >
+              Duplicate
+            </button>
             <button
               type="button"
               class={styles.editAction}
