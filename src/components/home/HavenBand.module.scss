@@ -66,7 +66,6 @@
   border-radius: 0;
   overflow: hidden;
   background: $surface-raised;
-  border: 1px solid rgba($white, 0.08);
   box-shadow: 0 10px 24px rgba(#000, 0.3);
 
   img {
@@ -172,11 +171,11 @@
 }
 
 .newsletterInput {
+  border: 1px solid rgba($white, 0.12);
   height: 3.125rem;
   width: clamp(14rem, 22vw, 19rem);
   padding-inline: 1.125rem;
   border-radius: $radius-md;
-  border: 1px solid rgba($white, 0.12);
   background: rgba($white, 0.04);
   color: $white;
   font-family: $font-body;

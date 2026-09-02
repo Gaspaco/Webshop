@@ -1,4 +1,6 @@
 import { A } from "@solidjs/router";
+import { onCleanup, onMount } from "solid-js";
+import { dealCard, revealOnScroll } from "~/lib/motion";
 import styles from "./ShopNote.module.scss";
 
 /**
@@ -6,11 +8,26 @@ import styles from "./ShopNote.module.scss";
  * one-person shop, so the page says so in the owner's own voice.
  */
 export default function ShopNote() {
+  let artRef: HTMLDivElement | undefined;
+  let noteRef: HTMLDivElement | undefined;
+
+  onMount(() => {
+    // The card is dealt onto the table; the note lifts in just behind it.
+    const stopArt = artRef ? dealCard(artRef) : undefined;
+    const stopNote = noteRef
+      ? revealOnScroll(noteRef, { children: "h2, p, a", y: 18, delay: 0.12 })
+      : undefined;
+    onCleanup(() => {
+      stopArt?.();
+      stopNote?.();
+    });
+  });
+
   return (
     <section class={styles.section}>
       <div class={styles.wide}>
         <div class={styles.panel}>
-          <div class={styles.art}>
+          <div class={styles.art} ref={artRef}>
             <img
               src="/images/cards/charizard.png"
               alt="First-edition Base Set Charizard holographic card"
@@ -18,7 +35,7 @@ export default function ShopNote() {
             />
           </div>
 
-          <div class={styles.note}>
+          <div class={styles.note} ref={noteRef}>
             <h2 class={styles.heading}>
               Every card that leaves here, I graded myself.
             </h2>
