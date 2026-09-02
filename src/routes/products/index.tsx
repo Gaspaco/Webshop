@@ -25,9 +25,9 @@ const GAME_OPTIONS = [
 ];
 
 const TYPE_OPTIONS = [
-  { key: "all", label: "Everything" },
-  { key: "single", label: "Singles" },
   { key: "sealed", label: "Sealed" },
+  { key: "single", label: "Singles" },
+  { key: "all", label: "Everything" },
 ];
 
 const PRICE_OPTIONS = [
@@ -65,7 +65,7 @@ export default function Products() {
     typeof searchParams.q === "string" ? searchParams.q : "",
   );
   const [game, setGame] = createSignal("all");
-  const [type, setType] = createSignal("all");
+  const [type, setType] = createSignal("sealed");
   const [price, setPrice] = createSignal("all");
   const [sort, setSort] = createSignal<SortKey>("featured");
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
@@ -153,7 +153,7 @@ export default function Products() {
   });
 
   const hasFilters = () =>
-    search().trim() !== "" || game() !== "all" || type() !== "all" || price() !== "all";
+    search().trim() !== "" || game() !== "all" || type() !== "sealed" || price() !== "all";
 
   const clearFilters = () => {
     setSearch("");
@@ -161,7 +161,7 @@ export default function Products() {
       setSearchParams({ q: undefined }, { replace: true });
     }
     setGame("all");
-    setType("all");
+    setType("sealed");
     setPrice("all");
   };
 

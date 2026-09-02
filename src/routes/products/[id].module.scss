@@ -41,7 +41,8 @@
 
 .hero {
   position: relative;
-  min-height: min(54rem, calc(100svh - #{$header-height} - 2rem));
+  height: min(50rem, calc(100svh - #{$header-height} - 4.5rem));
+  min-height: 35rem;
   margin-bottom: clamp(4rem, 9vh, 7.5rem);
   border-block: 1px solid rgba($white, 0.12);
   overflow: hidden;
@@ -135,7 +136,8 @@
 .heroGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(23rem, 28rem);
-  min-height: inherit;
+  height: 100%;
+  min-height: 0;
   padding-top: 4.25rem;
 }
 
@@ -161,7 +163,7 @@
 
   .productMedia {
     align-items: flex-end;
-    padding: 6.5rem 2rem 4.5rem;
+    padding: 5rem 2rem 3.25rem;
 
     &::before {
       width: min(34vw, 31rem);
@@ -177,9 +179,9 @@
 
     img {
       width: min(43vw, 39rem);
-      height: min(58vh, 31rem);
+      height: min(47vh, 27rem);
       max-width: min(43vw, 39rem);
-      max-height: min(58vh, 31rem);
+      max-height: min(47vh, 27rem);
       object-fit: contain;
     }
 
@@ -195,8 +197,8 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-width: 0;
-  min-height: 43rem;
-  padding: clamp(2rem, 4vw, 4.5rem) clamp(1.25rem, 3vw, 3.5rem) 2rem;
+  min-height: 0;
+  padding: clamp(1.35rem, 2.5vw, 2.5rem) clamp(1.25rem, 3vw, 3.5rem) 1.25rem;
   border-right: 1px solid rgba($white, 0.1);
 }
 
@@ -208,7 +210,7 @@
   h1 {
     color: $white;
     font-family: $font-display;
-    font-size: clamp(3rem, 5.2vw, 6rem);
+    font-size: clamp(2.4rem, 4vw, 4.6rem);
     font-weight: 800;
     letter-spacing: -0.04em;
     line-height: 0.92;
@@ -254,9 +256,9 @@
     position: relative;
     z-index: 2;
     width: min(31vw, 29rem);
-    height: min(62vh, 35rem);
+    height: min(48vh, 28rem);
     max-width: min(31vw, 29rem);
-    max-height: min(62vh, 35rem);
+    max-height: min(48vh, 28rem);
     object-fit: contain;
     filter: drop-shadow(0 1.3rem 1rem rgba(#000, 0.5));
     animation: product-arrive 900ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
@@ -338,7 +340,7 @@
   min-width: 0;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(5rem, 8vh, 7rem) clamp(1.5rem, 3vw, 3rem) clamp(4rem, 7vh, 6rem);
+  padding: clamp(1rem, 2.3vh, 1.5rem) clamp(1.35rem, 2.4vw, 2.25rem);
   background: rgba(#090b0a, 0.82);
 }
 
@@ -347,7 +349,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid rgba($white, 0.11);
 }
 
@@ -417,14 +419,14 @@
 .price {
   color: $white;
   font-family: $font-display;
-  font-size: clamp(2.6rem, 3.5vw, 4rem);
+  font-size: clamp(2.15rem, 2.8vw, 3.25rem);
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1;
 }
 
 .priceBlock {
-  margin-top: clamp(2rem, 4vh, 3rem);
+  margin-top: clamp(0.75rem, 1.7vh, 1.15rem);
 }
 
 .priceBlock del {
@@ -438,7 +440,7 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  margin-top: 0.9rem;
+  margin-top: 0.5rem;
   color: $gray-300;
   font-size: 0.8125rem;
   font-weight: 650;
@@ -454,21 +456,25 @@
 
 .description {
   max-width: 38ch;
-  margin-top: 1.75rem;
+  display: -webkit-box;
+  margin-top: 0.75rem;
   color: $gray-300;
   font-size: 0.9375rem;
-  line-height: 1.7;
+  line-height: 1.5;
+  overflow: hidden;
   text-wrap: pretty;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .variantPicker {
   min-width: 0;
   padding: 0;
-  margin-top: 1.5rem;
+  margin-top: 0.8rem;
   border: 0;
 
   legend {
-    margin-bottom: 0.65rem;
+    margin-bottom: 0.4rem;
     color: $gray-400;
     font-size: 0.72rem;
     font-weight: 750;
@@ -479,7 +485,7 @@
   > div {
     display: grid;
     gap: 0.5rem;
-    max-height: 15.5rem;
+    max-height: 7.1rem;
     padding-right: 0.25rem;
     overflow-y: auto;
     scrollbar-width: thin;
@@ -491,8 +497,8 @@
     justify-content: space-between;
     gap: 1rem;
     width: 100%;
-    min-height: 4rem;
-    padding: 0.8rem 0.9rem;
+    min-height: 3.3rem;
+    padding: 0.55rem 0.75rem;
     border-radius: $radius-md;
     background: rgba($white, 0.025);
     color: $white;
@@ -543,18 +549,28 @@
   }
 }
 
+.variableHero {
+  .purchase {
+    justify-content: flex-start;
+  }
+
+  .variantPicker > div {
+    overscroll-behavior: contain;
+  }
+}
+
 .buyArea {
   display: grid;
   grid-template-columns: auto minmax(10rem, 1fr);
   gap: 0.625rem;
-  margin-top: 2rem;
+  margin-top: 0.85rem;
 }
 
 .quantity {
   display: inline-grid;
   grid-template-columns: 2.5rem 2.25rem 2.5rem;
   align-items: center;
-  height: 3.5rem;
+  height: 3.2rem;
   border: 1px solid rgba($white, 0.16);
   border-radius: $radius-md;
   overflow: hidden;
@@ -588,7 +604,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 3.5rem;
+  min-height: 3.2rem;
   padding-inline: 1.25rem;
   border-radius: $radius-md;
   font-family: $font-display;
@@ -656,7 +672,7 @@
 .cartLink {
   display: inline-block;
   align-self: flex-start;
-  margin-top: 0.9rem;
+  margin-top: 0.5rem;
   color: $gray-400;
   font-size: 0.8125rem;
   font-weight: 650;
@@ -674,8 +690,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.25rem;
+  margin-top: 0.75rem;
+  padding-top: 0.7rem;
   border-top: 1px solid rgba($white, 0.1);
 
   div {
@@ -1010,7 +1026,7 @@
   }
 
   .stage {
-    min-height: 43rem;
+    min-height: 0;
   }
 
   .productMedia img {
@@ -1025,6 +1041,7 @@
 
 @media (max-width: $bp-lg) {
   .hero {
+    height: auto;
     min-height: 0;
   }
 
@@ -1102,6 +1119,29 @@
     &:nth-child(3) {
       padding-left: 0;
     }
+  }
+}
+
+@media (min-width: 1025px) and (max-height: 760px) {
+  .description,
+  .purchaseFoot {
+    display: none;
+  }
+
+  .heroTopline {
+    min-height: 3.5rem;
+  }
+
+  .heroGrid {
+    padding-top: 3.5rem;
+  }
+
+  .purchase {
+    padding-block: 0.8rem;
+  }
+
+  .variantPicker > div {
+    max-height: 6.7rem;
   }
 }
 
@@ -1294,4 +1334,360 @@
   .relatedHead a:hover svg {
     transform: none;
   }
+}
+
+// Product hero: restrained storefront layout.
+// This intentionally overrides the older showcase treatment above while the
+// lower product-story, service, and related-product sections remain intact.
+
+.hero {
+  display: grid;
+  height: min(48rem, calc(100svh - #{$header-height} - 4.5rem));
+  min-height: 37rem;
+  grid-template-columns: minmax(0, 1.18fr) minmax(25rem, 0.72fr);
+  margin-bottom: clamp(3rem, 7vh, 6rem);
+  border: 0;
+  background: #0b0d0c;
+  overflow: hidden;
+}
+
+.mediaPanel {
+  display: grid;
+  min-width: 0;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border-right: 1px solid rgba($white, 0.1);
+  background: #0e100f;
+}
+
+.mediaHeader,
+.mediaFooter {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-inline: clamp(1.25rem, 2.5vw, 2.5rem);
+  color: $gray-500;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.mediaHeader {
+  border-bottom: 1px solid rgba($white, 0.08);
+
+  a {
+    color: $gray-200;
+    font-family: $font-display;
+    font-weight: 750;
+
+    &:hover { color: $primary-light; }
+  }
+
+  span {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+}
+
+.mediaFooter {
+  border-top: 1px solid rgba($white, 0.08);
+
+  strong {
+    overflow: hidden;
+    max-width: 50%;
+    color: $gray-200;
+    font-size: 0.68rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.productMedia,
+.sealedHero .productMedia {
+  position: relative;
+  inset: auto;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  place-items: center;
+  padding: clamp(1.25rem, 3vw, 3rem);
+  overflow: hidden;
+
+  &::before,
+  &::after {
+    display: none;
+  }
+
+  img {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 35rem);
+    height: 100%;
+    max-width: min(100%, 35rem);
+    max-height: min(59vh, 34rem);
+    object-fit: contain;
+    filter: drop-shadow(0 1.25rem 1rem rgba(#000, 0.42));
+    animation: product-arrive 650ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    transform: none;
+    transition: filter $transition-base;
+  }
+
+  > div {
+    width: min(80%, 28rem);
+    height: min(80%, 31rem);
+  }
+}
+
+.sealedHero .productMedia img {
+  width: min(100%, 40rem);
+  max-width: min(100%, 40rem);
+  max-height: min(55vh, 31rem);
+}
+
+.hero:hover .productMedia img,
+.stage:hover .productMedia img {
+  filter: drop-shadow(0 1.4rem 1rem rgba(#000, 0.5));
+  transform: none;
+}
+
+.purchase,
+.variableHero .purchase {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: clamp(1.5rem, 3vh, 2.25rem) clamp(1.5rem, 3vw, 3rem);
+  background: #111312;
+  overflow: hidden;
+}
+
+.purchaseHeader {
+  padding-bottom: clamp(1rem, 2vh, 1.5rem);
+  border-bottom: 1px solid rgba($white, 0.1);
+}
+
+.productKicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  color: $gray-500;
+  font-size: 0.67rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+
+  a {
+    overflow: hidden;
+    max-width: 55%;
+    color: $primary-light;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover { color: $white; }
+  }
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+
+  h1 {
+    max-width: 18ch;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.75rem, 2.7vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.04;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+}
+
+.saveButton {
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 0;
+  background: transparent;
+}
+
+.priceStockRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: clamp(0.9rem, 2vh, 1.35rem) 0.5rem;
+}
+
+.priceBlock {
+  margin-top: 0;
+}
+
+.price {
+  font-size: clamp(2rem, 2.7vw, 3.15rem);
+  letter-spacing: -0.035em;
+}
+
+.stockLine {
+  flex-shrink: 0;
+  margin: 0 0 0.3rem;
+  color: $gray-300;
+  font-size: 0.72rem;
+}
+
+.description {
+  display: -webkit-box;
+  max-width: 48ch;
+  margin-top: 0.55rem;
+  color: $gray-400;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.variantPicker {
+  margin-top: clamp(0.75rem, 1.8vh, 1.1rem);
+
+  legend {
+    margin-bottom: 0.4rem;
+    color: $gray-400;
+    font-size: 0.65rem;
+  }
+
+  > div {
+    gap: 0.35rem;
+    max-height: 7.15rem;
+  }
+
+  button {
+    min-height: 3.25rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid rgba($white, 0.1);
+    border-radius: 0;
+    background: transparent;
+    transform: none;
+
+    &:hover:not(:disabled) {
+      border-color: rgba($primary-light, 0.55);
+      background: rgba($white, 0.025);
+      transform: none;
+    }
+  }
+}
+
+.variantActive {
+  border-color: $primary !important;
+  background: rgba($primary, 0.07) !important;
+}
+
+.buyArea {
+  margin-top: clamp(0.75rem, 1.8vh, 1.1rem);
+}
+
+.quantity,
+.primaryButton {
+  height: 3.25rem;
+  min-height: 3.25rem;
+  border-radius: 0;
+}
+
+.cartLink {
+  margin-top: 0.45rem;
+  font-size: 0.7rem;
+  text-decoration: none;
+}
+
+.purchaseFoot {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+
+  strong {
+    overflow: hidden;
+    font-size: 0.7rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 1025px) and (max-height: 760px) {
+  .hero {
+    min-height: 34rem;
+  }
+
+  .purchase {
+    padding-block: 1rem;
+  }
+
+  .description,
+  .purchaseFoot {
+    display: none;
+  }
+
+  .purchaseHeader {
+    padding-bottom: 0.75rem;
+  }
+}
+
+@media (max-width: $bp-lg) {
+  .hero {
+    height: auto;
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .mediaPanel {
+    min-height: 36rem;
+    border-right: 0;
+    border-bottom: 1px solid rgba($white, 0.1);
+  }
+
+  .productMedia,
+  .sealedHero .productMedia {
+    min-height: 28rem;
+
+    img {
+      height: 27rem;
+      max-width: min(82vw, 32rem);
+      max-height: 27rem;
+    }
+  }
+
+  .purchase {
+    padding: 2.25rem clamp(1.5rem, 5vw, 3rem) 2.75rem;
+    overflow: visible;
+  }
+
+  .purchaseFoot { margin-top: 1.5rem; }
+}
+
+@media (max-width: $bp-sm) {
+  .mediaPanel { min-height: 31rem; }
+  .mediaHeader,
+  .mediaFooter { padding-inline: 1rem; }
+
+  .productMedia,
+  .sealedHero .productMedia {
+    min-height: 23rem;
+    padding: 1rem;
+
+    img {
+      height: 22rem;
+      max-width: min(85vw, 25rem);
+      max-height: 22rem;
+    }
+  }
+
+  .purchase { padding: 1.75rem 1rem 2.25rem; }
+  .titleRow h1 { font-size: clamp(1.75rem, 9vw, 2.5rem); }
+  .priceStockRow { align-items: flex-start; flex-direction: column; gap: 0.35rem; }
+  .purchaseFoot { grid-template-columns: 1fr 1fr; }
+  .purchaseFoot div:last-child { grid-column: 1 / -1; }
 }
