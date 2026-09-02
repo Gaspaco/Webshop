@@ -141,6 +141,12 @@ export default function Checkout() {
   const totalCents = createMemo(
     () => subtotalCents() - discountCents() + shippingCents(),
   );
+  const freeShippingRemaining = createMemo(() =>
+    Math.max(
+      0,
+      storeProfile().freeShippingThresholdCents - subtotalCents(),
+    ),
+  );
 
   const applyDiscount = async () => {
     setCheckingDiscount(true);
@@ -301,12 +307,16 @@ export default function Checkout() {
           fallback={<PaymentReturn orderNumber={searchParams.order} />}
         >
             <header class={styles.header}>
-              <span class={styles.kicker}>Secure checkout</span>
-              <h1>Finish your order</h1>
-              <p>
-                Review your cards, choose delivery, and leave the details we need
-                to pack it right.
-              </p>
+              <div>
+                <h1>Checkout</h1>
+                <p>Your order is reserved once payment is confirmed.</p>
+              </div>
+              <A href="/cart" class={styles.backLink}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+                Back to cart
+              </A>
             </header>
 
             <Show
@@ -323,7 +333,11 @@ export default function Checkout() {
             >
               <form class={styles.layout} onSubmit={submitOrder}>
               <section class={styles.formPanel} aria-label="Checkout details">
-                <CheckoutSection title="Contact">
+                <CheckoutSection
+                  step="01"
+                  title="Contact"
+                  description="Where we send your receipt and order updates."
+                >
                   <div class={styles.gridTwo}>
                     <label class={styles.field}>
                       <span>Email</span>
@@ -359,7 +373,11 @@ export default function Checkout() {
                   </div>
                 </CheckoutSection>
 
-                <CheckoutSection title="Delivery address">
+                <CheckoutSection
+                  step="02"
+                  title="Delivery address"
+                  description="Use the address exactly as PostNL should receive it."
+                >
                   <div class={styles.gridTwo}>
                     <label class={styles.field}>
                       <span>First name</span>
@@ -433,7 +451,11 @@ export default function Checkout() {
                   </div>
                 </CheckoutSection>
 
-                <CheckoutSection title="Shipping">
+                <CheckoutSection
+                  step="03"
+                  title="Shipping"
+                  description="Choose the format that fits your order."
+                >
                   <div class={styles.optionStack}>
                     <For each={shippingOptions()}>
                       {option => (
@@ -460,7 +482,11 @@ export default function Checkout() {
                   </div>
                 </CheckoutSection>
 
-                <CheckoutSection title="Payment">
+                <CheckoutSection
+                  step="04"
+                  title="Payment"
+                  description="Mollie keeps your payment details outside this store."
+                >
                   <div class={styles.optionStack}>
                     <label class={styles.option}>
                       <input
@@ -491,7 +517,11 @@ export default function Checkout() {
                   </div>
                 </CheckoutSection>
 
-                <CheckoutSection title="Order note">
+                <CheckoutSection
+                  step="05"
+                  title="Order note"
+                  description="Optional instructions for packing or delivery."
+                >
                   <label class={styles.field}>
                     <span>Anything we should know?</span>
                     <textarea
@@ -506,7 +536,10 @@ export default function Checkout() {
               </section>
 
               <aside class={styles.summary} aria-label="Order summary">
-                <h2>Order summary</h2>
+                <div class={styles.summaryHeading}>
+                  <h2>Your order</h2>
+                  <A href="/cart">Edit cart</A>
+                </div>
                 <div class={styles.items}>
                   <For each={cart.items()}>
                     {item => (
@@ -526,6 +559,12 @@ export default function Checkout() {
                     )}
                   </For>
                 </div>
+
+                <p class={styles.shippingStatus}>
+                  {freeShippingRemaining() > 0
+                    ? `${formatPrice(freeShippingRemaining())} away from free shipping`
+                    : "Free shipping applied"}
+                </p>
 
                 <div class={styles.discount}>
                   <label>
@@ -553,7 +592,7 @@ export default function Checkout() {
                   </Show>
                 </div>
 
-                <div class={styles.totals}>
+                <div class={styles.totals} aria-live="polite">
                   <SummaryRow label="Subtotal" value={formatPrice(subtotalCents())} />
                   <Show when={discountCents() > 0}>
                     <SummaryRow
@@ -585,9 +624,9 @@ export default function Checkout() {
                   disabled={isSubmitting()}
                 >
                   {isSubmitting()
-                    ? "Placing order..."
+                    ? "Preparing payment..."
                     : paymentMethod() === "mollie"
-                      ? "Place order and continue to payment"
+                      ? `Pay ${formatPrice(totalCents())} securely`
                       : "Place order with payment obligation"}
                 </button>
 
@@ -595,8 +634,11 @@ export default function Checkout() {
                   By placing the order, you agree to the <A href="/terms">terms and conditions</A> and confirm that you have read the <A href="/privacy">privacy policy</A> and <A href="/shipping">shipping and returns information</A>.
                 </p>
                 <p class={styles.secureNote}>
-                  Prices and shipping are recalculated on the server before Mollie
-                  receives the payment.
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M12 3 5 6v5c0 4.6 2.8 8.1 7 10 4.2-1.9 7-5.4 7-10V6l-7-3Z" />
+                    <path d="m9.5 12 1.7 1.7 3.6-3.8" />
+                  </svg>
+                  Prices, stock, and shipping are checked again on the server before payment.
                 </p>
               </aside>
               </form>
@@ -607,10 +649,21 @@ export default function Checkout() {
   );
 }
 
-function CheckoutSection(props: { title: string; children: JSX.Element }) {
+function CheckoutSection(props: {
+  step: string;
+  title: string;
+  description: string;
+  children: JSX.Element;
+}) {
   return (
     <section class={styles.section}>
-      <h2>{props.title}</h2>
+      <header class={styles.sectionHeading}>
+        <span>{props.step}</span>
+        <div>
+          <h2>{props.title}</h2>
+          <p>{props.description}</p>
+        </div>
+      </header>
       <div class={styles.sectionBody}>{props.children}</div>
     </section>
   );
