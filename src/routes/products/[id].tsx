@@ -1,6 +1,7 @@
 import { Link, Meta, Title } from "@solidjs/meta";
 import { A, useParams } from "@solidjs/router";
 import {
+  createEffect,
   createResource,
   createSignal,
   For,
@@ -108,12 +109,17 @@ export default function ProductDetail() {
   const product = () => {
     const id = params.id ?? "";
     const catalog = databaseCatalog();
-    if (catalog?.managedSlugs.includes(id)) return catalog.products[0];
+    if (catalog?.managedSlugs.includes(id)) {
+      // Resolve the exact slug that was clicked instead of relying on result
+      // order. This stays correct if the endpoint ever returns extra rows.
+      return catalog.products.find(candidate => candidate.id === id);
+    }
     return findProduct(id);
   };
 
   const [quantity, setQuantity] = createSignal(1);
   const [selectedVariantId, setSelectedVariantId] = createSignal("");
+  const [detailImageFailed, setDetailImageFailed] = createSignal(false);
   const [added, setAdded] = createSignal(false);
   const [saved, setSaved] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
@@ -157,6 +163,11 @@ export default function ProductDetail() {
       stock: variant.stock,
     };
   };
+
+  createEffect(() => {
+    activeProduct()?.image;
+    setDetailImageFailed(false);
+  });
 
   const productJsonLd = () => {
     const current = product();
@@ -288,13 +299,14 @@ export default function ProductDetail() {
 
                 <div class={styles.productMedia}>
                   <Show
-                    when={activeProduct()?.image}
+                    when={activeProduct()?.image && !detailImageFailed()}
                     fallback={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
                   >
                     <img
                       src={activeProduct()!.image}
                       alt={item().set ? `${item().name}, ${item().set}` : item().name}
                       draggable={false}
+                      onError={() => setDetailImageFailed(true)}
                     />
                   </Show>
                 </div>

@@ -1,6 +1,7 @@
 import { A } from "@solidjs/router";
-import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
+import { createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import { formatPrice, useCart } from "~/lib/cart";
+import type { ShopProduct } from "~/lib/categories";
 import styles from "./Hero.module.scss";
 
 type Slide = {
@@ -70,6 +71,7 @@ type Product = {
   rating: number;
   priceCents: number;
   href: string;
+  variantId?: string;
 };
 
 const BESTSELLERS: Product[] = [
@@ -97,11 +99,35 @@ function Stars(props: { rating: number }) {
 export default function Hero(props: {
   managedTitle?: string;
   managedCopy?: string;
+  products?: ShopProduct[];
 }) {
   const cart = useCart();
   const [active, setActive] = createSignal(0);
   const [paused, setPaused] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
+
+  const bestsellers = createMemo<Product[]>(() => {
+    const live = (props.products ?? [])
+      .filter(product => product.image && (product.stock ?? 0) > 0)
+      .slice(0, 5)
+      .map(product => {
+        const mainVariant =
+          product.variants?.find(variant => variant.isDefault) ??
+          product.variants?.find(variant => variant.id === product.variantId) ??
+          product.variants?.[0];
+        return {
+          id: product.id,
+          name: product.set ? `${product.name} · ${product.set}` : product.name,
+          game: product.gameName,
+          image: mainVariant?.image ?? product.image!,
+          rating: product.rating ?? 5,
+          priceCents: mainVariant?.priceCents ?? product.priceCents ?? 0,
+          href: product.href,
+          variantId: mainVariant?.id,
+        };
+      });
+    return live.length ? live : BESTSELLERS;
+  });
 
   onMount(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -135,6 +161,7 @@ export default function Hero(props: {
   const addProductToCart = (product: Product) => {
     cart.addItem({
       id: product.id,
+      variantId: product.variantId,
       name: product.name,
       image: product.image,
       priceCents: product.priceCents,
@@ -237,7 +264,7 @@ export default function Hero(props: {
           </header>
 
           <ul class={styles.bestList}>
-            <For each={BESTSELLERS}>
+            <For each={bestsellers()}>
               {product => (
                 <li class={styles.bestItem}>
                   <A href={product.href} class={styles.bestLink}>

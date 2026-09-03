@@ -82,6 +82,7 @@ export default function ProductCard(props: ProductCardProps) {
   const p = props.product;
   const [quickViewOpen, setQuickViewOpen] = createSignal(false);
   const [selectedVariantId, setSelectedVariantId] = createSignal("");
+  const [imageFailed, setImageFailed] = createSignal(false);
   const selectedVariant = createMemo(() =>
     p.variants?.find(variant => variant.id === selectedVariantId()),
   );
@@ -114,6 +115,11 @@ export default function ProductCard(props: ProductCardProps) {
   };
 
   createEffect(() => {
+    p.image;
+    setImageFailed(false);
+  });
+
+  createEffect(() => {
     if (!quickViewOpen()) return;
     const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -135,8 +141,14 @@ export default function ProductCard(props: ProductCardProps) {
       }}
     >
       <A href={p.href} class={styles.cardMedia}>
-        <Show when={p.image} fallback={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}>
-          <img src={p.image} alt={p.set ? `${p.name}, ${p.set}` : p.name} draggable={false} loading="lazy" />
+        <Show when={p.image && !imageFailed()} fallback={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}>
+          <img
+            src={p.image}
+            alt={p.set ? `${p.name}, ${p.set}` : p.name}
+            draggable={false}
+            loading="lazy"
+            onError={() => setImageFailed(true)}
+          />
         </Show>
         <Show when={p.badge}>
           <span class={styles.badge}>{p.badge}</span>

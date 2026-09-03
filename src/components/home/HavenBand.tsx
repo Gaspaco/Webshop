@@ -3,12 +3,12 @@ import { For } from "solid-js";
 import styles from "./HavenBand.module.scss";
 
 const TRENDING = [
-  { name: "Charizard", image: "/images/cards/charizard.png", href: "/products/charizard-base-set" },
-  { name: "Umbreon VMAX", image: "/images/cards/umbreon.png", href: "/products/umbreon-vmax-alt-art" },
-  { name: "Pikachu", image: "/images/cards/pikachu.png", href: "/products/pikachu-crown-zenith" },
-  { name: "Rayquaza VMAX", image: "/images/cards/rayquaza.png", href: "/products/rayquaza-vmax-st" },
-  { name: "Palkia V", image: "/images/cards/palkia.png", href: "/products/palkia-v-astral" },
-  { name: "Venusaur", image: "/images/cards/venusaur.png", href: "/products/venusaur-base" },
+  { name: "Charizard", image: "/images/cards/charizard.png", href: "/products?q=Charizard" },
+  { name: "Umbreon VMAX", image: "/images/cards/umbreon.png", href: "/products?q=Umbreon%20VMAX" },
+  { name: "Pikachu", image: "/images/cards/pikachu.png", href: "/products?q=Pikachu" },
+  { name: "Rayquaza VMAX", image: "/images/cards/rayquaza.png", href: "/products?q=Rayquaza%20VMAX" },
+  { name: "Palkia V", image: "/images/cards/palkia.png", href: "/products?q=Palkia%20V" },
+  { name: "Venusaur", image: "/images/cards/venusaur.png", href: "/products?q=Venusaur" },
 ];
 
 export default function HavenBand() {

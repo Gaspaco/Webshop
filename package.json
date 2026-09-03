@@ -14,6 +14,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:sync:yugioh": "bun scripts/sync-ygoprodeck.ts",
     "admin:create": "bun scripts/create-admin.ts"
   },
   "dependencies": {

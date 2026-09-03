@@ -192,6 +192,25 @@ type ImportJob = {
   createdAt: string;
 };
 
+type YugiohPrinting = {
+  id: string;
+  setName: string;
+  setCode: string;
+  rarity: string;
+  rarityCode: string | null;
+};
+
+type YugiohCard = {
+  id: number;
+  name: string;
+  cardType: string;
+  archetype: string | null;
+  attribute: string | null;
+  cardmarketPriceCents: number | null;
+  importedStatus: "draft" | "active" | "archived" | null;
+  printings: YugiohPrinting[];
+};
+
 type AdminDashboard = {
   owner: { id: string; name: string; email: string; image: string | null };
   metrics: {
@@ -2596,6 +2615,11 @@ export default function Admin() {
   const [savingProduct, setSavingProduct] = createSignal(false);
   const [importMessage, setImportMessage] = createSignal("");
   const [importing, setImporting] = createSignal(false);
+  const [yugiohQuery, setYugiohQuery] = createSignal("");
+  const [yugiohCards, setYugiohCards] = createSignal<YugiohCard[]>([]);
+  const [yugiohSearching, setYugiohSearching] = createSignal(false);
+  const [yugiohImporting, setYugiohImporting] = createSignal<Set<number>>(new Set());
+  const [yugiohMessage, setYugiohMessage] = createSignal("");
   let imageInput: HTMLInputElement | undefined;
   const [selectedVariantIds, setSelectedVariantIds] = createSignal<Set<string>>(
     new Set(),
@@ -2838,6 +2862,64 @@ export default function Admin() {
       setImportMessage("The CSV could not be read.");
     } finally {
       setImporting(false);
+    }
+  };
+
+  const searchYugiohCards = async (event: SubmitEvent) => {
+    event.preventDefault();
+    setYugiohSearching(true);
+    setYugiohMessage("");
+    try {
+      const response = await fetch(
+        `/api/admin/ygoprodeck?q=${encodeURIComponent(yugiohQuery().trim())}`,
+        { credentials: "same-origin", headers: { Accept: "application/json" } },
+      );
+      const result = (await response.json().catch(() => ({}))) as {
+        cards?: YugiohCard[];
+        error?: string;
+      };
+      if (!response.ok) {
+        setYugiohMessage(result.error ?? "The local Yu-Gi-Oh database could not be searched.");
+        return;
+      }
+      setYugiohCards(result.cards ?? []);
+      if (!result.cards?.length) setYugiohMessage("No matching cards found in the local snapshot.");
+    } finally {
+      setYugiohSearching(false);
+    }
+  };
+
+  const addYugiohCard = async (card: YugiohCard) => {
+    setYugiohImporting(previous => new Set(previous).add(card.id));
+    setYugiohMessage("");
+    try {
+      const response = await fetch("/api/admin/ygoprodeck", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardId: card.id }),
+      });
+      const result = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        variants?: number;
+      };
+      if (!response.ok) {
+        setYugiohMessage(result.error ?? "The card could not be added.");
+        return;
+      }
+      setYugiohCards(cards => cards.map(item =>
+        item.id === card.id ? { ...item, importedStatus: "draft" } : item,
+      ));
+      setYugiohMessage(
+        `${card.name} added as a draft with ${result.variants ?? card.printings.length} zero-stock variants.`,
+      );
+      await refetch();
+    } finally {
+      setYugiohImporting(previous => {
+        const next = new Set(previous);
+        next.delete(card.id);
+        return next;
+      });
     }
   };
 
@@ -3649,6 +3731,80 @@ export default function Admin() {
                     </div>
                   </section>
                   <Show when={importMessage()}><p class={styles.importMessage} role="status">{importMessage()}</p></Show>
+
+                  <section class={styles.yugiohLibrary}>
+                    <div class={styles.yugiohLibraryHead}>
+                      <div>
+                        <h2>Yu-Gi-Oh card library</h2>
+                        <p>
+                          Search the locally stored YGOPRODeck snapshot. Adding a card creates one private draft with every known set and rarity at zero stock.
+                        </p>
+                      </div>
+                      <span>Local data only</span>
+                    </div>
+
+                    <form class={styles.yugiohSearch} onSubmit={searchYugiohCards}>
+                      <label>
+                        <span>Card name</span>
+                        <input
+                          type="search"
+                          value={yugiohQuery()}
+                          onInput={event => setYugiohQuery(event.currentTarget.value)}
+                          placeholder="Dark Magician, Blue-Eyes, Kuriboh"
+                        />
+                      </label>
+                      <button type="submit" disabled={yugiohSearching()}>
+                        {yugiohSearching() ? "Searching" : "Search library"}
+                      </button>
+                    </form>
+
+                    <Show when={yugiohMessage()}>
+                      <p class={styles.importMessage} role="status">{yugiohMessage()}</p>
+                    </Show>
+
+                    <Show when={yugiohCards().length}>
+                      <div class={styles.yugiohResults}>
+                        <For each={yugiohCards()}>
+                          {card => (
+                            <article>
+                              <div class={styles.yugiohCardId}>{card.id}</div>
+                              <div class={styles.yugiohCardInfo}>
+                                <strong>{card.name}</strong>
+                                <span>
+                                  {[card.cardType, card.attribute, card.archetype]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                </span>
+                                <small>
+                                  {card.printings.length} printing{card.printings.length === 1 ? "" : "s"}
+                                  <Show when={card.printings.length}>
+                                    {` · ${[...new Set(card.printings.map(printing => printing.rarity))].slice(0, 4).join(", ")}`}
+                                  </Show>
+                                </small>
+                              </div>
+                              <div class={styles.yugiohCardPrice}>
+                                <span>Reference</span>
+                                <strong>
+                                  {card.cardmarketPriceCents === null
+                                    ? "No price"
+                                    : formatMoney(card.cardmarketPriceCents)}
+                                </strong>
+                              </div>
+                              <button
+                                type="button"
+                                disabled={Boolean(card.importedStatus) || yugiohImporting().has(card.id)}
+                                onClick={() => addYugiohCard(card)}
+                              >
+                                {card.importedStatus
+                                  ? card.importedStatus === "active" ? "Live" : "Already added"
+                                  : yugiohImporting().has(card.id) ? "Adding card" : "Add as draft"}
+                              </button>
+                            </article>
+                          )}
+                        </For>
+                      </div>
+                    </Show>
+                  </section>
 
                   <section class={styles.importGuide}>
                     <div>
