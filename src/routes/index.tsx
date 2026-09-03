@@ -105,6 +105,7 @@ export default function Home() {
       <Hero
         managedTitle={content().heroTitle}
         managedCopy={content().heroCopy}
+        products={catalogProducts()}
       />
       <ShopByGame />
       <SetCollections />

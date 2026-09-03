@@ -195,21 +195,29 @@ export default function Products() {
       <Title>Shop | TCGHaven</Title>
 
       <div class={styles.wide}>
-        <header class={styles.header}>
-          <h1>Everything in stock</h1>
-          <p>
-            Singles, sealed product, and decks across every game we carry, each
-            one condition-checked before it ships.
-          </p>
-          <p class={styles.stockLine}>
-            <strong>{allProducts().length}</strong>
-            {allProducts().length === 1 ? " product" : " products"} listed
-            &middot; updated daily
+        <header class={styles.masthead}>
+          <div class={styles.mastheadTitle}>
+            <h1>Shop the catalogue</h1>
+            <div class={styles.catalogueMeta}>
+              <span>{allProducts().length} listings</span>
+              <span>Updated daily</span>
+            </div>
+          </div>
+          <p class={styles.mastheadNote}>
+            Singles, sealed releases, and graded cards across every game we
+            carry. Every listing is checked before dispatch.
           </p>
         </header>
 
-        <section class={styles.filters} aria-label="Shop filters">
-          <div class={styles.filterTop}>
+        <div class={styles.catalogueShell}>
+          <aside class={styles.filterRail} aria-label="Shop filters">
+            <div class={styles.filterRailHead}>
+              <h2>Find a product</h2>
+              <Show when={hasFilters()}>
+                <button type="button" onClick={clearFilters}>Clear</button>
+              </Show>
+            </div>
+
             <label class={styles.searchField}>
               <span class={styles.srOnly}>Search cards and sets</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -224,50 +232,66 @@ export default function Products() {
               />
             </label>
 
-            <nav class={styles.gameOptions} aria-label="Filter by game">
-              <For each={GAME_OPTIONS}>
-                {option => (
-                  <button
-                    type="button"
-                    class={styles.gameOption}
-                    classList={{ [styles.gameOptionActive]: game() === option.key }}
-                    aria-pressed={game() === option.key}
-                    onClick={() => setGame(option.key)}
-                  >
-                    {option.label}
-                  </button>
-                )}
-              </For>
-            </nav>
-          </div>
+            <fieldset class={styles.filterGroup}>
+              <legend>Game</legend>
+              <nav class={styles.gameOptions} aria-label="Filter by game">
+                <For each={GAME_OPTIONS}>
+                  {option => (
+                    <button
+                      type="button"
+                      class={styles.gameOption}
+                      classList={{ [styles.gameOptionActive]: game() === option.key }}
+                      aria-pressed={game() === option.key}
+                      onClick={() => setGame(option.key)}
+                    >
+                      <span>{option.label}</span>
+                      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="m5.5 3.5 4.5 4.5-4.5 4.5" stroke="currentColor" stroke-width="1.4" />
+                      </svg>
+                    </button>
+                  )}
+                </For>
+              </nav>
+            </fieldset>
 
-          <div class={styles.filterBottom}>
-            <div class={styles.typeOptions} aria-label="Filter by product type">
-              <For each={TYPE_OPTIONS}>
-                {option => (
-                  <button
-                    type="button"
-                    class={styles.typeOption}
-                    classList={{ [styles.typeOptionActive]: type() === option.key }}
-                    aria-pressed={type() === option.key}
-                    onClick={() => setType(option.key)}
-                  >
-                    {option.label}
-                  </button>
-                )}
-              </For>
-            </div>
+            <fieldset class={styles.filterGroup}>
+              <legend>Format</legend>
+              <div class={styles.typeOptions} aria-label="Filter by product type">
+                <For each={TYPE_OPTIONS}>
+                  {option => (
+                    <button
+                      type="button"
+                      class={styles.typeOption}
+                      classList={{ [styles.typeOptionActive]: type() === option.key }}
+                      aria-pressed={type() === option.key}
+                      onClick={() => setType(option.key)}
+                    >
+                      {option.label}
+                    </button>
+                  )}
+                </For>
+              </div>
+            </fieldset>
 
-            <div class={styles.selects}>
+            <fieldset class={styles.filterGroup}>
+              <legend>Price</legend>
               <label>
-                <span>Price</span>
+                <span class={styles.srOnly}>Price range</span>
                 <select value={price()} onChange={event => setPrice(event.currentTarget.value)}>
                   <For each={PRICE_OPTIONS}>{option => <option value={option.key}>{option.label}</option>}</For>
                 </select>
               </label>
+            </fieldset>
+          </aside>
 
+          <section class={styles.results} aria-label="Products">
+            <header class={styles.resultsHead}>
+              <div>
+                <h2>{visible().length} {visible().length === 1 ? "product" : "products"}</h2>
+                <p>{hasFilters() ? "Matching your current filters" : "Showing sealed products"}</p>
+              </div>
               <label>
-                <span>Sort</span>
+                <span>Sort by</span>
                 <select value={sort()} onChange={event => setSort(event.currentTarget.value as SortKey)}>
                   <option value="featured">Featured</option>
                   <option value="price-asc">Price: low to high</option>
@@ -275,44 +299,38 @@ export default function Products() {
                   <option value="name">Name: A to Z</option>
                 </select>
               </label>
-            </div>
-          </div>
-        </section>
+            </header>
 
-        <Show when={hasFilters()}>
-          <div class={styles.catalogHead}>
-            <button type="button" onClick={clearFilters}>Reset filters</button>
-          </div>
-        </Show>
-
-        <Show
-          when={visible().length}
-          fallback={
-            <div class={styles.empty}>
-              <p class={styles.emptyTitle}>No products found</p>
-              <p>Try another search or reset the filters.</p>
-              <button type="button" onClick={clearFilters}>Reset filters</button>
-            </div>
-          }
-        >
-          <div class={styles.grid}>
-            <For each={visible()}>
-              {(product, index) => (
-                <div
-                  class={styles.gridItem}
-                  style={`--card-index: ${Math.min(index(), 6)}`}
-                >
-                  <ProductCard
-                    product={product}
-                    isJustAdded={() => justAdded().has(product.id)}
-                    onAdd={addToCart}
-                    fill
-                  />
+            <Show
+              when={visible().length}
+              fallback={
+                <div class={styles.empty}>
+                  <p class={styles.emptyTitle}>Nothing matches yet</p>
+                  <p>Change the search or clear the filters to see the full catalogue.</p>
+                  <button type="button" onClick={clearFilters}>Show all products</button>
                 </div>
-              )}
-            </For>
-          </div>
-        </Show>
+              }
+            >
+              <div class={styles.grid}>
+                <For each={visible()}>
+                  {(product, index) => (
+                    <div
+                      class={styles.gridItem}
+                      style={`--card-index: ${Math.min(index(), 6)}`}
+                    >
+                      <ProductCard
+                        product={product}
+                        isJustAdded={() => justAdded().has(product.id)}
+                        onAdd={addToCart}
+                        fill
+                      />
+                    </div>
+                  )}
+                </For>
+              </div>
+            </Show>
+          </section>
+        </div>
       </div>
     </main>
   );

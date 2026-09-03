@@ -71,6 +71,13 @@
       "when": 1788298389103,
       "tag": "0009_third_power_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788461932734,
+      "tag": "0010_talented_tyger_tiger",
+      "breakpoints": true
     }
   ]
 }

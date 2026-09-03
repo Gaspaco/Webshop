@@ -470,6 +470,63 @@ export const importJobs = pgTable(
   table => [index("import_job_status_idx").on(table.status)],
 );
 
+// Locally mirrored YGOPRODeck reference data. These rows are deliberately
+// separate from sellable products: the owner searches the complete card
+// library, then creates only the singles the shop actually intends to stock.
+export const yugiohCards = pgTable(
+  "yugioh_cards",
+  {
+    id: integer("id").primaryKey(),
+    name: text("name").notNull(),
+    cardType: text("card_type").notNull(),
+    frameType: text("frame_type").notNull(),
+    description: text("description").notNull(),
+    race: text("race"),
+    archetype: text("archetype"),
+    attribute: text("attribute"),
+    attack: integer("attack"),
+    defense: integer("defense"),
+    level: integer("level"),
+    imageSourceUrl: text("image_source_url"),
+    cardmarketPriceCents: integer("cardmarket_price_cents"),
+    sourceUrl: text("source_url"),
+    syncedAt: timestamp("synced_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  table => [
+    index("yugioh_card_name_idx").on(table.name),
+    index("yugioh_card_archetype_idx").on(table.archetype),
+  ],
+);
+
+export const yugiohPrintings = pgTable(
+  "yugioh_printings",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    cardId: integer("card_id")
+      .notNull()
+      .references(() => yugiohCards.id, { onDelete: "cascade" }),
+    setName: text("set_name").notNull(),
+    setCode: text("set_code").notNull(),
+    rarity: text("rarity").notNull(),
+    rarityCode: text("rarity_code"),
+    sourcePriceCents: integer("source_price_cents"),
+    syncedAt: timestamp("synced_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  table => [
+    uniqueIndex("yugioh_printing_source_idx").on(
+      table.cardId,
+      table.setCode,
+      table.rarity,
+    ),
+    index("yugioh_printing_card_idx").on(table.cardId),
+    index("yugioh_printing_set_idx").on(table.setName),
+  ],
+);
+
 export const discountCodes = pgTable(
   "discount_codes",
   {

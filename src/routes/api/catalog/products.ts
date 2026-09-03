@@ -57,7 +57,10 @@ export async function GET(event: APIEvent) {
     },
     {
       headers: {
-        "Cache-Control": "public, max-age=30, stale-while-revalidate=120",
+        // Catalogue edits need to appear immediately. Caching this endpoint
+        // caused recently replaced images and slugs to remain visible after an
+        // owner saved a product in the dashboard.
+        "Cache-Control": "no-store, max-age=0",
         "X-Content-Type-Options": "nosniff",
       },
     },

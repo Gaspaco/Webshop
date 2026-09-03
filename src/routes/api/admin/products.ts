@@ -435,6 +435,10 @@ export async function PATCH(event: APIEvent) {
       }
       if (input.language !== undefined) variantChanges.language = input.language || null;
       if (input.finish !== undefined) variantChanges.finish = input.finish || null;
+      // The main product editor edits the primary variant shown in the same
+      // row. Keep its image in sync so the detail page cannot resurrect the
+      // variant's previous photo after the product artwork was replaced.
+      if (input.image !== undefined) variantChanges.imageUrl = input.image || null;
       if (input.priceCents !== undefined) variantChanges.priceCents = input.priceCents;
       if (input.compareAtPriceCents !== undefined) {
         variantChanges.compareAtPriceCents = input.compareAtPriceCents;

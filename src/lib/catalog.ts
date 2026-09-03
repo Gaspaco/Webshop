@@ -137,6 +137,7 @@ export async function fetchDatabaseCatalogState(
 ): Promise<DatabaseCatalogState> {
   const query = slug ? `?slug=${encodeURIComponent(slug)}` : "";
   const response = await fetch(`/api/catalog/products${query}`, {
+    cache: "no-store",
     headers: { Accept: "application/json" },
   });
   if (!response.ok) return { products: [], managedSlugs: [] };
@@ -160,7 +161,11 @@ export async function fetchDatabaseCatalogState(
       variants[0];
     grouped.set(mapped.id, {
       ...existing,
-      image: mainVariant?.image ?? existing.image,
+      // The product image is the canonical catalogue artwork. A variant image
+      // only replaces it when that variant explicitly has its own artwork.
+      // Keeping the product fallback prevents an empty/stale variant field
+      // from making an uploaded product image disappear.
+      image: mainVariant?.image || existing.image,
       priceCents: mainVariant?.priceCents,
       compareAtPriceCents: mainVariant?.compareAtPriceCents,
       stock: variants.reduce((total, variant) => total + variant.stock, 0),

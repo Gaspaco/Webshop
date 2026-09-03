@@ -38,6 +38,22 @@ npm run db:studio    # open Drizzle Studio
 
 Schema: `src/db/schema.ts`
 
+### Yu-Gi-Oh reference catalogue
+
+The admin bulk-import page searches a PostgreSQL copy of YGOPRODeck rather
+than calling the public API for every search. A selected card is added to the
+shop as a private draft with one zero-stock variant per known set/rarity.
+
+```bash
+bun run db:sync:yugioh                 # reuse the cached snapshot when present
+bun scripts/sync-ygoprodeck.ts --refresh       # intentionally download and sync a new snapshot
+bun scripts/sync-ygoprodeck.ts --download-only # download once without changing the database
+```
+
+The raw snapshot is stored in `.cache/ygoprodeck/cards.json` and is excluded
+from Git. Imported product images are downloaded once and stored with the
+product; storefront pages do not hotlink the YGOPRODeck image server.
+
 ## Railway
 
 1. Create a Railway project and add a PostgreSQL service.

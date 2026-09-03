@@ -1193,6 +1193,148 @@
   font-size: 0.72rem;
 }
 
+.yugiohLibrary {
+  margin-top: 1.25rem;
+  padding: 1.35rem;
+  border: 1px solid rgba($white, 0.08);
+  border-radius: 0.75rem;
+  background: #0e1210;
+}
+
+.yugiohLibraryHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.yugiohLibraryHead h2 {
+  font-family: $font-body;
+  font-size: 0.9rem;
+}
+
+.yugiohLibraryHead p {
+  max-width: 65ch;
+  margin-top: 0.35rem;
+  color: $gray-500;
+  font-size: 0.66rem;
+  line-height: 1.55;
+}
+
+.yugiohLibraryHead > span {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  background: rgba($primary, 0.12);
+  color: $primary-light;
+  font-size: 0.6rem;
+  font-weight: 750;
+}
+
+.yugiohSearch {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.yugiohSearch label {
+  display: grid;
+  flex: 1;
+  gap: 0.35rem;
+}
+
+.yugiohSearch label span {
+  color: $gray-400;
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+
+.yugiohSearch input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 0.85rem;
+  border: 1px solid rgba($white, 0.12);
+  border-radius: 0.45rem;
+  background: #090c0a;
+  color: $white;
+}
+
+.yugiohSearch input:focus {
+  border-color: $primary;
+  outline: 2px solid rgba($primary, 0.18);
+  outline-offset: 1px;
+}
+
+.yugiohSearch button,
+.yugiohResults article > button {
+  min-height: 2.75rem;
+  padding: 0 0.9rem;
+  border-radius: 0.45rem;
+  background: $primary;
+  color: #06120c;
+  font-size: 0.67rem;
+  font-weight: 800;
+}
+
+.yugiohSearch button:disabled,
+.yugiohResults article > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.yugiohResults {
+  margin-top: 1rem;
+  border-top: 1px solid rgba($white, 0.07);
+}
+
+.yugiohResults article {
+  display: grid;
+  min-height: 4.6rem;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba($white, 0.06);
+  grid-template-columns: 5rem minmax(0, 1fr) 6rem auto;
+}
+
+.yugiohCardId {
+  color: $gray-600;
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.yugiohCardInfo strong,
+.yugiohCardInfo span,
+.yugiohCardInfo small,
+.yugiohCardPrice span,
+.yugiohCardPrice strong {
+  display: block;
+}
+
+.yugiohCardInfo strong {
+  color: $white;
+  font-size: 0.72rem;
+}
+
+.yugiohCardInfo span,
+.yugiohCardInfo small {
+  margin-top: 0.18rem;
+  color: $gray-500;
+  font-size: 0.59rem;
+}
+
+.yugiohCardPrice span {
+  color: $gray-600;
+  font-size: 0.56rem;
+}
+
+.yugiohCardPrice strong {
+  margin-top: 0.15rem;
+  color: $gray-300;
+  font-size: 0.66rem;
+}
+
 .importGuide {
   display: grid;
   margin-top: 1.25rem;
@@ -3053,4 +3195,33 @@
   border-color: #f87171;
   background: rgba(#f87171, 0.1);
   color: $white;
+}
+
+@media (max-width: 760px) {
+  .yugiohLibraryHead,
+  .yugiohSearch {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .yugiohLibraryHead > span {
+    align-self: flex-start;
+  }
+
+  .yugiohResults article {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .yugiohCardId {
+    grid-column: 1 / -1;
+  }
+
+  .yugiohCardPrice {
+    grid-column: 1;
+  }
+
+  .yugiohResults article > button {
+    grid-column: 2;
+    grid-row: 2 / 4;
+  }
 }
