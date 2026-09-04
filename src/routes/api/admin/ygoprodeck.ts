@@ -16,32 +16,72 @@ function productSlug(card: { id: number; name: string }) {
   return toSlug(`yugioh-${card.id}-${card.name}`);
 }
 
-function skuFor(cardId: number, setCode: string, index: number) {
-  const code = setCode.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "");
-  return `YGO-${cardId}-${code || `INDEX-${index + 1}`}`.slice(0, 80).toUpperCase();
+function skuPart(value: string, limit: number) {
+  return value.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").slice(0, limit);
+}
+
+// A card is often printed in the same set at several rarities, so the set code
+// alone is not unique. Leaving the rarity out made every such card collide on
+// the unique variant SKU index and roll the whole import back.
+function skuFor(cardId: number, setCode: string, rarity: string, index: number) {
+  const code = skuPart(setCode, 24) || `INDEX-${index + 1}`;
+  const finish = skuPart(rarity, 24) || "STD";
+  return `YGO-${cardId}-${code}-${finish}`.slice(0, 80).toUpperCase();
+}
+
+// Belt and braces: suffix anything that still repeats within this import or
+// already exists in the catalogue, so one clash cannot lose the whole card.
+async function uniqueSkus(candidates: string[]) {
+  const taken = new Set(
+    (await db
+      .select({ sku: productVariants.sku })
+      .from(productVariants)
+      .where(inArray(productVariants.sku, candidates)))
+      .map(row => row.sku),
+  );
+
+  return candidates.map(candidate => {
+    let sku = candidate;
+    let attempt = 2;
+    while (taken.has(sku)) {
+      const suffix = `-${attempt}`;
+      sku = `${candidate.slice(0, 80 - suffix.length)}${suffix}`;
+      attempt += 1;
+    }
+    taken.add(sku);
+    return sku;
+  });
 }
 
 async function downloadCardImage(source: string | null) {
   if (!source) return null;
-  const url = new URL(source);
-  if (url.protocol !== "https:" || url.hostname !== "images.ygoprodeck.com") {
-    throw new Error("Unexpected YGOPRODeck image host.");
-  }
 
-  const response = await fetch(url, {
-    headers: { "User-Agent": "TCGHaven catalogue import (info@tcghaven.com)" },
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!response.ok) throw new Error(`Card image returned ${response.status}.`);
-  const contentType = response.headers.get("content-type")?.split(";")[0] ?? "";
-  if (!["image/jpeg", "image/png", "image/webp"].includes(contentType)) {
-    throw new Error("Card image returned an unsupported file type.");
+  try {
+    const url = new URL(source);
+    if (url.protocol !== "https:" || url.hostname !== "images.ygoprodeck.com") {
+      throw new Error("Unexpected YGOPRODeck image host.");
+    }
+
+    const response = await fetch(url, {
+      headers: { "User-Agent": "TCGHaven catalogue import (info@tcghaven.com)" },
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!response.ok) throw new Error(`Card image returned ${response.status}.`);
+    const contentType = response.headers.get("content-type")?.split(";")[0] ?? "";
+    if (!["image/jpeg", "image/png", "image/webp"].includes(contentType)) {
+      throw new Error("Card image returned an unsupported file type.");
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength > 850_000) {
+      throw new Error("Card image is larger than the catalogue image limit.");
+    }
+    return `data:${contentType};base64,${Buffer.from(bytes).toString("base64")}`;
+  } catch (error) {
+    // The artwork is a nice-to-have, not a reason to lose the card. The import
+    // reports the miss so the admin can add an image on the draft.
+    console.warn(`YGOPRODeck image unavailable for ${source}`, error);
+    return null;
   }
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  if (bytes.byteLength > 850_000) {
-    throw new Error("Card image is larger than the catalogue image limit.");
-  }
-  return `data:${contentType};base64,${Buffer.from(bytes).toString("base64")}`;
 }
 
 export async function GET(event: APIEvent) {
@@ -140,6 +180,11 @@ export async function POST(event: APIEvent) {
           rarity: "Unspecified",
           rarityCode: null,
         }];
+    const skus = await uniqueSkus(
+      variants.map((printing, index) =>
+        skuFor(card.id, printing.setCode, printing.rarity, index),
+      ),
+    );
 
     const created = await db.transaction(async tx => {
       const [product] = await tx
@@ -175,7 +220,7 @@ export async function POST(event: APIEvent) {
       await tx.insert(productVariants).values(
         variants.map((printing, index) => ({
           productId: product.id,
-          sku: skuFor(card.id, printing.setCode, index),
+          sku: skus[index]!,
           name: `${printing.setName} · ${printing.rarity}`.slice(0, 120),
           condition: "Near Mint",
           language: "English",
@@ -196,12 +241,12 @@ export async function POST(event: APIEvent) {
       action: "catalogue.ygoprodeck_added",
       entityType: "product",
       entityId: created.id,
-      summary: `${created.name} added from the local YGOPRODeck library as a draft.`,
-      metadata: { cardId: card.id, variants: variants.length },
+      summary: `${created.name} added from the local YGOPRODeck library as a draft${image ? "" : " without artwork"}.`,
+      metadata: { cardId: card.id, variants: variants.length, hasImage: Boolean(image) },
     });
 
     return apiJson(
-      { product: created, variants: variants.length },
+      { product: created, variants: variants.length, hasImage: Boolean(image) },
       { status: 201 },
     );
   } catch (error) {
@@ -210,7 +255,7 @@ export async function POST(event: APIEvent) {
     }
     console.error("YGOPRODeck catalogue import failed", error);
     return apiJson(
-      { error: "The card could not be added. Its image may be temporarily unavailable." },
+      { error: "The card could not be added. Check the server log for the reason." },
       { status: 500 },
     );
   }

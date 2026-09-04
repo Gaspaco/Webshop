@@ -2,106 +2,178 @@
 
 .page {
   min-height: calc(100dvh - $header-height);
-  padding: clamp(2rem, 5vh, 3.5rem) 0.5rem clamp(4rem, 8vh, 6rem);
+  padding-bottom: clamp(4rem, 8vh, 6rem);
   background: $background;
 }
 
 .wide {
-  width: min(96rem, calc(100% - #{$container-padding} * 2));
+  width: min(102rem, calc(100% - #{$container-padding} * 2));
   margin-inline: auto;
 }
 
-// ---------- Hero ----------
+/* Matches the shop page: a compact, honest header instead of a masthead that
+   pushes the actual content below the fold. */
+.head {
+  display: flex;
+  align-items: baseline;
+  padding: clamp(1.75rem, 3vw, 2.75rem) 0 1.5rem;
+  gap: 0.875rem;
 
-.hero {
-  max-width: 44rem;
-  padding-block: clamp(1.5rem, 4vh, 3rem) clamp(2rem, 5vh, 3.25rem);
-}
-
-.heading {
-  color: $white;
-  font-family: $font-display;
-  font-size: clamp(2.4rem, 5vw, 3.75rem);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
-  text-wrap: balance;
-}
-
-.sub {
-  max-width: 52ch;
-  margin-top: 1.125rem;
-  color: $gray-300;
-  font-size: clamp(1rem, 1.2vw, 1.125rem);
-  line-height: 1.65;
-  text-wrap: pretty;
-}
-
-.stockLine {
-  margin-top: 1.25rem;
-  color: $gray-500;
-  font-size: 0.875rem;
-
-  strong {
+  h1 {
     color: $white;
     font-family: $font-display;
-    font-weight: 750;
+    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  p {
+    color: $gray-500;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  strong {
+    color: $gray-300;
+    font-variant-numeric: tabular-nums;
   }
 }
-
-// ---------- Directory ----------
-// A scannable index of every game, not seven stacked storefronts. Each game
-// keeps its own accent and shows real stock plus a peek at the shelf.
 
 .directory {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
-  gap: clamp(1rem, 1.8vw, 1.5rem);
   padding: 0;
   margin: 0;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: 1rem;
   list-style: none;
+
+  li { display: flex; min-width: 0; }
 }
 
 .card {
-  --game-accent: #{$primary};
+  position: relative;
   display: flex;
-  height: 100%;
+  width: 100%;
   flex-direction: column;
-  justify-content: space-between;
-  gap: clamp(1.75rem, 4vw, 3rem);
-  overflow: hidden;
-  padding: clamp(1.5rem, 2.2vw, 1.9rem);
-  border-radius: $radius-xl;
+  padding: 1.25rem 1.25rem 1rem;
+  border: 1px solid rgba($white, 0.07);
+  border-radius: $radius-lg;
   background:
-    radial-gradient(
-      ellipse 80% 70% at 88% 8%,
-      color-mix(in oklab, var(--game-accent) 22%, transparent) 0%,
-      transparent 62%
-    ),
-    #0d100e;
-  box-shadow: inset 0 0 0 1px rgba($white, 0.09);
+    radial-gradient(ellipse 90% 70% at 100% 0%, color-mix(in srgb, var(--game-accent) 16%, transparent), transparent 70%),
+    $surface;
+  gap: 1rem;
+  overflow: hidden;
   transition:
-    box-shadow $transition-base,
-    transform $transition-base;
+    border-color 200ms ease,
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
+    border-color: color-mix(in srgb, var(--game-accent) 45%, transparent);
+    box-shadow: 0 1rem 2rem -1rem rgba(0, 0, 0, 0.7);
     transform: translateY(-3px);
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--game-accent) 55%, transparent);
   }
 
-  &:hover .preview img {
-    transform: translateY(-6px) rotate(calc((var(--i) - 1) * 5deg));
+  &:focus-visible { outline: 2px solid $primary-light; outline-offset: 2px; }
+}
+
+/* Games with nothing to sell yet recede rather than shouting a dead call to
+   action. */
+.cardQuiet {
+  background: $surface;
+  opacity: 0.72;
+
+  &:hover { border-color: rgba($white, 0.16); opacity: 1; }
+}
+
+.cardText {
+  min-width: 0;
+
+  h2 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.1875rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
   }
 
-  &:hover .enter svg {
-    transform: translateX(4px);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--game-accent);
-    outline-offset: 3px;
+  p {
+    margin-top: 0.4375rem;
+    color: $gray-400;
+    font-size: 0.84375rem;
+    line-height: 1.5;
+    text-wrap: pretty;
   }
 }
+
+/* A fanned peek at real card art. It only renders when art exists, so cards
+   without it are simply shorter instead of holding an empty void. */
+.preview {
+  display: flex;
+  align-items: flex-end;
+  margin-top: auto;
+
+  img {
+    width: 3.25rem;
+    height: auto;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1.1rem rgba(0, 0, 0, 0.55);
+    transform: rotate(calc((var(--i) - 1) * 5deg));
+    transition: transform $transition-base;
+
+    & + & { margin-left: -1rem; }
+  }
+}
+
+.card:hover .preview img { transform: rotate(calc((var(--i) - 1) * 8deg)) translateY(-2px); }
+
+.cardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 1.75rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid rgba($white, 0.07);
+  margin-top: auto;
+  gap: 0.75rem;
+}
+
+.preview + .cardFoot { margin-top: 0; }
+
+.meta {
+  color: $gray-400;
+  font-size: 0.78125rem;
+
+  strong { color: $white; font-weight: 700; font-variant-numeric: tabular-nums; }
+}
+
+.soon {
+  color: $gray-500;
+  font-size: 0.78125rem;
+  font-weight: 650;
+}
+
+/* One brand accent for the action on every card. The per-game rainbow read as
+   broken links, and several failed contrast on this background. */
+.enter {
+  display: inline-flex;
+  align-items: center;
+  color: $primary;
+  font-size: 0.78125rem;
+  font-weight: 750;
+  gap: 0.3125rem;
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+.card:hover .enter svg { transform: translateX(0.1875rem); }
 
 .pokemon { --game-accent: #2ed39a; }
 .yugioh { --game-accent: #a78bfa; }
@@ -111,110 +183,14 @@
 .digimon { --game-accent: #60a5fa; }
 .cyberpunk { --game-accent: #facc15; }
 
-// Text first, then the shelf peek beneath it. Side by side, the art collided
-// with long game names on narrow cards.
-.cardTop {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1.25rem;
-}
-
-.cardText {
-  min-width: 0;
-
-  h2 {
-    color: $white;
-    font-family: $font-display;
-    font-size: clamp(1.4rem, 2vw, 1.75rem);
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    line-height: 1.1;
-    text-wrap: balance;
-  }
-
-  p {
-    max-width: 28ch;
-    margin-top: 0.5rem;
-    color: $gray-400;
-    font-size: 0.9375rem;
-    line-height: 1.55;
-  }
-}
-
-// A small fanned peek at the shelf, using real card art.
-.preview {
-  display: flex;
-  align-items: flex-end;
-
-  img {
-    width: clamp(2.75rem, 5vw, 3.6rem);
-    height: auto;
-    border-radius: 0.25rem;
-    box-shadow: 0 0.6rem 1.4rem rgba(0, 0, 0, 0.55);
-    transform: rotate(calc((var(--i) - 1) * 5deg));
-    transition: transform $transition-base;
-
-    & + & {
-      margin-left: clamp(-1.1rem, -1.6vw, -0.7rem);
-    }
-  }
-}
-
-.cardFoot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid rgba($white, 0.1);
-}
-
-.meta {
-  color: $gray-500;
-  font-size: 0.8125rem;
-
-  strong {
-    color: $white;
-    font-family: $font-display;
-    font-weight: 750;
-  }
-}
-
-.dot {
-  margin-inline: 0.45rem;
-  color: $gray-700;
-}
-
-.enter {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--game-accent);
-  font-family: $font-display;
-  font-size: 0.875rem;
-  font-weight: 750;
-
-  svg {
-    width: 1rem;
-    height: 1rem;
-    transition: transform $transition-base;
-  }
+@media (max-width: $bp-md) {
+  .wide { width: calc(100% - 2rem); }
+  .head { padding-top: 1.5rem; }
+  .directory { grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); gap: 0.75rem; }
+  .cardText h2 { font-size: 1.0625rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card,
-  .preview img,
-  .enter svg {
-    transition-duration: 0.01ms;
-  }
-
-  .card:hover {
-    transform: none;
-  }
-
-  .card:hover .preview img {
-    transform: rotate(calc((var(--i) - 1) * 5deg));
-  }
+  .card, .preview img, .enter svg { transition-duration: 0.01ms; }
+  .card:hover { transform: none; }
 }
