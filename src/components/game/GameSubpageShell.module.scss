@@ -68,45 +68,38 @@
   letter-spacing: 0.08em;
 }
 
+// A segmented control on its own surface. The old version was an underline
+// plus a rule spanning the full page width, which read as a table header.
 .tabs {
-  display: flex;
+  display: inline-flex;
+  max-width: 100%;
   overflow-x: auto;
-  border-bottom: 1px solid rgba($white, 0.09);
-  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: $radius-md;
+  background: $surface;
+  gap: 0.125rem;
   scrollbar-width: none;
 
   &::-webkit-scrollbar { display: none; }
 
   a {
-    position: relative;
-    padding: 0.625rem 0.75rem;
+    padding: 0.4375rem 0.875rem;
+    border-radius: 0.1875rem;
     color: $gray-400;
     font-size: 0.84375rem;
     font-weight: 650;
     white-space: nowrap;
-    transition: color 150ms ease;
-
-    &::after {
-      position: absolute;
-      right: 0.75rem;
-      bottom: -1px;
-      left: 0.75rem;
-      height: 2px;
-      background: var(--game-accent);
-      content: "";
-      opacity: 0;
-      transition: opacity 150ms ease;
-    }
+    transition: background-color 150ms ease, color 150ms ease;
 
     &:hover { color: $white; }
-    &:focus-visible { outline: 2px solid $primary-light; outline-offset: -2px; }
+    &:focus-visible { outline: 2px solid $primary-light; outline-offset: -1px; }
   }
 }
 
 .active {
+  background: rgba($white, 0.09);
   color: $white !important;
-
-  &::after { opacity: 1; }
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .content { padding-top: 1.5rem; }
