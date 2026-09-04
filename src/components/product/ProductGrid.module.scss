@@ -11,8 +11,14 @@
 }
 
 .count {
-  font-size: 0.875rem;
   color: $gray-400;
+  font-size: 0.875rem;
+
+  strong {
+    color: $white;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .sortLabel {
@@ -47,6 +53,15 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, #{$product-card-min}), 1fr));
-  gap: $product-card-gap;
+  // Matches the main shop grid. The 21rem track gave four-across on a wide
+  // page and one enormous card whenever a game had a short catalogue.
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14.5rem), 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: $bp-md) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
+    gap: 0.75rem;
+  }
 }

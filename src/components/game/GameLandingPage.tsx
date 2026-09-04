@@ -82,7 +82,7 @@ export default function GameLandingPage() {
                   <p class={styles.stockLine}>
                     <Show
                       when={products().length}
-                      fallback="No products published yet."
+                      fallback={`${cat().name} stock is on its way.`}
                     >
                       <strong>{products().length}</strong>
                       {products().length === 1 ? " product" : " products"}
@@ -122,17 +122,17 @@ export default function GameLandingPage() {
               <nav class={styles.destinations} aria-label={`${cat().name} store pages`}>
                 <A href={`/categories/${game()}/products`}>
                   <strong>Catalogue</strong>
-                  <small>{products().length ? `${products().length} products in stock` : "Shop everything"}</small>
+                  <small>Every {cat().name} product in stock</small>
                   <Arrow />
                 </A>
                 <A href={`/categories/${game()}/sets`}>
                   <strong>Set archive</strong>
-                  <small>{sets().length ? `${sets().length} collections` : "Browse expansions"}</small>
+                  <small>Browse by expansion</small>
                   <Arrow />
                 </A>
                 <A href={`/categories/${game()}/releases`}>
                   <strong>Releases</strong>
-                  <small>{upcoming().length ? `${upcoming().length} arriving soon` : "View the calendar"}</small>
+                  <small>What is arriving next</small>
                   <Arrow />
                 </A>
               </nav>

@@ -1065,55 +1065,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopByGame.tsx:5"
     },
     {
-      "id": "file::productgrid",
-      "label": "ProductGrid.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:1"
-    },
-    {
-      "id": "productgrid::priceof",
-      "label": "priceOf",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:11"
-    },
-    {
-      "id": "ProductGrid::addtocart",
-      "label": "addToCart",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:38"
-    },
-    {
-      "id": "file::categories",
-      "label": "categories.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:1"
-    },
-    {
-      "id": "categories::sealedformats",
-      "label": "sealedFormats",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:37"
-    },
-    {
-      "id": "categories::findproduct",
-      "label": "findProduct",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:199"
-    },
-    {
-      "id": "categories::relatedproducts",
-      "label": "relatedProducts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:203"
-    },
-    {
       "id": "file::dashboard",
       "label": "dashboard.ts",
       "fileType": "code",
@@ -1261,27 +1212,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/sitemap.xml.ts:43"
     },
     {
-      "id": "file::gamesubpageshell",
-      "label": "GameSubpageShell.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:1"
-    },
-    {
-      "id": "GameSubpageShell::identity",
-      "label": "identity",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:16"
-    },
-    {
-      "id": "GameSubpageShell::root",
-      "label": "root",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:17"
-    },
-    {
       "id": "file::game_catalog",
       "label": "game-catalog.ts",
       "fileType": "code",
@@ -1401,20 +1331,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/[set].tsx:15"
     },
     {
-      "id": "index::game",
-      "label": "game",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:12"
-    },
-    {
-      "id": "index::category",
-      "label": "category",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:13"
-    },
-    {
       "id": "file::authpage",
       "label": "AuthPage.tsx",
       "fileType": "code",
@@ -1490,41 +1406,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:814"
-    },
-    {
-      "id": "file::gamelandingpage",
-      "label": "GameLandingPage.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:1"
-    },
-    {
-      "id": "gamelandingpage::arrow",
-      "label": "Arrow",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:14"
-    },
-    {
-      "id": "GameLandingPage::game",
-      "label": "game",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:24"
-    },
-    {
-      "id": "GameLandingPage::category",
-      "label": "category",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25"
-    },
-    {
-      "id": "GameLandingPage::identity",
-      "label": "identity",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:26"
     },
     {
       "id": "file::collectionpaths",
@@ -1842,20 +1723,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:85"
     },
     {
-      "id": "products::game",
-      "label": "game",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx:22"
-    },
-    {
-      "id": "products::category",
-      "label": "category",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx:23"
-    },
-    {
       "id": "file::duplicate_product",
       "label": "duplicate-product.ts",
       "fileType": "code",
@@ -2067,10 +1934,10 @@
     },
     {
       "id": "file::products",
-      "label": "products.ts",
+      "label": "products.tsx",
       "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts:1"
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx:1"
     },
     {
       "id": "products::failure",
@@ -2307,8 +2174,8 @@
       "id": "file::index",
       "label": "index.tsx",
       "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/index.tsx:1"
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:1"
     },
     {
       "id": "index::createemptyvariantdraft",
@@ -2806,6 +2673,139 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/index.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/index.tsx:76"
+    },
+    {
+      "id": "file::gamelandingpage",
+      "label": "GameLandingPage.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:1"
+    },
+    {
+      "id": "gamelandingpage::arrow",
+      "label": "Arrow",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:14"
+    },
+    {
+      "id": "GameLandingPage::game",
+      "label": "game",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:24"
+    },
+    {
+      "id": "GameLandingPage::category",
+      "label": "category",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25"
+    },
+    {
+      "id": "GameLandingPage::identity",
+      "label": "identity",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:26"
+    },
+    {
+      "id": "file::gamesubpageshell",
+      "label": "GameSubpageShell.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:1"
+    },
+    {
+      "id": "GameSubpageShell::identity",
+      "label": "identity",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:17"
+    },
+    {
+      "id": "GameSubpageShell::root",
+      "label": "root",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:18"
+    },
+    {
+      "id": "file::productgrid",
+      "label": "ProductGrid.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:1"
+    },
+    {
+      "id": "productgrid::priceof",
+      "label": "priceOf",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:11"
+    },
+    {
+      "id": "ProductGrid::addtocart",
+      "label": "addToCart",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:38"
+    },
+    {
+      "id": "file::categories",
+      "label": "categories.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:1"
+    },
+    {
+      "id": "categories::sealedformats",
+      "label": "sealedFormats",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:37"
+    },
+    {
+      "id": "categories::findproduct",
+      "label": "findProduct",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:199"
+    },
+    {
+      "id": "categories::relatedproducts",
+      "label": "relatedProducts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:203"
+    },
+    {
+      "id": "products::game",
+      "label": "game",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx:22"
+    },
+    {
+      "id": "products::category",
+      "label": "category",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx:23"
+    },
+    {
+      "id": "index::game",
+      "label": "game",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:12"
+    },
+    {
+      "id": "index::category",
+      "label": "category",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:13"
     }
   ],
   "edges": [
@@ -3692,51 +3692,6 @@
       "weight": 1
     },
     {
-      "source": "file::productgrid",
-      "target": "productgrid::priceof",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:11",
-      "weight": 1
-    },
-    {
-      "source": "file::productgrid",
-      "target": "ProductGrid::addtocart",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:38",
-      "weight": 1
-    },
-    {
-      "source": "file::categories",
-      "target": "categories::sealedformats",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:37",
-      "weight": 1
-    },
-    {
-      "source": "file::categories",
-      "target": "categories::findproduct",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:199",
-      "weight": 1
-    },
-    {
-      "source": "file::categories",
-      "target": "categories::relatedproducts",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:203",
-      "weight": 1
-    },
-    {
       "source": "file::dashboard",
       "target": "dashboard::get",
       "relation": "contains",
@@ -3872,24 +3827,6 @@
       "weight": 1
     },
     {
-      "source": "file::gamesubpageshell",
-      "target": "GameSubpageShell::identity",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:16",
-      "weight": 1
-    },
-    {
-      "source": "file::gamesubpageshell",
-      "target": "GameSubpageShell::root",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:17",
-      "weight": 1
-    },
-    {
       "source": "file::game_catalog",
       "target": "game_catalog::creategamecatalog",
       "relation": "contains",
@@ -4007,24 +3944,6 @@
       "weight": 1
     },
     {
-      "source": "file::index",
-      "target": "index::game",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:12",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::category",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:13",
-      "weight": 1
-    },
-    {
       "source": "file::authpage",
       "target": "AuthPage::switchmode",
       "relation": "contains",
@@ -4112,42 +4031,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:814",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "gamelandingpage::arrow",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:14",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "GameLandingPage::game",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:24",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "GameLandingPage::category",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "GameLandingPage::identity",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:26",
       "weight": 1
     },
     {
@@ -4472,24 +4355,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/motion.ts:85",
-      "weight": 1
-    },
-    {
-      "source": "file::products",
-      "target": "products::game",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx:22",
-      "weight": 1
-    },
-    {
-      "source": "file::products",
-      "target": "products::category",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx:23",
       "weight": 1
     },
     {
@@ -5589,12 +5454,147 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/index.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/index.tsx:76",
       "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "gamelandingpage::arrow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:14",
+      "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "GameLandingPage::game",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:24",
+      "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "GameLandingPage::category",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25",
+      "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "GameLandingPage::identity",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:26",
+      "weight": 1
+    },
+    {
+      "source": "file::gamesubpageshell",
+      "target": "GameSubpageShell::identity",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:17",
+      "weight": 1
+    },
+    {
+      "source": "file::gamesubpageshell",
+      "target": "GameSubpageShell::root",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:18",
+      "weight": 1
+    },
+    {
+      "source": "file::productgrid",
+      "target": "productgrid::priceof",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:11",
+      "weight": 1
+    },
+    {
+      "source": "file::productgrid",
+      "target": "ProductGrid::addtocart",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/product/ProductGrid.tsx:38",
+      "weight": 1
+    },
+    {
+      "source": "file::categories",
+      "target": "categories::sealedformats",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:37",
+      "weight": 1
+    },
+    {
+      "source": "file::categories",
+      "target": "categories::findproduct",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:199",
+      "weight": 1
+    },
+    {
+      "source": "file::categories",
+      "target": "categories::relatedproducts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/categories.ts:203",
+      "weight": 1
+    },
+    {
+      "source": "file::products",
+      "target": "products::game",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx:22",
+      "weight": 1
+    },
+    {
+      "source": "file::products",
+      "target": "products::category",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx:23",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::game",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:12",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::category",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:13",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 105,
     "nodes": 401,
     "edges": 309,
-    "builtAt": "2026-09-04T17:54:23.285Z"
+    "builtAt": "2026-09-04T18:18:31.038Z"
   }
 }
