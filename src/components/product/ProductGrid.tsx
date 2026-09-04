@@ -61,7 +61,10 @@ export default function ProductGrid(props: { products: SectionProduct[] }) {
   return (
     <div>
       <div class={styles.toolbar}>
-        <p class={styles.count}>{props.products.length} products</p>
+        <p class={styles.count}>
+          <strong>{props.products.length}</strong>
+          {props.products.length === 1 ? " product" : " products"}
+        </p>
         <label class={styles.sortLabel}>
           Sort by
           <select

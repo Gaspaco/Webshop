@@ -21,14 +21,16 @@ export default function GameSetsPage() {
           category={cat()}
           active="sets"
           title={`${cat().name} sets`}
-          description="Every published expansion and collection has its own product page."
+          description="Open a set to see only the products, formats, and variants released for it."
         >
           <Title>{cat().name} sets | TCGHaven</Title>
-          <header class={styles.sectionHead}>
-            <div><h2>Set directory</h2><p>Open a set to see only the products, formats, and variants released for it.</p></div>
-            <Show when={sets().length}><span>{sets().length} collections</span></Show>
-          </header>
-          <Show when={sets().length} fallback={<div class={styles.empty}><div><strong>No sets are published yet.</strong><p>Adding a set name and set code to a product creates its own set page automatically.</p></div><A href={`/categories/${game()}/products`}>Shop all products</A></div>}>
+          <Show when={sets().length}>
+            <p class={styles.resultCount}>
+              <strong>{sets().length}</strong>
+              {sets().length === 1 ? " collection" : " collections"}
+            </p>
+          </Show>
+          <Show when={sets().length} fallback={<div class={styles.empty}><strong>No sets yet</strong><p>{cat().name} sets will appear here as products are added.</p><A href={`/categories/${game()}/products`}>Shop all products</A></div>}>
             <div class={styles.setGrid}>
               <For each={sets()}>{set => (
                 <A href={`/categories/${game()}/sets/${set.path}`} class={styles.setLink}>
