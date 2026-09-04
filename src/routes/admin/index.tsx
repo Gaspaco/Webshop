@@ -2902,6 +2902,7 @@ export default function Admin() {
       const result = (await response.json().catch(() => ({}))) as {
         error?: string;
         variants?: number;
+        hasImage?: boolean;
       };
       if (!response.ok) {
         setYugiohMessage(result.error ?? "The card could not be added.");
@@ -2911,7 +2912,9 @@ export default function Admin() {
         item.id === card.id ? { ...item, importedStatus: "draft" } : item,
       ));
       setYugiohMessage(
-        `${card.name} added as a draft with ${result.variants ?? card.printings.length} zero-stock variants.`,
+        `${card.name} added as a draft with ${result.variants ?? card.printings.length} zero-stock variants.${
+          result.hasImage === false ? " No artwork was available, so add an image before publishing." : ""
+        }`,
       );
       await refetch();
     } finally {
