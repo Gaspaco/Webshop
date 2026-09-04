@@ -25,16 +25,23 @@ const GAME_OPTIONS = [
 ];
 
 const TYPE_OPTIONS = [
+  { key: "all", label: "All" },
   { key: "sealed", label: "Sealed" },
   { key: "single", label: "Singles" },
-  { key: "all", label: "Everything" },
 ];
 
 const PRICE_OPTIONS = [
   { key: "all", label: "Any price" },
   { key: "under25", label: "Under €25" },
-  { key: "25to100", label: "€25 to €100" },
+  { key: "25to100", label: "€25 – €100" },
   { key: "over100", label: "€100 and up" },
+];
+
+const SORT_OPTIONS = [
+  { key: "featured", label: "Featured" },
+  { key: "price-asc", label: "Price: low to high" },
+  { key: "price-desc", label: "Price: high to low" },
+  { key: "name", label: "Name: A to Z" },
 ];
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "name";
@@ -58,6 +65,48 @@ function priceBucket(product: ShopProduct) {
   return "over100";
 }
 
+function inStock(product: ShopProduct) {
+  if (product.variants?.length) {
+    return product.variants.some(variant => variant.stock > 0);
+  }
+  return product.stock === undefined || product.stock > 0;
+}
+
+function searchableText(product: ShopProduct) {
+  return [
+    product.name,
+    product.set,
+    product.game,
+    product.gameName,
+    product.description,
+    product.badge,
+    product.releaseDate,
+    product.preorder ? "pre-order upcoming" : "",
+    product.productType,
+    product.condition,
+    product.language,
+    product.finish,
+    product.cardNumber,
+    product.rarity,
+    product.setCode,
+    product.illustrator,
+    product.gradingCompany,
+    product.grade,
+    product.certificationNumber,
+    product.sku,
+    ...(product.variants ?? []).flatMap(variant => [
+      variant.name,
+      variant.sku,
+      variant.condition,
+      variant.language,
+      variant.finish,
+    ]),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(" ")
+    .toLocaleLowerCase();
+}
+
 export default function Products() {
   const cart = useCart();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -65,9 +114,11 @@ export default function Products() {
     typeof searchParams.q === "string" ? searchParams.q : "",
   );
   const [game, setGame] = createSignal("all");
-  const [type, setType] = createSignal("sealed");
+  const [type, setType] = createSignal("all");
   const [price, setPrice] = createSignal("all");
+  const [stockOnly, setStockOnly] = createSignal(false);
   const [sort, setSort] = createSignal<SortKey>("featured");
+  const [filtersOpen, setFiltersOpen] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
   const [clientReady, setClientReady] = createSignal(false);
   const [databaseCatalog] = createResource(
@@ -93,51 +144,36 @@ export default function Products() {
     ),
   );
 
-  const visible = createMemo(() => {
-    const query = search().trim().toLocaleLowerCase();
-    const queryParts = query.split(/\s+/).filter(Boolean);
-    const list = allProducts().filter(
-      product => {
-        const searchable = [
-          product.name,
-          product.set,
-          product.game,
-          product.gameName,
-          product.description,
-          product.badge,
-          product.releaseDate,
-          product.preorder ? "pre-order upcoming" : "",
-          product.productType,
-          product.condition,
-          product.language,
-          product.finish,
-          product.cardNumber,
-          product.rarity,
-          product.setCode,
-          product.illustrator,
-          product.gradingCompany,
-          product.grade,
-          product.certificationNumber,
-          product.sku,
-          ...(product.variants ?? []).flatMap(variant => [
-            variant.name,
-            variant.sku,
-            variant.condition,
-            variant.language,
-            variant.finish,
-          ]),
-        ]
-          .filter((value): value is string => Boolean(value))
-          .join(" ")
-          .toLocaleLowerCase();
+  // Everything except the game facet, so the sidebar can show honest counts
+  // for each game against the rest of the current filter state.
+  const matchesRest = (product: ShopProduct, query: string[]) =>
+    query.every(part => searchableText(product).includes(part)) &&
+    (type() === "all" || typeOf(product) === type()) &&
+    (price() === "all" || priceBucket(product) === price()) &&
+    (!stockOnly() || inStock(product));
 
-        return (
-          queryParts.every(part => searchable.includes(part)) &&
-          (game() === "all" || product.game === game()) &&
-          (type() === "all" || typeOf(product) === type()) &&
-          (price() === "all" || priceBucket(product) === price())
-        );
-      },
+  const queryParts = createMemo(() =>
+    search().trim().toLocaleLowerCase().split(/\s+/).filter(Boolean),
+  );
+
+  const gameCounts = createMemo(() => {
+    const parts = queryParts();
+    const counts = new Map<string, number>();
+    let total = 0;
+    for (const product of allProducts()) {
+      if (!matchesRest(product, parts)) continue;
+      total += 1;
+      counts.set(product.game, (counts.get(product.game) ?? 0) + 1);
+    }
+    counts.set("all", total);
+    return counts;
+  });
+
+  const visible = createMemo(() => {
+    const parts = queryParts();
+    const list = allProducts().filter(
+      product =>
+        matchesRest(product, parts) && (game() === "all" || product.game === game()),
     );
 
     switch (sort()) {
@@ -152,17 +188,48 @@ export default function Products() {
     }
   });
 
-  const hasFilters = () =>
-    search().trim() !== "" || game() !== "all" || type() !== "sealed" || price() !== "all";
+  const clearSearch = () => {
+    setSearch("");
+    if (searchParams.q) setSearchParams({ q: undefined }, { replace: true });
+  };
+
+  // Every active filter as a removable chip, so the current state of the
+  // catalogue is never hidden inside a control you have to go looking for.
+  const activeChips = createMemo(() => {
+    const chips: { label: string; clear: () => void }[] = [];
+    if (search().trim()) {
+      chips.push({ label: `“${search().trim()}”`, clear: clearSearch });
+    }
+    if (game() !== "all") {
+      chips.push({
+        label: GAME_OPTIONS.find(option => option.key === game())?.label ?? game(),
+        clear: () => setGame("all"),
+      });
+    }
+    if (type() !== "all") {
+      chips.push({
+        label: TYPE_OPTIONS.find(option => option.key === type())?.label ?? type(),
+        clear: () => setType("all"),
+      });
+    }
+    if (price() !== "all") {
+      chips.push({
+        label: PRICE_OPTIONS.find(option => option.key === price())?.label ?? price(),
+        clear: () => setPrice("all"),
+      });
+    }
+    if (stockOnly()) {
+      chips.push({ label: "In stock", clear: () => setStockOnly(false) });
+    }
+    return chips;
+  });
 
   const clearFilters = () => {
-    setSearch("");
-    if (searchParams.q) {
-      setSearchParams({ q: undefined }, { replace: true });
-    }
+    clearSearch();
     setGame("all");
-    setType("sealed");
+    setType("all");
     setPrice("all");
+    setStockOnly(false);
   };
 
   const addToCart = (
@@ -195,29 +262,10 @@ export default function Products() {
       <Title>Shop | TCGHaven</Title>
 
       <div class={styles.wide}>
-        <header class={styles.masthead}>
-          <div class={styles.mastheadTitle}>
-            <h1>Shop the catalogue</h1>
-            <div class={styles.catalogueMeta}>
-              <span>{allProducts().length} listings</span>
-              <span>Updated daily</span>
-            </div>
-          </div>
-          <p class={styles.mastheadNote}>
-            Singles, sealed releases, and graded cards across every game we
-            carry. Every listing is checked before dispatch.
-          </p>
-        </header>
+        <header class={styles.head}>
+          <h1>Shop</h1>
 
-        <div class={styles.catalogueShell}>
-          <aside class={styles.filterRail} aria-label="Shop filters">
-            <div class={styles.filterRailHead}>
-              <h2>Find a product</h2>
-              <Show when={hasFilters()}>
-                <button type="button" onClick={clearFilters}>Clear</button>
-              </Show>
-            </div>
-
+          <div class={styles.searchRow}>
             <label class={styles.searchField}>
               <span class={styles.srOnly}>Search cards and sets</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -228,41 +276,66 @@ export default function Products() {
                 type="search"
                 value={search()}
                 onInput={event => setSearch(event.currentTarget.value)}
-                placeholder="Search cards, sets, or games"
+                placeholder="Search a card, set, or game…"
               />
+              <Show when={search()}>
+                <button type="button" onClick={clearSearch} aria-label="Clear search">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </Show>
             </label>
 
-            <fieldset class={styles.filterGroup}>
-              <legend>Game</legend>
-              <nav class={styles.gameOptions} aria-label="Filter by game">
-                <For each={GAME_OPTIONS}>
-                  {option => (
-                    <button
-                      type="button"
-                      class={styles.gameOption}
-                      classList={{ [styles.gameOptionActive]: game() === option.key }}
-                      aria-pressed={game() === option.key}
-                      onClick={() => setGame(option.key)}
-                    >
-                      <span>{option.label}</span>
-                      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                        <path d="m5.5 3.5 4.5 4.5-4.5 4.5" stroke="currentColor" stroke-width="1.4" />
-                      </svg>
-                    </button>
-                  )}
-                </For>
-              </nav>
-            </fieldset>
+            <button
+              type="button"
+              class={styles.filterToggle}
+              aria-expanded={filtersOpen()}
+              onClick={() => setFiltersOpen(open => !open)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M3 6h18M6 12h12M10 18h4" />
+              </svg>
+              <span>Filters</span>
+              <Show when={activeChips().length}>
+                <span class={styles.filterCount}>{activeChips().length}</span>
+              </Show>
+            </button>
+          </div>
+        </header>
 
-            <fieldset class={styles.filterGroup}>
-              <legend>Format</legend>
-              <div class={styles.typeOptions} aria-label="Filter by product type">
+        <div class={styles.shell}>
+          <Show when={filtersOpen()}>
+            <button
+              type="button"
+              class={styles.scrim}
+              aria-label="Close filters"
+              onClick={() => setFiltersOpen(false)}
+            />
+          </Show>
+
+          <aside
+            class={styles.rail}
+            classList={{ [styles.railOpen]: filtersOpen() }}
+            aria-label="Shop filters"
+          >
+            <div class={styles.railHead}>
+              <h2>Filters</h2>
+              <button type="button" class={styles.railClose} onClick={() => setFiltersOpen(false)} aria-label="Close filters">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div class={styles.group} role="group" aria-labelledby="filter-format">
+              <p id="filter-format">Format</p>
+              <div class={styles.segmented}>
                 <For each={TYPE_OPTIONS}>
                   {option => (
                     <button
                       type="button"
-                      class={styles.typeOption}
-                      classList={{ [styles.typeOptionActive]: type() === option.key }}
+                      classList={{ [styles.segmentActive]: type() === option.key }}
                       aria-pressed={type() === option.key}
                       onClick={() => setType(option.key)}
                     >
@@ -271,60 +344,137 @@ export default function Products() {
                   )}
                 </For>
               </div>
-            </fieldset>
+            </div>
 
-            <fieldset class={styles.filterGroup}>
-              <legend>Price</legend>
-              <label>
-                <span class={styles.srOnly}>Price range</span>
-                <select value={price()} onChange={event => setPrice(event.currentTarget.value)}>
-                  <For each={PRICE_OPTIONS}>{option => <option value={option.key}>{option.label}</option>}</For>
-                </select>
+            <div class={styles.group} role="group" aria-labelledby="filter-game">
+              <p id="filter-game">Game</p>
+              <div class={styles.optionList}>
+                <For each={GAME_OPTIONS}>
+                  {option => (
+                    <button
+                      type="button"
+                      class={styles.option}
+                      classList={{ [styles.optionActive]: game() === option.key }}
+                      aria-pressed={game() === option.key}
+                      disabled={option.key !== "all" && !gameCounts().get(option.key)}
+                      onClick={() => setGame(option.key)}
+                    >
+                      <span class={styles.optionDot} aria-hidden="true" />
+                      <span class={styles.optionLabel}>{option.label}</span>
+                      <span class={styles.optionCount}>{gameCounts().get(option.key) ?? 0}</span>
+                    </button>
+                  )}
+                </For>
+              </div>
+            </div>
+
+            <div class={styles.group} role="group" aria-labelledby="filter-price">
+              <p id="filter-price">Price</p>
+              <div class={styles.optionList}>
+                <For each={PRICE_OPTIONS}>
+                  {option => (
+                    <button
+                      type="button"
+                      class={styles.option}
+                      classList={{ [styles.optionActive]: price() === option.key }}
+                      aria-pressed={price() === option.key}
+                      onClick={() => setPrice(option.key)}
+                    >
+                      <span class={styles.optionDot} aria-hidden="true" />
+                      <span class={styles.optionLabel}>{option.label}</span>
+                    </button>
+                  )}
+                </For>
+              </div>
+            </div>
+
+            <div class={styles.group}>
+              <label class={styles.switch}>
+                <input
+                  type="checkbox"
+                  checked={stockOnly()}
+                  onChange={event => setStockOnly(event.currentTarget.checked)}
+                />
+                <span class={styles.switchTrack} aria-hidden="true"><span /></span>
+                <span>In stock only</span>
               </label>
-            </fieldset>
+            </div>
+
+            <div class={styles.railFoot}>
+              <button
+                type="button"
+                class={styles.railApply}
+                onClick={() => setFiltersOpen(false)}
+              >
+                Show {visible().length} {visible().length === 1 ? "product" : "products"}
+              </button>
+              <Show when={activeChips().length}>
+                <button type="button" class={styles.railReset} onClick={clearFilters}>
+                  Reset filters
+                </button>
+              </Show>
+            </div>
           </aside>
 
           <section class={styles.results} aria-label="Products">
-            <header class={styles.resultsHead}>
-              <div>
-                <h2>{visible().length} {visible().length === 1 ? "product" : "products"}</h2>
-                <p>{hasFilters() ? "Matching your current filters" : "Showing sealed products"}</p>
-              </div>
-              <label>
-                <span>Sort by</span>
+            <div class={styles.toolbar}>
+              <p class={styles.resultCount}>
+                <strong>{visible().length}</strong>
+                {visible().length === 1 ? " product" : " products"}
+              </p>
+
+              <label class={styles.sortField}>
+                <span>Sort</span>
                 <select value={sort()} onChange={event => setSort(event.currentTarget.value as SortKey)}>
-                  <option value="featured">Featured</option>
-                  <option value="price-asc">Price: low to high</option>
-                  <option value="price-desc">Price: high to low</option>
-                  <option value="name">Name: A to Z</option>
+                  <For each={SORT_OPTIONS}>
+                    {option => <option value={option.key}>{option.label}</option>}
+                  </For>
                 </select>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
               </label>
-            </header>
+            </div>
+
+            <Show when={activeChips().length}>
+              <div class={styles.chips}>
+                <For each={activeChips()}>
+                  {chip => (
+                    <button type="button" class={styles.chip} onClick={chip.clear}>
+                      <span>{chip.label}</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+                        <path d="M18 6 6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </For>
+                <button type="button" class={styles.chipClear} onClick={clearFilters}>Clear all</button>
+              </div>
+            </Show>
 
             <Show
               when={visible().length}
               fallback={
                 <div class={styles.empty}>
-                  <p class={styles.emptyTitle}>Nothing matches yet</p>
-                  <p>Change the search or clear the filters to see the full catalogue.</p>
-                  <button type="button" onClick={clearFilters}>Show all products</button>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-4-4" />
+                  </svg>
+                  <p class={styles.emptyTitle}>No products match</p>
+                  <p>Try a different search, or clear a filter or two.</p>
+                  <button type="button" onClick={clearFilters}>Clear all filters</button>
                 </div>
               }
             >
               <div class={styles.grid}>
                 <For each={visible()}>
-                  {(product, index) => (
-                    <div
-                      class={styles.gridItem}
-                      style={`--card-index: ${Math.min(index(), 6)}`}
-                    >
-                      <ProductCard
-                        product={product}
-                        isJustAdded={() => justAdded().has(product.id)}
-                        onAdd={addToCart}
-                        fill
-                      />
-                    </div>
+                  {product => (
+                    <ProductCard
+                      product={product}
+                      isJustAdded={() => justAdded().has(product.id)}
+                      onAdd={addToCart}
+                      fill
+                    />
                   )}
                 </For>
               </div>
