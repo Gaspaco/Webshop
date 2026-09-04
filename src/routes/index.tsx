@@ -108,7 +108,7 @@ export default function Home() {
         products={catalogProducts()}
       />
       <ShopByGame />
-      <SetCollections />
+      <SetCollections products={catalogProducts()} />
       <Show when={upcomingProducts().length}>
         <ProductSection
           heading="Upcoming releases"

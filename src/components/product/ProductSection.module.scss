@@ -12,66 +12,18 @@
 
 .header {
   display: flex;
-  align-items: flex-end;
+  align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: clamp(1.75rem, 3.5vh, 2.5rem);
-}
-
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.navBtns {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.navBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  flex-shrink: 0;
-  border-radius: $radius-full;
-  background: rgba($white, 0.05);
-  border: 1px solid rgba($white, 0.1);
-  color: $gray-300;
-  transition: background $transition-fast, border-color $transition-fast, color $transition-fast;
-
-  svg {
-    width: 1.05rem;
-    height: 1.05rem;
-  }
-
-  &:hover {
-    background: rgba($primary, 0.14);
-    border-color: rgba($primary, 0.35);
-    color: $primary-light;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $primary-light;
-    outline-offset: 2px;
-  }
-
-  &:disabled {
-    border-color: rgba($white, 0.05);
-    background: transparent;
-    color: $gray-700;
-    cursor: default;
-  }
+  margin-bottom: 1.25rem;
 }
 
 .heading {
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(1.375rem, 2vw, 1.75rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: $white;
 }
 
 .sub {
@@ -106,19 +58,17 @@
   }
 }
 
-.track {
-  display: flex;
-  gap: $product-card-gap;
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  scroll-snap-type: x mandatory;
-  scroll-padding-inline: 0.125rem;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding: 0.35rem 0.125rem 1.5rem;
+.grid {
+  display: grid;
+  align-items: stretch;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14.5rem), 1fr));
+  gap: 1rem;
+}
 
-  &::-webkit-scrollbar {
-    display: none;
+@media (max-width: 48rem) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
+    gap: 0.75rem;
   }
 }
 
@@ -153,6 +103,13 @@
 
 .cardFill {
   width: 100%;
+}
+
+.mediaPending {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  inset: 0;
 }
 
 .cardMedia {
@@ -487,19 +444,11 @@
     align-items: flex-start;
   }
 
-  .headerActions {
-    gap: 0.75rem;
-  }
-
-  .viewAll {
+    .viewAll {
     font-size: 0.8125rem;
   }
 
-  .navBtns {
-    display: none;
-  }
-
-  .track {
+    .track {
     gap: 0.9rem;
     margin-right: -1rem;
     padding-right: 1rem;
