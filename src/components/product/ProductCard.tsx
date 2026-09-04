@@ -39,6 +39,7 @@ export type SectionProduct = {
   rating?: number;
   href: string;
   badge?: string;
+  preorder?: boolean;
   variants?: ProductVariantOption[];
   variantId?: string;
 };
@@ -83,6 +84,7 @@ export default function ProductCard(props: ProductCardProps) {
   const [quickViewOpen, setQuickViewOpen] = createSignal(false);
   const [selectedVariantId, setSelectedVariantId] = createSignal("");
   const [imageFailed, setImageFailed] = createSignal(false);
+  const [imageLoaded, setImageLoaded] = createSignal(false);
   const selectedVariant = createMemo(() =>
     p.variants?.find(variant => variant.id === selectedVariantId()),
   );
@@ -100,7 +102,7 @@ export default function ProductCard(props: ProductCardProps) {
   );
   const hasChoices = () => (p.variants?.length ?? 0) > 1;
   const isUnavailable = () =>
-    !hasChoices() && Boolean(mainVariant() && mainVariant()!.stock <= 0);
+    !p.preorder && !hasChoices() && Boolean(mainVariant() && mainVariant()!.stock <= 0);
 
   const openQuickView = () => {
     setSelectedVariantId("");
@@ -117,6 +119,7 @@ export default function ProductCard(props: ProductCardProps) {
   createEffect(() => {
     p.image;
     setImageFailed(false);
+    setImageLoaded(false);
   });
 
   createEffect(() => {
@@ -142,11 +145,20 @@ export default function ProductCard(props: ProductCardProps) {
     >
       <A href={p.href} class={styles.cardMedia}>
         <Show when={p.image && !imageFailed()} fallback={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}>
+          {/* Database artwork arrives as a base64 data URL and can take seconds
+              to decode. Hold the themed placeholder until it has, so the card is
+              never an empty grey box. */}
+          <Show when={!imageLoaded()}>
+            <span class={styles.mediaPending}>
+              <BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />
+            </span>
+          </Show>
           <img
             src={p.image}
             alt={p.set ? `${p.name}, ${p.set}` : p.name}
             draggable={false}
             loading="lazy"
+            onLoad={() => setImageLoaded(true)}
             onError={() => setImageFailed(true)}
           />
         </Show>
@@ -203,7 +215,7 @@ export default function ProductCard(props: ProductCardProps) {
                   </svg>
                 }
               >
-                <span>{isUnavailable() ? "Sold out" : "Add"}</span>
+                <span>{isUnavailable() ? "Sold out" : p.preorder ? "Pre-order" : "Add"}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 5v14M5 12h14" />
                 </svg>

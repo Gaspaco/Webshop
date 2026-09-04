@@ -1,13 +1,5 @@
 import { A } from "@solidjs/router";
-import {
-  createEffect,
-  createSignal,
-  createUniqueId,
-  For,
-  onCleanup,
-  onMount,
-  Show,
-} from "solid-js";
+import { createSignal, createUniqueId, For, Show } from "solid-js";
 import { useCart } from "~/lib/cart";
 import ProductCard, {
   type ProductVariantOption,
@@ -28,38 +20,6 @@ export default function ProductSection(props: ProductSectionProps) {
   const cart = useCart();
   const headingId = `products-${createUniqueId()}`;
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
-  const [canScrollBack, setCanScrollBack] = createSignal(false);
-  const [canScrollForward, setCanScrollForward] = createSignal(false);
-  let trackRef: HTMLDivElement | undefined;
-
-  const updateTrackState = () => {
-    if (!trackRef) return;
-    const maxScroll = Math.max(0, trackRef.scrollWidth - trackRef.clientWidth);
-    setCanScrollBack(trackRef.scrollLeft > 4);
-    setCanScrollForward(trackRef.scrollLeft < maxScroll - 4);
-  };
-
-  const scrollTrack = (dir: 1 | -1) => {
-    if (!trackRef) return;
-    const amount = Math.min(trackRef.clientWidth * 0.8, 640);
-    trackRef.scrollBy({ left: dir * amount, behavior: "smooth" });
-  };
-
-  onMount(() => {
-    updateTrackState();
-    const observer = new ResizeObserver(updateTrackState);
-    if (trackRef) observer.observe(trackRef);
-    window.addEventListener("resize", updateTrackState);
-    onCleanup(() => {
-      observer.disconnect();
-      window.removeEventListener("resize", updateTrackState);
-    });
-  });
-
-  createEffect(() => {
-    props.products.length;
-    queueMicrotask(updateTrackState);
-  });
 
   const addToCart = (
     product: SectionProduct,
@@ -95,49 +55,22 @@ export default function ProductSection(props: ProductSectionProps) {
             </Show>
           </div>
 
-          <div class={styles.headerActions}>
-            <A href={props.viewAllHref ?? "/products"} class={styles.viewAll}>
-              Discover all
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </A>
-            <Show when={canScrollBack() || canScrollForward()}>
-              <div class={styles.navBtns}>
-                <button
-                  type="button"
-                  class={styles.navBtn}
-                  aria-label={`View previous ${props.heading.toLocaleLowerCase()}`}
-                  disabled={!canScrollBack()}
-                  onClick={() => scrollTrack(-1)}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M15 6l-6 6 6 6" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class={styles.navBtn}
-                  aria-label={`View more ${props.heading.toLocaleLowerCase()}`}
-                  disabled={!canScrollForward()}
-                  onClick={() => scrollTrack(1)}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 6l6 6-6 6" />
-                  </svg>
-                </button>
-              </div>
-            </Show>
-          </div>
+          <A href={props.viewAllHref ?? "/products"} class={styles.viewAll}>
+            View all
+          </A>
         </header>
 
-        <div class={styles.track} ref={trackRef} onScroll={updateTrackState}>
+        {/* A grid rather than a scroll rail: on a wide screen the rail always
+            left a card sliced in half at the edge, and hid the rest behind
+            arrows. */}
+        <div class={styles.grid}>
           <For each={props.products}>
             {product => (
               <ProductCard
                 product={product}
                 isJustAdded={() => justAdded().has(product.id)}
                 onAdd={addToCart}
+                fill
               />
             )}
           </For>
