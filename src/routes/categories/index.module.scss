@@ -57,7 +57,6 @@
   width: 100%;
   flex-direction: column;
   padding: 1.25rem 1.25rem 1rem;
-  border: 1px solid rgba($white, 0.07);
   border-radius: $radius-lg;
   background:
     radial-gradient(ellipse 90% 70% at 100% 0%, color-mix(in srgb, var(--game-accent) 16%, transparent), transparent 70%),
@@ -135,8 +134,7 @@
   align-items: center;
   justify-content: space-between;
   min-height: 1.75rem;
-  padding-top: 0.875rem;
-  border-top: 1px solid rgba($white, 0.07);
+  padding-top: 0.25rem;
   margin-top: auto;
   gap: 0.75rem;
 }

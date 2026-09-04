@@ -2171,13 +2171,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx:235"
     },
     {
-      "id": "file::index",
-      "label": "index.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:1"
-    },
-    {
       "id": "index::createemptyvariantdraft",
       "label": "createEmptyVariantDraft",
       "fileType": "code",
@@ -2792,6 +2785,13 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/products.tsx:23"
+    },
+    {
+      "id": "file::index",
+      "label": "index.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/index.tsx:1"
     },
     {
       "id": "index::game",
@@ -5595,6 +5595,6 @@
     "files": 105,
     "nodes": 401,
     "edges": 309,
-    "builtAt": "2026-09-04T18:18:31.038Z"
+    "builtAt": "2026-09-04T19:05:10.484Z"
   }
 }

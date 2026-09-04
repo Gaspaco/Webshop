@@ -37,7 +37,6 @@ export default function GameSetsPage() {
                   <span>{set.code ?? "SET"}</span>
                   <strong>{set.name}</strong>
                   <small>{set.count} {set.count === 1 ? "product" : "products"}</small>
-                  <span aria-hidden="true">{set.code ?? "SET"}</span>
                 </A>
               )}</For>
             </div>
