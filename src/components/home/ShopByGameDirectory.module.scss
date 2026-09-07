@@ -3,7 +3,6 @@
 .section {
   padding: clamp(4.5rem, 9vh, 7.5rem) 0.5rem;
   background: #101110;
-  border-bottom: 1px solid rgba($white, 0.07);
 }
 
 .wide {
@@ -198,8 +197,8 @@
   flex-direction: column;
   padding: 0;
   margin: 0;
+  gap: 0.5rem;
   list-style: none;
-  border-top: 1px solid rgba($white, 0.1);
 }
 
 .row {
@@ -209,9 +208,11 @@
   min-height: 5.5rem;
   align-items: center;
   gap: 1.25rem;
-  padding: 1rem 1.1rem;
-  border-bottom: 1px solid rgba($white, 0.1);
-  transition: background $transition-fast;
+  padding: 1rem 1.25rem;
+  border-radius: $radius-lg;
+  background: $surface;
+  overflow: hidden;
+  transition: background $transition-fast, transform $transition-base;
 
   // Accent wash grows from the left on hover, so colour reads as arrival
   // rather than a permanent stripe.
@@ -226,6 +227,11 @@
     content: "";
     opacity: 0;
     transition: opacity $transition-base;
+  }
+
+  &:hover {
+    background: $surface-raised;
+    transform: translateY(-2px);
   }
 
   &:hover::before {
@@ -243,7 +249,7 @@
 
   &:focus-visible {
     outline: 2px solid var(--game-accent);
-    outline-offset: -2px;
+    outline-offset: 2px;
   }
 }
 
