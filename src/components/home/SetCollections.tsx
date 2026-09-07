@@ -65,18 +65,21 @@ export default function SetCollections(props: SetCollectionsProps) {
                   href={set.href}
                   class={`${styles.collection} ${styles[set.theme] ?? ""}`}
                 >
-                  <Show when={set.image}>
-                    {image => (
-                      <span class={styles.art} aria-hidden="true">
-                        <img src={image()} alt="" draggable={false} loading="lazy" />
-                      </span>
-                    )}
-                  </Show>
+                  <span class={styles.media} aria-hidden="true">
+                    <Show
+                      when={set.image}
+                      fallback={<span class={styles.mediaCode}>{set.code ?? set.name.slice(0, 3)}</span>}
+                    >
+                      {image => <img src={image()} alt="" draggable={false} loading="lazy" />}
+                    </Show>
+                  </span>
 
-                  <span class={styles.game}>{set.gameName}</span>
-                  <h3>{set.name}</h3>
-                  <span class={styles.count}>
-                    {set.count} {set.count === 1 ? "product" : "products"}
+                  <span class={styles.body}>
+                    <span class={styles.game}>{set.gameName}</span>
+                    <h3>{set.name}</h3>
+                    <span class={styles.count}>
+                      {set.count} {set.count === 1 ? "product" : "products"}
+                    </span>
                   </span>
                 </A>
               )}

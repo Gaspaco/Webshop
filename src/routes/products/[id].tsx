@@ -98,6 +98,35 @@ const SERVICE_NOTES = [
   },
 ];
 
+function slugPart(value: string) {
+  return value.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toUpperCase();
+}
+
+function variantSetName(variant?: { name?: string }) {
+  const part = variant?.name?.split("·")[0]?.trim();
+  return part || undefined;
+}
+
+function variantRarity(variant?: { name?: string; finish?: string }) {
+  return variant?.finish?.trim() || variant?.name?.split("·")[1]?.trim() || undefined;
+}
+
+// SKUs are generated as YGO-<cardId>-<set code>-<rarity>. Peel the two known
+// ends off; anything that does not match that shape falls back to the caller.
+function variantSetCode(variant?: { sku?: string; finish?: string; name?: string }) {
+  const sku = variant?.sku;
+  if (!sku) return undefined;
+  const rarity = variantRarity(variant);
+  let rest = sku;
+  if (rarity) {
+    const suffix = `-${slugPart(rarity)}`;
+    if (!rest.endsWith(suffix)) return undefined;
+    rest = rest.slice(0, -suffix.length);
+  }
+  const match = rest.match(/^[A-Z]+-\d+-(.+)$/);
+  return match?.[1] || undefined;
+}
+
 export default function ProductDetail() {
   const params = useParams();
   const cart = useCart();
@@ -123,6 +152,9 @@ export default function ProductDetail() {
   const [added, setAdded] = createSignal(false);
   const [saved, setSaved] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
+  const [bulkOpen, setBulkOpen] = createSignal(false);
+  const [bulkPicks, setBulkPicks] = createSignal<Record<string, number>>({});
+  const [bulkAdded, setBulkAdded] = createSignal(0);
 
   onMount(() => setClientReady(true));
 
@@ -204,6 +236,62 @@ export default function ProductDetail() {
       })),
     };
     return JSON.stringify(data).replaceAll("<", "\\u003c");
+  };
+
+  const buyableVariants = () =>
+    (product()?.variants ?? []).filter(variant => variant.stock > 0);
+
+  const bulkEntries = () =>
+    Object.entries(bulkPicks()).filter(([, qty]) => qty > 0);
+
+  const bulkCount = () => bulkEntries().reduce((sum, [, qty]) => sum + qty, 0);
+
+  const bulkTotalCents = () =>
+    bulkEntries().reduce((sum, [id, qty]) => {
+      const variant = product()?.variants?.find(candidate => candidate.id === id);
+      return sum + (variant ? variant.priceCents * qty : 0);
+    }, 0);
+
+  const toggleBulkPick = (variantId: string) => {
+    setBulkPicks(previous => {
+      const next = { ...previous };
+      if (next[variantId]) delete next[variantId];
+      else next[variantId] = 1;
+      return next;
+    });
+  };
+
+  const setBulkQuantity = (variantId: string, quantity: number) => {
+    const variant = product()?.variants?.find(candidate => candidate.id === variantId);
+    const capped = Math.max(1, Math.min(quantity, variant?.stock ?? 1));
+    setBulkPicks(previous => ({ ...previous, [variantId]: capped }));
+  };
+
+  // Adds every ticked printing in one action; the cart merges by variant so
+  // repeating a line just increases its quantity.
+  const addSelectedVariants = () => {
+    const current = product();
+    if (!current) return;
+    let added = 0;
+    for (const [variantId, quantity] of bulkEntries()) {
+      const variant = current.variants?.find(candidate => candidate.id === variantId);
+      if (!variant || variant.stock <= 0) continue;
+      cart.addItem(
+        {
+          id: current.id,
+          variantId: variant.id,
+          name: `${current.name} (${variant.name})`,
+          image: variant.image ?? current.image ?? "/images/logo-mark.png",
+          priceCents: variant.priceCents,
+        },
+        quantity,
+      );
+      added += quantity;
+    }
+    if (!added) return;
+    setBulkPicks({});
+    setBulkAdded(added);
+    setTimeout(() => setBulkAdded(0), 2200);
   };
 
   const addMain = (item: ShopProduct) => {
@@ -294,7 +382,7 @@ export default function ProductDetail() {
               <div class={styles.mediaPanel}>
                 <div class={styles.mediaHeader}>
                   <A href={`/categories/${item().game}/products`}>{item().gameName}</A>
-                  <span>{item().setCode ?? item().sku ?? "TCGH"}</span>
+                  <span>{variantSetCode(displayVariant()) ?? item().setCode ?? item().sku ?? "TCGH"}</span>
                 </div>
 
                 <div class={styles.productMedia}>
@@ -321,8 +409,10 @@ export default function ProductDetail() {
                 <header class={styles.purchaseHeader}>
                   <div class={styles.productKicker}>
                     <span>{isSealedProduct(item()) ? "Sealed product" : item().productType ?? "Single card"}</span>
-                    <Show when={item().set}>
-                      <A href={`/categories/${item().game}/sets`}>{item().set}</A>
+                    <Show when={variantSetName(displayVariant()) ?? item().set}>
+                      {setName => (
+                        <A href={`/categories/${item().game}/sets`}>{setName()}</A>
+                      )}
                     </Show>
                   </div>
                   <div class={styles.titleRow}>
@@ -357,7 +447,10 @@ export default function ProductDetail() {
                     </p>
                   </div>
 
-                  <div class={styles.stockLine}>
+                  <div
+                    class={styles.stockLine}
+                    classList={{ [styles.stockLineOut]: activeProduct()?.stock === 0 }}
+                  >
                     <span />
                     {activeProduct()?.stock === 0
                       ? "Out of stock"
@@ -368,43 +461,49 @@ export default function ProductDetail() {
                 <p class={styles.description}>{describe(item())}</p>
 
                 <Show when={(item().variants?.length ?? 0) > 1}>
-                  <fieldset class={styles.variantPicker}>
-                    <legend>{isSealedProduct(item()) ? "Choose a format" : "Choose your card"}</legend>
-                    <div>
-                      <For each={item().variants}>
-                        {variant => (
-                          <button
-                            type="button"
-                            classList={{
-                              [styles.variantActive]:
-                                selectedVariantId() === variant.id,
-                            }}
-                            aria-pressed={selectedVariantId() === variant.id}
-                            disabled={variant.stock <= 0}
-                            onClick={() => {
-                              setSelectedVariantId(variant.id);
-                              setQuantity(1);
-                            }}
-                          >
-                            <span>
-                              <strong>{variant.name}</strong>
-                              <small>
-                                {(isSealedProduct(item())
-                                  ? [variant.language, variant.finish]
-                                  : [variant.condition, variant.language, variant.finish])
-                                  .filter(Boolean)
-                                  .join(" · ") || variant.sku}
-                              </small>
-                            </span>
-                            <span>
-                              <strong>{formatPrice(variant.priceCents)}</strong>
-                              <small>{variant.stock > 0 ? `${variant.stock} available` : "Sold out"}</small>
-                            </span>
-                          </button>
-                        )}
-                      </For>
-                    </div>
-                  </fieldset>
+                  <div class={styles.variantPicker}>
+                    <label>
+                      <span>{isSealedProduct(item()) ? "Choose a format" : "Choose your card"}</span>
+                      <select
+                        value={selectedVariantId()}
+                        onChange={event => {
+                          setSelectedVariantId(event.currentTarget.value);
+                          setQuantity(1);
+                        }}
+                      >
+                        <option value="">
+                          {isSealedProduct(item()) ? "Select a format" : "Select a printing"}
+                        </option>
+                        <For each={item().variants}>
+                          {variant => (
+                            <option value={variant.id} disabled={variant.stock <= 0}>
+                              {variant.name}
+                              {" — "}
+                              {formatPrice(variant.priceCents)}
+                              {variant.stock > 0 ? ` · ${variant.stock} available` : " · sold out"}
+                            </option>
+                          )}
+                        </For>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </label>
+
+                    <Show when={selectedVariant()}>
+                      {variant => (
+                        <p class={styles.variantSummary}>
+                          <strong>{formatPrice(variant().priceCents)}</strong>
+                          <span>
+                            {[variant().condition, variant().language].filter(Boolean).join(" · ")}
+                          </span>
+                          <span classList={{ [styles.variantOut]: variant().stock <= 0 }}>
+                            {variant().stock > 0 ? `${variant().stock} available` : "Sold out"}
+                          </span>
+                        </p>
+                      )}
+                    </Show>
+                  </div>
                 </Show>
 
                 <Show
@@ -469,6 +568,91 @@ export default function ProductDetail() {
                   <A href="/cart" class={styles.cartLink}>View your cart</A>
                 </Show>
 
+                <Show when={buyableVariants().length > 1}>
+                  <div class={styles.bulk}>
+                    <button
+                      type="button"
+                      class={styles.bulkToggle}
+                      aria-expanded={bulkOpen()}
+                      onClick={() => setBulkOpen(open => !open)}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                      <span>Buy several printings</span>
+                      <small>{buyableVariants().length} in stock</small>
+                    </button>
+
+                    <Show when={bulkOpen()}>
+                      <ul class={styles.bulkList}>
+                        <For each={buyableVariants()}>
+                          {variant => (
+                            <li classList={{ [styles.bulkRowPicked]: Boolean(bulkPicks()[variant.id]) }}>
+                              <label class={styles.bulkPick}>
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(bulkPicks()[variant.id])}
+                                  onChange={() => toggleBulkPick(variant.id)}
+                                />
+                                <span>
+                                  <strong>{variant.name}</strong>
+                                  <small>
+                                    {formatPrice(variant.priceCents)} · {variant.stock} available
+                                  </small>
+                                </span>
+                              </label>
+
+                              <Show when={bulkPicks()[variant.id]}>
+                                {quantity => (
+                                  <div class={styles.bulkQty} aria-label={`Quantity for ${variant.name}`}>
+                                    <button
+                                      type="button"
+                                      aria-label="Decrease"
+                                      disabled={quantity() <= 1}
+                                      onClick={() => setBulkQuantity(variant.id, quantity() - 1)}
+                                    >
+                                      −
+                                    </button>
+                                    <strong>{quantity()}</strong>
+                                    <button
+                                      type="button"
+                                      aria-label="Increase"
+                                      disabled={quantity() >= variant.stock}
+                                      onClick={() => setBulkQuantity(variant.id, quantity() + 1)}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                )}
+                              </Show>
+                            </li>
+                          )}
+                        </For>
+                      </ul>
+
+                      <button
+                        type="button"
+                        class={styles.bulkAdd}
+                        disabled={!bulkCount()}
+                        onClick={addSelectedVariants}
+                      >
+                        <Show
+                          when={bulkCount()}
+                          fallback="Select printings to add"
+                        >
+                          Add {bulkCount()} {bulkCount() === 1 ? "item" : "items"} — {formatPrice(bulkTotalCents())}
+                        </Show>
+                      </button>
+                    </Show>
+
+                    <Show when={bulkAdded()}>
+                      <p class={styles.bulkDone} role="status">
+                        Added {bulkAdded()} {bulkAdded() === 1 ? "item" : "items"} to your cart.
+                      </p>
+                    </Show>
+                  </div>
+                </Show>
+
                 <div class={styles.purchaseFoot}>
                   <div>
                     <span>Condition</span>
@@ -500,19 +684,21 @@ export default function ProductDetail() {
 
               <dl class={styles.specifications}>
                 <div><dt>Game</dt><dd>{item().gameName}</dd></div>
-                <div><dt>Set</dt><dd>{item().set ?? "Various"}</dd></div>
+                <div><dt>Set</dt><dd>{variantSetName(displayVariant()) ?? item().set ?? "Various"}</dd></div>
                 <div><dt>Product type</dt><dd>{isSealedProduct(item()) ? "Sealed product" : item().productType ?? "Single card"}</dd></div>
                 <div><dt>Condition</dt><dd>{conditionFor(item())}</dd></div>
                 <div><dt>Language</dt><dd>{item().language ?? "English"}</dd></div>
-                <Show when={item().finish}><div><dt>Finish</dt><dd>{item().finish}</dd></div></Show>
                 <Show when={item().cardNumber}><div><dt>Card number</dt><dd>{item().cardNumber}</dd></div></Show>
-                <Show when={item().rarity}><div><dt>Rarity</dt><dd>{item().rarity}</dd></div></Show>
-                <Show when={item().setCode}><div><dt>Set code</dt><dd>{item().setCode}</dd></div></Show>
+<Show when={variantRarity(displayVariant()) ?? item().rarity}>
+                  {rarity => <div><dt>Rarity</dt><dd>{rarity()}</dd></div>}
+                </Show>
+<Show when={variantSetCode(displayVariant()) ?? item().setCode}>
+                  {code => <div><dt>Set code</dt><dd>{code()}</dd></div>}
+                </Show>
                 <Show when={item().illustrator}><div><dt>Illustrator</dt><dd>{item().illustrator}</dd></div></Show>
                 <Show when={item().gradingCompany}><div><dt>Grading company</dt><dd>{item().gradingCompany}</dd></div></Show>
                 <Show when={item().grade}><div><dt>Grade</dt><dd>{item().grade}</dd></div></Show>
                 <Show when={item().certificationNumber}><div><dt>Certification</dt><dd>{item().certificationNumber}</dd></div></Show>
-                <div><dt>Ships from</dt><dd>{item().shipsFrom ?? "Netherlands"}</dd></div>
               </dl>
             </section>
 

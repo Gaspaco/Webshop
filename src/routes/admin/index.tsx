@@ -2620,6 +2620,8 @@ export default function Admin() {
   const [yugiohSearching, setYugiohSearching] = createSignal(false);
   const [yugiohImporting, setYugiohImporting] = createSignal<Set<number>>(new Set());
   const [yugiohMessage, setYugiohMessage] = createSignal("");
+  const [yugiohSelected, setYugiohSelected] = createSignal<Set<number>>(new Set());
+  const [yugiohBulkRunning, setYugiohBulkRunning] = createSignal(false);
   let imageInput: HTMLInputElement | undefined;
   const [selectedVariantIds, setSelectedVariantIds] = createSignal<Set<string>>(
     new Set(),
@@ -2887,6 +2889,92 @@ export default function Admin() {
     } finally {
       setYugiohSearching(false);
     }
+  };
+
+  // One request per card: the endpoint imports a single card, and running them
+  // in sequence keeps the YGOPRODeck image fetches from being rate limited.
+  const importYugiohCard = async (card: YugiohCard) => {
+    const response = await fetch("/api/admin/ygoprodeck", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cardId: card.id }),
+    });
+    const result = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      variants?: number;
+      hasImage?: boolean;
+    };
+    if (response.ok) {
+      setYugiohCards(cards => cards.map(item =>
+        item.id === card.id ? { ...item, importedStatus: "draft" } : item,
+      ));
+    }
+    return { ok: response.ok, ...result };
+  };
+
+  const selectableYugiohCards = () =>
+    yugiohCards().filter(card => !card.importedStatus);
+
+  const toggleYugiohSelected = (cardId: number) => {
+    setYugiohSelected(previous => {
+      const next = new Set(previous);
+      if (next.has(cardId)) next.delete(cardId);
+      else next.add(cardId);
+      return next;
+    });
+  };
+
+  const toggleAllYugiohSelected = () => {
+    const selectable = selectableYugiohCards();
+    setYugiohSelected(previous =>
+      previous.size === selectable.length
+        ? new Set<number>()
+        : new Set<number>(selectable.map(card => card.id)),
+    );
+  };
+
+  const addSelectedYugiohCards = async () => {
+    const chosen = yugiohCards().filter(card => yugiohSelected().has(card.id));
+    if (!chosen.length) return;
+    setYugiohBulkRunning(true);
+    setYugiohMessage(`Adding ${chosen.length} cards...`);
+
+    let added = 0;
+    let withoutArt = 0;
+    const failed: string[] = [];
+
+    for (const card of chosen) {
+      setYugiohImporting(previous => new Set(previous).add(card.id));
+      try {
+        const result = await importYugiohCard(card);
+        if (result.ok) {
+          added += 1;
+          if (result.hasImage === false) withoutArt += 1;
+        } else {
+          failed.push(`${card.name} (${result.error ?? "failed"})`);
+        }
+      } catch {
+        failed.push(`${card.name} (network error)`);
+      } finally {
+        setYugiohImporting(previous => {
+          const next = new Set(previous);
+          next.delete(card.id);
+          return next;
+        });
+      }
+    }
+
+    setYugiohSelected(new Set<number>());
+    setYugiohBulkRunning(false);
+    setYugiohMessage(
+      [
+        `Added ${added} of ${chosen.length} cards as drafts.`,
+        withoutArt ? `${withoutArt} came in without artwork.` : "",
+        failed.length ? `Skipped: ${failed.slice(0, 3).join("; ")}${failed.length > 3 ? ` and ${failed.length - 3} more` : ""}.` : "",
+      ].filter(Boolean).join(" "),
+    );
+    await refetch();
   };
 
   const addYugiohCard = async (card: YugiohCard) => {
@@ -3765,12 +3853,52 @@ export default function Admin() {
                       <p class={styles.importMessage} role="status">{yugiohMessage()}</p>
                     </Show>
 
+                    <Show when={selectableYugiohCards().length}>
+                      <div class={styles.yugiohBulkBar}>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={
+                              yugiohSelected().size > 0 &&
+                              yugiohSelected().size === selectableYugiohCards().length
+                            }
+                            onChange={toggleAllYugiohSelected}
+                          />
+                          <span>Select all {selectableYugiohCards().length}</span>
+                        </label>
+                        <button
+                          type="button"
+                          disabled={!yugiohSelected().size || yugiohBulkRunning()}
+                          onClick={addSelectedYugiohCards}
+                        >
+                          {yugiohBulkRunning()
+                            ? "Adding cards..."
+                            : yugiohSelected().size
+                              ? `Import ${yugiohSelected().size} selected as drafts`
+                              : "Select cards to import"}
+                        </button>
+                      </div>
+                    </Show>
+
                     <Show when={yugiohCards().length}>
                       <div class={styles.yugiohResults}>
                         <For each={yugiohCards()}>
                           {card => (
-                            <article>
-                              <div class={styles.yugiohCardId}>{card.id}</div>
+                            <article classList={{ [styles.yugiohRowPicked]: yugiohSelected().has(card.id) }}>
+                              <Show
+                                when={!card.importedStatus}
+                                fallback={<div class={styles.yugiohCardId}>{card.id}</div>}
+                              >
+                                <label class={styles.yugiohPick}>
+                                  <input
+                                    type="checkbox"
+                                    checked={yugiohSelected().has(card.id)}
+                                    disabled={yugiohBulkRunning()}
+                                    onChange={() => toggleYugiohSelected(card.id)}
+                                    aria-label={`Select ${card.name}`}
+                                  />
+                                </label>
+                              </Show>
                               <div class={styles.yugiohCardInfo}>
                                 <strong>{card.name}</strong>
                                 <span>
