@@ -2616,12 +2616,15 @@ export default function Admin() {
   const [importMessage, setImportMessage] = createSignal("");
   const [importing, setImporting] = createSignal(false);
   const [yugiohQuery, setYugiohQuery] = createSignal("");
+  const [yugiohSearchBy, setYugiohSearchBy] = createSignal<"card" | "set">("card");
+  const [yugiohMatchedSets, setYugiohMatchedSets] = createSignal<string[]>([]);
   const [yugiohCards, setYugiohCards] = createSignal<YugiohCard[]>([]);
   const [yugiohSearching, setYugiohSearching] = createSignal(false);
   const [yugiohImporting, setYugiohImporting] = createSignal<Set<number>>(new Set());
   const [yugiohMessage, setYugiohMessage] = createSignal("");
   const [yugiohSelected, setYugiohSelected] = createSignal<Set<number>>(new Set());
   const [yugiohBulkRunning, setYugiohBulkRunning] = createSignal(false);
+  let yugiohSearchController: AbortController | undefined;
   let imageInput: HTMLInputElement | undefined;
   const [selectedVariantIds, setSelectedVariantIds] = createSignal<Set<string>>(
     new Set(),
@@ -2869,15 +2872,24 @@ export default function Admin() {
 
   const searchYugiohCards = async (event: SubmitEvent) => {
     event.preventDefault();
+    yugiohSearchController?.abort();
+    const controller = new AbortController();
+    yugiohSearchController = controller;
     setYugiohSearching(true);
     setYugiohMessage("");
+    setYugiohSelected(new Set<number>());
     try {
       const response = await fetch(
-        `/api/admin/ygoprodeck?q=${encodeURIComponent(yugiohQuery().trim())}`,
-        { credentials: "same-origin", headers: { Accept: "application/json" } },
+        `/api/admin/ygoprodeck?by=${yugiohSearchBy()}&q=${encodeURIComponent(yugiohQuery().trim())}`,
+        {
+          credentials: "same-origin",
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
+        },
       );
       const result = (await response.json().catch(() => ({}))) as {
         cards?: YugiohCard[];
+        matchedSets?: string[];
         error?: string;
       };
       if (!response.ok) {
@@ -2885,9 +2897,14 @@ export default function Admin() {
         return;
       }
       setYugiohCards(result.cards ?? []);
+      setYugiohMatchedSets(result.matchedSets ?? []);
       if (!result.cards?.length) setYugiohMessage("No matching cards found in the local snapshot.");
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        setYugiohMessage("The local Yu-Gi-Oh database could not be searched.");
+      }
     } finally {
-      setYugiohSearching(false);
+      if (yugiohSearchController === controller) setYugiohSearching(false);
     }
   };
 
@@ -2934,8 +2951,7 @@ export default function Admin() {
     );
   };
 
-  const addSelectedYugiohCards = async () => {
-    const chosen = yugiohCards().filter(card => yugiohSelected().has(card.id));
+  const runYugiohBulkImport = async (chosen: YugiohCard[]) => {
     if (!chosen.length) return;
     setYugiohBulkRunning(true);
     setYugiohMessage(`Adding ${chosen.length} cards...`);
@@ -2944,7 +2960,8 @@ export default function Admin() {
     let withoutArt = 0;
     const failed: string[] = [];
 
-    for (const card of chosen) {
+    for (const [index, card] of chosen.entries()) {
+      setYugiohMessage(`Adding ${index + 1} of ${chosen.length}: ${card.name}`);
       setYugiohImporting(previous => new Set(previous).add(card.id));
       try {
         const result = await importYugiohCard(card);
@@ -2976,6 +2993,14 @@ export default function Admin() {
     );
     await refetch();
   };
+
+  const addSelectedYugiohCards = () =>
+    runYugiohBulkImport(
+      yugiohCards().filter(card => yugiohSelected().has(card.id)),
+    );
+
+  const addAllYugiohResults = () =>
+    runYugiohBulkImport(selectableYugiohCards());
 
   const addYugiohCard = async (card: YugiohCard) => {
     setYugiohImporting(previous => new Set(previous).add(card.id));
@@ -3835,19 +3860,45 @@ export default function Admin() {
                     </div>
 
                     <form class={styles.yugiohSearch} onSubmit={searchYugiohCards}>
+                      <label class={styles.yugiohSearchMode}>
+                        <span>Search by</span>
+                        <select
+                          value={yugiohSearchBy()}
+                          onChange={event => {
+                            setYugiohSearchBy(event.currentTarget.value as "card" | "set");
+                            setYugiohCards([]);
+                            setYugiohMatchedSets([]);
+                            setYugiohSelected(new Set<number>());
+                            setYugiohMessage("");
+                          }}
+                        >
+                          <option value="card">Card name</option>
+                          <option value="set">Set name</option>
+                        </select>
+                      </label>
                       <label>
-                        <span>Card name</span>
+                        <span>{yugiohSearchBy() === "set" ? "Set name" : "Card name"}</span>
                         <input
                           type="search"
                           value={yugiohQuery()}
                           onInput={event => setYugiohQuery(event.currentTarget.value)}
-                          placeholder="Dark Magician, Blue-Eyes, Kuriboh"
+                          placeholder={yugiohSearchBy() === "set"
+                            ? "Chaos Origins, Battle of Chaos"
+                            : "Dark Magician, Blue-Eyes, Kuriboh"}
                         />
                       </label>
                       <button type="submit" disabled={yugiohSearching()}>
-                        {yugiohSearching() ? "Searching" : "Search library"}
+                        {yugiohSearching()
+                          ? "Searching"
+                          : yugiohSearchBy() === "set" ? "Find set" : "Find cards"}
                       </button>
                     </form>
+
+                    <Show when={yugiohMatchedSets().length}>
+                      <p class={styles.yugiohSetMatch}>
+                        Set{yugiohMatchedSets().length === 1 ? "" : "s"}: {yugiohMatchedSets().join(", ")}
+                      </p>
+                    </Show>
 
                     <Show when={yugiohMessage()}>
                       <p class={styles.importMessage} role="status">{yugiohMessage()}</p>
@@ -3868,14 +3919,22 @@ export default function Admin() {
                         </label>
                         <button
                           type="button"
-                          disabled={!yugiohSelected().size || yugiohBulkRunning()}
-                          onClick={addSelectedYugiohCards}
+                          disabled={
+                            yugiohBulkRunning() ||
+                            (!yugiohSelected().size && yugiohSearchBy() !== "set")
+                          }
+                          onClick={() => {
+                            if (yugiohSelected().size) void addSelectedYugiohCards();
+                            else void addAllYugiohResults();
+                          }}
                         >
                           {yugiohBulkRunning()
                             ? "Adding cards..."
                             : yugiohSelected().size
                               ? `Import ${yugiohSelected().size} selected as drafts`
-                              : "Select cards to import"}
+                              : yugiohSearchBy() === "set"
+                                ? `Import all ${selectableYugiohCards().length} cards as drafts`
+                                : "Select cards to import"}
                         </button>
                       </div>
                     </Show>

@@ -1244,13 +1244,18 @@
   gap: 0.35rem;
 }
 
+.yugiohSearch .yugiohSearchMode {
+  flex: 0 0 9rem;
+}
+
 .yugiohSearch label span {
   color: $gray-400;
   font-size: 0.62rem;
   font-weight: 750;
 }
 
-.yugiohSearch input {
+.yugiohSearch input,
+.yugiohSearch select {
   width: 100%;
   min-height: 2.75rem;
   padding: 0 0.85rem;
@@ -1260,10 +1265,27 @@
   color: $white;
 }
 
-.yugiohSearch input:focus {
+.yugiohSearch select {
+  padding-right: 2rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 0.9rem;
+}
+
+.yugiohSearch input:focus,
+.yugiohSearch select:focus {
   border-color: $primary;
   outline: 2px solid rgba($primary, 0.18);
   outline-offset: 1px;
+}
+
+.yugiohSetMatch {
+  margin-top: 0.75rem;
+  color: $gray-400;
+  font-size: 0.64rem;
+  line-height: 1.5;
 }
 
 .yugiohSearch button,
@@ -3206,6 +3228,11 @@
 
   .yugiohLibraryHead > span {
     align-self: flex-start;
+  }
+
+  .yugiohSearch .yugiohSearchMode {
+    width: 100%;
+    flex: 1;
   }
 
   .yugiohResults article {

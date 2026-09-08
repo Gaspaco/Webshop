@@ -12,6 +12,9 @@ import { apiJson, requireAdmin, toSlug, writeAuditLog } from "~/lib/admin.server
 
 const importCardSchema = z.object({ cardId: z.number().int().positive() });
 
+type YugiohCardRow = typeof yugiohCards.$inferSelect;
+type YugiohPrintingRow = typeof yugiohPrintings.$inferSelect;
+
 function productSlug(card: { id: number; name: string }) {
   return toSlug(`yugioh-${card.id}-${card.name}`);
 }
@@ -84,6 +87,37 @@ async function downloadCardImage(source: string | null) {
   }
 }
 
+async function searchResponse(
+  cardRows: YugiohCardRow[],
+  printingRows: YugiohPrintingRow[],
+  matchedSets: string[] = [],
+) {
+  const printingsByCard = new Map<number, YugiohPrintingRow[]>();
+  for (const printing of printingRows) {
+    const values = printingsByCard.get(printing.cardId) ?? [];
+    values.push(printing);
+    printingsByCard.set(printing.cardId, values);
+  }
+
+  const slugs = cardRows.map(productSlug);
+  const importedRows = slugs.length
+    ? await db
+        .select({ slug: products.slug, status: products.status })
+        .from(products)
+        .where(inArray(products.slug, slugs))
+    : [];
+  const imported = new Map(importedRows.map(row => [row.slug, row.status]));
+
+  return apiJson({
+    cards: cardRows.map(card => ({
+      ...card,
+      importedStatus: imported.get(productSlug(card)) ?? null,
+      printings: printingsByCard.get(card.id) ?? [],
+    })),
+    matchedSets,
+  });
+}
+
 export async function GET(event: APIEvent) {
   const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
@@ -91,6 +125,38 @@ export async function GET(event: APIEvent) {
   try {
     const url = new URL(event.request.url);
     const query = url.searchParams.get("q")?.trim().slice(0, 80) ?? "";
+    const searchBy = url.searchParams.get("by") === "set" ? "set" : "card";
+
+    if (searchBy === "set") {
+      if (!query) return apiJson({ cards: [], matchedSets: [] });
+
+      // Search the mirrored printings table only. Even a whole-set lookup
+      // never reaches YGOPRODeck and therefore cannot consume its rate limit.
+      const matchingPrintings = await db
+        .select()
+        .from(yugiohPrintings)
+        .where(ilike(yugiohPrintings.setName, `%${query}%`))
+        .orderBy(asc(yugiohPrintings.setName), asc(yugiohPrintings.cardId))
+        .limit(2500);
+      const cardIds = [...new Set(matchingPrintings.map(row => row.cardId))].slice(0, 300);
+      const cardRows = cardIds.length
+        ? await db
+            .select()
+            .from(yugiohCards)
+            .where(inArray(yugiohCards.id, cardIds))
+            .orderBy(asc(yugiohCards.name))
+        : [];
+      const returnedIds = new Set(cardRows.map(card => card.id));
+      const matchedSets = [...new Set(matchingPrintings.map(row => row.setName))]
+        .sort((a, b) => a.localeCompare(b));
+
+      return searchResponse(
+        cardRows,
+        matchingPrintings.filter(printing => returnedIds.has(printing.cardId)),
+        matchedSets,
+      );
+    }
+
     const cardRows = await db
       .select()
       .from(yugiohCards)
@@ -106,29 +172,7 @@ export async function GET(event: APIEvent) {
           .where(inArray(yugiohPrintings.cardId, ids))
           .orderBy(asc(yugiohPrintings.setName), asc(yugiohPrintings.rarity))
       : [];
-    const printingsByCard = new Map<number, typeof printingRows>();
-    for (const printing of printingRows) {
-      const values = printingsByCard.get(printing.cardId) ?? [];
-      values.push(printing);
-      printingsByCard.set(printing.cardId, values);
-    }
-
-    const slugs = cardRows.map(productSlug);
-    const importedRows = slugs.length
-      ? await db
-          .select({ slug: products.slug, status: products.status })
-          .from(products)
-          .where(inArray(products.slug, slugs))
-      : [];
-    const imported = new Map(importedRows.map(row => [row.slug, row.status]));
-
-    return apiJson({
-      cards: cardRows.map(card => ({
-        ...card,
-        importedStatus: imported.get(productSlug(card)) ?? null,
-        printings: printingsByCard.get(card.id) ?? [],
-      })),
-    });
+    return searchResponse(cardRows, printingRows);
   } catch (error) {
     console.error("Local YGOPRODeck search failed", error);
     return apiJson(

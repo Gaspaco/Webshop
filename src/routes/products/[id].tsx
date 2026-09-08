@@ -478,7 +478,7 @@ export default function ProductDetail() {
                           {variant => (
                             <option value={variant.id} disabled={variant.stock <= 0}>
                               {variant.name}
-                              {" — "}
+                              {" · "}
                               {formatPrice(variant.priceCents)}
                               {variant.stock > 0 ? ` · ${variant.stock} available` : " · sold out"}
                             </option>
@@ -640,7 +640,7 @@ export default function ProductDetail() {
                           when={bulkCount()}
                           fallback="Select printings to add"
                         >
-                          Add {bulkCount()} {bulkCount() === 1 ? "item" : "items"} — {formatPrice(bulkTotalCents())}
+                          Add {bulkCount()} {bulkCount() === 1 ? "item" : "items"} · {formatPrice(bulkTotalCents())}
                         </Show>
                       </button>
                     </Show>
@@ -689,10 +689,10 @@ export default function ProductDetail() {
                 <div><dt>Condition</dt><dd>{conditionFor(item())}</dd></div>
                 <div><dt>Language</dt><dd>{item().language ?? "English"}</dd></div>
                 <Show when={item().cardNumber}><div><dt>Card number</dt><dd>{item().cardNumber}</dd></div></Show>
-<Show when={variantRarity(displayVariant()) ?? item().rarity}>
+                <Show when={variantRarity(displayVariant()) ?? item().rarity}>
                   {rarity => <div><dt>Rarity</dt><dd>{rarity()}</dd></div>}
                 </Show>
-<Show when={variantSetCode(displayVariant()) ?? item().setCode}>
+                <Show when={variantSetCode(displayVariant()) ?? item().setCode}>
                   {code => <div><dt>Set code</dt><dd>{code()}</dd></div>}
                 </Show>
                 <Show when={item().illustrator}><div><dt>Illustrator</dt><dd>{item().illustrator}</dd></div></Show>
