@@ -192,6 +192,24 @@ type ImportJob = {
   createdAt: string;
 };
 
+type CsvImportRow = {
+  name: string;
+  game: string;
+  productType: string;
+  set: string;
+  sku: string;
+  priceCents: number;
+  stock: number;
+  image: string;
+  status: "draft";
+};
+
+type CsvPreview = {
+  fileName: string;
+  rows: CsvImportRow[];
+  issues: string[];
+};
+
 type YugiohPrinting = {
   id: string;
   setName: string;
@@ -559,7 +577,6 @@ function downloadTemplate() {
     "price",
     "stock",
     "image",
-    "status",
   ];
   const sample = [
     "Pikachu ex",
@@ -570,7 +587,6 @@ function downloadTemplate() {
     "12.95",
     "3",
     "https://example.com/pikachu.webp",
-    "draft",
   ];
   const csv = `${header.map(escapeCsvCell).join(",")}\n${sample.map(escapeCsvCell).join(",")}\n`;
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
@@ -581,7 +597,7 @@ function downloadTemplate() {
   URL.revokeObjectURL(url);
 }
 
-function parseCsv(text: string) {
+function parseCsv(text: string): Omit<CsvPreview, "fileName"> {
   const records: string[][] = [];
   let field = "";
   let record: string[] = [];
@@ -612,20 +628,82 @@ function parseCsv(text: string) {
   if (record.some(value => value.trim())) records.push(record);
 
   const [headers, ...rows] = records;
-  if (!headers) return [];
+  if (!headers) return { rows: [], issues: ["The CSV is empty."] };
+  const normalizedHeaders = headers.map(header => header.trim().toLowerCase());
   const indexOf = (name: string) =>
-    headers.findIndex(header => header.trim().toLowerCase() === name.toLowerCase());
-  return rows.map(row => ({
-    name: row[indexOf("name")]?.trim() ?? "",
-    game: row[indexOf("game")]?.trim().toLowerCase() ?? "",
-    productType: row[indexOf("productType")]?.trim().toLowerCase() ?? "",
-    set: row[indexOf("set")]?.trim() ?? "",
-    sku: row[indexOf("sku")]?.trim() ?? "",
-    priceCents: eurosToCents(row[indexOf("price")] ?? "0"),
-    stock: Number(row[indexOf("stock")] ?? 0),
-    image: row[indexOf("image")]?.trim() ?? "",
-    status: row[indexOf("status")]?.trim().toLowerCase() || "draft",
-  }));
+    normalizedHeaders.indexOf(name.toLowerCase());
+  const requiredHeaders = ["name", "game", "producttype", "sku", "price", "stock"];
+  const missingHeaders = requiredHeaders.filter(header => !normalizedHeaders.includes(header));
+  if (missingHeaders.length) {
+    return {
+      rows: [],
+      issues: [`Missing columns: ${missingHeaders.join(", ")}. Download a fresh template.`],
+    };
+  }
+
+  const allowedGames = new Set([
+    "pokemon",
+    "yugioh",
+    "magic",
+    "lorcana",
+    "riftbound",
+    "digimon",
+    "cyberpunk",
+    "other",
+  ]);
+  const allowedTypes = new Set(["single", "sealed", "graded", "accessory"]);
+  const parsedRows: CsvImportRow[] = [];
+  const issues: string[] = [];
+  const seenSkus = new Map<string, number>();
+
+  rows.forEach((row, index) => {
+    const rowNumber = index + 2;
+    const name = row[indexOf("name")]?.trim() ?? "";
+    const game = row[indexOf("game")]?.trim().toLowerCase() ?? "";
+    const productType = row[indexOf("productType")]?.trim().toLowerCase() ?? "";
+    const set = row[indexOf("set")]?.trim() ?? "";
+    const sku = row[indexOf("sku")]?.trim() ?? "";
+    const price = Number(row[indexOf("price")]?.trim());
+    const stock = Number(row[indexOf("stock")]?.trim());
+    const image = row[indexOf("image")]?.trim() ?? "";
+
+    if (name.length < 2) issues.push(`Row ${rowNumber}: enter a product name.`);
+    if (!allowedGames.has(game)) issues.push(`Row ${rowNumber}: game is not supported.`);
+    if (!allowedTypes.has(productType)) issues.push(`Row ${rowNumber}: productType is not supported.`);
+    if (!sku) issues.push(`Row ${rowNumber}: enter a unique SKU.`);
+    if (!Number.isFinite(price) || price <= 0) issues.push(`Row ${rowNumber}: price must be more than €0.`);
+    if (!Number.isInteger(stock) || stock < 0) issues.push(`Row ${rowNumber}: stock must be a whole number of 0 or more.`);
+    if (image) {
+      try {
+        if (new URL(image).protocol !== "https:") throw new Error();
+      } catch {
+        issues.push(`Row ${rowNumber}: image must be a valid HTTPS address.`);
+      }
+    }
+
+    const normalizedSku = sku.toLocaleLowerCase("en-US");
+    const firstSkuRow = seenSkus.get(normalizedSku);
+    if (sku && firstSkuRow !== undefined) {
+      issues.push(`Row ${rowNumber}: SKU ${sku} is already used on row ${firstSkuRow}.`);
+    } else if (sku) {
+      seenSkus.set(normalizedSku, rowNumber);
+    }
+
+    parsedRows.push({
+      name,
+      game,
+      productType,
+      set,
+      sku,
+      priceCents: Number.isFinite(price) ? Math.round(price * 100) : 0,
+      stock: Number.isFinite(stock) ? stock : -1,
+      image,
+      status: "draft",
+    });
+  });
+
+  if (parsedRows.length > 1000) issues.push("A CSV can contain no more than 1,000 products.");
+  return { rows: parsedRows, issues };
 }
 
 function ProductRow(props: {
@@ -2615,6 +2693,7 @@ export default function Admin() {
   const [savingProduct, setSavingProduct] = createSignal(false);
   const [importMessage, setImportMessage] = createSignal("");
   const [importing, setImporting] = createSignal(false);
+  const [csvPreview, setCsvPreview] = createSignal<CsvPreview | null>(null);
   const [yugiohQuery, setYugiohQuery] = createSignal("");
   const [yugiohSearchBy, setYugiohSearchBy] = createSignal<"card" | "set">("card");
   const [yugiohMatchedSets, setYugiohMatchedSets] = createSignal<string[]>([]);
@@ -2629,7 +2708,10 @@ export default function Admin() {
   const [selectedVariantIds, setSelectedVariantIds] = createSignal<Set<string>>(
     new Set(),
   );
+  const [bulkVisibility, setBulkVisibility] = createSignal("");
   const [bulkStock, setBulkStock] = createSignal("");
+  const [bulkPrice, setBulkPrice] = createSignal("");
+  const [bulkMessage, setBulkMessage] = createSignal("");
   const [bulkBusy, setBulkBusy] = createSignal(false);
   const filteredProducts = () =>
     (dashboard()?.products ?? []).filter(product =>
@@ -2678,41 +2760,58 @@ export default function Admin() {
     const targets = bulkTargets();
     if (!targets.length) return;
     setBulkBusy(true);
+    setBulkMessage("");
     try {
-      const results = await Promise.all(
-        targets.map(product =>
-          fetch("/api/admin/products", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              id: product.id,
-              variantId: product.variantId,
-              ...patch,
-            }),
-          })
-            .then(response => response.ok)
-            .catch(() => false),
-        ),
-      );
+      const response = await fetch("/api/admin/products-bulk", {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          variantIds: targets.map(product => product.variantId),
+          ...patch,
+        }),
+      });
+      const result = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        updatedProducts?: number;
+      };
+      if (!response.ok) {
+        setBulkMessage(result.error ?? "The selected products could not be updated.");
+        return;
+      }
       await refetch();
       clearSelection();
+      setBulkVisibility("");
       setBulkStock("");
-      const failed = results.filter(ok => !ok).length;
-      if (failed) {
-        window.alert(
-          `${failed} of ${targets.length} products could not be updated.`,
-        );
-      }
+      setBulkPrice("");
+      setBulkMessage(`${result.updatedProducts ?? targets.length} products updated.`);
+    } catch {
+      setBulkMessage("The bulk update could not reach the server. Try again.");
     } finally {
       setBulkBusy(false);
     }
   };
-  const applyBulkStatus = (status: "draft" | "active" | "archived") =>
-    applyBulk({ status });
+  const applyBulkStatus = () => {
+    const status = bulkVisibility();
+    if (!status) return;
+    void applyBulk({ status });
+  };
   const applyBulkStock = () => {
-    const value = Math.floor(Number(bulkStock()));
-    if (!Number.isFinite(value) || value < 0) return;
-    applyBulk({ stock: value });
+    const value = Number(bulkStock());
+    if (!Number.isInteger(value) || value < 0) {
+      setBulkMessage("Quantity must be a whole number of 0 or more.");
+      return;
+    }
+    void applyBulk({ stock: value });
+  };
+  const applyBulkPrice = () => {
+    const normalized = bulkPrice().trim().replace(",", ".");
+    const value = Number(normalized);
+    if (!Number.isFinite(value) || value <= 0 || value > 1_000_000) {
+      setBulkMessage("Price must be between €0.01 and €1,000,000.");
+      return;
+    }
+    void applyBulk({ priceCents: Math.round(value * 100) });
   };
   const deleteSelectedProducts = async () => {
     const targets = bulkTargets();
@@ -2834,37 +2933,59 @@ export default function Admin() {
     setSavingProduct(false);
   };
 
-  const importCsv = async (file?: File) => {
+  const prepareCsv = async (file?: File) => {
     if (!file) return;
+    setImportMessage("");
+    try {
+      if (file.size > 5_000_000) {
+        setCsvPreview(null);
+        setImportMessage("The CSV is too large. Use a file smaller than 5 MB.");
+        return;
+      }
+      const parsed = parseCsv(await file.text());
+      setCsvPreview({ fileName: file.name, ...parsed });
+      if (!parsed.rows.length && !parsed.issues.length) {
+        setImportMessage("The CSV has no product rows.");
+      }
+    } catch {
+      setCsvPreview(null);
+      setImportMessage("The CSV could not be read.");
+    }
+  };
+
+  const importCsv = async () => {
+    const preview = csvPreview();
+    if (!preview || !preview.rows.length || preview.issues.length) return;
     setImporting(true);
     setImportMessage("");
     try {
-      const rows = parseCsv(await file.text());
-      if (!rows.length) {
-        setImportMessage("The CSV has no product rows.");
-        return;
-      }
       const response = await fetch("/api/admin/import", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileName: file.name, rows }),
+        body: JSON.stringify({ fileName: preview.fileName, rows: preview.rows }),
       });
       const result = (await response.json()) as {
         error?: string;
         processedRows?: number;
         failedRows?: number;
+        errors?: Array<{ row: number; message: string }>;
       };
       if (!response.ok) {
         setImportMessage(result.error ?? "The CSV could not be imported.");
         return;
       }
       await refetch();
+      setCsvPreview(null);
+      const rejectedDetails = (result.errors ?? [])
+        .slice(0, 3)
+        .map(error => `Row ${error.row}: ${error.message}`)
+        .join(" ");
       setImportMessage(
-        `${result.processedRows ?? 0} products imported. ${result.failedRows ?? 0} rows need attention.`,
+        `${result.processedRows ?? 0} products added as private drafts. ${result.failedRows ?? 0} rows were rejected.${rejectedDetails ? ` ${rejectedDetails}` : ""} Review the batch in Catalogue before publishing.`,
       );
     } catch {
-      setImportMessage("The CSV could not be read.");
+      setImportMessage("The CSV import could not be completed.");
     } finally {
       setImporting(false);
     }
@@ -3582,24 +3703,24 @@ export default function Admin() {
                           <span>Visibility</span>
                           <select
                             disabled={bulkBusy()}
-                            onChange={event => {
-                              const value = event.currentTarget.value;
-                              event.currentTarget.selectedIndex = 0;
-                              if (value) {
-                                applyBulkStatus(
-                                  value as "draft" | "active" | "archived",
-                                );
-                              }
-                            }}
+                            value={bulkVisibility()}
+                            onChange={event => setBulkVisibility(event.currentTarget.value)}
                           >
-                            <option value="">Set status…</option>
+                            <option value="">Choose status</option>
                             <option value="active">Live</option>
                             <option value="draft">Draft</option>
                             <option value="archived">Archived</option>
                           </select>
+                          <button
+                            type="button"
+                            disabled={bulkBusy() || bulkVisibility() === ""}
+                            onClick={applyBulkStatus}
+                          >
+                            Apply
+                          </button>
                         </label>
                         <label class={styles.bulkField}>
-                          <span>Stock</span>
+                          <span>Quantity</span>
                           <input
                             type="number"
                             min="0"
@@ -3613,6 +3734,24 @@ export default function Admin() {
                             type="button"
                             disabled={bulkBusy() || bulkStock() === ""}
                             onClick={applyBulkStock}
+                          >
+                            Set
+                          </button>
+                        </label>
+                        <label class={styles.bulkField}>
+                          <span>Price</span>
+                          <input
+                            type="text"
+                            inputmode="decimal"
+                            placeholder="€ 0.00"
+                            disabled={bulkBusy()}
+                            value={bulkPrice()}
+                            onInput={event => setBulkPrice(event.currentTarget.value)}
+                          />
+                          <button
+                            type="button"
+                            disabled={bulkBusy() || bulkPrice().trim() === ""}
+                            onClick={applyBulkPrice}
                           >
                             Set
                           </button>
@@ -3635,6 +3774,9 @@ export default function Admin() {
                         Delete selected
                       </button>
                     </div>
+                  </Show>
+                  <Show when={bulkMessage()}>
+                    <p class={styles.bulkMessage} role="status">{bulkMessage()}</p>
                   </Show>
 
                   <div class={styles.tableWrap}>
@@ -3830,23 +3972,70 @@ export default function Admin() {
                     <div>
                       <h2>Import a full catalogue</h2>
                       <p>
-                        Add up to 1,000 products from one CSV. Every imported row is recorded and stock movements remain traceable.
+                        Check up to 1,000 products before importing. New rows stay private until you review and publish them.
                       </p>
                     </div>
                     <div class={styles.importActions}>
                       <button type="button" onClick={downloadTemplate}>Download CSV template</button>
                       <label class={styles.primaryAction}>
-                        {importing() ? "Importing products" : "Choose CSV file"}
+                        Choose CSV file
                         <input
                           type="file"
                           accept=".csv,text/csv"
                           disabled={importing()}
-                          onChange={event => importCsv(event.currentTarget.files?.[0])}
+                          onChange={event => {
+                            const file = event.currentTarget.files?.[0];
+                            event.currentTarget.value = "";
+                            void prepareCsv(file);
+                          }}
                         />
                       </label>
                     </div>
                   </section>
                   <Show when={importMessage()}><p class={styles.importMessage} role="status">{importMessage()}</p></Show>
+                  <Show when={csvPreview()}>
+                    {preview => (
+                      <section class={styles.csvReview} aria-label="CSV import review">
+                        <div class={styles.csvReviewSummary}>
+                          <div>
+                            <strong>{preview().fileName}</strong>
+                            <p>
+                              {preview().rows.length} product{preview().rows.length === 1 ? "" : "s"} found. All products will be imported as private drafts.
+                            </p>
+                          </div>
+                          <span classList={{ [styles.csvReady]: preview().issues.length === 0, [styles.csvBlocked]: preview().issues.length > 0 }}>
+                            {preview().issues.length === 0 ? "Ready to import" : `${preview().issues.length} issue${preview().issues.length === 1 ? "" : "s"}`}
+                          </span>
+                        </div>
+
+                        <Show when={preview().issues.length}>
+                          <div class={styles.csvIssues} role="alert">
+                            <strong>Fix these rows before importing</strong>
+                            <ul>
+                              <For each={preview().issues.slice(0, 8)}>{issue => <li>{issue}</li>}</For>
+                            </ul>
+                            <Show when={preview().issues.length > 8}>
+                              <p>{preview().issues.length - 8} more issues are not shown.</p>
+                            </Show>
+                          </div>
+                        </Show>
+
+                        <div class={styles.csvReviewActions}>
+                          <button type="button" onClick={() => setCsvPreview(null)} disabled={importing()}>
+                            Discard file
+                          </button>
+                          <button
+                            type="button"
+                            class={styles.primaryAction}
+                            onClick={() => void importCsv()}
+                            disabled={importing() || preview().issues.length > 0 || preview().rows.length === 0}
+                          >
+                            {importing() ? "Importing drafts" : `Import ${preview().rows.length} drafts`}
+                          </button>
+                        </div>
+                      </section>
+                    )}
+                  </Show>
 
                   <section class={styles.yugiohLibrary}>
                     <div class={styles.yugiohLibraryHead}>
@@ -3999,13 +4188,13 @@ export default function Admin() {
                   <section class={styles.importGuide}>
                     <div>
                       <h3>How the product file works</h3>
-                      <p>Download the template, keep the header row, fill one product per line, then upload the completed CSV.</p>
+                      <p>Download the latest template, keep its header row, and fill one product per line. You can review the file before saving anything.</p>
                     </div>
                     <dl>
-                      <div><dt>game</dt><dd>pokemon, yugioh, magic, or other</dd></div>
+                      <div><dt>game</dt><dd>pokemon, yugioh, magic, lorcana, riftbound, digimon, cyberpunk, or other</dd></div>
                       <div><dt>productType</dt><dd>single, sealed, graded, or accessory</dd></div>
                       <div><dt>price</dt><dd>Use euros, for example 12.95</dd></div>
-                      <div><dt>status</dt><dd>draft for private or active for live</dd></div>
+                      <div><dt>visibility</dt><dd>CSV products always begin as private drafts</dd></div>
                       <div><dt>image</dt><dd>Optional HTTPS image address</dd></div>
                       <div><dt>sku</dt><dd>A unique stock code for every row</dd></div>
                     </dl>

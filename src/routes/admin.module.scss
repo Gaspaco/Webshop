@@ -1193,6 +1193,107 @@
   font-size: 0.72rem;
 }
 
+.csvReview {
+  margin-top: 1rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid rgba($white, 0.1);
+  border-radius: 0.75rem;
+  background: #0e1210;
+}
+
+.csvReviewSummary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.csvReviewSummary strong {
+  display: block;
+  color: $white;
+  font-size: 0.9rem;
+}
+
+.csvReviewSummary p,
+.csvIssues p {
+  margin-top: 0.35rem;
+  color: $gray-400;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.csvReviewSummary > span {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 750;
+}
+
+.csvReady {
+  color: $primary-light;
+  background: rgba($primary, 0.12);
+}
+
+.csvBlocked {
+  color: #fca5a5;
+  background: rgba(#ef4444, 0.1);
+}
+
+.csvIssues {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(#ef4444, 0.25);
+  border-radius: 0.6rem;
+  background: rgba(#ef4444, 0.06);
+}
+
+.csvIssues strong {
+  color: #fecaca;
+  font-size: 0.72rem;
+}
+
+.csvIssues ul {
+  margin: 0.55rem 0 0;
+  padding-left: 1.1rem;
+  color: #fca5a5;
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+.csvReviewActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.csvReviewActions button {
+  min-height: 2.7rem;
+  padding: 0 0.9rem;
+  border: 1px solid rgba($white, 0.14);
+  border-radius: 0.45rem;
+  color: $gray-300;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.csvReviewActions button:hover:not(:disabled),
+.csvReviewActions button:focus-visible {
+  border-color: rgba($white, 0.28);
+  color: $white;
+}
+
+.csvReviewActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.csvReviewActions .primaryAction {
+  border-color: $primary;
+  color: #04100b;
+}
+
 .yugiohLibrary {
   margin-top: 1.25rem;
   padding: 1.35rem;
@@ -2314,6 +2415,16 @@
     flex-direction: column;
   }
 
+  .csvReviewSummary,
+  .csvReviewActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .csvReviewSummary > span {
+    align-self: flex-start;
+  }
+
   .introActions,
   .dangerControls {
     align-items: stretch;
@@ -3109,6 +3220,12 @@
   color: $primary-light;
 }
 
+.bulkMessage {
+  margin: -0.25rem 0 0.85rem;
+  color: $primary-light;
+  font-size: 0.72rem;
+}
+
 .bulkActions {
   display: flex;
   align-items: center;
@@ -3152,7 +3269,7 @@
 }
 
 .bulkField input {
-  width: 5rem;
+  width: 5.75rem;
   padding: 0 0.6rem;
   appearance: textfield;
   -moz-appearance: textfield;
@@ -3220,6 +3337,31 @@
 }
 
 @media (max-width: 760px) {
+  .bulkBar,
+  .bulkActions,
+  .bulkField {
+    align-items: stretch;
+  }
+
+  .bulkActions,
+  .bulkField {
+    width: 100%;
+  }
+
+  .bulkField {
+    flex-wrap: wrap;
+  }
+
+  .bulkField > span {
+    width: 100%;
+  }
+
+  .bulkField select,
+  .bulkField input {
+    min-width: 0;
+    flex: 1;
+  }
+
   .yugiohLibraryHead,
   .yugiohSearch {
     align-items: stretch;
