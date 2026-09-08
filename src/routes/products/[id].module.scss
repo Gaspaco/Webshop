@@ -651,7 +651,7 @@
     height: 1.125rem;
   }
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: $primary-light;
     background: $primary-light;
     transform: translateY(-2px);
