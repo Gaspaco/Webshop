@@ -1,5 +1,5 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -30,16 +30,48 @@ const rowSchema = z.object({
   productType: z.enum(["single", "sealed", "graded", "accessory"]),
   set: z.string().trim().max(120).optional().default(""),
   sku: z.string().trim().min(1).max(80),
-  priceCents: z.number().int().min(0).max(100_000_000),
+  priceCents: z.number().int().min(1).max(100_000_000),
   stock: z.number().int().min(0).max(1_000_000),
-  image: z.string().trim().max(2048).optional().default(""),
-  status: z.enum(["draft", "active"]).default("draft"),
+  image: z
+    .string()
+    .trim()
+    .max(2048)
+    .refine(value => {
+      if (!value) return true;
+      try {
+        return new URL(value).protocol === "https:";
+      } catch {
+        return false;
+      }
+    }, "Images must use a valid HTTPS address.")
+    .optional()
+    .default(""),
+  // Kept for compatibility with older templates. CSV imports are always
+  // staged as drafts, regardless of the value supplied by the file.
+  status: z.enum(["draft", "active"]).optional().default("draft"),
 });
 
-const importSchema = z.object({
-  fileName: z.string().trim().max(180).optional().default("catalog.csv"),
-  rows: z.array(rowSchema).min(1).max(1000),
-});
+const importSchema = z
+  .object({
+    fileName: z.string().trim().max(180).optional().default("catalog.csv"),
+    rows: z.array(rowSchema).min(1).max(1000),
+  })
+  .superRefine((input, context) => {
+    const seen = new Map<string, number>();
+    input.rows.forEach((row, index) => {
+      const sku = row.sku.toLocaleLowerCase("en-US");
+      const firstRow = seen.get(sku);
+      if (firstRow !== undefined) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["rows", index, "sku"],
+          message: `SKU ${row.sku} is repeated on CSV rows ${firstRow + 2} and ${index + 2}.`,
+        });
+      } else {
+        seen.set(sku, index);
+      }
+    });
+  });
 
 export async function POST(event: APIEvent) {
   const guard = await requireAdmin(event);
@@ -47,6 +79,12 @@ export async function POST(event: APIEvent) {
 
   try {
     const input = importSchema.parse(await event.request.json());
+    const existingSkus = await db
+      .select({ sku: productVariants.sku })
+      .from(productVariants)
+      .where(inArray(productVariants.sku, input.rows.map(row => row.sku)));
+    const existingSkuSet = new Set(existingSkus.map(row => row.sku));
+
     const [job] = await db
       .insert(importJobs)
       .values({
@@ -65,6 +103,11 @@ export async function POST(event: APIEvent) {
     let processedRows = 0;
 
     for (const [index, row] of input.rows.entries()) {
+      if (existingSkuSet.has(row.sku)) {
+        errors.push({ row: index + 2, message: `SKU ${row.sku} already exists.` });
+        continue;
+      }
+
       try {
         await db.transaction(async tx => {
           const slugBase = toSlug(row.name);
@@ -76,9 +119,16 @@ export async function POST(event: APIEvent) {
               slug,
               game: row.game,
               productType: row.productType,
-              status: row.status,
+              // A CSV can add hundreds of records at once. Keeping the batch
+              // private until the owner reviews it prevents malformed rows,
+              // prices, or images from changing the live storefront.
+              status: "draft",
               imageUrls: row.image ? [row.image] : [],
-              metadata: { set: row.set || null },
+              metadata: {
+                set: row.set || null,
+                importJobId: job.id,
+                importFileName: input.fileName,
+              },
             })
             .returning();
           if (!product) throw new Error("Product was not created.");
@@ -145,6 +195,7 @@ export async function POST(event: APIEvent) {
       processedRows,
       failedRows: errors.length,
       errors,
+      stagedAsDrafts: true,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
