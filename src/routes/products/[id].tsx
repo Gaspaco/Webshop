@@ -16,7 +16,6 @@ import ProductCard, {
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories";
 import { formatPrice, useCart } from "~/lib/cart";
-import { yugiohFoilKind } from "~/lib/yugioh-rarity";
 import styles from "./[id].module.scss";
 
 function isSealedProduct(product: ShopProduct) {
@@ -128,18 +127,49 @@ function variantSetCode(variant?: { sku?: string; finish?: string; name?: string
   return match?.[1] || undefined;
 }
 
+// A skeleton of the real layout rather than a fixed overlay. The overlay was
+// taken out of flow, so the route contributed no height and the site footer
+// collapsed up into the same band of the viewport.
 function ProductRouteLoading() {
   return (
     <main class={styles.productLoading} role="status" aria-live="polite" aria-label="Loading product">
-      <div class={styles.loadingMark} aria-hidden="true">
-        <span>TCG</span>
-        <strong>Haven</strong>
+      <div class={styles.loadingWide}>
+        <div class={styles.loadingCrumb}>
+          <span class={styles.shimmer} />
+          <span class={styles.shimmer} />
+          <span class={styles.shimmer} />
+        </div>
+
+        <div class={styles.loadingHero}>
+          <div class={styles.loadingMedia}>
+            <div class={styles.loadingMediaHead}>
+              <span class={styles.shimmer} />
+              <span class={styles.shimmer} />
+            </div>
+            <div class={styles.loadingArt}>
+              <span class={styles.shimmer} />
+            </div>
+          </div>
+
+          <div class={styles.loadingPanel}>
+            <span class={`${styles.shimmer} ${styles.loadingKicker}`} />
+            <span class={`${styles.shimmer} ${styles.loadingTitle}`} />
+            <span class={`${styles.shimmer} ${styles.loadingPrice}`} />
+            <span class={`${styles.shimmer} ${styles.loadingLine}`} />
+            <span class={`${styles.shimmer} ${styles.loadingLineShort}`} />
+            <span class={`${styles.shimmer} ${styles.loadingSelect}`} />
+            <div class={styles.loadingBuy}>
+              <span class={styles.shimmer} />
+              <span class={styles.shimmer} />
+            </div>
+            <div class={styles.loadingSpecs}>
+              <span class={styles.shimmer} />
+              <span class={styles.shimmer} />
+              <span class={styles.shimmer} />
+            </div>
+          </div>
+        </div>
       </div>
-      <div class={styles.loadingCopy}>
-        <span>Opening the catalogue</span>
-        <p>Preparing product details</p>
-      </div>
-      <div class={styles.loadingTrack} aria-hidden="true"><span /></div>
     </main>
   );
 }
@@ -194,35 +224,22 @@ export default function ProductDetail() {
     return selectedVariant() ?? mainVariant();
   };
 
-  const detailFoilKind = () => {
-    const current = product();
-    if (!current || current.theme !== "yugioh" || isSealedProduct(current)) return;
-    return yugiohFoilKind(variantRarity(displayVariant()) ?? current.rarity);
-  };
-
-  const detailFoilClass = () => {
-    const kind = detailFoilKind();
-    return kind
-      ? styles[`foil${kind[0]!.toUpperCase()}${kind.slice(1)}`]
-      : "";
-  };
-
   const moveDetailCard = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
     if (event.pointerType === "touch") return;
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
     const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
-    event.currentTarget.style.setProperty("--foil-x", `${Math.round(x * 100)}%`);
-    event.currentTarget.style.setProperty("--foil-y", `${Math.round(y * 100)}%`);
     event.currentTarget.style.setProperty("--tilt-x", `${((0.5 - y) * 5).toFixed(2)}deg`);
     event.currentTarget.style.setProperty("--tilt-y", `${((x - 0.5) * 6).toFixed(2)}deg`);
+    event.currentTarget.style.setProperty("--shadow-x", `${((0.5 - x) * 18).toFixed(1)}px`);
+    event.currentTarget.style.setProperty("--shadow-y", `${(18 + y * 10).toFixed(1)}px`);
   };
 
   const resetDetailCard = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
-    event.currentTarget.style.removeProperty("--foil-x");
-    event.currentTarget.style.removeProperty("--foil-y");
     event.currentTarget.style.removeProperty("--tilt-x");
     event.currentTarget.style.removeProperty("--tilt-y");
+    event.currentTarget.style.removeProperty("--shadow-x");
+    event.currentTarget.style.removeProperty("--shadow-y");
   };
 
   const activeProduct = () => {
@@ -443,7 +460,7 @@ export default function ProductDetail() {
                     fallback={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
                   >
                     <Show
-                      when={detailFoilKind()}
+                      when={!isSealedProduct(item())}
                       fallback={
                         <img
                           src={activeProduct()!.image}
@@ -454,7 +471,7 @@ export default function ProductDetail() {
                       }
                     >
                       <div
-                        class={styles.foilCard}
+                        class={styles.interactiveCard}
                         onPointerMove={moveDetailCard}
                         onPointerLeave={resetDetailCard}
                       >
@@ -464,7 +481,6 @@ export default function ProductDetail() {
                           draggable={false}
                           onError={() => setDetailImageFailed(true)}
                         />
-                        <span class={`${styles.detailFoil} ${detailFoilClass()}`} aria-hidden="true" />
                       </div>
                     </Show>
                   </Show>
