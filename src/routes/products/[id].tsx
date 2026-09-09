@@ -128,6 +128,22 @@ function variantSetCode(variant?: { sku?: string; finish?: string; name?: string
   return match?.[1] || undefined;
 }
 
+function ProductRouteLoading() {
+  return (
+    <main class={styles.productLoading} role="status" aria-live="polite" aria-label="Loading product">
+      <div class={styles.loadingMark} aria-hidden="true">
+        <span>TCG</span>
+        <strong>Haven</strong>
+      </div>
+      <div class={styles.loadingCopy}>
+        <span>Opening the catalogue</span>
+        <p>Preparing product details</p>
+      </div>
+      <div class={styles.loadingTrack} aria-hidden="true"><span /></div>
+    </main>
+  );
+}
+
 export default function ProductDetail() {
   const params = useParams();
   const cart = useCart();
@@ -375,7 +391,11 @@ export default function ProductDetail() {
 
   return (
     <Show
-      when={product()}
+      when={clientReady() && !databaseCatalog.loading}
+      fallback={<ProductRouteLoading />}
+    >
+      <Show
+        when={product()}
       fallback={
         <main class={styles.page}>
           <div class={styles.wide}>
@@ -821,6 +841,7 @@ export default function ProductDetail() {
           </div>
         </main>
       )}
+      </Show>
     </Show>
   );
 }
