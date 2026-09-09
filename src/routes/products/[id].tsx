@@ -112,6 +112,48 @@ function variantRarity(variant?: { name?: string; finish?: string }) {
   return variant?.finish?.trim() || variant?.name?.split("·")[1]?.trim() || undefined;
 }
 
+type CardFinish =
+  | "common"
+  | "rare"
+  | "super"
+  | "ultra"
+  | "secret"
+  | "ultimate"
+  | "ghost"
+  | "collectors"
+  | "gold"
+  | "prismatic";
+
+/**
+ * Convert the names returned by YGOPRODeck into a small set of visual
+ * materials. Order matters because names such as "Gold Secret Rare" contain
+ * more than one rarity keyword.
+ */
+function cardFinishFor(
+  product: ShopProduct,
+  variant?: { name?: string; finish?: string },
+): CardFinish | undefined {
+  if (product.game !== "yugioh") return undefined;
+
+  const rarity = (
+    variantRarity(variant) ??
+    product.finish ??
+    product.rarity ??
+    ""
+  ).toLowerCase();
+  if (!rarity) return undefined;
+  if (/quarter century|starlight|prismatic/.test(rarity)) return "prismatic";
+  if (/ghost/.test(rarity)) return "ghost";
+  if (/collector/.test(rarity)) return "collectors";
+  if (/ultimate/.test(rarity)) return "ultimate";
+  if (/gold/.test(rarity)) return "gold";
+  if (/secret/.test(rarity)) return "secret";
+  if (/ultra/.test(rarity)) return "ultra";
+  if (/super/.test(rarity)) return "super";
+  if (/rare/.test(rarity)) return "rare";
+  return "common";
+}
+
 // SKUs are generated as YGO-<cardId>-<set code>-<rarity>. Peel the two known
 // ends off; anything that does not match that shape falls back to the caller.
 function variantSetCode(variant?: { sku?: string; finish?: string; name?: string }) {
@@ -187,6 +229,8 @@ export default function ProductDetail() {
     event.currentTarget.style.setProperty("--tilt-y", `${((x - 0.5) * 6).toFixed(2)}deg`);
     event.currentTarget.style.setProperty("--shadow-x", `${((0.5 - x) * 18).toFixed(1)}px`);
     event.currentTarget.style.setProperty("--shadow-y", `${(18 + y * 10).toFixed(1)}px`);
+    event.currentTarget.style.setProperty("--foil-x", `${(x * 100).toFixed(1)}%`);
+    event.currentTarget.style.setProperty("--foil-y", `${(y * 100).toFixed(1)}%`);
   };
 
   const resetDetailCard = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
@@ -194,6 +238,8 @@ export default function ProductDetail() {
     event.currentTarget.style.removeProperty("--tilt-y");
     event.currentTarget.style.removeProperty("--shadow-x");
     event.currentTarget.style.removeProperty("--shadow-y");
+    event.currentTarget.style.removeProperty("--foil-x");
+    event.currentTarget.style.removeProperty("--foil-y");
   };
 
   const activeProduct = () => {
@@ -426,6 +472,7 @@ export default function ProductDetail() {
                     >
                       <div
                         class={styles.interactiveCard}
+                        data-rarity-effect={cardFinishFor(item(), displayVariant())}
                         onPointerMove={moveDetailCard}
                         onPointerLeave={resetDetailCard}
                       >
