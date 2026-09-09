@@ -113,8 +113,6 @@
 }
 
 .cardMedia {
-  --foil-x: 50%;
-  --foil-y: 50%;
   position: relative;
   display: block;
   // 4:5 rather than 3:4, with tighter padding: the product was floating in a
@@ -154,165 +152,6 @@
 .card:focus-within .cardMedia img {
   filter: saturate(1.04) contrast(1.02);
   transform: scale(1.012);
-}
-
-.foilMedia {
-  isolation: isolate;
-}
-
-.foilLayer {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  left: 50%;
-  height: calc(100% - clamp(1.2rem, 3.2vw, 2rem));
-  width: auto;
-  max-width: calc(100% - clamp(1.2rem, 3.2vw, 2rem));
-  aspect-ratio: 59 / 86;
-  overflow: hidden;
-  border-radius: 3.5%;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  transition: opacity 220ms ease-out;
-}
-
-.foilLayer::before,
-.foilLayer::after {
-  position: absolute;
-  content: "";
-  pointer-events: none;
-}
-
-.card:hover .foilLayer,
-.card:focus-within .foilLayer {
-  opacity: 1;
-}
-
-// A quiet material response, limited to the part of the card that is foiled.
-// It follows the pointer like reflected light but never moves the card artwork.
-.foilRare::before {
-  top: 6.5%;
-  right: 8%;
-  left: 8%;
-  height: 6%;
-  background: linear-gradient(
-    110deg,
-    transparent 25%,
-    rgba(242, 247, 250, 0.48) 49%,
-    transparent 73%
-  );
-  background-position: calc(100% - var(--foil-x)) center;
-  background-size: 220% 100%;
-  mix-blend-mode: screen;
-}
-
-.foilSuper::before,
-.foilUltra::before,
-.foilSecret::before,
-.foilGhost::before {
-  top: 18%;
-  right: 8%;
-  left: 8%;
-  height: 39%;
-  background: radial-gradient(
-    ellipse 45% 60% at var(--foil-x) var(--foil-y),
-    rgba(255, 255, 255, 0.58),
-    rgba(192, 219, 224, 0.15) 42%,
-    transparent 72%
-  );
-  mix-blend-mode: screen;
-}
-
-.foilUltra::after {
-  top: 6.5%;
-  right: 8%;
-  left: 8%;
-  height: 6%;
-  background: linear-gradient(110deg, transparent 24%, rgba(255, 226, 137, 0.5) 50%, transparent 76%);
-  background-position: calc(100% - var(--foil-x)) center;
-  background-size: 220% 100%;
-  mix-blend-mode: soft-light;
-}
-
-.foilSecret::before {
-  background:
-    repeating-linear-gradient(125deg, transparent 0 19px, rgba(224, 241, 245, 0.16) 20px, transparent 21px 38px),
-    radial-gradient(ellipse 42% 58% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.52), rgba(190, 218, 234, 0.12) 42%, transparent 72%);
-}
-
-.foilPrismatic::before {
-  top: 18%;
-  right: 8%;
-  left: 8%;
-  height: 39%;
-  background:
-    repeating-linear-gradient(90deg, transparent 0 23px, rgba(220, 238, 242, 0.08) 24px, transparent 25px 47px),
-    repeating-linear-gradient(0deg, transparent 0 23px, rgba(220, 238, 242, 0.07) 24px, transparent 25px 47px),
-    radial-gradient(ellipse 45% 55% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.5), rgba(210, 223, 240, 0.1) 44%, transparent 72%);
-  mix-blend-mode: screen;
-}
-
-.foilPlatinum::before,
-.foilCollector::before,
-.foilStarlight::before,
-.foilQuarter::before {
-  inset: 1.5%;
-  background:
-    linear-gradient(112deg, transparent 28%, rgba(210, 231, 236, 0.18) 43%, rgba(255, 255, 255, 0.52) 50%, rgba(224, 211, 238, 0.16) 58%, transparent 72%),
-    radial-gradient(ellipse 32% 46% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.28), transparent 75%);
-  background-position: calc(100% - var(--foil-x)) var(--foil-y), center;
-  background-size: 190% 100%, 100% 100%;
-  mix-blend-mode: screen;
-}
-
-.foilGold::before {
-  inset: 2%;
-  border-radius: 2.5%;
-  box-shadow: inset 0 0 0 2px rgba(235, 194, 91, 0.48);
-}
-
-.foilGold::after {
-  top: 18%;
-  right: 8%;
-  left: 8%;
-  height: 39%;
-  background: radial-gradient(ellipse 45% 60% at var(--foil-x) var(--foil-y), rgba(255, 226, 147, 0.42), rgba(197, 155, 74, 0.1) 42%, transparent 72%);
-  mix-blend-mode: screen;
-}
-
-.foilUltimate::before {
-  top: 18%;
-  right: 8%;
-  left: 8%;
-  height: 39%;
-  background:
-    repeating-linear-gradient(135deg, transparent 0 13px, rgba(241, 214, 159, 0.045) 14px, transparent 15px 28px),
-    radial-gradient(ellipse 45% 60% at var(--foil-x) var(--foil-y), rgba(244, 219, 168, 0.38), transparent 72%);
-  mix-blend-mode: soft-light;
-}
-
-.foilCollector::after,
-.foilStarlight::after,
-.foilQuarter::after {
-  inset: 2%;
-  background: repeating-linear-gradient(125deg, transparent 0 27px, rgba(235, 242, 244, 0.045) 28px, transparent 29px 55px);
-  mix-blend-mode: screen;
-}
-
-.foilQuarter::after {
-  background:
-    radial-gradient(circle at 24% 28%, rgba(255, 255, 255, 0.55) 0 0.4%, transparent 0.9%),
-    radial-gradient(circle at 72% 69%, rgba(255, 255, 255, 0.45) 0 0.35%, transparent 0.8%),
-    repeating-linear-gradient(125deg, transparent 0 31px, rgba(235, 242, 244, 0.04) 32px, transparent 33px 63px);
-  mix-blend-mode: screen;
-}
-
-.foilGhost::before {
-  background:
-    radial-gradient(ellipse 45% 60% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.62), rgba(208, 219, 222, 0.14) 44%, transparent 72%);
-  filter: grayscale(1);
-  mix-blend-mode: screen;
 }
 
 // Stylized sealed-product mockup used when there's no real box
@@ -570,7 +409,6 @@
 @media (prefers-reduced-motion: reduce) {
   .card,
   .cardMedia img,
-  .foilLayer,
   .boxArt,
   .badge,
   .cardName,
@@ -587,12 +425,6 @@
   .card:hover .badge,
   .card:focus-within .badge {
     transform: none;
-  }
-
-  .foilLayer,
-  .card:hover .foilLayer,
-  .card:focus-within .foilLayer {
-    transform: translate(-50%, -50%);
   }
 
   .addBtnDone svg {

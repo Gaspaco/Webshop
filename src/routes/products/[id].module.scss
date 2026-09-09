@@ -1707,6 +1707,184 @@
   .purchaseFoot div:last-child { grid-column: 1 / -1; }
 }
 
+/* ---------- Physical foil interaction for Yu-Gi-Oh singles ---------- */
+
+.productMedia > .foilCard {
+  --foil-x: 50%;
+  --foil-y: 50%;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: min(100%, 23.3rem);
+  height: auto;
+  max-height: min(59vh, 34rem);
+  aspect-ratio: 59 / 86;
+  place-items: stretch;
+  filter: drop-shadow(0 1.25rem 1rem rgba(#000, 0.42));
+  transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transform-style: preserve-3d;
+  transition:
+    filter 240ms ease-out,
+    transform 180ms ease-out;
+  will-change: transform;
+
+  &:hover {
+    filter: drop-shadow(0 1.65rem 1.15rem rgba(#000, 0.58));
+  }
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    filter: none;
+    object-fit: contain;
+    transform: translateZ(1px);
+  }
+}
+
+.detailFoil {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 4.2%;
+  opacity: 0.14;
+  pointer-events: none;
+  transform: translateZ(2px);
+  transition: opacity 180ms ease-out;
+
+  &::before,
+  &::after {
+    position: absolute;
+    content: "";
+  }
+}
+
+.foilCard:hover .detailFoil {
+  opacity: 1;
+}
+
+// Rare reflects only from the silver card name.
+.foilRare::before {
+  top: 6.5%;
+  right: 8%;
+  left: 8%;
+  height: 6%;
+  background: linear-gradient(105deg, transparent 25%, rgba(255, 255, 255, 0.82) 50%, transparent 75%);
+  background-position: calc(100% - var(--foil-x)) center;
+  background-size: 220% 100%;
+  mix-blend-mode: screen;
+}
+
+// Super and Ultra catch light in the artwork window.
+.foilSuper::before,
+.foilUltra::before,
+.foilSecret::before,
+.foilGhost::before {
+  top: 18%;
+  right: 8%;
+  left: 8%;
+  height: 39%;
+  background:
+    radial-gradient(ellipse 45% 58% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.72), rgba(126, 206, 220, 0.16) 38%, transparent 72%),
+    linear-gradient(120deg, rgba(107, 205, 220, 0.08), rgba(224, 156, 211, 0.12) 52%, rgba(232, 211, 128, 0.08));
+  mix-blend-mode: screen;
+}
+
+.foilUltra::after {
+  top: 6.5%;
+  right: 8%;
+  left: 8%;
+  height: 6%;
+  background: linear-gradient(105deg, transparent 24%, rgba(255, 222, 115, 0.78) 50%, transparent 76%);
+  background-position: calc(100% - var(--foil-x)) center;
+  background-size: 220% 100%;
+  mix-blend-mode: screen;
+}
+
+.foilSecret::before {
+  background:
+    repeating-linear-gradient(125deg, transparent 0 20px, rgba(238, 248, 255, 0.24) 21px, transparent 22px 41px),
+    radial-gradient(ellipse 44% 58% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.72), rgba(151, 205, 229, 0.15) 38%, transparent 72%);
+}
+
+.foilPrismatic::before {
+  top: 18%;
+  right: 8%;
+  left: 8%;
+  height: 39%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 23px, rgba(224, 243, 255, 0.18) 24px, transparent 25px 47px),
+    repeating-linear-gradient(0deg, transparent 0 23px, rgba(255, 229, 247, 0.16) 24px, transparent 25px 47px),
+    radial-gradient(ellipse 44% 58% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.68), transparent 72%);
+  mix-blend-mode: screen;
+}
+
+.foilGold::before {
+  inset: 1.8%;
+  border-radius: 2.8%;
+  background: radial-gradient(ellipse 42% 55% at var(--foil-x) var(--foil-y), rgba(255, 230, 151, 0.45), transparent 72%);
+  box-shadow:
+    inset 0 0 0 2px rgba(246, 195, 58, 0.72),
+    inset 0 0 1rem rgba(205, 143, 25, 0.2);
+  mix-blend-mode: screen;
+}
+
+.foilUltimate::before {
+  inset: 6%;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 13px, rgba(255, 229, 177, 0.1) 14px, transparent 15px 28px),
+    radial-gradient(ellipse 42% 55% at var(--foil-x) var(--foil-y), rgba(255, 225, 165, 0.48), transparent 72%);
+  mix-blend-mode: soft-light;
+}
+
+.foilPlatinum::before,
+.foilCollector::before,
+.foilStarlight::before,
+.foilQuarter::before {
+  inset: 1.5%;
+  background:
+    linear-gradient(112deg, transparent 24%, rgba(113, 220, 236, 0.2) 39%, rgba(255, 255, 255, 0.72) 50%, rgba(227, 139, 216, 0.18) 61%, transparent 76%),
+    radial-gradient(ellipse 36% 48% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.38), transparent 72%);
+  background-position: calc(100% - var(--foil-x)) var(--foil-y), center;
+  background-size: 190% 100%, 100% 100%;
+  mix-blend-mode: screen;
+}
+
+.foilCollector::after,
+.foilStarlight::after,
+.foilQuarter::after {
+  inset: 2%;
+  background:
+    radial-gradient(circle at 21% 27%, rgba(255, 255, 255, 0.7) 0 0.35%, transparent 0.8%),
+    radial-gradient(circle at 76% 68%, rgba(255, 255, 255, 0.58) 0 0.3%, transparent 0.75%),
+    repeating-linear-gradient(125deg, transparent 0 27px, rgba(238, 246, 255, 0.1) 28px, transparent 29px 55px);
+  mix-blend-mode: screen;
+}
+
+.foilGhost::before {
+  background: radial-gradient(ellipse 46% 60% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.82), rgba(210, 221, 226, 0.22) 42%, transparent 72%);
+  filter: grayscale(1);
+}
+
+@media (hover: none) {
+  .detailFoil { opacity: 0.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .productMedia > .foilCard {
+    transform: none;
+    transition-duration: 0.01ms;
+  }
+
+  .detailFoil { transition-duration: 0.01ms; }
+}
+
 /* ---------- Buy several printings ---------- */
 
 .bulk {
