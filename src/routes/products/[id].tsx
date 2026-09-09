@@ -16,6 +16,7 @@ import ProductCard, {
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories";
 import { formatPrice, useCart } from "~/lib/cart";
+import { yugiohFoilKind } from "~/lib/yugioh-rarity";
 import styles from "./[id].module.scss";
 
 function isSealedProduct(product: ShopProduct) {
@@ -175,6 +176,37 @@ export default function ProductDetail() {
 
   const displayVariant = () => {
     return selectedVariant() ?? mainVariant();
+  };
+
+  const detailFoilKind = () => {
+    const current = product();
+    if (!current || current.theme !== "yugioh" || isSealedProduct(current)) return;
+    return yugiohFoilKind(variantRarity(displayVariant()) ?? current.rarity);
+  };
+
+  const detailFoilClass = () => {
+    const kind = detailFoilKind();
+    return kind
+      ? styles[`foil${kind[0]!.toUpperCase()}${kind.slice(1)}`]
+      : "";
+  };
+
+  const moveDetailCard = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
+    if (event.pointerType === "touch") return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+    const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
+    event.currentTarget.style.setProperty("--foil-x", `${Math.round(x * 100)}%`);
+    event.currentTarget.style.setProperty("--foil-y", `${Math.round(y * 100)}%`);
+    event.currentTarget.style.setProperty("--tilt-x", `${((0.5 - y) * 5).toFixed(2)}deg`);
+    event.currentTarget.style.setProperty("--tilt-y", `${((x - 0.5) * 6).toFixed(2)}deg`);
+  };
+
+  const resetDetailCard = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
+    event.currentTarget.style.removeProperty("--foil-x");
+    event.currentTarget.style.removeProperty("--foil-y");
+    event.currentTarget.style.removeProperty("--tilt-x");
+    event.currentTarget.style.removeProperty("--tilt-y");
   };
 
   const activeProduct = () => {
@@ -390,12 +422,31 @@ export default function ProductDetail() {
                     when={activeProduct()?.image && !detailImageFailed()}
                     fallback={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
                   >
-                    <img
-                      src={activeProduct()!.image}
-                      alt={item().set ? `${item().name}, ${item().set}` : item().name}
-                      draggable={false}
-                      onError={() => setDetailImageFailed(true)}
-                    />
+                    <Show
+                      when={detailFoilKind()}
+                      fallback={
+                        <img
+                          src={activeProduct()!.image}
+                          alt={item().set ? `${item().name}, ${item().set}` : item().name}
+                          draggable={false}
+                          onError={() => setDetailImageFailed(true)}
+                        />
+                      }
+                    >
+                      <div
+                        class={styles.foilCard}
+                        onPointerMove={moveDetailCard}
+                        onPointerLeave={resetDetailCard}
+                      >
+                        <img
+                          src={activeProduct()!.image}
+                          alt={item().set ? `${item().name}, ${item().set}` : item().name}
+                          draggable={false}
+                          onError={() => setDetailImageFailed(true)}
+                        />
+                        <span class={`${styles.detailFoil} ${detailFoilClass()}`} aria-hidden="true" />
+                      </div>
+                    </Show>
                   </Show>
                 </div>
 
