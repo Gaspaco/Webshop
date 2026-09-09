@@ -165,15 +165,11 @@ export default function ProductCard(props: ProductCardProps) {
     const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
     event.currentTarget.style.setProperty("--foil-x", `${Math.round(x * 100)}%`);
     event.currentTarget.style.setProperty("--foil-y", `${Math.round(y * 100)}%`);
-    event.currentTarget.style.setProperty("--card-shift-x", `${((x - 0.5) * 4).toFixed(2)}px`);
-    event.currentTarget.style.setProperty("--card-shift-y", `${((y - 0.5) * 3).toFixed(2)}px`);
   };
 
   const resetFoil = (event: PointerEvent & { currentTarget: HTMLAnchorElement }) => {
     event.currentTarget.style.removeProperty("--foil-x");
     event.currentTarget.style.removeProperty("--foil-y");
-    event.currentTarget.style.removeProperty("--card-shift-x");
-    event.currentTarget.style.removeProperty("--card-shift-y");
   };
 
   createEffect(() => {
