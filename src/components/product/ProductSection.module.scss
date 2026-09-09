@@ -113,6 +113,10 @@
 }
 
 .cardMedia {
+  --foil-x: 50%;
+  --foil-y: 50%;
+  --card-shift-x: 0px;
+  --card-shift-y: 0px;
   position: relative;
   display: block;
   // 4:5 rather than 3:4, with tighter padding: the product was floating in a
@@ -151,7 +155,212 @@
 .card:hover .cardMedia img,
 .card:focus-within .cardMedia img {
   filter: saturate(1.04) contrast(1.02);
-  transform: scale(1.035);
+  transform: translate(var(--card-shift-x), var(--card-shift-y)) scale(1.025);
+}
+
+.foilMedia {
+  isolation: isolate;
+}
+
+.foilLayer {
+  position: absolute;
+  z-index: 2;
+  top: clamp(0.6rem, 1.6vw, 1rem);
+  bottom: clamp(0.6rem, 1.6vw, 1rem);
+  left: 50%;
+  width: auto;
+  max-width: calc(100% - clamp(1.2rem, 3.2vw, 2rem));
+  aspect-ratio: 59 / 86;
+  overflow: hidden;
+  border-radius: 3.5%;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(calc(-50% + var(--card-shift-x)), var(--card-shift-y));
+  transition: opacity 240ms cubic-bezier(0.25, 1, 0.5, 1),
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.foilLayer::before,
+.foilLayer::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.card:hover .foilLayer,
+.card:focus-within .foilLayer {
+  opacity: 0.72;
+}
+
+// Rare: silver lettering only, represented by a narrow name-line glint.
+.foilRare::before {
+  top: 7%;
+  right: 8%;
+  left: 8%;
+  height: 7%;
+  background: linear-gradient(
+    105deg,
+    transparent 8%,
+    rgba(255, 255, 255, 0.16) 35%,
+    rgba(235, 245, 255, 0.94) 49%,
+    rgba(177, 192, 207, 0.35) 62%,
+    transparent 88%
+  );
+  background-position: var(--foil-x) center;
+  background-size: 180% 100%;
+  mix-blend-mode: screen;
+}
+
+// Super: holographic artwork, leaving the name and border untouched.
+.foilSuper::before,
+.foilUltra::before,
+.foilSecret::before {
+  top: 18%;
+  right: 8%;
+  left: 8%;
+  height: 39%;
+  background:
+    radial-gradient(circle at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.78), transparent 18%),
+    linear-gradient(125deg, rgba(47, 211, 255, 0.22), rgba(235, 113, 255, 0.34) 45%, rgba(255, 231, 105, 0.25) 72%, transparent);
+  mix-blend-mode: color-dodge;
+}
+
+.foilUltra::after {
+  top: 7%;
+  right: 8%;
+  left: 8%;
+  height: 7%;
+  background: linear-gradient(105deg, transparent 5%, #9b6a08 28%, #fff1a8 50%, #c58a16 72%, transparent 95%);
+  background-position: var(--foil-x) center;
+  background-size: 170% 100%;
+  mix-blend-mode: screen;
+}
+
+.foilSecret::before {
+  background:
+    linear-gradient(118deg, transparent 4%, rgba(255, 255, 255, 0.7) 12%, transparent 20% 39%, rgba(146, 224, 255, 0.65) 46%, transparent 54% 72%, rgba(255, 163, 239, 0.58) 80%, transparent 90%),
+    radial-gradient(circle at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.88), transparent 20%);
+  background-position: calc(var(--foil-x) / 2) var(--foil-y);
+  background-size: 150% 150%;
+}
+
+.foilSecret::after,
+.foilPrismatic::after,
+.foilPlatinum::after,
+.foilStarlight::after,
+.foilQuarter::after {
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 24%, rgba(255, 255, 255, 0.88) 0 0.7%, transparent 1.5%),
+    radial-gradient(circle at 74% 16%, rgba(174, 229, 255, 0.9) 0 0.6%, transparent 1.4%),
+    radial-gradient(circle at 66% 69%, rgba(255, 199, 244, 0.88) 0 0.8%, transparent 1.6%),
+    radial-gradient(circle at 31% 82%, rgba(255, 244, 170, 0.8) 0 0.6%, transparent 1.3%);
+  mix-blend-mode: screen;
+}
+
+// Prismatic: perpendicular foil bands over the artwork and name.
+.foilPrismatic::before {
+  inset: 6% 7%;
+  background:
+    linear-gradient(90deg, transparent 10%, rgba(116, 219, 255, 0.38) 20%, transparent 30% 60%, rgba(255, 126, 232, 0.34) 70%, transparent 80%),
+    linear-gradient(0deg, transparent 8%, rgba(255, 239, 143, 0.38) 18%, transparent 28% 58%, rgba(156, 255, 221, 0.34) 68%, transparent 78%),
+    radial-gradient(circle at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.72), transparent 24%);
+  background-position: var(--foil-x) var(--foil-y);
+  background-size: 140% 140%;
+  mix-blend-mode: color-dodge;
+}
+
+.foilPlatinum::before {
+  inset: 2%;
+  background:
+    linear-gradient(122deg, transparent 8%, rgba(225, 241, 255, 0.62) 22%, transparent 35% 61%, rgba(255, 255, 255, 0.52) 74%, transparent 88%),
+    radial-gradient(circle at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.78), rgba(186, 211, 232, 0.12) 28%, transparent 48%);
+  background-size: 145% 145%;
+  box-shadow: inset 0 0 0 2px rgba(230, 244, 255, 0.44);
+  mix-blend-mode: screen;
+}
+
+// Premium Gold and Gold Rare: warm metallic outline and symbol-like points.
+.foilGold::before {
+  inset: 1.5%;
+  border-radius: 2.5%;
+  background:
+    radial-gradient(circle at 13% 11%, rgba(255, 232, 132, 0.9), transparent 5%),
+    radial-gradient(circle at 87% 11%, rgba(255, 207, 78, 0.88), transparent 5%),
+    radial-gradient(circle at var(--foil-x) var(--foil-y), rgba(255, 244, 185, 0.55), transparent 28%);
+  box-shadow:
+    inset 0 0 0 3px rgba(228, 165, 31, 0.78),
+    inset 0 0 12px rgba(255, 205, 72, 0.32);
+  mix-blend-mode: screen;
+}
+
+.foilGold::after {
+  top: 18%;
+  right: 8%;
+  left: 8%;
+  height: 39%;
+  background: linear-gradient(125deg, rgba(177, 107, 5, 0.2), rgba(255, 239, 155, 0.58) 48%, rgba(201, 126, 12, 0.2));
+  mix-blend-mode: color-dodge;
+}
+
+// Ultimate: sculpted, warm embossing concentrated on art and borders.
+.foilUltimate::before {
+  inset: 2%;
+  background:
+    radial-gradient(ellipse at var(--foil-x) var(--foil-y), rgba(255, 226, 151, 0.58), transparent 25%),
+    conic-gradient(from 35deg at 50% 38%, rgba(122, 77, 20, 0.2), rgba(255, 231, 164, 0.46), rgba(110, 67, 16, 0.18), rgba(255, 231, 164, 0.42), rgba(122, 77, 20, 0.2));
+  box-shadow: inset 0 0 0 1px rgba(255, 221, 153, 0.5), inset 0 0 8px rgba(72, 38, 6, 0.5);
+  mix-blend-mode: soft-light;
+}
+
+// Collector's: full-card embossed rainbow pattern.
+.foilCollector::before {
+  inset: 1.5%;
+  background:
+    linear-gradient(35deg, transparent 6%, rgba(93, 222, 255, 0.44) 20%, transparent 34% 56%, rgba(255, 112, 230, 0.42) 70%, transparent 86%),
+    linear-gradient(145deg, rgba(255, 235, 135, 0.18), transparent 35%, rgba(142, 255, 203, 0.3) 62%, transparent 84%),
+    radial-gradient(circle at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.62), transparent 22%);
+  background-size: 135% 135%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), inset 0 0 10px rgba(159, 117, 255, 0.25);
+  mix-blend-mode: color-dodge;
+}
+
+.foilStarlight::before,
+.foilQuarter::before {
+  inset: 1%;
+  background:
+    linear-gradient(115deg, transparent 5%, rgba(93, 218, 255, 0.55) 18%, transparent 31% 46%, rgba(255, 116, 226, 0.5) 58%, transparent 70% 82%, rgba(255, 238, 126, 0.48) 91%),
+    linear-gradient(28deg, rgba(255, 255, 255, 0.16), transparent 30%, rgba(137, 255, 216, 0.36) 52%, transparent 74%),
+    radial-gradient(circle at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.92), transparent 18%);
+  background-position: var(--foil-x) var(--foil-y);
+  background-size: 145% 145%;
+  box-shadow: inset 0 0 0 1px rgba(213, 237, 255, 0.48);
+  mix-blend-mode: color-dodge;
+}
+
+.foilQuarter::after {
+  background:
+    radial-gradient(circle at 15% 18%, #fff 0 0.8%, transparent 1% 4%, rgba(155, 225, 255, 0.35) 4.2%, transparent 7%),
+    radial-gradient(circle at 76% 23%, #fff 0 0.7%, transparent 1% 3.5%, rgba(255, 184, 240, 0.32) 3.8%, transparent 6%),
+    radial-gradient(circle at 53% 54%, #fff 0 0.9%, transparent 1.2% 4%, rgba(255, 240, 153, 0.3) 4.3%, transparent 7%),
+    radial-gradient(circle at 29% 77%, #fff 0 0.7%, transparent 1% 3.5%, rgba(164, 255, 220, 0.3) 3.8%, transparent 6%);
+  mix-blend-mode: screen;
+}
+
+.foilGhost::before {
+  inset: 8%;
+  background:
+    radial-gradient(ellipse at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.8), rgba(202, 218, 226, 0.25) 24%, transparent 48%),
+    linear-gradient(128deg, transparent 18%, rgba(235, 245, 248, 0.45) 46%, transparent 70%);
+  filter: grayscale(1);
+  mix-blend-mode: screen;
+}
+
+.card:hover .foilStarlight,
+.card:focus-within .foilStarlight,
+.card:hover .foilQuarter,
+.card:focus-within .foilQuarter {
+  opacity: 0.86;
 }
 
 // Stylized sealed-product mockup used when there's no real box
@@ -228,6 +437,7 @@
 
 .badge {
   position: absolute;
+  z-index: 3;
   top: 0.75rem;
   left: 0.75rem;
   padding: 0.25rem 0.625rem;
@@ -408,6 +618,7 @@
 @media (prefers-reduced-motion: reduce) {
   .card,
   .cardMedia img,
+  .foilLayer,
   .boxArt,
   .badge,
   .cardName,
@@ -424,6 +635,12 @@
   .card:hover .badge,
   .card:focus-within .badge {
     transform: none;
+  }
+
+  .foilLayer,
+  .card:hover .foilLayer,
+  .card:focus-within .foilLayer {
+    transform: translateX(-50%);
   }
 
   .addBtnDone svg {
