@@ -79,11 +79,19 @@ export async function POST(event: APIEvent) {
 
   try {
     const input = importSchema.parse(await event.request.json());
-    const existingSkus = await db
-      .select({ sku: productVariants.sku })
+    const existingVariants = await db
+      .select({
+        id: productVariants.id,
+        sku: productVariants.sku,
+        productId: productVariants.productId,
+        stock: productVariants.stock,
+        isDefault: productVariants.isDefault,
+        metadata: products.metadata,
+      })
       .from(productVariants)
+      .innerJoin(products, eq(products.id, productVariants.productId))
       .where(inArray(productVariants.sku, input.rows.map(row => row.sku)));
-    const existingSkuSet = new Set(existingSkus.map(row => row.sku));
+    const existingBySku = new Map(existingVariants.map(variant => [variant.sku, variant]));
 
     const [job] = await db
       .insert(importJobs)
@@ -101,15 +109,61 @@ export async function POST(event: APIEvent) {
 
     const errors: Array<{ row: number; message: string }> = [];
     let processedRows = 0;
+    let createdRows = 0;
+    let updatedRows = 0;
 
     for (const [index, row] of input.rows.entries()) {
-      if (existingSkuSet.has(row.sku)) {
-        errors.push({ row: index + 2, message: `SKU ${row.sku} already exists.` });
-        continue;
-      }
-
       try {
-        await db.transaction(async tx => {
+        const outcome = await db.transaction(async tx => {
+          const existing = existingBySku.get(row.sku);
+          if (existing) {
+            const productChanges: Partial<typeof products.$inferInsert> = {
+              name: row.name,
+              game: row.game,
+              productType: row.productType,
+              metadata: {
+                ...(existing.metadata ?? {}),
+                set: row.set || null,
+                importJobId: job.id,
+                importFileName: input.fileName,
+              },
+            };
+            // A blank spreadsheet image means “keep the current image.” Only
+            // the default variant is allowed to replace the product cover.
+            if (row.image && existing.isDefault) productChanges.imageUrls = [row.image];
+
+            await tx
+              .update(products)
+              .set(productChanges)
+              .where(eq(products.id, existing.productId));
+            await tx
+              .update(productVariants)
+              .set({
+                priceCents: row.priceCents,
+                stock: row.stock,
+                condition:
+                  row.productType === "single"
+                    ? "Near Mint"
+                    : row.productType === "sealed"
+                      ? "Sealed"
+                      : null,
+                ...(row.image ? { imageUrl: row.image } : {}),
+              })
+              .where(eq(productVariants.id, existing.id));
+
+            if (row.stock !== existing.stock) {
+              await tx.insert(inventoryMovements).values({
+                variantId: existing.id,
+                quantity: row.stock - existing.stock,
+                reason: "import",
+                reference: job.id,
+                note: "Existing product updated from CSV",
+                createdBy: guard.session!.user.id,
+              });
+            }
+            return "updated" as const;
+          }
+
           const slugBase = toSlug(row.name);
           const slug = `${slugBase}-${crypto.randomUUID().slice(0, 8)}`;
           const [product] = await tx
@@ -158,7 +212,10 @@ export async function POST(event: APIEvent) {
               createdBy: guard.session!.user.id,
             });
           }
+          return "created" as const;
         });
+        if (outcome === "created") createdRows += 1;
+        else updatedRows += 1;
         processedRows += 1;
       } catch (error) {
         const duplicate = (error as { code?: string }).code === "23505";
@@ -186,13 +243,20 @@ export async function POST(event: APIEvent) {
       action: "catalogue.imported",
       entityType: "import",
       entityId: job.id,
-      summary: `${processedRows} products imported from ${input.fileName}.`,
-      metadata: { failedRows: errors.length, totalRows: input.rows.length },
+      summary: `${createdRows} products created and ${updatedRows} updated from ${input.fileName}.`,
+      metadata: {
+        createdRows,
+        updatedRows,
+        failedRows: errors.length,
+        totalRows: input.rows.length,
+      },
     });
 
     return apiJson({
       jobId: job.id,
       processedRows,
+      createdRows,
+      updatedRows,
       failedRows: errors.length,
       errors,
       stagedAsDrafts: true,

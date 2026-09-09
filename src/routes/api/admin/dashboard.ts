@@ -71,8 +71,7 @@ export async function GET(event: APIEvent) {
         desc(products.updatedAt),
         desc(productVariants.isDefault),
         asc(productVariants.createdAt),
-      )
-      .limit(250),
+      ),
     db
       .select({
         id: orders.id,
