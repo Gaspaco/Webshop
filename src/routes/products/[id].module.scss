@@ -1725,8 +1725,13 @@
   --shadow-y: 20px;
   --foil-x: 50%;
   --foil-y: 50%;
-  --foil-strength: 0;
+  --foil-rest: 0;
+  --foil-active: 0;
   --foil-spectrum: linear-gradient(125deg, transparent, transparent);
+  --foil-position: var(--foil-x) var(--foil-y);
+  --foil-size: 145% 145%;
+  --foil-repeat: no-repeat;
+  --foil-blend: normal;
   position: relative;
   z-index: 2;
   display: grid;
@@ -1771,9 +1776,9 @@
     inset: 0;
     border-radius: inherit;
     content: "";
-    opacity: var(--foil-strength);
+    opacity: var(--foil-rest);
     pointer-events: none;
-    transition: opacity 260ms ease-out;
+    transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &[data-rarity-effect]::before {
@@ -1784,44 +1789,74 @@
         rgba(#dff8f1, 0.2) 9%,
         transparent 31%
       );
-    mix-blend-mode: screen;
+    mix-blend-mode: plus-lighter;
   }
 
   &[data-rarity-effect]::after {
     z-index: 3;
     background: var(--foil-spectrum);
-    background-position: var(--foil-x) var(--foil-y);
-    background-size: 145% 145%;
+    background-position: var(--foil-position);
+    background-repeat: var(--foil-repeat);
+    background-size: var(--foil-size);
+    background-blend-mode: var(--foil-blend);
     mix-blend-mode: color-dodge;
   }
 
+  &[data-rarity-effect]:hover::before,
+  &[data-rarity-effect]:hover::after {
+    opacity: var(--foil-active);
+    transition-duration: 90ms;
+  }
+
   &[data-rarity-effect="rare"] {
-    --foil-strength: 0.09;
+    --foil-rest: 0.025;
+    --foil-active: 0.11;
     --foil-spectrum: linear-gradient(118deg, transparent 25%, #d9ecf0 48%, transparent 70%);
   }
 
   &[data-rarity-effect="super"] {
-    --foil-strength: 0.12;
+    --foil-rest: 0.025;
+    --foil-active: 0.15;
     --foil-spectrum: linear-gradient(118deg, #7dd3fc 8%, transparent 34%, #f0abfc 54%, transparent 78%);
   }
 
   &[data-rarity-effect="ultra"] {
-    --foil-strength: 0.13;
+    --foil-rest: 0.03;
+    --foil-active: 0.17;
     --foil-spectrum: linear-gradient(120deg, transparent 18%, #f7d774 43%, #fff4bd 52%, transparent 76%);
   }
 
   &[data-rarity-effect="secret"] {
-    --foil-strength: 0.15;
-    --foil-spectrum: linear-gradient(132deg, #74d7ff 5%, transparent 28%, #f8b4ff 48%, #fff5ad 61%, transparent 84%);
+    --foil-rest: 0.03;
+    --foil-active: 0.34;
+    --foil-spectrum:
+      linear-gradient(transparent 40%, rgba(#fff, 0.68) 49%, transparent 59%),
+      linear-gradient(90deg, transparent 42%, rgba(#fff, 0.52) 50%, transparent 60%),
+      radial-gradient(circle, rgba(#fff, 0.5) 0 18%, rgba(#050505, 0.38) 24% 52%, transparent 58%),
+      linear-gradient(132deg, #ff9a62 0%, #f8ef78 17%, #72e8bb 34%, #72cff8 51%, #bf9afa 68%, #f89fd0 84%, #ff9a62 100%);
+    --foil-position:
+      0 var(--foil-y),
+      var(--foil-x) 0,
+      0 0,
+      var(--foil-x) var(--foil-y);
+    --foil-size:
+      100% 5.25rem,
+      5.5rem 100%,
+      3px 3px,
+      175% 175%;
+    --foil-repeat: repeat-y, repeat-x, repeat, no-repeat;
+    --foil-blend: screen, screen, overlay, color;
   }
 
   &[data-rarity-effect="ultimate"] {
-    --foil-strength: 0.14;
+    --foil-rest: 0.03;
+    --foil-active: 0.2;
     --foil-spectrum: conic-gradient(from 210deg at var(--foil-x) var(--foil-y), #6b4d12, #f7dc8c, transparent 28%, #b9892f, #fff0ae, transparent 72%);
   }
 
   &[data-rarity-effect="ghost"] {
-    --foil-strength: 0.17;
+    --foil-rest: 0.04;
+    --foil-active: 0.24;
     --foil-spectrum: linear-gradient(108deg, #fff 4%, #a9c2cf 28%, transparent 47%, #e6edf0 65%, transparent 88%);
     filter:
       grayscale(0.12)
@@ -1829,18 +1864,37 @@
   }
 
   &[data-rarity-effect="collectors"] {
-    --foil-strength: 0.14;
+    --foil-rest: 0.03;
+    --foil-active: 0.21;
     --foil-spectrum: conic-gradient(from 35deg at var(--foil-x) var(--foil-y), transparent, #dcc7a1, #fff 20%, transparent 37%, #b8d8d5 58%, transparent 78%);
   }
 
   &[data-rarity-effect="gold"] {
-    --foil-strength: 0.16;
+    --foil-rest: 0.04;
+    --foil-active: 0.23;
     --foil-spectrum: linear-gradient(115deg, #725012 2%, #f4cb61 32%, #fff1b0 49%, #b77b12 68%, transparent 92%);
   }
 
   &[data-rarity-effect="prismatic"] {
-    --foil-strength: 0.18;
-    --foil-spectrum: conic-gradient(from 120deg at var(--foil-x) var(--foil-y), #7dd3fc, #c4b5fd, #f9a8d4, #fde68a, #86efac, #7dd3fc);
+    --foil-rest: 0.035;
+    --foil-active: 0.38;
+    --foil-spectrum:
+      linear-gradient(35deg, transparent 36%, rgba(#fff, 0.72) 49%, transparent 61%),
+      linear-gradient(125deg, transparent 38%, rgba(#fff, 0.55) 50%, transparent 62%),
+      radial-gradient(circle, rgba(#fff, 0.54) 0 16%, rgba(#060606, 0.4) 22% 50%, transparent 57%),
+      conic-gradient(from 120deg at var(--foil-x) var(--foil-y), #7dd3fc, #c4b5fd, #f9a8d4, #fde68a, #86efac, #7dd3fc);
+    --foil-position:
+      var(--foil-x) var(--foil-y),
+      var(--foil-x) var(--foil-y),
+      0 0,
+      var(--foil-x) var(--foil-y);
+    --foil-size:
+      6rem 6rem,
+      6rem 6rem,
+      3px 3px,
+      185% 185%;
+    --foil-repeat: repeat, repeat, repeat, no-repeat;
+    --foil-blend: screen, screen, overlay, color;
   }
 }
 
