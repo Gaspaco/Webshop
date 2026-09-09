@@ -1011,85 +1011,133 @@
 }
 
 .productLoading {
-  position: fixed;
-  z-index: $z-modal - 1;
-  inset: $header-height 0 0;
-  display: grid;
-  grid-template-rows: 1fr auto auto 1fr;
-  align-items: center;
-  justify-items: center;
-  padding: clamp(2rem, 6vw, 5rem);
+  min-height: calc(100dvh - #{$header-height});
+  padding-bottom: clamp(3rem, 6vh, 5rem);
+  background: $background;
+}
+
+.loadingWide {
+  width: min(100rem, calc(100% - #{$container-padding} * 2));
+  margin-inline: auto;
+}
+
+/* One shimmer for every placeholder block. */
+.shimmer {
+  display: block;
+  border-radius: $radius-md;
   background:
-    radial-gradient(circle at 50% 44%, rgba($primary, 0.08), transparent 34%),
-    #0a0d0b;
-  color: $white;
+    linear-gradient(
+      90deg,
+      rgba($white, 0.04) 0%,
+      rgba($white, 0.08) 40%,
+      rgba($white, 0.04) 80%
+    )
+    0 0 / 300% 100%;
+  animation: product-shimmer 1.5s ease-in-out infinite;
 }
 
-.loadingMark {
-  align-self: end;
-  margin-bottom: 1.5rem;
-  color: $gray-400;
-  font-family: $font-display;
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-
-  strong {
-    color: $primary-light;
-    font-weight: inherit;
-  }
+@keyframes product-shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -150% 0; }
 }
 
-.loadingCopy {
-  text-align: center;
+.loadingCrumb {
+  display: flex;
+  padding: clamp(1.25rem, 2.5vw, 2rem) 0 1.5rem;
+  gap: 0.75rem;
 
   span {
-    color: $gray-500;
-    font-size: 0.65rem;
-    font-weight: 750;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
+    height: 0.75rem;
+    border-radius: $radius-sm;
 
-  p {
-    margin-top: 0.55rem;
-    color: $white;
-    font-family: $font-display;
-    font-size: clamp(1.35rem, 3vw, 2rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
+    &:nth-child(1) { width: 3rem; }
+    &:nth-child(2) { width: 4.5rem; }
+    &:nth-child(3) { width: 7rem; }
   }
 }
 
-.loadingTrack {
-  position: relative;
-  width: min(16rem, 62vw);
-  height: 1px;
-  margin-top: 1.5rem;
+.loadingHero {
+  display: grid;
+  align-items: start;
+  grid-template-columns: minmax(0, 1.55fr) minmax(20rem, 0.9fr);
+  gap: clamp(1.5rem, 3vw, 3rem);
+}
+
+.loadingMedia {
+  border-radius: $radius-lg;
+  background: $surface;
   overflow: hidden;
-  background: rgba($white, 0.1);
+}
+
+.loadingMediaHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
 
   span {
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 42%;
-    background: $primary;
-    animation: product-loading 1.05s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+    height: 0.75rem;
+
+    &:first-child { width: 5rem; }
+    &:last-child { width: 6rem; }
   }
 }
 
-@keyframes product-loading {
-  0% { transform: translateX(-110%); }
-  55% { transform: translateX(110%); }
-  100% { transform: translateX(350%); }
+.loadingArt {
+  display: grid;
+  aspect-ratio: 4 / 3.4;
+  padding: 2rem;
+  place-items: center;
+
+  span {
+    width: min(60%, 17rem);
+    height: 100%;
+    border-radius: $radius-lg;
+  }
+}
+
+.loadingPanel {
+  display: flex;
+  flex-direction: column;
+  padding-top: 0.5rem;
+  gap: 0.75rem;
+}
+
+.loadingKicker { width: 8rem; height: 0.75rem; }
+.loadingTitle { width: 80%; height: 2.5rem; }
+.loadingPrice { width: 9rem; height: 2rem; margin-top: 0.5rem; }
+.loadingLine { width: 100%; height: 0.75rem; }
+.loadingLineShort { width: 65%; height: 0.75rem; }
+.loadingSelect { width: 100%; height: 3rem; margin-top: 0.75rem; }
+
+.loadingBuy {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 0.75rem;
+
+  span { height: 3.25rem; }
+}
+
+.loadingSpecs {
+  display: grid;
+  margin-top: 1.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+
+  span { height: 2.5rem; }
+}
+
+@media (max-width: $bp-lg) {
+  .loadingHero { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: $bp-md) {
+  .loadingWide { width: calc(100% - 2rem); }
+  .loadingTitle { height: 2rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loadingTrack span {
-    width: 100%;
-    animation: none;
-    opacity: 0.65;
-  }
+  .shimmer { animation: none; }
 }
 
 @keyframes product-arrive {
@@ -1789,13 +1837,13 @@
   .purchaseFoot div:last-child { grid-column: 1 / -1; }
 }
 
-/* ---------- Physical foil interaction for Yu-Gi-Oh singles ---------- */
+/* ---------- Physical card interaction ---------- */
 
-.productMedia > .foilCard {
-  --foil-x: 50%;
-  --foil-y: 50%;
+.productMedia > .interactiveCard {
   --tilt-x: 0deg;
   --tilt-y: 0deg;
+  --shadow-x: 0px;
+  --shadow-y: 20px;
   position: relative;
   z-index: 2;
   display: grid;
@@ -1804,16 +1852,17 @@
   max-height: none;
   aspect-ratio: 59 / 86;
   place-items: stretch;
-  filter: drop-shadow(0 1.25rem 1rem rgba(#000, 0.42));
-  transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  filter: drop-shadow(var(--shadow-x) var(--shadow-y) 18px rgba(#000, 0.48));
+  transform: perspective(950px) translateY(0) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
   transform-style: preserve-3d;
   transition:
-    filter 240ms ease-out,
-    transform 180ms ease-out;
+    filter 220ms ease-out,
+    transform 170ms ease-out;
   will-change: transform;
 
   &:hover {
-    filter: drop-shadow(0 1.65rem 1.15rem rgba(#000, 0.58));
+    filter: drop-shadow(var(--shadow-x) var(--shadow-y) 22px rgba(#000, 0.6));
+    transform: perspective(950px) translateY(-5px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
   }
 
   img {
@@ -1829,142 +1878,12 @@
   }
 }
 
-.detailFoil {
-  position: absolute;
-  z-index: 3;
-  inset: 0;
-  overflow: hidden;
-  border-radius: 4.2%;
-  opacity: 0.14;
-  pointer-events: none;
-  transform: translateZ(2px);
-  transition: opacity 180ms ease-out;
-
-  &::before,
-  &::after {
-    position: absolute;
-    content: "";
-  }
-}
-
-.foilCard:hover .detailFoil {
-  opacity: 1;
-}
-
-// Rare reflects only from the silver card name.
-.foilRare::before {
-  top: 6.5%;
-  right: 8%;
-  left: 8%;
-  height: 6%;
-  background: linear-gradient(105deg, transparent 25%, rgba(255, 255, 255, 0.82) 50%, transparent 75%);
-  background-position: calc(100% - var(--foil-x)) center;
-  background-size: 220% 100%;
-  mix-blend-mode: screen;
-}
-
-// Super and Ultra catch light in the artwork window.
-.foilSuper::before,
-.foilUltra::before,
-.foilSecret::before,
-.foilGhost::before {
-  top: 18%;
-  right: 8%;
-  left: 8%;
-  height: 39%;
-  background:
-    radial-gradient(ellipse 45% 58% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.72), rgba(126, 206, 220, 0.16) 38%, transparent 72%),
-    linear-gradient(120deg, rgba(107, 205, 220, 0.08), rgba(224, 156, 211, 0.12) 52%, rgba(232, 211, 128, 0.08));
-  mix-blend-mode: screen;
-}
-
-.foilUltra::after {
-  top: 6.5%;
-  right: 8%;
-  left: 8%;
-  height: 6%;
-  background: linear-gradient(105deg, transparent 24%, rgba(255, 222, 115, 0.78) 50%, transparent 76%);
-  background-position: calc(100% - var(--foil-x)) center;
-  background-size: 220% 100%;
-  mix-blend-mode: screen;
-}
-
-.foilSecret::before {
-  background:
-    repeating-linear-gradient(125deg, transparent 0 20px, rgba(238, 248, 255, 0.24) 21px, transparent 22px 41px),
-    radial-gradient(ellipse 44% 58% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.72), rgba(151, 205, 229, 0.15) 38%, transparent 72%);
-}
-
-.foilPrismatic::before {
-  top: 18%;
-  right: 8%;
-  left: 8%;
-  height: 39%;
-  background:
-    repeating-linear-gradient(90deg, transparent 0 23px, rgba(224, 243, 255, 0.18) 24px, transparent 25px 47px),
-    repeating-linear-gradient(0deg, transparent 0 23px, rgba(255, 229, 247, 0.16) 24px, transparent 25px 47px),
-    radial-gradient(ellipse 44% 58% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.68), transparent 72%);
-  mix-blend-mode: screen;
-}
-
-.foilGold::before {
-  inset: 1.8%;
-  border-radius: 2.8%;
-  background: radial-gradient(ellipse 42% 55% at var(--foil-x) var(--foil-y), rgba(255, 230, 151, 0.45), transparent 72%);
-  box-shadow:
-    inset 0 0 0 2px rgba(246, 195, 58, 0.72),
-    inset 0 0 1rem rgba(205, 143, 25, 0.2);
-  mix-blend-mode: screen;
-}
-
-.foilUltimate::before {
-  inset: 6%;
-  background:
-    repeating-linear-gradient(135deg, transparent 0 13px, rgba(255, 229, 177, 0.1) 14px, transparent 15px 28px),
-    radial-gradient(ellipse 42% 55% at var(--foil-x) var(--foil-y), rgba(255, 225, 165, 0.48), transparent 72%);
-  mix-blend-mode: soft-light;
-}
-
-.foilPlatinum::before,
-.foilCollector::before,
-.foilStarlight::before,
-.foilQuarter::before {
-  inset: 1.5%;
-  background:
-    linear-gradient(112deg, transparent 24%, rgba(113, 220, 236, 0.2) 39%, rgba(255, 255, 255, 0.72) 50%, rgba(227, 139, 216, 0.18) 61%, transparent 76%),
-    radial-gradient(ellipse 36% 48% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.38), transparent 72%);
-  background-position: calc(100% - var(--foil-x)) var(--foil-y), center;
-  background-size: 190% 100%, 100% 100%;
-  mix-blend-mode: screen;
-}
-
-.foilCollector::after,
-.foilStarlight::after,
-.foilQuarter::after {
-  inset: 2%;
-  background:
-    radial-gradient(circle at 21% 27%, rgba(255, 255, 255, 0.7) 0 0.35%, transparent 0.8%),
-    radial-gradient(circle at 76% 68%, rgba(255, 255, 255, 0.58) 0 0.3%, transparent 0.75%),
-    repeating-linear-gradient(125deg, transparent 0 27px, rgba(238, 246, 255, 0.1) 28px, transparent 29px 55px);
-  mix-blend-mode: screen;
-}
-
-.foilGhost::before {
-  background: radial-gradient(ellipse 46% 60% at var(--foil-x) var(--foil-y), rgba(255, 255, 255, 0.82), rgba(210, 221, 226, 0.22) 42%, transparent 72%);
-  filter: grayscale(1);
-}
-
-@media (hover: none) {
-  .detailFoil { opacity: 0.5; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .productMedia > .foilCard {
+  .productMedia > .interactiveCard,
+  .productMedia > .interactiveCard:hover {
     transform: none;
     transition-duration: 0.01ms;
   }
-
-  .detailFoil { transition-duration: 0.01ms; }
 }
 
 /* ---------- Buy several printings ---------- */
