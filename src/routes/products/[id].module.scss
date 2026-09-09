@@ -2,12 +2,12 @@
 
 .page {
   min-height: calc(100dvh - $header-height);
-  padding: 1rem 0.5rem clamp(4rem, 8vh, 7rem);
+  padding: 1rem 0 clamp(4rem, 8vh, 7rem);
   background: $background;
 }
 
 .wide {
-  width: min(112rem, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - #{$container-padding} * 2));
   margin-inline: auto;
 }
 
@@ -1010,136 +1010,6 @@
   font-weight: 800;
 }
 
-.productLoading {
-  min-height: calc(100dvh - #{$header-height});
-  padding-bottom: clamp(3rem, 6vh, 5rem);
-  background: $background;
-}
-
-.loadingWide {
-  width: min(100rem, calc(100% - #{$container-padding} * 2));
-  margin-inline: auto;
-}
-
-/* One shimmer for every placeholder block. */
-.shimmer {
-  display: block;
-  border-radius: $radius-md;
-  background:
-    linear-gradient(
-      90deg,
-      rgba($white, 0.04) 0%,
-      rgba($white, 0.08) 40%,
-      rgba($white, 0.04) 80%
-    )
-    0 0 / 300% 100%;
-  animation: product-shimmer 1.5s ease-in-out infinite;
-}
-
-@keyframes product-shimmer {
-  from { background-position: 150% 0; }
-  to { background-position: -150% 0; }
-}
-
-.loadingCrumb {
-  display: flex;
-  padding: clamp(1.25rem, 2.5vw, 2rem) 0 1.5rem;
-  gap: 0.75rem;
-
-  span {
-    height: 0.75rem;
-    border-radius: $radius-sm;
-
-    &:nth-child(1) { width: 3rem; }
-    &:nth-child(2) { width: 4.5rem; }
-    &:nth-child(3) { width: 7rem; }
-  }
-}
-
-.loadingHero {
-  display: grid;
-  align-items: start;
-  grid-template-columns: minmax(0, 1.55fr) minmax(20rem, 0.9fr);
-  gap: clamp(1.5rem, 3vw, 3rem);
-}
-
-.loadingMedia {
-  border-radius: $radius-lg;
-  background: $surface;
-  overflow: hidden;
-}
-
-.loadingMediaHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-
-  span {
-    height: 0.75rem;
-
-    &:first-child { width: 5rem; }
-    &:last-child { width: 6rem; }
-  }
-}
-
-.loadingArt {
-  display: grid;
-  aspect-ratio: 4 / 3.4;
-  padding: 2rem;
-  place-items: center;
-
-  span {
-    width: min(60%, 17rem);
-    height: 100%;
-    border-radius: $radius-lg;
-  }
-}
-
-.loadingPanel {
-  display: flex;
-  flex-direction: column;
-  padding-top: 0.5rem;
-  gap: 0.75rem;
-}
-
-.loadingKicker { width: 8rem; height: 0.75rem; }
-.loadingTitle { width: 80%; height: 2.5rem; }
-.loadingPrice { width: 9rem; height: 2rem; margin-top: 0.5rem; }
-.loadingLine { width: 100%; height: 0.75rem; }
-.loadingLineShort { width: 65%; height: 0.75rem; }
-.loadingSelect { width: 100%; height: 3rem; margin-top: 0.75rem; }
-
-.loadingBuy {
-  display: grid;
-  grid-template-columns: 7rem minmax(0, 1fr);
-  gap: 0.75rem;
-
-  span { height: 3.25rem; }
-}
-
-.loadingSpecs {
-  display: grid;
-  margin-top: 1.5rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
-
-  span { height: 2.5rem; }
-}
-
-@media (max-width: $bp-lg) {
-  .loadingHero { grid-template-columns: minmax(0, 1fr); }
-}
-
-@media (max-width: $bp-md) {
-  .loadingWide { width: calc(100% - 2rem); }
-  .loadingTitle { height: 2rem; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .shimmer { animation: none; }
-}
-
 @keyframes product-arrive {
   from {
     opacity: 0;
@@ -2047,4 +1917,349 @@
   color: $primary-light;
   font-size: 0.78125rem;
   font-weight: 650;
+}
+
+/* ---------- Final product-page composition ---------- */
+
+.page {
+  padding-top: 0.75rem;
+  background:
+    radial-gradient(circle at 22% 18%, rgba($primary, 0.035), transparent 28rem),
+    #0c0e0d;
+}
+
+.wide {
+  width: min(92rem, calc(100% - #{$container-padding} * 2));
+}
+
+.breadcrumb {
+  min-height: 2.5rem;
+  margin-bottom: 0.85rem;
+  padding-inline: 0.25rem;
+}
+
+.hero,
+.sealedHero,
+.variableHero {
+  display: grid;
+  height: auto;
+  min-height: min(45rem, calc(100svh - #{$header-height} - 5rem));
+  grid-template-columns: minmax(0, 1.12fr) minmax(24rem, 0.88fr);
+  gap: clamp(0.85rem, 1.5vw, 1.35rem);
+  margin-bottom: clamp(3.5rem, 8vh, 6rem);
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.mediaPanel {
+  position: relative;
+  min-height: 42rem;
+  border: 0;
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(circle at 50% 48%, rgba($primary, 0.09), transparent 31%),
+    linear-gradient(145deg, #141816, #0e110f 72%);
+  box-shadow:
+    inset 0 0 0 1px rgba($white, 0.055),
+    0 1.5rem 4rem rgba(#000, 0.16);
+  overflow: hidden;
+}
+
+.mediaHeader {
+  position: absolute;
+  z-index: 4;
+  top: 1.15rem;
+  right: 1.25rem;
+  left: 1.25rem;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+
+  a,
+  span {
+    display: inline-flex;
+    min-height: 1.8rem;
+    align-items: center;
+    padding-inline: 0.65rem;
+    border-radius: $radius-full;
+    background: rgba(#070908, 0.55);
+    backdrop-filter: blur(10px);
+  }
+
+  a { color: $white; }
+  span { color: $gray-400; }
+}
+
+.productMedia,
+.sealedHero .productMedia {
+  min-height: 42rem;
+  padding: clamp(4.5rem, 7vh, 6rem) clamp(2rem, 5vw, 5rem);
+}
+
+.productMedia > .interactiveCard {
+  width: min(24.25rem, 42vh, calc(100vw - 4rem));
+}
+
+.sealedHero .productMedia img {
+  width: min(100%, 36rem);
+  max-width: 36rem;
+  max-height: 29rem;
+}
+
+.mediaFooter {
+  position: absolute;
+  z-index: 4;
+  right: 1.5rem;
+  bottom: 1.25rem;
+  left: 1.5rem;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  pointer-events: none;
+
+  span {
+    color: rgba($white, 0.34);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    padding: 0.42rem 0.65rem;
+    border-radius: $radius-full;
+    background: rgba(#070908, 0.58);
+    color: $gray-200;
+    backdrop-filter: blur(10px);
+  }
+}
+
+.purchase,
+.variableHero .purchase {
+  min-height: 42rem;
+  justify-content: flex-start;
+  padding: clamp(2rem, 4vw, 3.5rem);
+  border-radius: 1.25rem;
+  background: linear-gradient(160deg, #161918, #111312 68%);
+  box-shadow:
+    inset 0 0 0 1px rgba($white, 0.055),
+    0 1.5rem 4rem rgba(#000, 0.12);
+  overflow: visible;
+}
+
+.purchaseHeader {
+  padding-bottom: 1.5rem;
+  border: 0;
+}
+
+.productKicker {
+  margin-bottom: 1rem;
+
+  > span {
+    color: $gray-400;
+    font-size: 0.65rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+  }
+
+  a {
+    color: $primary-light;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+  }
+}
+
+.titleRow {
+  align-items: flex-start;
+
+  h1 {
+    max-width: 12ch;
+    font-size: clamp(2.4rem, 3.6vw, 4rem);
+    line-height: 0.94;
+    text-wrap: balance;
+  }
+}
+
+.saveButton {
+  width: 3rem;
+  height: 3rem;
+  flex: 0 0 3rem;
+  border: 0;
+  border-radius: $radius-full;
+  background: rgba($white, 0.055);
+
+  &:hover {
+    background: rgba($white, 0.1);
+    transform: translateY(-2px);
+  }
+}
+
+.priceStockRow {
+  align-items: center;
+  margin-top: 0.25rem;
+  padding: 1.35rem 0 1rem;
+  border-top: 1px solid rgba($white, 0.08);
+}
+
+.price {
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  letter-spacing: -0.045em;
+}
+
+.stockLine {
+  padding: 0.5rem 0.7rem;
+  border-radius: $radius-full;
+  background: rgba($primary, 0.08);
+}
+
+.stockLineOut {
+  background: rgba(#ef7777, 0.08);
+}
+
+.description {
+  max-width: 48ch;
+  margin-bottom: 1.25rem;
+  color: $gray-400;
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+.variantPicker {
+  margin-top: 0;
+
+  label > span {
+    margin-bottom: 0.55rem;
+    color: $gray-400;
+  }
+
+  select {
+    min-height: 3.35rem;
+    border-color: rgba($white, 0.12);
+    border-radius: 0.75rem;
+    background: rgba(#080a09, 0.54);
+
+    &:hover { border-color: rgba($white, 0.22); }
+    &:focus { border-color: $primary; }
+  }
+}
+
+.buyArea {
+  display: grid;
+  grid-template-columns: 7.25rem minmax(0, 1fr);
+  margin-top: 1rem;
+  gap: 0.65rem;
+}
+
+.quantity,
+.primaryButton {
+  min-height: 3.35rem;
+  border-radius: 0.75rem;
+}
+
+.quantity {
+  border: 0;
+  background: rgba($white, 0.055);
+}
+
+.primaryButton {
+  border: 0;
+  background: $primary;
+  box-shadow: 0 0.75rem 1.75rem rgba($primary, 0.12);
+
+  &:hover:not(:disabled) {
+    background: $primary-light;
+    box-shadow: 0 1rem 2rem rgba($primary, 0.18);
+    transform: translateY(-2px);
+  }
+}
+
+.cartLink {
+  display: inline-flex;
+  margin-top: 0.7rem;
+  color: $gray-400;
+
+  &:hover { color: $white; }
+}
+
+.purchaseFoot {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: auto;
+  padding: 1rem;
+  border: 0;
+  border-radius: 0.8rem;
+  background: rgba($white, 0.035);
+  gap: 0.75rem;
+
+  div { min-width: 0; }
+  span { color: $gray-500; }
+  strong { font-size: 0.72rem; }
+}
+
+.detailsSection {
+  border-block: 0;
+  border-radius: 1.25rem;
+  background: #111412;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.05);
+}
+
+@media (max-width: 64rem) {
+  .hero,
+  .sealedHero,
+  .variableHero {
+    grid-template-columns: minmax(0, 1fr) minmax(21rem, 0.88fr);
+  }
+
+  .purchase,
+  .variableHero .purchase {
+    padding: 2rem;
+  }
+
+  .titleRow h1 { font-size: clamp(2.15rem, 4vw, 3rem); }
+}
+
+@media (max-width: 50rem) {
+  .page { padding-inline: 0; }
+  .wide { width: min(100% - 1rem, 42rem); }
+
+  .hero,
+  .sealedHero,
+  .variableHero {
+    display: grid;
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .mediaPanel,
+  .productMedia,
+  .sealedHero .productMedia {
+    min-height: min(34rem, 68svh);
+  }
+
+  .productMedia > .interactiveCard {
+    width: min(19rem, 35vh, calc(100vw - 3rem));
+  }
+
+  .purchase,
+  .variableHero .purchase {
+    min-height: 0;
+    padding: 1.6rem 1.25rem;
+  }
+
+  .purchaseFoot { margin-top: 2rem; }
+}
+
+@media (max-width: $bp-sm) {
+  .wide { width: calc(100% - 0.75rem); }
+  .breadcrumb { padding-inline: 0.4rem; }
+  .mediaPanel,
+  .purchase { border-radius: 1rem; }
+  .mediaHeader { top: 0.85rem; right: 0.85rem; left: 0.85rem; }
+  .mediaFooter { right: 1rem; bottom: 0.9rem; left: 1rem; }
+  .mediaFooter span { display: none; }
+  .titleRow h1 { font-size: clamp(2rem, 10vw, 2.8rem); }
+  .buyArea { grid-template-columns: 1fr; }
+  .quantity { min-height: 3rem; }
+  .purchaseFoot { grid-template-columns: 1fr 1fr; }
+  .purchaseFoot div:last-child { grid-column: 1 / -1; }
 }

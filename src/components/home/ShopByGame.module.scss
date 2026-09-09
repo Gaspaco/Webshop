@@ -2,12 +2,12 @@
 
 .section {
   padding-block: clamp(4.5rem, 10vh, 8rem);
-  padding-inline: 0.5rem;
+  padding-inline: 0;
   background: #111;
 }
 
 .wide {
-  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - #{$container-padding} * 2));
   margin-inline: auto;
 }
 
@@ -254,7 +254,7 @@
 
 @media (max-width: $bp-sm) {
   .section { padding-block: 4rem; }
-  .wide { width: min(100% - 2rem, 110rem); }
+  .wide { width: min(100% - 2rem, $container-wide); }
   .tileArt { right: -3rem; height: 65%; opacity: 0.68; }
   .tileSets { max-width: 78%; }
   .tileBody { padding: 1.5rem; }

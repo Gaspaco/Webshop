@@ -1,12 +1,12 @@
 @use "../../styles/variables" as *;
 
 .section {
-  padding: clamp(4.5rem, 9vh, 7.5rem) 0.5rem;
+  padding: clamp(4.5rem, 9vh, 7.5rem) 0;
   background: #101110;
 }
 
 .wide {
-  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - #{$container-padding} * 2));
   margin-inline: auto;
 }
 

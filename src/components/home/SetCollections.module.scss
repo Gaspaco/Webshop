@@ -5,7 +5,7 @@
 }
 
 .wide {
-  width: min(102rem, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - #{$container-padding} * 2));
   margin-inline: auto;
 }
 

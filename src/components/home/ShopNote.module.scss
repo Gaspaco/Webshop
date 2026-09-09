@@ -2,11 +2,11 @@
 
 .section {
   padding-block: clamp(2.5rem, 6vh, 4.5rem);
-  padding-inline: 0.5rem;
+  padding-inline: 0;
 }
 
 .wide {
-  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - #{$container-padding} * 2));
   margin-inline: auto;
 }
 

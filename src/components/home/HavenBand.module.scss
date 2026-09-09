@@ -2,14 +2,14 @@
 
 .section {
   padding-block: clamp(1rem, 3vh, 2rem) clamp(3rem, 7vh, 5rem);
-  padding-inline: 0.5rem;
+  padding-inline: 0;
 }
 
 .wide {
   display: flex;
   flex-direction: column;
   gap: clamp(2.5rem, 5vh, 3.5rem);
-  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - #{$container-padding} * 2));
   margin-inline: auto;
 }
 

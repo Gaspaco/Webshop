@@ -6,6 +6,7 @@ import { Show, Suspense, type ParentProps } from "solid-js";
 import Footer from "~/components/layout/Footer";
 import LoadingScreen from "~/components/layout/LoadingScreen";
 import Navbar from "~/components/layout/Navbar";
+import RouteSkeleton, { type SkeletonVariant } from "~/components/layout/RouteSkeleton";
 import { CartProvider } from "~/lib/cart";
 import "./app.scss";
 
@@ -52,6 +53,17 @@ function AppShell(props: ParentProps) {
     location.pathname === "/admin/login";
   const chromeless = () => isAuthRoute() || isDashboard();
 
+  // Routes that read a pending resource suspend, so the fallback below is what
+  // the visitor actually looks at while the catalogue loads. Match its shape to
+  // the page being opened.
+  const skeletonVariant = (): SkeletonVariant => {
+    const path = location.pathname;
+    if (/^\/products\/[^/]+$/.test(path)) return "detail";
+    if (path === "/products" || path.startsWith("/categories")) return "grid";
+    return "page";
+  };
+  const skeletonHasRail = () => location.pathname === "/products";
+
   return (
     <MetaProvider>
       <Title>My Little TCG Haven</Title>
@@ -60,7 +72,13 @@ function AppShell(props: ParentProps) {
       />
       <LoadingScreen />
       {!chromeless() && <Navbar />}
-      <Suspense>
+      <Suspense
+        fallback={
+          chromeless()
+            ? undefined
+            : <RouteSkeleton variant={skeletonVariant()} rail={skeletonHasRail()} />
+        }
+      >
         {/* Keyed on pathname so the wrapper remounts per navigation,
             replaying the enter animation on every page change. */}
         <Show when={location.pathname} keyed>
