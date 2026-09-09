@@ -6,7 +6,7 @@
 }
 
 .wide {
-  width: min($container-wide, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - clamp(2rem, 4vw, 3rem)));
   margin-inline: auto;
 }
 
@@ -256,7 +256,6 @@
 }
 
 @media (max-width: $bp-sm) {
-  .wide { width: min(100% - 2rem, $container-wide); }
   .singles { min-height: 34rem; }
   .singles .collectionCopy { padding-top: 19rem; }
   .stack { min-height: 31rem; }

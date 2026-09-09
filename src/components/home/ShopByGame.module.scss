@@ -7,7 +7,7 @@
 }
 
 .wide {
-  width: min($container-wide, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - clamp(2rem, 4vw, 3rem)));
   margin-inline: auto;
 }
 
@@ -254,7 +254,6 @@
 
 @media (max-width: $bp-sm) {
   .section { padding-block: 4rem; }
-  .wide { width: min(100% - 2rem, $container-wide); }
   .tileArt { right: -3rem; height: 65%; opacity: 0.68; }
   .tileSets { max-width: 78%; }
   .tileBody { padding: 1.5rem; }

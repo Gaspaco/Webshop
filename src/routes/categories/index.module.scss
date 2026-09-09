@@ -7,7 +7,7 @@
 }
 
 .wide {
-  width: min($container-wide, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - clamp(2rem, 4vw, 3rem)));
   margin-inline: auto;
 }
 
@@ -182,7 +182,6 @@
 .cyberpunk { --game-accent: #facc15; }
 
 @media (max-width: $bp-md) {
-  .wide { width: calc(100% - 2rem); }
   .head { padding-top: 1.5rem; }
   .directory { grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); gap: 0.75rem; }
   .cardText h2 { font-size: 1.0625rem; }

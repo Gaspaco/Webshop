@@ -7,7 +7,7 @@
 }
 
 .wide {
-  width: min($container-wide, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - clamp(2rem, 4vw, 3rem)));
   margin-inline: auto;
 }
 
@@ -105,6 +105,5 @@
 .content { padding-top: 1.5rem; }
 
 @media (max-width: $bp-md) {
-  .wide { width: calc(100% - 2rem); }
   .head { padding: 0.75rem 0 1rem; }
 }
