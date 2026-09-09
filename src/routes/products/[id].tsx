@@ -170,6 +170,19 @@ function variantSetCode(variant?: { sku?: string; finish?: string; name?: string
   return match?.[1] || undefined;
 }
 
+function productTypeLabel(product: ShopProduct) {
+  if (isSealedProduct(product)) return "Sealed product";
+  const raw = product.productType;
+  if (!raw) return "Single card";
+  const labels: Record<string, string> = {
+    single: "Single card",
+    sealed: "Sealed product",
+    graded: "Graded card",
+    accessory: "Accessory",
+  };
+  return labels[raw] ?? raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
 export default function ProductDetail() {
   const params = useParams();
   const cart = useCart();
@@ -760,8 +773,7 @@ export default function ProductDetail() {
 
             <section class={styles.detailsSection} id="product-story">
               <div class={styles.detailsIntro}>
-                <span class={styles.sectionLabel}>{isSealedProduct(item()) ? "The sealed release" : "The card"}</span>
-                <h2>{isSealedProduct(item()) ? "Know exactly what you are opening." : "Every detail, shown clearly."}</h2>
+                <h2>{isSealedProduct(item()) ? "About this product" : "About this card"}</h2>
                 <p>{describe(item())}</p>
                 <p>
                   {isSealedProduct(item())
@@ -773,7 +785,7 @@ export default function ProductDetail() {
               <dl class={styles.specifications}>
                 <div><dt>Game</dt><dd>{item().gameName}</dd></div>
                 <div><dt>Set</dt><dd>{variantSetName(displayVariant()) ?? item().set ?? "Various"}</dd></div>
-                <div><dt>Product type</dt><dd>{isSealedProduct(item()) ? "Sealed product" : item().productType ?? "Single card"}</dd></div>
+                <div><dt>Product type</dt><dd>{productTypeLabel(item())}</dd></div>
                 <div><dt>Condition</dt><dd>{conditionFor(item())}</dd></div>
                 <div><dt>Language</dt><dd>{item().language ?? "English"}</dd></div>
                 <Show when={item().cardNumber}><div><dt>Card number</dt><dd>{item().cardNumber}</dd></div></Show>
