@@ -1,7 +1,7 @@
 import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
 import { For } from "solid-js";
-import styles from "./about.module.scss";
+import styles from "./index.module.scss";
 
 const VALUES = [
   {

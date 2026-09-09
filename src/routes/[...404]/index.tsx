@@ -1,7 +1,7 @@
 import { Meta, Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
 import { HttpStatusCode } from "@solidjs/start";
-import styles from "./404.module.scss";
+import styles from "./index.module.scss";
 
 export default function NotFound() {
   return (

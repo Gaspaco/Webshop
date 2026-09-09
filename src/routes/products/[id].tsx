@@ -16,6 +16,7 @@ import ProductCard, {
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories";
 import { formatPrice, useCart } from "~/lib/cart";
+import { cardFinishFor, variantRarity } from "~/lib/card-finish";
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import styles from "./[id].module.scss";
 
@@ -106,52 +107,6 @@ function slugPart(value: string) {
 function variantSetName(variant?: { name?: string }) {
   const part = variant?.name?.split("·")[0]?.trim();
   return part || undefined;
-}
-
-function variantRarity(variant?: { name?: string; finish?: string }) {
-  return variant?.finish?.trim() || variant?.name?.split("·")[1]?.trim() || undefined;
-}
-
-type CardFinish =
-  | "common"
-  | "rare"
-  | "super"
-  | "ultra"
-  | "secret"
-  | "ultimate"
-  | "ghost"
-  | "collectors"
-  | "gold"
-  | "prismatic";
-
-/**
- * Convert the names returned by YGOPRODeck into a small set of visual
- * materials. Order matters because names such as "Gold Secret Rare" contain
- * more than one rarity keyword.
- */
-function cardFinishFor(
-  product: ShopProduct,
-  variant?: { name?: string; finish?: string },
-): CardFinish | undefined {
-  if (product.game !== "yugioh") return undefined;
-
-  const rarity = (
-    variantRarity(variant) ??
-    product.finish ??
-    product.rarity ??
-    ""
-  ).toLowerCase();
-  if (!rarity) return undefined;
-  if (/quarter century|starlight|prismatic/.test(rarity)) return "prismatic";
-  if (/ghost/.test(rarity)) return "ghost";
-  if (/collector/.test(rarity)) return "collectors";
-  if (/ultimate/.test(rarity)) return "ultimate";
-  if (/gold/.test(rarity)) return "gold";
-  if (/secret/.test(rarity)) return "secret";
-  if (/ultra/.test(rarity)) return "ultra";
-  if (/super/.test(rarity)) return "super";
-  if (/rare/.test(rarity)) return "rare";
-  return "common";
 }
 
 // SKUs are generated as YGO-<cardId>-<set code>-<rarity>. Peel the two known

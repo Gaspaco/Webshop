@@ -1,7 +1,7 @@
 import { Title } from "@solidjs/meta";
 import { A, useSearchParams } from "@solidjs/router";
 import { createSignal, Show } from "solid-js";
-import styles from "./returns.module.scss";
+import styles from "./index.module.scss";
 
 export default function Returns() {
   const [searchParams] = useSearchParams();

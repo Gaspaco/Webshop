@@ -4,7 +4,7 @@ import {
   DEFAULT_STORE_PROFILE,
   fetchStoreProfile,
 } from "~/lib/store-profile";
-import styles from "./contact.module.scss";
+import styles from "./index.module.scss";
 
 export default function Contact() {
   const [name, setName] = createSignal("");

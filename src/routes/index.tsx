@@ -9,7 +9,7 @@ import CollectionPaths from "~/components/home/CollectionPaths";
 import ProductSection, { type SectionProduct } from "~/components/product/ProductSection";
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { ALL_PRODUCTS, type ShopProduct } from "~/lib/categories";
-import styles from "./home.module.scss";
+import styles from "./index.module.scss";
 
 type HomeContent = {
   announcement?: string;

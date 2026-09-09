@@ -20,7 +20,7 @@ import {
   parseStoreProfile,
   type StoreProfile,
 } from "~/lib/store-profile";
-import styles from "../admin.module.scss";
+import styles from "./index.module.scss";
 
 type AdminSection =
   | "overview"

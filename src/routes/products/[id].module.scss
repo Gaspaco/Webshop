@@ -2414,3 +2414,182 @@
   .purchaseFoot { grid-template-columns: 1fr 1fr; }
   .purchaseFoot div:last-child { grid-column: 1 / -1; }
 }
+
+/* Collector composition, deliberately last in the cascade. */
+.page .hero,
+.page .sealedHero,
+.page .variableHero {
+  min-height: min(49rem, calc(100svh - #{$header-height} - 3.5rem));
+  grid-template-columns: minmax(0, 1.28fr) minmax(24rem, 0.72fr);
+  gap: 0;
+  margin-bottom: clamp(4rem, 9vw, 8rem);
+  border: 0;
+  border-radius: 0;
+  background: #101311;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.045);
+  overflow: hidden;
+}
+
+.page .mediaPanel {
+  min-height: 47rem;
+  border: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 51% 48%, rgba($primary, 0.14), transparent 13rem),
+    radial-gradient(circle at 51% 48%, rgba($white, 0.025), transparent 25rem),
+    linear-gradient(145deg, #121714, #0b0e0c 78%);
+  box-shadow: none;
+}
+
+.page .mediaPanel::after {
+  position: absolute;
+  top: 11%;
+  right: 9%;
+  bottom: 11%;
+  width: 1px;
+  background: linear-gradient(transparent, rgba($primary, 0.45), transparent);
+  content: "";
+}
+
+.page .mediaHeader a,
+.page .mediaHeader span {
+  min-height: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: $gray-400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: none;
+}
+
+.page .mediaHeader a {
+  color: $white;
+  text-decoration: underline;
+  text-decoration-color: rgba($primary, 0.65);
+  text-underline-offset: 0.35rem;
+}
+
+.page .productMedia,
+.page .sealedHero .productMedia { min-height: 47rem; }
+.page .productMedia > .interactiveCard { width: min(25rem, 45vh, calc(100vw - 5rem)); }
+
+.page .mediaFooter strong {
+  max-width: 62%;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: $gray-300;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  backdrop-filter: none;
+}
+
+.page .purchase,
+.page .variableHero .purchase {
+  min-height: 47rem;
+  padding: clamp(2.5rem, 4.2vw, 4.5rem) clamp(1.5rem, 3.4vw, 3.75rem) 2rem;
+  border-radius: 0;
+  background: linear-gradient(90deg, rgba($white, 0.055), rgba($white, 0.055)) left / 1px 100% no-repeat, #101311;
+  box-shadow: none;
+}
+
+.page .titleRow h1 {
+  max-width: none;
+  font-size: clamp(2.5rem, 3.4vw, 4.15rem);
+  line-height: 0.91;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.page .titleRow {
+  position: relative;
+  padding-right: 3.5rem;
+}
+
+.page .saveButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.page .purchaseFoot {
+  margin-top: auto;
+  padding: 1.5rem 0 0;
+  border-top: 1px solid rgba($white, 0.075);
+  border-radius: 0;
+  background: transparent;
+}
+
+.page .detailsSection {
+  grid-template-columns: minmax(16rem, 0.75fr) minmax(0, 1.25fr);
+  padding: clamp(2rem, 5vw, 4.5rem) 0;
+  border-block: 1px solid rgba($white, 0.09);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  gap: clamp(2rem, 7vw, 7rem);
+}
+
+.page .serviceBand {
+  padding-inline: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+@media (max-width: 68rem) {
+  .page .hero,
+  .page .sealedHero,
+  .page .variableHero { grid-template-columns: minmax(0, 1fr) minmax(21rem, 0.78fr); }
+
+  .page .purchase,
+  .page .variableHero .purchase { padding: 2.5rem 1.75rem 1.75rem; }
+}
+
+@media (max-width: 50rem) {
+  .page { overflow-x: clip; }
+
+  .page .hero,
+  .page .sealedHero,
+  .page .variableHero {
+    width: 100%;
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .page .mediaPanel,
+  .page .purchase { width: 100%; min-width: 0; }
+
+  .page .mediaPanel,
+  .page .productMedia,
+  .page .sealedHero .productMedia { min-height: min(36rem, 70svh); }
+
+  .page .productMedia {
+    inset: 0;
+    padding: 4rem 1.5rem 3.5rem;
+  }
+
+  .page .productMedia > .interactiveCard {
+    width: min(17.5rem, 39vh, calc(100vw - 3rem));
+    max-width: calc(100% - 3rem);
+  }
+
+  .page .purchase,
+  .page .variableHero .purchase {
+    min-height: 0;
+    padding: 2rem 1.25rem 1.5rem;
+  }
+
+  .page .detailsSection { grid-template-columns: 1fr; }
+  .page .specifications { grid-template-columns: 1fr; }
+  .page .specifications div:nth-child(n) { padding-inline: 0; border-left: 0; }
+}
+
+@media (max-width: $bp-sm) {
+  .page .mediaPanel,
+  .page .purchase { border-radius: 0; }
+  .page .mediaPanel::after { display: none; }
+  .page .mediaFooter span { display: none; }
+  .page .titleRow h1 { font-size: clamp(2.2rem, 11vw, 3rem); }
+}

@@ -8,7 +8,7 @@ import {
   fetchStoreProfile,
   type StoreProfile,
 } from "~/lib/store-profile";
-import styles from "./shipping.module.scss";
+import styles from "./index.module.scss";
 
 export default function Shipping() {
   const [profile, setProfile] = createSignal<StoreProfile>(DEFAULT_STORE_PROFILE);

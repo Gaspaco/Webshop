@@ -2,7 +2,7 @@ import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
 import { createEffect, createSignal, Show } from "solid-js";
 import { authClient } from "~/lib/auth-client";
-import styles from "./login.module.scss";
+import styles from "./index.module.scss";
 
 export default function AdminLogin() {
   const session = authClient.useSession();

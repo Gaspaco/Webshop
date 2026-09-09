@@ -148,10 +148,157 @@
   }
 }
 
+.cardArtwork {
+  position: absolute;
+  display: grid;
+  inset: 0;
+  place-items: center;
+
+  img {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.cardArtworkFoil {
+  --foil-x: 50%;
+  --foil-y: 50%;
+  --foil-rest: 0;
+  --foil-active: 0;
+  --foil-spectrum: linear-gradient(125deg, transparent, transparent);
+  --foil-position: var(--foil-x) var(--foil-y);
+  --foil-size: 150% 150%;
+  --foil-repeat: no-repeat;
+  --foil-blend: normal;
+  top: 0.7rem;
+  right: auto;
+  bottom: 0.7rem;
+  left: 50%;
+  width: auto;
+  max-width: calc(100% - 1.4rem);
+  aspect-ratio: 59 / 86;
+  padding: 0;
+  border-radius: 4.2% / 2.9%;
+  isolation: isolate;
+  overflow: hidden;
+  transform: translateX(-50%);
+
+  img {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    object-fit: contain;
+  }
+
+  &::before,
+  &::after {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    border-radius: inherit;
+    content: "";
+    opacity: var(--foil-rest);
+    pointer-events: none;
+    transition: opacity 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &::before {
+    background: radial-gradient(
+      circle at var(--foil-x) var(--foil-y),
+      rgba(#fff, 0.72),
+      rgba(#dff8f1, 0.18) 10%,
+      transparent 31%
+    );
+    mix-blend-mode: plus-lighter;
+  }
+
+  &::after {
+    z-index: 3;
+    background: var(--foil-spectrum);
+    background-position: var(--foil-position);
+    background-repeat: var(--foil-repeat);
+    background-size: var(--foil-size);
+    background-blend-mode: var(--foil-blend);
+    mix-blend-mode: color-dodge;
+  }
+
+  &:hover::before,
+  &:hover::after,
+  .card:focus-within &::before,
+  .card:focus-within &::after {
+    opacity: var(--foil-active);
+    transition-duration: 90ms;
+  }
+
+  &[data-rarity-effect="rare"] {
+    --foil-rest: 0.02;
+    --foil-active: 0.1;
+    --foil-spectrum: linear-gradient(118deg, transparent 25%, #d9ecf0 48%, transparent 70%);
+  }
+
+  &[data-rarity-effect="super"] {
+    --foil-rest: 0.02;
+    --foil-active: 0.14;
+    --foil-spectrum: linear-gradient(118deg, #7dd3fc 8%, transparent 34%, #f0abfc 54%, transparent 78%);
+  }
+
+  &[data-rarity-effect="ultra"] {
+    --foil-rest: 0.025;
+    --foil-active: 0.16;
+    --foil-spectrum: linear-gradient(120deg, transparent 18%, #f7d774 43%, #fff4bd 52%, transparent 76%);
+  }
+
+  &[data-rarity-effect="secret"],
+  &[data-rarity-effect="prismatic"] {
+    --foil-rest: 0.025;
+    --foil-active: 0.31;
+    --foil-spectrum:
+      linear-gradient(transparent 40%, rgba(#fff, 0.66) 49%, transparent 59%),
+      linear-gradient(90deg, transparent 42%, rgba(#fff, 0.5) 50%, transparent 60%),
+      radial-gradient(circle, rgba(#fff, 0.48) 0 18%, rgba(#050505, 0.38) 24% 52%, transparent 58%),
+      linear-gradient(132deg, #ff9a62, #f8ef78 17%, #72e8bb 34%, #72cff8 51%, #bf9afa 68%, #f89fd0 84%, #ff9a62);
+    --foil-position: 0 var(--foil-y), var(--foil-x) 0, 0 0, var(--foil-x) var(--foil-y);
+    --foil-size: 100% 4rem, 4.2rem 100%, 3px 3px, 175% 175%;
+    --foil-repeat: repeat-y, repeat-x, repeat, no-repeat;
+    --foil-blend: screen, screen, overlay, color;
+  }
+
+  &[data-rarity-effect="ultimate"],
+  &[data-rarity-effect="collectors"] {
+    --foil-rest: 0.025;
+    --foil-active: 0.19;
+    --foil-spectrum: conic-gradient(from 210deg at var(--foil-x) var(--foil-y), #604610, #f7dc8c, transparent 28%, #b9892f, #fff0ae, transparent 72%);
+  }
+
+  &[data-rarity-effect="ghost"] {
+    --foil-rest: 0.035;
+    --foil-active: 0.22;
+    --foil-spectrum: linear-gradient(108deg, #fff 4%, #a9c2cf 28%, transparent 47%, #e6edf0 65%, transparent 88%);
+  }
+
+  &[data-rarity-effect="gold"] {
+    --foil-rest: 0.035;
+    --foil-active: 0.21;
+    --foil-spectrum: linear-gradient(115deg, #725012 2%, #f4cb61 32%, #fff1b0 49%, #b77b12 68%, transparent 92%);
+  }
+
+  &[data-rarity-effect="prismatic"] {
+    --foil-active: 0.36;
+  }
+}
+
 .card:hover .cardMedia img,
 .card:focus-within .cardMedia img {
   filter: saturate(1.04) contrast(1.02);
   transform: scale(1.012);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardArtworkFoil::before,
+  .cardArtworkFoil::after {
+    opacity: 0;
+    transition: none;
+  }
 }
 
 // Stylized sealed-product mockup used when there's no real box
