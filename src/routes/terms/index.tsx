@@ -5,7 +5,7 @@ import {
   fetchStoreProfile,
   type StoreProfile,
 } from "~/lib/store-profile";
-import styles from "./legal.module.scss";
+import styles from "~/styles/legal.module.scss";
 
 const SECTIONS = [
   { id: "business", title: "The seller" },

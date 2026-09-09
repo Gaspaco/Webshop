@@ -2,7 +2,7 @@ import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { formatPrice, useCart } from "~/lib/cart";
-import styles from "./cart.module.scss";
+import styles from "./index.module.scss";
 
 export default function Cart() {
   const cart = useCart();

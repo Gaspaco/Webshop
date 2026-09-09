@@ -2,7 +2,7 @@ import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
 import { createSignal, Show } from "solid-js";
 import { authClient } from "~/lib/auth-client";
-import styles from "./two-factor.module.scss";
+import styles from "./index.module.scss";
 
 type VerificationMethod = "authenticator" | "recovery";
 

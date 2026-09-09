@@ -23,7 +23,7 @@ import {
   fetchStoreProfile,
   type StoreProfile,
 } from "~/lib/store-profile";
-import styles from "./checkout.module.scss";
+import styles from "./index.module.scss";
 
 type ShippingMethod =
   | "postnl_letterbox"

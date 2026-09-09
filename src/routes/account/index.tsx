@@ -24,7 +24,7 @@ import {
   PROFILE_IMAGE_MAX_DATA_URL_LENGTH,
   PROFILE_IMAGE_MAX_SOURCE_BYTES,
 } from "~/lib/profile-image";
-import styles from "./account.module.scss";
+import styles from "./index.module.scss";
 
 type Section =
   | "overview"

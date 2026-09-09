@@ -2,6 +2,7 @@ import { A } from "@solidjs/router";
 import { createEffect, createMemo, createSignal, For, onCleanup, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import { formatPrice } from "~/lib/cart";
+import { cardFinishFor } from "~/lib/card-finish";
 import styles from "./ProductSection.module.scss";
 
 export type BoxTheme =
@@ -40,6 +41,8 @@ export type SectionProduct = {
   href: string;
   badge?: string;
   rarity?: string;
+  finish?: string;
+  game?: string;
   preorder?: boolean;
   variants?: ProductVariantOption[];
   variantId?: string;
@@ -95,6 +98,7 @@ export default function ProductCard(props: ProductCardProps) {
     p.variants?.[0],
   );
   const displayVariant = createMemo(() => selectedVariant() ?? mainVariant());
+  const rarityEffect = createMemo(() => cardFinishFor(p, displayVariant()));
   const displayPrice = createMemo(
     () => displayVariant()?.priceCents ?? p.priceCents ?? p.priceRangeCents?.[0] ?? 0,
   );
@@ -108,6 +112,20 @@ export default function ProductCard(props: ProductCardProps) {
   const openQuickView = () => {
     setSelectedVariantId("");
     setQuickViewOpen(true);
+  };
+
+  const moveFoil = (event: PointerEvent & { currentTarget: HTMLSpanElement }) => {
+    if (event.pointerType === "touch") return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+    const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
+    event.currentTarget.style.setProperty("--foil-x", `${(x * 100).toFixed(1)}%`);
+    event.currentTarget.style.setProperty("--foil-y", `${(y * 100).toFixed(1)}%`);
+  };
+
+  const resetFoil = (event: PointerEvent & { currentTarget: HTMLSpanElement }) => {
+    event.currentTarget.style.removeProperty("--foil-x");
+    event.currentTarget.style.removeProperty("--foil-y");
   };
 
   const confirmVariant = () => {
@@ -157,14 +175,22 @@ export default function ProductCard(props: ProductCardProps) {
               <BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />
             </span>
           </Show>
-          <img
-            src={p.image}
-            alt={p.set ? `${p.name}, ${p.set}` : p.name}
-            draggable={false}
-            loading="lazy"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageFailed(true)}
-          />
+          <span
+            class={styles.cardArtwork}
+            classList={{ [styles.cardArtworkFoil]: Boolean(rarityEffect()) }}
+            data-rarity-effect={rarityEffect()}
+            onPointerMove={moveFoil}
+            onPointerLeave={resetFoil}
+          >
+            <img
+              src={p.image}
+              alt={p.set ? `${p.name}, ${p.set}` : p.name}
+              draggable={false}
+              loading="lazy"
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageFailed(true)}
+            />
+          </span>
         </Show>
         <Show when={p.badge}>
           <span class={styles.badge}>{p.badge}</span>
