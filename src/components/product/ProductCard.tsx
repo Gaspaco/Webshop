@@ -39,10 +39,42 @@ export type SectionProduct = {
   rating?: number;
   href: string;
   badge?: string;
+  rarity?: string;
   preorder?: boolean;
   variants?: ProductVariantOption[];
   variantId?: string;
 };
+
+type YugiohFoilKind =
+  | "rare"
+  | "super"
+  | "ultra"
+  | "secret"
+  | "prismatic"
+  | "platinum"
+  | "gold"
+  | "ultimate"
+  | "collector"
+  | "starlight"
+  | "quarter"
+  | "ghost";
+
+function yugiohFoilKind(rarity: string | undefined): YugiohFoilKind | undefined {
+  const value = rarity?.trim().toLocaleLowerCase("en-US") ?? "";
+  if (!value || value.includes("common") || value === "unspecified") return;
+  if (value.includes("quarter century")) return "quarter";
+  if (value.includes("starlight")) return "starlight";
+  if (value.includes("platinum")) return "platinum";
+  if (value.includes("prismatic")) return "prismatic";
+  if (value.includes("collector")) return "collector";
+  if (value.includes("ultimate")) return "ultimate";
+  if (value.includes("ghost")) return "ghost";
+  if (value.includes("gold")) return "gold";
+  if (value.includes("secret")) return "secret";
+  if (value.includes("ultra")) return "ultra";
+  if (value.includes("super")) return "super";
+  if (value.includes("rare")) return "rare";
+}
 
 export function Stars(props: { rating: number }) {
   return (
@@ -94,6 +126,16 @@ export default function ProductCard(props: ProductCardProps) {
     p.variants?.[0],
   );
   const displayVariant = createMemo(() => selectedVariant() ?? mainVariant());
+  const foilKind = createMemo(() =>
+    p.theme === "yugioh"
+      ? yugiohFoilKind(displayVariant()?.finish ?? p.rarity)
+      : undefined,
+  );
+  const foilClass = createMemo(() => {
+    const kind = foilKind();
+    if (!kind) return "";
+    return styles[`foil${kind[0]!.toUpperCase()}${kind.slice(1)}`];
+  });
   const displayPrice = createMemo(
     () => displayVariant()?.priceCents ?? p.priceCents ?? p.priceRangeCents?.[0] ?? 0,
   );
@@ -114,6 +156,24 @@ export default function ProductCard(props: ProductCardProps) {
     if (!variant || variant.stock <= 0) return;
     props.onAdd(p, variant);
     setQuickViewOpen(false);
+  };
+
+  const moveFoil = (event: PointerEvent & { currentTarget: HTMLAnchorElement }) => {
+    if (!foilKind() || event.pointerType === "touch") return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+    const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
+    event.currentTarget.style.setProperty("--foil-x", `${Math.round(x * 100)}%`);
+    event.currentTarget.style.setProperty("--foil-y", `${Math.round(y * 100)}%`);
+    event.currentTarget.style.setProperty("--card-shift-x", `${((x - 0.5) * 4).toFixed(2)}px`);
+    event.currentTarget.style.setProperty("--card-shift-y", `${((y - 0.5) * 3).toFixed(2)}px`);
+  };
+
+  const resetFoil = (event: PointerEvent & { currentTarget: HTMLAnchorElement }) => {
+    event.currentTarget.style.removeProperty("--foil-x");
+    event.currentTarget.style.removeProperty("--foil-y");
+    event.currentTarget.style.removeProperty("--card-shift-x");
+    event.currentTarget.style.removeProperty("--card-shift-y");
   };
 
   createEffect(() => {
@@ -143,7 +203,13 @@ export default function ProductCard(props: ProductCardProps) {
         [styles.cardFill]: props.fill,
       }}
     >
-      <A href={p.href} class={styles.cardMedia}>
+      <A
+        href={p.href}
+        class={styles.cardMedia}
+        classList={{ [styles.foilMedia]: Boolean(foilKind()) }}
+        onPointerMove={moveFoil}
+        onPointerLeave={resetFoil}
+      >
         <Show when={p.image && !imageFailed()} fallback={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}>
           {/* Database artwork arrives as a base64 data URL and can take seconds
               to decode. Hold the themed placeholder until it has, so the card is
@@ -161,6 +227,12 @@ export default function ProductCard(props: ProductCardProps) {
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageFailed(true)}
           />
+          <Show when={foilKind()}>
+            <span
+              class={`${styles.foilLayer} ${foilClass()}`}
+              aria-hidden="true"
+            />
+          </Show>
         </Show>
         <Show when={p.badge}>
           <span class={styles.badge}>{p.badge}</span>
