@@ -414,6 +414,8 @@ const ORDER_STATUSES = [
   "refunded",
 ];
 
+const CATALOG_PAGE_SIZES = [25, 50, 100] as const;
+
 const productColumns: ColumnDef<AdminProduct>[] = [
   { accessorKey: "name", header: "Product" },
   { accessorKey: "game", header: "Game" },
@@ -2688,6 +2690,8 @@ export default function Admin() {
   const [catalogSearch, setCatalogSearch] = createSignal("");
   const [catalogGame, setCatalogGame] = createSignal("all");
   const [catalogStatus, setCatalogStatus] = createSignal("all");
+  const [catalogPage, setCatalogPage] = createSignal(1);
+  const [catalogPageSize, setCatalogPageSize] = createSignal<number>(25);
   const [draft, setDraft] = createSignal<ProductDraft>({ ...emptyProduct });
   const [productStatus, setProductStatus] = createSignal("");
   const [savingProduct, setSavingProduct] = createSignal(false);
@@ -2722,6 +2726,20 @@ export default function Admin() {
         catalogStatus(),
       ),
     );
+  const catalogPageCount = () =>
+    Math.max(1, Math.ceil(filteredProducts().length / catalogPageSize()));
+  const currentCatalogPage = () =>
+    Math.min(catalogPage(), catalogPageCount());
+  const paginatedProducts = () => {
+    const start = (currentCatalogPage() - 1) * catalogPageSize();
+    return filteredProducts().slice(start, start + catalogPageSize());
+  };
+  const catalogRangeStart = () =>
+    filteredProducts().length
+      ? (currentCatalogPage() - 1) * catalogPageSize() + 1
+      : 0;
+  const catalogRangeEnd = () =>
+    Math.min(currentCatalogPage() * catalogPageSize(), filteredProducts().length);
 
   // Bulk edit only targets managed products (real database variants) —
   // starter/static listings must be saved once before they can be updated.
@@ -2729,7 +2747,7 @@ export default function Admin() {
     !!product.variantId &&
     !product.variantId.startsWith("static:") &&
     !product.id.startsWith("static:");
-  const selectableProducts = () => filteredProducts().filter(isManaged);
+  const selectableProducts = () => paginatedProducts().filter(isManaged);
   const bulkTargets = () =>
     selectableProducts().filter(product =>
       selectedVariantIds().has(product.variantId!),
@@ -2860,7 +2878,7 @@ export default function Admin() {
   };
   const productTable = createSolidTable({
     get data() {
-      return filteredProducts();
+      return paginatedProducts();
     },
     columns: productColumns,
     getCoreRowModel: getCoreRowModel(),
@@ -2968,6 +2986,8 @@ export default function Admin() {
       const result = (await response.json()) as {
         error?: string;
         processedRows?: number;
+        createdRows?: number;
+        updatedRows?: number;
         failedRows?: number;
         errors?: Array<{ row: number; message: string }>;
       };
@@ -2982,7 +3002,7 @@ export default function Admin() {
         .map(error => `Row ${error.row}: ${error.message}`)
         .join(" ");
       setImportMessage(
-        `${result.processedRows ?? 0} products added as private drafts. ${result.failedRows ?? 0} rows were rejected.${rejectedDetails ? ` ${rejectedDetails}` : ""} Review the batch in Catalogue before publishing.`,
+        `${result.createdRows ?? 0} new drafts created. ${result.updatedRows ?? 0} existing products updated. ${result.failedRows ?? 0} rows were rejected.${rejectedDetails ? ` ${rejectedDetails}` : ""} Review the batch in Catalogue before publishing new products.`,
       );
     } catch {
       setImportMessage("The CSV import could not be completed.");
@@ -3653,12 +3673,20 @@ export default function Admin() {
                         type="search"
                         placeholder="Name, SKU, barcode, set, or slug"
                         value={catalogSearch()}
-                        onInput={event => setCatalogSearch(event.currentTarget.value)}
+                        onInput={event => {
+                          setCatalogSearch(event.currentTarget.value);
+                          setCatalogPage(1);
+                          clearSelection();
+                        }}
                       />
                     </label>
                     <label>
                       <span>Game</span>
-                      <select value={catalogGame()} onChange={event => setCatalogGame(event.currentTarget.value)}>
+                      <select value={catalogGame()} onChange={event => {
+                        setCatalogGame(event.currentTarget.value);
+                        setCatalogPage(1);
+                        clearSelection();
+                      }}>
                         <option value="all">All games</option>
                         <option value="pokemon">Pokémon</option>
                         <option value="yugioh">Yu-Gi-Oh!</option>
@@ -3672,15 +3700,31 @@ export default function Admin() {
                     </label>
                     <label>
                       <span>Visibility</span>
-                      <select value={catalogStatus()} onChange={event => setCatalogStatus(event.currentTarget.value)}>
+                      <select value={catalogStatus()} onChange={event => {
+                        setCatalogStatus(event.currentTarget.value);
+                        setCatalogPage(1);
+                        clearSelection();
+                      }}>
                         <option value="all">Every status</option>
                         <option value="active">Live</option>
                         <option value="draft">Draft</option>
                         <option value="archived">Archived</option>
                       </select>
                     </label>
+                    <label>
+                      <span>Rows</span>
+                      <select value={catalogPageSize()} onChange={event => {
+                        setCatalogPageSize(Number(event.currentTarget.value));
+                        setCatalogPage(1);
+                        clearSelection();
+                      }}>
+                        <For each={CATALOG_PAGE_SIZES}>
+                          {size => <option value={size}>{size} per page</option>}
+                        </For>
+                      </select>
+                    </label>
                     <span class={styles.catalogResultCount}>
-                      {filteredProducts().length} of {data().products.length} products
+                      {catalogRangeStart()} to {catalogRangeEnd()} of {filteredProducts().length} products
                     </span>
                     <Show when={selectableProducts().length}>
                       <button
@@ -3688,7 +3732,7 @@ export default function Admin() {
                         class={styles.selectAllBtn}
                         onClick={toggleSelectAll}
                       >
-                        {allSelected() ? "Clear selection" : "Select all"}
+                        {allSelected() ? "Clear page selection" : "Select this page"}
                       </button>
                     </Show>
                   </section>
@@ -3821,11 +3865,40 @@ export default function Admin() {
                             setCatalogSearch("");
                             setCatalogGame("all");
                             setCatalogStatus("all");
+                            setCatalogPage(1);
+                            clearSelection();
                           }}>Clear catalogue filters</button>
                         </Show>
                       </div>
                     </Show>
                   </div>
+                  <Show when={filteredProducts().length > 0}>
+                    <nav class={styles.catalogPagination} aria-label="Catalogue pages">
+                      <button
+                        type="button"
+                        disabled={currentCatalogPage() <= 1}
+                        onClick={() => {
+                          setCatalogPage(page => Math.max(1, page - 1));
+                          clearSelection();
+                        }}
+                      >
+                        Previous
+                      </button>
+                      <span>
+                        Page <strong>{currentCatalogPage()}</strong> of {catalogPageCount()}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={currentCatalogPage() >= catalogPageCount()}
+                        onClick={() => {
+                          setCatalogPage(page => Math.min(catalogPageCount(), page + 1));
+                          clearSelection();
+                        }}
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </Show>
                 </Show>
 
                 <Show when={section() === "orders"}>
@@ -4000,7 +4073,7 @@ export default function Admin() {
                           <div>
                             <strong>{preview().fileName}</strong>
                             <p>
-                              {preview().rows.length} product{preview().rows.length === 1 ? "" : "s"} found. All products will be imported as private drafts.
+                              {preview().rows.length} product{preview().rows.length === 1 ? "" : "s"} found. New SKUs become private drafts; matching SKUs update the existing product.
                             </p>
                           </div>
                           <span classList={{ [styles.csvReady]: preview().issues.length === 0, [styles.csvBlocked]: preview().issues.length > 0 }}>
@@ -4188,7 +4261,7 @@ export default function Admin() {
                   <section class={styles.importGuide}>
                     <div>
                       <h3>How the product file works</h3>
-                      <p>Download the latest template, keep its header row, and fill one product per line. You can review the file before saving anything.</p>
+                      <p>Download the latest template, keep its header row, and fill one product per line. SKU identifies an existing product. Leave image blank to keep its current photo.</p>
                     </div>
                     <dl>
                       <div><dt>game</dt><dd>pokemon, yugioh, magic, lorcana, riftbound, digimon, cyberpunk, or other</dd></div>

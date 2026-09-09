@@ -543,7 +543,7 @@
   padding: 0.85rem;
   border: 1px solid rgba($white, 0.08);
   border-radius: 0.65rem;
-  grid-template-columns: minmax(15rem, 1fr) 10rem 10rem auto;
+  grid-template-columns: minmax(15rem, 1fr) 10rem 10rem 8rem auto;
   align-items: end;
   gap: 0.75rem;
   background: #0e1210;
@@ -771,6 +771,47 @@
 
 .tableWrap tbody tr:hover {
   background: rgba($white, 0.018);
+}
+
+.catalogPagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  padding-top: 0.85rem;
+}
+
+.catalogPagination span {
+  min-width: 7rem;
+  color: $gray-500;
+  font-size: 0.66rem;
+  text-align: center;
+}
+
+.catalogPagination strong {
+  color: $white;
+}
+
+.catalogPagination button {
+  min-height: 2.35rem;
+  padding: 0 0.8rem;
+  border: 1px solid rgba($white, 0.12);
+  border-radius: 0.4rem;
+  color: $gray-300;
+  font-size: 0.66rem;
+  font-weight: 750;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.catalogPagination button:hover:not(:disabled),
+.catalogPagination button:focus-visible {
+  border-color: rgba($primary, 0.6);
+  color: $white;
+}
+
+.catalogPagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .productIdentity,
@@ -2394,6 +2435,10 @@
 
   .catalogResultCount {
     grid-column: auto;
+  }
+
+  .catalogPagination {
+    justify-content: space-between;
   }
 
   .editorGrid,
