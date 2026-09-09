@@ -1,12 +1,12 @@
 @use "../../styles/variables" as *;
 
 .section {
-  padding: clamp(4rem, 8vh, 7rem) 0.5rem;
+  padding: clamp(4rem, 8vh, 7rem) 0;
   background: #0d0e0d;
 }
 
 .wide {
-  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - #{$container-padding} * 2));
   margin-inline: auto;
 }
 
@@ -256,7 +256,7 @@
 }
 
 @media (max-width: $bp-sm) {
-  .wide { width: min(100% - 2rem, 110rem); }
+  .wide { width: min(100% - 2rem, $container-wide); }
   .singles { min-height: 34rem; }
   .singles .collectionCopy { padding-top: 19rem; }
   .stack { min-height: 31rem; }

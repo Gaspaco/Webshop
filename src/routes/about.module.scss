@@ -3,11 +3,11 @@
 .page {
   min-height: calc(100dvh - $header-height);
   padding-block: 1rem clamp(4rem, 8vh, 7rem);
-  padding-inline: 0.5rem;
+  padding-inline: 0;
 }
 
 .wide {
-  width: min(110rem, calc(100% - #{$container-padding} * 2));
+  width: min($container-wide, calc(100% - #{$container-padding} * 2));
   margin-inline: auto;
 }
 

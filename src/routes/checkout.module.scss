@@ -2,7 +2,7 @@
 
 .page {
   min-height: calc(100dvh - $header-height);
-  padding: clamp(1.5rem, 4vh, 3rem) 0.5rem clamp(4rem, 8vh, 7rem);
+  padding: clamp(1.5rem, 4vh, 3rem) 0 clamp(4rem, 8vh, 7rem);
   background: #0d0e0d;
 }
 

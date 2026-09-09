@@ -16,6 +16,7 @@ import ProductCard, {
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories";
 import { formatPrice, useCart } from "~/lib/cart";
+import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import styles from "./[id].module.scss";
 
 function isSealedProduct(product: ShopProduct) {
@@ -125,53 +126,6 @@ function variantSetCode(variant?: { sku?: string; finish?: string; name?: string
   }
   const match = rest.match(/^[A-Z]+-\d+-(.+)$/);
   return match?.[1] || undefined;
-}
-
-// A skeleton of the real layout rather than a fixed overlay. The overlay was
-// taken out of flow, so the route contributed no height and the site footer
-// collapsed up into the same band of the viewport.
-function ProductRouteLoading() {
-  return (
-    <main class={styles.productLoading} role="status" aria-live="polite" aria-label="Loading product">
-      <div class={styles.loadingWide}>
-        <div class={styles.loadingCrumb}>
-          <span class={styles.shimmer} />
-          <span class={styles.shimmer} />
-          <span class={styles.shimmer} />
-        </div>
-
-        <div class={styles.loadingHero}>
-          <div class={styles.loadingMedia}>
-            <div class={styles.loadingMediaHead}>
-              <span class={styles.shimmer} />
-              <span class={styles.shimmer} />
-            </div>
-            <div class={styles.loadingArt}>
-              <span class={styles.shimmer} />
-            </div>
-          </div>
-
-          <div class={styles.loadingPanel}>
-            <span class={`${styles.shimmer} ${styles.loadingKicker}`} />
-            <span class={`${styles.shimmer} ${styles.loadingTitle}`} />
-            <span class={`${styles.shimmer} ${styles.loadingPrice}`} />
-            <span class={`${styles.shimmer} ${styles.loadingLine}`} />
-            <span class={`${styles.shimmer} ${styles.loadingLineShort}`} />
-            <span class={`${styles.shimmer} ${styles.loadingSelect}`} />
-            <div class={styles.loadingBuy}>
-              <span class={styles.shimmer} />
-              <span class={styles.shimmer} />
-            </div>
-            <div class={styles.loadingSpecs}>
-              <span class={styles.shimmer} />
-              <span class={styles.shimmer} />
-              <span class={styles.shimmer} />
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
 }
 
 export default function ProductDetail() {
@@ -409,7 +363,7 @@ export default function ProductDetail() {
   return (
     <Show
       when={clientReady() && !databaseCatalog.loading}
-      fallback={<ProductRouteLoading />}
+      fallback={<RouteSkeleton variant="detail" />}
     >
       <Show
         when={product()}

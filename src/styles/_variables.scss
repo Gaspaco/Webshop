@@ -28,6 +28,9 @@ $font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
 // Layout
 $container-max: 72rem;
 $container-padding: 1.5rem;
+// Every storefront section, the navbar and the footer share this container so
+// their left and right edges line up at any viewport width.
+$container-wide: 110rem;
 $header-height: 4.5rem;
 $product-card-min: 21rem;
 $product-card-max: 24rem;
