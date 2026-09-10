@@ -261,12 +261,15 @@ export default function ProductDetail() {
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
     const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
+    const distance = Math.hypot(x - 0.5, y - 0.5) / Math.SQRT1_2;
+    const strength = Math.max(0.74, Math.min(1, 1.1 - distance * 0.34));
     event.currentTarget.style.setProperty("--tilt-x", `${((0.5 - y) * 5).toFixed(2)}deg`);
     event.currentTarget.style.setProperty("--tilt-y", `${((x - 0.5) * 6).toFixed(2)}deg`);
     event.currentTarget.style.setProperty("--shadow-x", `${((0.5 - x) * 18).toFixed(1)}px`);
     event.currentTarget.style.setProperty("--shadow-y", `${(18 + y * 10).toFixed(1)}px`);
     event.currentTarget.style.setProperty("--foil-x", `${(x * 100).toFixed(1)}%`);
     event.currentTarget.style.setProperty("--foil-y", `${(y * 100).toFixed(1)}%`);
+    event.currentTarget.style.setProperty("--foil-strength", strength.toFixed(2));
   };
 
   const resetDetailCard = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
@@ -276,6 +279,7 @@ export default function ProductDetail() {
     event.currentTarget.style.removeProperty("--shadow-y");
     event.currentTarget.style.removeProperty("--foil-x");
     event.currentTarget.style.removeProperty("--foil-y");
+    event.currentTarget.style.removeProperty("--foil-strength");
   };
 
   const activeProduct = () => {

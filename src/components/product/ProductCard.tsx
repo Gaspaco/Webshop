@@ -119,13 +119,21 @@ export default function ProductCard(props: ProductCardProps) {
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
     const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
+    const distance = Math.hypot(x - 0.5, y - 0.5) / Math.SQRT1_2;
+    const strength = Math.max(0.72, Math.min(1, 1.08 - distance * 0.36));
     event.currentTarget.style.setProperty("--foil-x", `${(x * 100).toFixed(1)}%`);
     event.currentTarget.style.setProperty("--foil-y", `${(y * 100).toFixed(1)}%`);
+    event.currentTarget.style.setProperty("--foil-strength", strength.toFixed(2));
+    event.currentTarget.style.setProperty("--foil-tilt-x", `${((0.5 - y) * 3).toFixed(2)}deg`);
+    event.currentTarget.style.setProperty("--foil-tilt-y", `${((x - 0.5) * 3.5).toFixed(2)}deg`);
   };
 
   const resetFoil = (event: PointerEvent & { currentTarget: HTMLSpanElement }) => {
     event.currentTarget.style.removeProperty("--foil-x");
     event.currentTarget.style.removeProperty("--foil-y");
+    event.currentTarget.style.removeProperty("--foil-strength");
+    event.currentTarget.style.removeProperty("--foil-tilt-x");
+    event.currentTarget.style.removeProperty("--foil-tilt-y");
   };
 
   const confirmVariant = () => {
