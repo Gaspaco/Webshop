@@ -201,7 +201,7 @@ type CsvImportRow = {
   priceCents: number;
   stock: number;
   image: string;
-  status: "draft";
+  status: "draft" | "active";
 };
 
 type CsvPreview = {
@@ -2698,6 +2698,7 @@ export default function Admin() {
   const [importMessage, setImportMessage] = createSignal("");
   const [importing, setImporting] = createSignal(false);
   const [csvPreview, setCsvPreview] = createSignal<CsvPreview | null>(null);
+  const [csvImportVisibility, setCsvImportVisibility] = createSignal<"active" | "draft">("active");
   const [yugiohQuery, setYugiohQuery] = createSignal("");
   const [yugiohSearchBy, setYugiohSearchBy] = createSignal<"card" | "set">("card");
   const [yugiohMatchedSets, setYugiohMatchedSets] = createSignal<string[]>([]);
@@ -2981,7 +2982,11 @@ export default function Admin() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileName: preview.fileName, rows: preview.rows }),
+        body: JSON.stringify({
+          fileName: preview.fileName,
+          visibility: csvImportVisibility(),
+          rows: preview.rows,
+        }),
       });
       const result = (await response.json()) as {
         error?: string;
@@ -3001,8 +3006,11 @@ export default function Admin() {
         .slice(0, 3)
         .map(error => `Row ${error.row}: ${error.message}`)
         .join(" ");
+      const visibilityMessage = csvImportVisibility() === "active"
+        ? "Products are now visible in the shop."
+        : "Products were saved as private drafts for review.";
       setImportMessage(
-        `${result.createdRows ?? 0} new drafts created. ${result.updatedRows ?? 0} existing products updated. ${result.failedRows ?? 0} rows were rejected.${rejectedDetails ? ` ${rejectedDetails}` : ""} Review the batch in Catalogue before publishing new products.`,
+        `${result.createdRows ?? 0} new products created. ${result.updatedRows ?? 0} existing products updated. ${result.failedRows ?? 0} rows were rejected.${rejectedDetails ? ` ${rejectedDetails}` : ""} ${visibilityMessage}`,
       );
     } catch {
       setImportMessage("The CSV import could not be completed.");
@@ -4045,7 +4053,7 @@ export default function Admin() {
                     <div>
                       <h2>Import a full catalogue</h2>
                       <p>
-                        Check up to 1,000 products before importing. New rows stay private until you review and publish them.
+                        Check up to 1,000 products, then choose whether they go live immediately or stay private for review.
                       </p>
                     </div>
                     <div class={styles.importActions}>
@@ -4073,7 +4081,7 @@ export default function Admin() {
                           <div>
                             <strong>{preview().fileName}</strong>
                             <p>
-                              {preview().rows.length} product{preview().rows.length === 1 ? "" : "s"} found. New SKUs become private drafts; matching SKUs update the existing product.
+                              {preview().rows.length} product{preview().rows.length === 1 ? "" : "s"} found. Matching SKUs update the existing product instead of creating duplicates.
                             </p>
                           </div>
                           <span classList={{ [styles.csvReady]: preview().issues.length === 0, [styles.csvBlocked]: preview().issues.length > 0 }}>
@@ -4094,6 +4102,17 @@ export default function Admin() {
                         </Show>
 
                         <div class={styles.csvReviewActions}>
+                          <label class={styles.csvVisibility}>
+                            <span>After import</span>
+                            <select
+                              value={csvImportVisibility()}
+                              disabled={importing()}
+                              onChange={event => setCsvImportVisibility(event.currentTarget.value as "active" | "draft")}
+                            >
+                              <option value="active">Publish in shop</option>
+                              <option value="draft">Keep as private drafts</option>
+                            </select>
+                          </label>
                           <button type="button" onClick={() => setCsvPreview(null)} disabled={importing()}>
                             Discard file
                           </button>
@@ -4103,7 +4122,11 @@ export default function Admin() {
                             onClick={() => void importCsv()}
                             disabled={importing() || preview().issues.length > 0 || preview().rows.length === 0}
                           >
-                            {importing() ? "Importing drafts" : `Import ${preview().rows.length} drafts`}
+                            {importing()
+                              ? "Importing products"
+                              : csvImportVisibility() === "active"
+                                ? `Import and publish ${preview().rows.length}`
+                                : `Import ${preview().rows.length} drafts`}
                           </button>
                         </div>
                       </section>
