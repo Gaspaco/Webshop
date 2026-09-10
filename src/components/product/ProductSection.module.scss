@@ -163,6 +163,9 @@
 .cardArtworkFoil {
   --foil-x: 50%;
   --foil-y: 50%;
+  --foil-strength: 0.9;
+  --foil-tilt-x: 0deg;
+  --foil-tilt-y: 0deg;
   --foil-rest: 0;
   --foil-active: 0;
   --foil-spectrum: linear-gradient(125deg, transparent, transparent);
@@ -184,7 +187,9 @@
   border-radius: 4.2% / 2.9%;
   isolation: isolate;
   overflow: hidden;
-  transform: translateX(-50%);
+  transform: translateX(-50%) rotateX(var(--foil-tilt-x)) rotateY(var(--foil-tilt-y));
+  transform-style: preserve-3d;
+  transition: transform 130ms cubic-bezier(0.25, 1, 0.5, 1);
 
   img {
     width: 100%;
@@ -229,81 +234,89 @@
   &:hover::after,
   .card:focus-within &::before,
   .card:focus-within &::after {
-    opacity: var(--foil-active);
+    opacity: calc(var(--foil-active) * var(--foil-strength));
     transition-duration: 90ms;
   }
 
   &[data-rarity-effect="rare"] {
     --foil-rest: 0.02;
-    --foil-active: 0.16;
+    --foil-active: 0.3;
     --foil-sweep-color: rgba(218, 238, 245, 0.72);
-    --foil-sweep-opacity: 0.2;
+    --foil-sweep-opacity: 0.34;
     --foil-spectrum: linear-gradient(118deg, transparent 25%, #d9ecf0 48%, transparent 70%);
   }
 
   &[data-rarity-effect="super"] {
     --foil-rest: 0.02;
-    --foil-active: 0.21;
+    --foil-active: 0.4;
     --foil-sweep-color: rgba(169, 205, 255, 0.78);
-    --foil-sweep-opacity: 0.23;
+    --foil-sweep-opacity: 0.42;
     --foil-cycle: 6.8s;
     --foil-spectrum: linear-gradient(118deg, #7dd3fc 8%, transparent 34%, #f0abfc 54%, transparent 78%);
   }
 
   &[data-rarity-effect="ultra"] {
     --foil-rest: 0.025;
-    --foil-active: 0.23;
+    --foil-active: 0.46;
     --foil-sweep-color: rgba(255, 222, 123, 0.82);
-    --foil-sweep-opacity: 0.26;
+    --foil-sweep-opacity: 0.48;
     --foil-spectrum: linear-gradient(120deg, transparent 18%, #f7d774 43%, #fff4bd 52%, transparent 76%);
   }
 
   &[data-rarity-effect="secret"],
   &[data-rarity-effect="prismatic"] {
     --foil-rest: 0.025;
-    --foil-active: 0.38;
+    --foil-active: 0.62;
     --foil-sweep-color: rgba(211, 239, 255, 0.9);
-    --foil-sweep-opacity: 0.34;
+    --foil-sweep-opacity: 0.58;
     --foil-cycle: 6.2s;
     --foil-spectrum:
-      linear-gradient(transparent 40%, rgba(#fff, 0.66) 49%, transparent 59%),
-      linear-gradient(90deg, transparent 42%, rgba(#fff, 0.5) 50%, transparent 60%),
-      radial-gradient(circle, rgba(#fff, 0.48) 0 18%, rgba(#050505, 0.38) 24% 52%, transparent 58%),
-      linear-gradient(132deg, #ff9a62, #f8ef78 17%, #72e8bb 34%, #72cff8 51%, #bf9afa 68%, #f89fd0 84%, #ff9a62);
-    --foil-position: 0 var(--foil-y), var(--foil-x) 0, 0 0, var(--foil-x) var(--foil-y);
-    --foil-size: 100% 4rem, 4.2rem 100%, 3px 3px, 175% 175%;
-    --foil-repeat: repeat-y, repeat-x, repeat, no-repeat;
-    --foil-blend: screen, screen, overlay, color;
+      linear-gradient(transparent 39%, rgba(#fff, 0.86) 49%, rgba(#fff, 0.72) 51%, transparent 61%),
+      linear-gradient(90deg, transparent 40%, rgba(#fff, 0.7) 50%, transparent 62%),
+      repeating-linear-gradient(0deg, transparent 0 2px, rgba(#020504, 0.48) 2px 3px),
+      radial-gradient(circle, rgba(#fff, 0.5) 0 17%, rgba(#050505, 0.5) 25% 52%, transparent 59%),
+      repeating-linear-gradient(32deg, #ff7a18 0%, #ffe85c 7%, #56e39f 14%, #52c7ff 21%, #9878ff 28%, #ff79bc 35%, #ff7a18 42%),
+      linear-gradient(#171717, #171717);
+    --foil-position:
+      0 var(--foil-y),
+      var(--foil-x) 0,
+      0 0,
+      0 0,
+      calc(100% - var(--foil-x)) calc(100% - var(--foil-y)),
+      0 0;
+    --foil-size: 100% 4.5rem, 4.7rem 100%, 100% 3px, 3px 3px, 260% 260%, 100% 100%;
+    --foil-repeat: repeat-y, repeat-x, repeat, repeat, no-repeat, no-repeat;
+    --foil-blend: screen, screen, multiply, overlay, color, normal;
   }
 
   &[data-rarity-effect="ultimate"],
   &[data-rarity-effect="collectors"] {
     --foil-rest: 0.025;
-    --foil-active: 0.27;
+    --foil-active: 0.48;
     --foil-sweep-color: rgba(255, 220, 132, 0.82);
-    --foil-sweep-opacity: 0.28;
+    --foil-sweep-opacity: 0.5;
     --foil-spectrum: conic-gradient(from 210deg at var(--foil-x) var(--foil-y), #604610, #f7dc8c, transparent 28%, #b9892f, #fff0ae, transparent 72%);
   }
 
   &[data-rarity-effect="ghost"] {
     --foil-rest: 0.035;
-    --foil-active: 0.29;
+    --foil-active: 0.5;
     --foil-sweep-color: rgba(235, 248, 255, 0.92);
-    --foil-sweep-opacity: 0.3;
+    --foil-sweep-opacity: 0.52;
     --foil-spectrum: linear-gradient(108deg, #fff 4%, #a9c2cf 28%, transparent 47%, #e6edf0 65%, transparent 88%);
   }
 
   &[data-rarity-effect="gold"] {
     --foil-rest: 0.035;
-    --foil-active: 0.3;
+    --foil-active: 0.52;
     --foil-sweep-color: rgba(255, 210, 86, 0.9);
-    --foil-sweep-opacity: 0.34;
+    --foil-sweep-opacity: 0.56;
     --foil-spectrum: linear-gradient(115deg, #725012 2%, #f4cb61 32%, #fff1b0 49%, #b77b12 68%, transparent 92%);
   }
 
   &[data-rarity-effect="prismatic"] {
-    --foil-active: 0.43;
-    --foil-sweep-opacity: 0.4;
+    --foil-active: 0.7;
+    --foil-sweep-opacity: 0.66;
     --foil-cycle: 5.8s;
   }
 }
@@ -329,6 +342,17 @@
   transform: translate3d(0, 0, 0) skewX(-9deg);
   animation: ygoFoilSweep var(--foil-cycle) cubic-bezier(0.33, 1, 0.68, 1) infinite;
   will-change: transform, opacity;
+}
+
+.cardArtworkFoil:hover .foilSweep,
+.card:focus-within .cardArtworkFoil .foilSweep {
+  left: calc(var(--foil-x) - 21%);
+  opacity: var(--foil-sweep-opacity);
+  transform: translate3d(0, 0, 0) skewX(-9deg);
+  animation: none;
+  transition:
+    left 90ms linear,
+    opacity 140ms ease-out;
 }
 
 @keyframes ygoFoilSweep {
@@ -360,13 +384,26 @@
   transform: scale(1.012);
 }
 
+.card:hover .cardMedia .cardArtworkFoil img,
+.card:focus-within .cardMedia .cardArtworkFoil img {
+  filter: brightness(0.78) saturate(1.14) contrast(1.08);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cardArtworkFoil::before,
   .cardArtworkFoil::after,
-  .foilSweep {
+  .foilSweep,
+  .cardArtworkFoil:hover .foilSweep,
+  .card:focus-within .cardArtworkFoil .foilSweep {
     opacity: 0;
     animation: none;
     transition: none;
+  }
+
+
+  .cardArtworkFoil,
+  .cardArtworkFoil:hover {
+    transform: translateX(-50%);
   }
 }
 
