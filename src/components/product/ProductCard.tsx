@@ -190,6 +190,7 @@ export default function ProductCard(props: ProductCardProps) {
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageFailed(true)}
             />
+            <span class={styles.foilSweep} aria-hidden="true" />
           </span>
         </Show>
         <Show when={p.badge}>

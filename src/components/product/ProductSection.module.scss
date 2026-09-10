@@ -170,6 +170,9 @@
   --foil-size: 150% 150%;
   --foil-repeat: no-repeat;
   --foil-blend: normal;
+  --foil-sweep-color: rgba(255, 255, 255, 0);
+  --foil-sweep-opacity: 0;
+  --foil-cycle: 7.2s;
   top: 0.7rem;
   right: auto;
   bottom: 0.7rem;
@@ -232,26 +235,36 @@
 
   &[data-rarity-effect="rare"] {
     --foil-rest: 0.02;
-    --foil-active: 0.1;
+    --foil-active: 0.16;
+    --foil-sweep-color: rgba(218, 238, 245, 0.72);
+    --foil-sweep-opacity: 0.2;
     --foil-spectrum: linear-gradient(118deg, transparent 25%, #d9ecf0 48%, transparent 70%);
   }
 
   &[data-rarity-effect="super"] {
     --foil-rest: 0.02;
-    --foil-active: 0.14;
+    --foil-active: 0.21;
+    --foil-sweep-color: rgba(169, 205, 255, 0.78);
+    --foil-sweep-opacity: 0.23;
+    --foil-cycle: 6.8s;
     --foil-spectrum: linear-gradient(118deg, #7dd3fc 8%, transparent 34%, #f0abfc 54%, transparent 78%);
   }
 
   &[data-rarity-effect="ultra"] {
     --foil-rest: 0.025;
-    --foil-active: 0.16;
+    --foil-active: 0.23;
+    --foil-sweep-color: rgba(255, 222, 123, 0.82);
+    --foil-sweep-opacity: 0.26;
     --foil-spectrum: linear-gradient(120deg, transparent 18%, #f7d774 43%, #fff4bd 52%, transparent 76%);
   }
 
   &[data-rarity-effect="secret"],
   &[data-rarity-effect="prismatic"] {
     --foil-rest: 0.025;
-    --foil-active: 0.31;
+    --foil-active: 0.38;
+    --foil-sweep-color: rgba(211, 239, 255, 0.9);
+    --foil-sweep-opacity: 0.34;
+    --foil-cycle: 6.2s;
     --foil-spectrum:
       linear-gradient(transparent 40%, rgba(#fff, 0.66) 49%, transparent 59%),
       linear-gradient(90deg, transparent 42%, rgba(#fff, 0.5) 50%, transparent 60%),
@@ -266,24 +279,78 @@
   &[data-rarity-effect="ultimate"],
   &[data-rarity-effect="collectors"] {
     --foil-rest: 0.025;
-    --foil-active: 0.19;
+    --foil-active: 0.27;
+    --foil-sweep-color: rgba(255, 220, 132, 0.82);
+    --foil-sweep-opacity: 0.28;
     --foil-spectrum: conic-gradient(from 210deg at var(--foil-x) var(--foil-y), #604610, #f7dc8c, transparent 28%, #b9892f, #fff0ae, transparent 72%);
   }
 
   &[data-rarity-effect="ghost"] {
     --foil-rest: 0.035;
-    --foil-active: 0.22;
+    --foil-active: 0.29;
+    --foil-sweep-color: rgba(235, 248, 255, 0.92);
+    --foil-sweep-opacity: 0.3;
     --foil-spectrum: linear-gradient(108deg, #fff 4%, #a9c2cf 28%, transparent 47%, #e6edf0 65%, transparent 88%);
   }
 
   &[data-rarity-effect="gold"] {
     --foil-rest: 0.035;
-    --foil-active: 0.21;
+    --foil-active: 0.3;
+    --foil-sweep-color: rgba(255, 210, 86, 0.9);
+    --foil-sweep-opacity: 0.34;
     --foil-spectrum: linear-gradient(115deg, #725012 2%, #f4cb61 32%, #fff1b0 49%, #b77b12 68%, transparent 92%);
   }
 
   &[data-rarity-effect="prismatic"] {
-    --foil-active: 0.36;
+    --foil-active: 0.43;
+    --foil-sweep-opacity: 0.4;
+    --foil-cycle: 5.8s;
+  }
+}
+
+.foilSweep {
+  position: absolute;
+  z-index: 4;
+  top: -18%;
+  bottom: -18%;
+  left: -76%;
+  width: 42%;
+  background: linear-gradient(
+    102deg,
+    transparent 0 22%,
+    var(--foil-sweep-color) 46%,
+    rgba(255, 255, 255, 0.76) 52%,
+    var(--foil-sweep-color) 58%,
+    transparent 80% 100%
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0) skewX(-9deg);
+  animation: ygoFoilSweep var(--foil-cycle) cubic-bezier(0.33, 1, 0.68, 1) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes ygoFoilSweep {
+  0%,
+  58% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) skewX(-9deg);
+  }
+
+  64% {
+    opacity: var(--foil-sweep-opacity);
+  }
+
+  79% {
+    opacity: var(--foil-sweep-opacity);
+    transform: translate3d(420%, 0, 0) skewX(-9deg);
+  }
+
+  84%,
+  100% {
+    opacity: 0;
+    transform: translate3d(420%, 0, 0) skewX(-9deg);
   }
 }
 
@@ -295,8 +362,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .cardArtworkFoil::before,
-  .cardArtworkFoil::after {
+  .cardArtworkFoil::after,
+  .foilSweep {
     opacity: 0;
+    animation: none;
     transition: none;
   }
 }
