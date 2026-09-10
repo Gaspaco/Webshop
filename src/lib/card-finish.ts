@@ -40,7 +40,7 @@ export function cardFinishFor(
   ).toLowerCase();
 
   if (!rarity) return undefined;
-  if (/quarter century|starlight|prismatic/.test(rarity)) return "prismatic";
+  if (/quarter century|starlight|prismatic|platinum|mosaic|shatterfoil|starfoil|parallel/.test(rarity)) return "prismatic";
   if (/ghost/.test(rarity)) return "ghost";
   if (/collector/.test(rarity)) return "collectors";
   if (/ultimate/.test(rarity)) return "ultimate";

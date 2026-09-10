@@ -450,6 +450,7 @@ export default function ProductDetail() {
                           draggable={false}
                           onError={() => setDetailImageFailed(true)}
                         />
+                        <span class={styles.foilSweep} aria-hidden="true" />
                       </div>
                     </Show>
                   </Show>
