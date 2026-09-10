@@ -119,7 +119,7 @@ export default function Navbar() {
           </form>
 
           <A
-            href="/wishlist"
+            href="/account?section=wishlist"
             class={`${styles.iconBtn} ${styles.wishlistBtn}`}
             aria-label="Wishlist"
           >

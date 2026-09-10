@@ -1,5 +1,5 @@
 import { Title } from "@solidjs/meta";
-import { A, useNavigate } from "@solidjs/router";
+import { A, useNavigate, useSearchParams } from "@solidjs/router";
 import QRCode from "qrcode";
 import {
   createEffect,
@@ -210,6 +210,7 @@ async function loadOverview() {
 
 export default function Account() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const session = authClient.useSession();
   const [activeSection, setActiveSection] = createSignal<Section>("overview");
   const [profileName, setProfileName] = createSignal("");
@@ -257,6 +258,16 @@ export default function Account() {
   );
 
   createEffect(() => {
+    const requestedSection = searchParams.section;
+    if (
+      typeof requestedSection === "string" &&
+      NAV_ITEMS.some(item => item.id === requestedSection)
+    ) {
+      setActiveSection(requestedSection as Section);
+    }
+  });
+
+  createEffect(() => {
     const currentUser = session().data?.user as
       | { role?: string }
       | undefined;
@@ -265,7 +276,13 @@ export default function Account() {
       return;
     }
     if (!session().isPending && !session().data) {
-      navigate("/login", { replace: true });
+      const requestedSection = searchParams.section;
+      const returnPath =
+        typeof requestedSection === "string" &&
+        NAV_ITEMS.some(item => item.id === requestedSection)
+          ? `/account?section=${requestedSection}`
+          : "/account";
+      navigate(`/login?next=${encodeURIComponent(returnPath)}`, { replace: true });
     }
   });
 
