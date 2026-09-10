@@ -1304,9 +1304,34 @@
 
 .csvReviewActions {
   display: flex;
+  align-items: flex-end;
   justify-content: flex-end;
   gap: 0.7rem;
   margin-top: 1rem;
+}
+
+.csvVisibility {
+  display: grid;
+  gap: 0.35rem;
+  margin-right: auto;
+}
+
+.csvVisibility span {
+  color: $gray-400;
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.csvVisibility select {
+  min-height: 2.7rem;
+  padding: 0 2.2rem 0 0.75rem;
+  border: 1px solid rgba($white, 0.14);
+  border-radius: 0.45rem;
+  color: $white;
+  background: #111614;
+  font-size: 0.72rem;
 }
 
 .csvReviewActions button {

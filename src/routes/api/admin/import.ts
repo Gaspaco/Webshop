@@ -46,14 +46,15 @@ const rowSchema = z.object({
     }, "Images must use a valid HTTPS address.")
     .optional()
     .default(""),
-  // Kept for compatibility with older templates. CSV imports are always
-  // staged as drafts, regardless of the value supplied by the file.
+  // Kept for compatibility with older templates. Visibility is chosen once
+  // for the whole reviewed import instead of being trusted from a CSV cell.
   status: z.enum(["draft", "active"]).optional().default("draft"),
 });
 
 const importSchema = z
   .object({
     fileName: z.string().trim().max(180).optional().default("catalog.csv"),
+    visibility: z.enum(["draft", "active"]).optional().default("active"),
     rows: z.array(rowSchema).min(1).max(1000),
   })
   .superRefine((input, context) => {
@@ -121,6 +122,7 @@ export async function POST(event: APIEvent) {
               name: row.name,
               game: row.game,
               productType: row.productType,
+              status: input.visibility,
               metadata: {
                 ...(existing.metadata ?? {}),
                 set: row.set || null,
@@ -173,10 +175,7 @@ export async function POST(event: APIEvent) {
               slug,
               game: row.game,
               productType: row.productType,
-              // A CSV can add hundreds of records at once. Keeping the batch
-              // private until the owner reviews it prevents malformed rows,
-              // prices, or images from changing the live storefront.
-              status: "draft",
+              status: input.visibility,
               imageUrls: row.image ? [row.image] : [],
               metadata: {
                 set: row.set || null,
@@ -259,7 +258,7 @@ export async function POST(event: APIEvent) {
       updatedRows,
       failedRows: errors.length,
       errors,
-      stagedAsDrafts: true,
+      stagedAsDrafts: input.visibility === "draft",
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
