@@ -5,6 +5,7 @@ import {
   createResource,
   createSignal,
   For,
+  onCleanup,
   onMount,
   Show,
 } from "solid-js";
@@ -162,12 +163,79 @@ export default function ProductDetail() {
   const [detailImageFailed, setDetailImageFailed] = createSignal(false);
   const [added, setAdded] = createSignal(false);
   const [saved, setSaved] = createSignal(false);
+  const [wishlistBusy, setWishlistBusy] = createSignal(false);
+  const [wishlistMessage, setWishlistMessage] = createSignal("");
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
   const [bulkOpen, setBulkOpen] = createSignal(false);
   const [bulkPicks, setBulkPicks] = createSignal<Record<string, number>>({});
   const [bulkAdded, setBulkAdded] = createSignal(0);
 
   onMount(() => setClientReady(true));
+
+  createEffect(() => {
+    const slug = product()?.id;
+    if (!clientReady() || !slug) return;
+
+    const controller = new AbortController();
+    setWishlistMessage("");
+    void fetch(`/api/account/wishlist?slug=${encodeURIComponent(slug)}`, {
+      credentials: "same-origin",
+      signal: controller.signal,
+    })
+      .then(async response => {
+        if (response.status === 401) return;
+        const result = await response.json() as { saved?: boolean };
+        if (response.ok) setSaved(Boolean(result.saved));
+      })
+      .catch(error => {
+        if ((error as Error).name !== "AbortError") setSaved(false);
+      });
+
+    onCleanup(() => controller.abort());
+  });
+
+  const toggleWishlist = async () => {
+    const current = product();
+    if (!current || wishlistBusy()) return;
+
+    const wasSaved = saved();
+    setSaved(!wasSaved);
+    setWishlistBusy(true);
+    setWishlistMessage("");
+
+    try {
+      const response = await fetch("/api/account/wishlist", {
+        method: wasSaved ? "DELETE" : "PUT",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: current.id }),
+      });
+      const result = await response.json().catch(() => ({})) as {
+        error?: string;
+        saved?: boolean;
+      };
+
+      if (response.status === 401) {
+        setSaved(wasSaved);
+        const returnPath = `${window.location.pathname}${window.location.search}`;
+        window.location.assign(`/login?next=${encodeURIComponent(returnPath)}`);
+        return;
+      }
+      if (!response.ok) {
+        setSaved(wasSaved);
+        setWishlistMessage(result.error ?? "The wishlist could not be updated.");
+        return;
+      }
+
+      setSaved(Boolean(result.saved));
+      setWishlistMessage(result.saved ? "Saved to your wishlist." : "Removed from your wishlist.");
+    } catch {
+      setSaved(wasSaved);
+      setWishlistMessage("The wishlist could not be updated. Try again.");
+    } finally {
+      setWishlistBusy(false);
+    }
+  };
 
   const selectedVariant = () => {
     const variants = product()?.variants ?? [];
@@ -480,13 +548,18 @@ export default function ProductDetail() {
                       classList={{ [styles.saveButtonActive]: saved() }}
                       aria-label={saved() ? `Remove ${item().name} from wishlist` : `Save ${item().name} to wishlist`}
                       aria-pressed={saved()}
-                      onClick={() => setSaved(value => !value)}
+                      aria-busy={wishlistBusy()}
+                      disabled={wishlistBusy()}
+                      onClick={() => void toggleWishlist()}
                     >
                       <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
                       </svg>
                     </button>
                   </div>
+                  <Show when={wishlistMessage()}>
+                    <p class={styles.wishlistMessage} role="status">{wishlistMessage()}</p>
+                  </Show>
                 </header>
 
                 <div class={styles.priceStockRow}>

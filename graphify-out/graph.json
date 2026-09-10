@@ -1114,27 +1114,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game].tsx:166"
     },
     {
-      "id": "file::footer",
-      "label": "Footer.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:1"
-    },
-    {
-      "id": "Footer::safesocialurl",
-      "label": "safeSocialUrl",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:20"
-    },
-    {
-      "id": "Footer::accounthref",
-      "label": "accountHref",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:29"
-    },
-    {
       "id": "file::sitemap_xml",
       "label": "sitemap.xml.ts",
       "fileType": "code",
@@ -1275,83 +1254,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/categories/[game]/sets/[set].tsx:15"
     },
     {
-      "id": "file::authpage",
-      "label": "AuthPage.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:1"
-    },
-    {
-      "id": "AuthPage::switchmode",
-      "label": "switchMode",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:46"
-    },
-    {
-      "id": "AuthPage::continuewithgoogle",
-      "label": "continueWithGoogle",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:58"
-    },
-    {
-      "id": "AuthPage::submitlogin",
-      "label": "submitLogin",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:84"
-    },
-    {
-      "id": "AuthPage::submitsignup",
-      "label": "submitSignup",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:127"
-    },
-    {
-      "id": "AuthPage::openpasswordreset",
-      "label": "openPasswordReset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:197"
-    },
-    {
-      "id": "AuthPage::closepasswordreset",
-      "label": "closePasswordReset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:205"
-    },
-    {
-      "id": "AuthPage::submitpasswordreset",
-      "label": "submitPasswordReset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:210"
-    },
-    {
-      "id": "AuthPage::handlehistory",
-      "label": "handleHistory",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:245"
-    },
-    {
-      "id": "AuthPage::handlekeydown",
-      "label": "handleKeydown",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:250"
-    },
-    {
-      "id": "authpage::checkicon",
-      "label": "CheckIcon",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:814"
-    },
-    {
       "id": "file::collectionpaths",
       "label": "CollectionPaths.tsx",
       "fileType": "code",
@@ -1371,55 +1273,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/CollectionPaths.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/CollectionPaths.tsx:12"
-    },
-    {
-      "id": "file::navbar",
-      "label": "Navbar.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:1"
-    },
-    {
-      "id": "Navbar::accounthref",
-      "label": "accountHref",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:15"
-    },
-    {
-      "id": "Navbar::opensearch",
-      "label": "openSearch",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:20"
-    },
-    {
-      "id": "Navbar::closesearch",
-      "label": "closeSearch",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:25"
-    },
-    {
-      "id": "Navbar::submitsearch",
-      "label": "submitSearch",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:27"
-    },
-    {
-      "id": "Navbar::onoutsidepointer",
-      "label": "onOutsidePointer",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:40"
-    },
-    {
-      "id": "Navbar::onkey",
-      "label": "onKey",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:46"
     },
     {
       "id": "file::about",
@@ -2255,132 +2108,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/RouteSkeleton.tsx:13"
     },
     {
-      "id": "index::readablestatus",
-      "label": "readableStatus",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:131"
-    },
-    {
-      "id": "index::readablepaymentmethod",
-      "label": "readablePaymentMethod",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:135"
-    },
-    {
-      "id": "index::prepareprofileimage",
-      "label": "prepareProfileImage",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:143"
-    },
-    {
-      "id": "index::loadoverview",
-      "label": "loadOverview",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:198"
-    },
-    {
-      "id": "index::totalspent",
-      "label": "totalSpent",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:313"
-    },
-    {
-      "id": "index::selectprofileimage",
-      "label": "selectProfileImage",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:316"
-    },
-    {
-      "id": "index::removeprofileimage",
-      "label": "removeProfileImage",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:338"
-    },
-    {
-      "id": "index::saveprofile",
-      "label": "saveProfile",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:344"
-    },
-    {
-      "id": "index::resendverification",
-      "label": "resendVerification",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:371"
-    },
-    {
-      "id": "index::requestemailchange",
-      "label": "requestEmailChange",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:392"
-    },
-    {
-      "id": "index::saveaddress",
-      "label": "saveAddress",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:426"
-    },
-    {
-      "id": "index::updatepassword",
-      "label": "updatePassword",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:478"
-    },
-    {
-      "id": "index::revokeothersessions",
-      "label": "revokeOtherSessions",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:514"
-    },
-    {
-      "id": "index::begintwofactor",
-      "label": "beginTwoFactor",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:529"
-    },
-    {
-      "id": "index::confirmtwofactor",
-      "label": "confirmTwoFactor",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:573"
-    },
-    {
-      "id": "index::regeneratebackupcodes",
-      "label": "regenerateBackupCodes",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:601"
-    },
-    {
-      "id": "index::disabletwofactor",
-      "label": "disableTwoFactor",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:630"
-    },
-    {
-      "id": "index::copybackupcodes",
-      "label": "copyBackupCodes",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:655"
-    },
-    {
       "id": "index::signin",
       "label": "signIn",
       "fileType": "code",
@@ -2451,32 +2178,11 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/two-factor/index.tsx:60"
     },
     {
-      "id": "file::index",
-      "label": "index.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx:1"
-    },
-    {
       "id": "index::createemptyvariantdraft",
       "label": "createEmptyVariantDraft",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx:368"
-    },
-    {
-      "id": "index::formatmoney",
-      "label": "formatMoney",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx:442"
-    },
-    {
-      "id": "index::formatdate",
-      "label": "formatDate",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx:449"
     },
     {
       "id": "index::eurostocents",
@@ -2526,13 +2232,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx:545"
-    },
-    {
-      "id": "index::initials",
-      "label": "initials",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx:559"
     },
     {
       "id": "index::escapecsvcell",
@@ -2976,13 +2675,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx:3154"
     },
     {
-      "id": "index::signout",
-      "label": "signOut",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/admin/index.tsx:3191"
-    },
-    {
       "id": "index::yugiohsearching",
       "label": "yugiohSearching",
       "fileType": "code",
@@ -3095,6 +2787,321 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:29"
     },
     {
+      "id": "file::authpage",
+      "label": "AuthPage.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:1"
+    },
+    {
+      "id": "authpage::safenextpath",
+      "label": "safeNextPath",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:19"
+    },
+    {
+      "id": "AuthPage::switchmode",
+      "label": "switchMode",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:56"
+    },
+    {
+      "id": "AuthPage::continuewithgoogle",
+      "label": "continueWithGoogle",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:68"
+    },
+    {
+      "id": "AuthPage::submitlogin",
+      "label": "submitLogin",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:95"
+    },
+    {
+      "id": "AuthPage::submitsignup",
+      "label": "submitSignup",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:138"
+    },
+    {
+      "id": "AuthPage::openpasswordreset",
+      "label": "openPasswordReset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:208"
+    },
+    {
+      "id": "AuthPage::closepasswordreset",
+      "label": "closePasswordReset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:216"
+    },
+    {
+      "id": "AuthPage::submitpasswordreset",
+      "label": "submitPasswordReset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:221"
+    },
+    {
+      "id": "AuthPage::handlehistory",
+      "label": "handleHistory",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:256"
+    },
+    {
+      "id": "AuthPage::handlekeydown",
+      "label": "handleKeydown",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:261"
+    },
+    {
+      "id": "authpage::checkicon",
+      "label": "CheckIcon",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:825"
+    },
+    {
+      "id": "file::footer",
+      "label": "Footer.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:1"
+    },
+    {
+      "id": "Footer::safesocialurl",
+      "label": "safeSocialUrl",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:20"
+    },
+    {
+      "id": "Footer::accounthref",
+      "label": "accountHref",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:29"
+    },
+    {
+      "id": "file::navbar",
+      "label": "Navbar.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:1"
+    },
+    {
+      "id": "Navbar::accounthref",
+      "label": "accountHref",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:15"
+    },
+    {
+      "id": "Navbar::opensearch",
+      "label": "openSearch",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:20"
+    },
+    {
+      "id": "Navbar::closesearch",
+      "label": "closeSearch",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:25"
+    },
+    {
+      "id": "Navbar::submitsearch",
+      "label": "submitSearch",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:27"
+    },
+    {
+      "id": "Navbar::onoutsidepointer",
+      "label": "onOutsidePointer",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:40"
+    },
+    {
+      "id": "Navbar::onkey",
+      "label": "onKey",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:46"
+    },
+    {
+      "id": "file::index",
+      "label": "index.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:1"
+    },
+    {
+      "id": "index::formatmoney",
+      "label": "formatMoney",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:116"
+    },
+    {
+      "id": "index::formatdate",
+      "label": "formatDate",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:123"
+    },
+    {
+      "id": "index::readablestatus",
+      "label": "readableStatus",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:131"
+    },
+    {
+      "id": "index::readablepaymentmethod",
+      "label": "readablePaymentMethod",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:135"
+    },
+    {
+      "id": "index::prepareprofileimage",
+      "label": "prepareProfileImage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:143"
+    },
+    {
+      "id": "index::loadoverview",
+      "label": "loadOverview",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:198"
+    },
+    {
+      "id": "index::initials",
+      "label": "initials",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:320"
+    },
+    {
+      "id": "index::totalspent",
+      "label": "totalSpent",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:330"
+    },
+    {
+      "id": "index::selectprofileimage",
+      "label": "selectProfileImage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:333"
+    },
+    {
+      "id": "index::removeprofileimage",
+      "label": "removeProfileImage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:355"
+    },
+    {
+      "id": "index::saveprofile",
+      "label": "saveProfile",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:361"
+    },
+    {
+      "id": "index::resendverification",
+      "label": "resendVerification",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:388"
+    },
+    {
+      "id": "index::requestemailchange",
+      "label": "requestEmailChange",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:409"
+    },
+    {
+      "id": "index::saveaddress",
+      "label": "saveAddress",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:443"
+    },
+    {
+      "id": "index::updatepassword",
+      "label": "updatePassword",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:495"
+    },
+    {
+      "id": "index::revokeothersessions",
+      "label": "revokeOtherSessions",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:531"
+    },
+    {
+      "id": "index::begintwofactor",
+      "label": "beginTwoFactor",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:546"
+    },
+    {
+      "id": "index::confirmtwofactor",
+      "label": "confirmTwoFactor",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:590"
+    },
+    {
+      "id": "index::regeneratebackupcodes",
+      "label": "regenerateBackupCodes",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:618"
+    },
+    {
+      "id": "index::disabletwofactor",
+      "label": "disableTwoFactor",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:647"
+    },
+    {
+      "id": "index::copybackupcodes",
+      "label": "copyBackupCodes",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:672"
+    },
+    {
+      "id": "index::signout",
+      "label": "signOut",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:678"
+    },
+    {
       "id": "file::_id_",
       "label": "[id].tsx",
       "fileType": "code",
@@ -3106,154 +3113,210 @@
       "label": "isSealedProduct",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:23"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:24"
     },
     {
       "id": "_id_::youtubeembedurl",
       "label": "youtubeEmbedUrl",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:27"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:28"
     },
     {
       "id": "_id_::describe",
       "label": "describe",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:43"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:44"
     },
     {
       "id": "_id_::conditionfor",
       "label": "conditionFor",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:52"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:53"
     },
     {
       "id": "[id]::product",
       "label": "product",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:149"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:150"
+    },
+    {
+      "id": "[id]::togglewishlist",
+      "label": "toggleWishlist",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:197"
     },
     {
       "id": "[id]::selectedvariant",
       "label": "selectedVariant",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:172"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:240"
     },
     {
       "id": "[id]::mainvariant",
       "label": "mainVariant",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:177"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:245"
     },
     {
       "id": "[id]::displayvariant",
       "label": "displayVariant",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:187"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:255"
     },
     {
       "id": "[id]::movedetailcard",
       "label": "moveDetailCard",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:191"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:259"
     },
     {
       "id": "[id]::resetdetailcard",
       "label": "resetDetailCard",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:204"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:272"
     },
     {
       "id": "[id]::activeproduct",
       "label": "activeProduct",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:213"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:281"
     },
     {
       "id": "[id]::productjsonld",
       "label": "productJsonLd",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:237"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:305"
     },
     {
       "id": "[id]::buyablevariants",
       "label": "buyableVariants",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:274"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:342"
     },
     {
       "id": "[id]::bulkentries",
       "label": "bulkEntries",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:277"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:345"
     },
     {
       "id": "[id]::bulkcount",
       "label": "bulkCount",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:280"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:348"
     },
     {
       "id": "[id]::bulktotalcents",
       "label": "bulkTotalCents",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:282"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:350"
     },
     {
       "id": "[id]::togglebulkpick",
       "label": "toggleBulkPick",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:288"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:356"
     },
     {
       "id": "[id]::setbulkquantity",
       "label": "setBulkQuantity",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:297"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:365"
     },
     {
       "id": "[id]::addselectedvariants",
       "label": "addSelectedVariants",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:305"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:373"
     },
     {
       "id": "[id]::addmain",
       "label": "addMain",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:330"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:398"
     },
     {
       "id": "[id]::addrelated",
       "label": "addRelated",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:352"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:420"
     },
     {
       "id": "_id_::formatprice",
       "label": "formatPrice",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:502"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:575"
+    },
+    {
+      "id": "file::wishlist",
+      "label": "wishlist.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:1"
+    },
+    {
+      "id": "wishlist::json",
+      "label": "json",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:18"
+    },
+    {
+      "id": "wishlist::getsession",
+      "label": "getSession",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:29"
+    },
+    {
+      "id": "wishlist::findactiveproduct",
+      "label": "findActiveProduct",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:33"
+    },
+    {
+      "id": "wishlist::get",
+      "label": "GET",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:42"
+    },
+    {
+      "id": "wishlist::put",
+      "label": "PUT",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:70"
+    },
+    {
+      "id": "wishlist::delete",
+      "label": "DELETE",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:95"
     }
   ],
   "edges": [
@@ -4194,24 +4257,6 @@
       "weight": 1
     },
     {
-      "source": "file::footer",
-      "target": "Footer::safesocialurl",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:20",
-      "weight": 1
-    },
-    {
-      "source": "file::footer",
-      "target": "Footer::accounthref",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:29",
-      "weight": 1
-    },
-    {
       "source": "file::sitemap_xml",
       "target": "sitemap.xml::escapexml",
       "relation": "contains",
@@ -4347,96 +4392,6 @@
       "weight": 1
     },
     {
-      "source": "file::authpage",
-      "target": "AuthPage::switchmode",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:46",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::continuewithgoogle",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:58",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::submitlogin",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:84",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::submitsignup",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:127",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::openpasswordreset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:197",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::closepasswordreset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:205",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::submitpasswordreset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:210",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::handlehistory",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:245",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "AuthPage::handlekeydown",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:250",
-      "weight": 1
-    },
-    {
-      "source": "file::authpage",
-      "target": "authpage::checkicon",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:814",
-      "weight": 1
-    },
-    {
       "source": "file::collectionpaths",
       "target": "collectionpaths::arrow",
       "relation": "contains",
@@ -4452,60 +4407,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/CollectionPaths.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/CollectionPaths.tsx:12",
-      "weight": 1
-    },
-    {
-      "source": "file::navbar",
-      "target": "Navbar::accounthref",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:15",
-      "weight": 1
-    },
-    {
-      "source": "file::navbar",
-      "target": "Navbar::opensearch",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:20",
-      "weight": 1
-    },
-    {
-      "source": "file::navbar",
-      "target": "Navbar::closesearch",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:25",
-      "weight": 1
-    },
-    {
-      "source": "file::navbar",
-      "target": "Navbar::submitsearch",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:27",
-      "weight": 1
-    },
-    {
-      "source": "file::navbar",
-      "target": "Navbar::onoutsidepointer",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:40",
-      "weight": 1
-    },
-    {
-      "source": "file::navbar",
-      "target": "Navbar::onkey",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:46",
       "weight": 1
     },
     {
@@ -5347,204 +5248,6 @@
     },
     {
       "source": "file::index",
-      "target": "index::formatmoney",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:116",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::formatdate",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:123",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::readablestatus",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:131",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::readablepaymentmethod",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:135",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::prepareprofileimage",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:143",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::loadoverview",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:198",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::initials",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:303",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::totalspent",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:313",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::selectprofileimage",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:316",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::removeprofileimage",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:338",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::saveprofile",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:344",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::resendverification",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:371",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::requestemailchange",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:392",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::saveaddress",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:426",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::updatepassword",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:478",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::revokeothersessions",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:514",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::begintwofactor",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:529",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::confirmtwofactor",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:573",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::regeneratebackupcodes",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:601",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::disabletwofactor",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:630",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::copybackupcodes",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:655",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
-      "target": "index::signout",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:661",
-      "weight": 1
-    },
-    {
-      "source": "file::index",
       "target": "index::signin",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -6381,12 +6084,381 @@
       "weight": 1
     },
     {
+      "source": "file::authpage",
+      "target": "authpage::safenextpath",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:19",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::switchmode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:56",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::continuewithgoogle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:68",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::submitlogin",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:95",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::submitsignup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:138",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::openpasswordreset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:208",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::closepasswordreset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:216",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::submitpasswordreset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:221",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::handlehistory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:256",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "AuthPage::handlekeydown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:261",
+      "weight": 1
+    },
+    {
+      "source": "file::authpage",
+      "target": "authpage::checkicon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/auth/AuthPage.tsx:825",
+      "weight": 1
+    },
+    {
+      "source": "file::footer",
+      "target": "Footer::safesocialurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:20",
+      "weight": 1
+    },
+    {
+      "source": "file::footer",
+      "target": "Footer::accounthref",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Footer.tsx:29",
+      "weight": 1
+    },
+    {
+      "source": "file::navbar",
+      "target": "Navbar::accounthref",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:15",
+      "weight": 1
+    },
+    {
+      "source": "file::navbar",
+      "target": "Navbar::opensearch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:20",
+      "weight": 1
+    },
+    {
+      "source": "file::navbar",
+      "target": "Navbar::closesearch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:25",
+      "weight": 1
+    },
+    {
+      "source": "file::navbar",
+      "target": "Navbar::submitsearch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:27",
+      "weight": 1
+    },
+    {
+      "source": "file::navbar",
+      "target": "Navbar::onoutsidepointer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:40",
+      "weight": 1
+    },
+    {
+      "source": "file::navbar",
+      "target": "Navbar::onkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/layout/Navbar.tsx:46",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::formatmoney",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:116",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::formatdate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:123",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::readablestatus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:131",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::readablepaymentmethod",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:135",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::prepareprofileimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:143",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::loadoverview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:198",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::initials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:320",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::totalspent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:330",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::selectprofileimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:333",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::removeprofileimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:355",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::saveprofile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:361",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::resendverification",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:388",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::requestemailchange",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:409",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::saveaddress",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:443",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::updatepassword",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:495",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::revokeothersessions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:531",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::begintwofactor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:546",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::confirmtwofactor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:590",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::regeneratebackupcodes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:618",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::disabletwofactor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:647",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::copybackupcodes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:672",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::signout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/account/index.tsx:678",
+      "weight": 1
+    },
+    {
       "source": "file::_id_",
       "target": "_id_::issealedproduct",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:23",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:24",
       "weight": 1
     },
     {
@@ -6395,7 +6467,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:27",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:28",
       "weight": 1
     },
     {
@@ -6404,7 +6476,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:43",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:44",
       "weight": 1
     },
     {
@@ -6413,7 +6485,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:52",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:53",
       "weight": 1
     },
     {
@@ -6422,7 +6494,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:149",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:150",
+      "weight": 1
+    },
+    {
+      "source": "file::_id_",
+      "target": "[id]::togglewishlist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:197",
       "weight": 1
     },
     {
@@ -6431,7 +6512,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:172",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:240",
       "weight": 1
     },
     {
@@ -6440,7 +6521,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:177",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:245",
       "weight": 1
     },
     {
@@ -6449,7 +6530,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:187",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:255",
       "weight": 1
     },
     {
@@ -6458,7 +6539,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:191",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:259",
       "weight": 1
     },
     {
@@ -6467,7 +6548,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:204",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:272",
       "weight": 1
     },
     {
@@ -6476,7 +6557,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:213",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:281",
       "weight": 1
     },
     {
@@ -6485,7 +6566,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:237",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:305",
       "weight": 1
     },
     {
@@ -6494,7 +6575,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:274",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:342",
       "weight": 1
     },
     {
@@ -6503,7 +6584,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:277",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:345",
       "weight": 1
     },
     {
@@ -6512,7 +6593,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:280",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:348",
       "weight": 1
     },
     {
@@ -6521,7 +6602,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:282",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:350",
       "weight": 1
     },
     {
@@ -6530,7 +6611,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:288",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:356",
       "weight": 1
     },
     {
@@ -6539,7 +6620,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:297",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:365",
       "weight": 1
     },
     {
@@ -6548,7 +6629,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:305",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:373",
       "weight": 1
     },
     {
@@ -6557,7 +6638,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:330",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:398",
       "weight": 1
     },
     {
@@ -6566,7 +6647,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:352",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:420",
       "weight": 1
     },
     {
@@ -6575,14 +6656,68 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:502",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:575",
+      "weight": 1
+    },
+    {
+      "source": "file::wishlist",
+      "target": "wishlist::json",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:18",
+      "weight": 1
+    },
+    {
+      "source": "file::wishlist",
+      "target": "wishlist::getsession",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:29",
+      "weight": 1
+    },
+    {
+      "source": "file::wishlist",
+      "target": "wishlist::findactiveproduct",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:33",
+      "weight": 1
+    },
+    {
+      "source": "file::wishlist",
+      "target": "wishlist::get",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:42",
+      "weight": 1
+    },
+    {
+      "source": "file::wishlist",
+      "target": "wishlist::put",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:70",
+      "weight": 1
+    },
+    {
+      "source": "file::wishlist",
+      "target": "wishlist::delete",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/account/wishlist.ts:95",
       "weight": 1
     }
   ],
   "metadata": {
-    "files": 115,
-    "nodes": 465,
-    "edges": 369,
-    "builtAt": "2026-09-10T16:22:56.526Z"
+    "files": 116,
+    "nodes": 474,
+    "edges": 377,
+    "builtAt": "2026-09-10T22:46:36.870Z"
   }
 }

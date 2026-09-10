@@ -16,6 +16,16 @@ type AuthPageProps = {
   initialMode: AuthMode;
 };
 
+function safeNextPath() {
+  const candidate = new URLSearchParams(window.location.search).get("next");
+  return candidate &&
+    candidate.startsWith("/") &&
+    !candidate.startsWith("//") &&
+    !candidate.includes("\\")
+    ? candidate
+    : "/account";
+}
+
 export default function AuthPage(props: AuthPageProps) {
   const session = authClient.useSession();
   const [mode, setMode] = createSignal<AuthMode>(props.initialMode);
@@ -60,10 +70,11 @@ export default function AuthPage(props: AuthPageProps) {
     setGoogleLoading(true);
 
     try {
+      const nextPath = safeNextPath();
       const { error: authError } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: `${window.location.origin}/account`,
-        newUserCallbackURL: `${window.location.origin}/account`,
+        callbackURL: `${window.location.origin}${nextPath}`,
+        newUserCallbackURL: `${window.location.origin}${nextPath}`,
         errorCallbackURL: `${window.location.origin}/${mode()}?oauth=google`,
       });
 
@@ -120,7 +131,7 @@ export default function AuthPage(props: AuthPageProps) {
 
     const signedInUser = authData?.user as { role?: string } | undefined;
     window.location.assign(
-      signedInUser?.role === "admin" ? "/admin" : "/account",
+      signedInUser?.role === "admin" ? "/admin" : safeNextPath(),
     );
   };
 

@@ -416,6 +416,17 @@
   }
 }
 
+.saveButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.wishlistMessage {
+  margin-top: 0.65rem;
+  color: $gray-300;
+  font-size: 0.78rem;
+}
+
 .price {
   color: $white;
   font-family: $font-display;

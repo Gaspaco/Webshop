@@ -107,7 +107,7 @@ export default function Footer() {
         <div class={styles.linkCol}>
           <h3 class={styles.linkHeading}>Account</h3>
           <A href={accountHref()}>{accountHref() === "/admin" ? "Owner dashboard" : "My account"}</A>
-          <A href="/wishlist">Wishlist</A>
+          <A href="/account?section=wishlist">Wishlist</A>
           <A href="/cart">Cart</A>
           <A href="/login">Sign in</A>
         </div>
