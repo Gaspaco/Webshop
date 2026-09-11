@@ -8,7 +8,14 @@ export type CardFinish =
   | "ghost"
   | "collectors"
   | "gold"
-  | "prismatic";
+  | "prismatic"
+  | "starlight"
+  | "quarter-century"
+  | "platinum"
+  | "mosaic"
+  | "shatterfoil"
+  | "starfoil"
+  | "parallel";
 
 type FinishableCard = {
   game?: string;
@@ -40,7 +47,16 @@ export function cardFinishFor(
   ).toLowerCase();
 
   if (!rarity) return undefined;
-  if (/quarter century|starlight|prismatic|platinum|mosaic|shatterfoil|starfoil|parallel/.test(rarity)) return "prismatic";
+  // Keep these checks specific and ordered. Several names also include "Secret
+  // Rare" or "Rare", but their physical foils are visibly different.
+  if (/quarter century/.test(rarity)) return "quarter-century";
+  if (/starlight/.test(rarity)) return "starlight";
+  if (/platinum/.test(rarity)) return "platinum";
+  if (/shatterfoil/.test(rarity)) return "shatterfoil";
+  if (/starfoil/.test(rarity)) return "starfoil";
+  if (/mosaic/.test(rarity)) return "mosaic";
+  if (/parallel/.test(rarity)) return "parallel";
+  if (/prismatic/.test(rarity)) return "prismatic";
   if (/ghost/.test(rarity)) return "ghost";
   if (/collector/.test(rarity)) return "collectors";
   if (/ultimate/.test(rarity)) return "ultimate";
