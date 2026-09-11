@@ -1804,7 +1804,7 @@
         rgba(#dff8f1, 0.2) 9%,
         transparent 31%
       );
-    mix-blend-mode: plus-lighter;
+    mix-blend-mode: screen;
   }
 
   &[data-rarity-effect]::after {
@@ -1814,13 +1814,27 @@
     background-repeat: var(--foil-repeat);
     background-size: var(--foil-size);
     background-blend-mode: var(--foil-blend);
-    mix-blend-mode: color-dodge;
+    mix-blend-mode: screen;
   }
 
   &[data-rarity-effect]:hover::before,
   &[data-rarity-effect]:hover::after {
     opacity: calc(var(--foil-active) * var(--foil-strength));
     transition-duration: 90ms;
+  }
+
+  &[data-rarity-effect="common"] {
+    --foil-rest: 0.012;
+    --foil-active: 0.24;
+    --foil-sweep-color: rgba(224, 244, 255, 0.64);
+    --foil-sweep-opacity: 0.28;
+    --foil-spectrum:
+      linear-gradient(116deg, transparent 24%, rgba(#fff, 0.72) 48%, rgba(#bdefff, 0.34) 55%, transparent 73%),
+      radial-gradient(circle at var(--foil-x) var(--foil-y), rgba(#fff, 0.25), transparent 42%);
+    --foil-position: var(--foil-x) var(--foil-y), var(--foil-x) var(--foil-y);
+    --foil-size: 165% 165%, 130% 130%;
+    --foil-repeat: no-repeat, no-repeat;
+    --foil-blend: screen, screen;
   }
 
   &[data-rarity-effect="rare"] {
@@ -1850,7 +1864,7 @@
 
   &[data-rarity-effect="secret"] {
     --foil-rest: 0.03;
-    --foil-active: 0.62;
+    --foil-active: 0.88;
     --foil-sweep-color: rgba(211, 239, 255, 0.9);
     --foil-sweep-opacity: 0.58;
     --foil-cycle: 6.2s;
@@ -1916,7 +1930,7 @@
 
   &[data-rarity-effect="prismatic"] {
     --foil-rest: 0.035;
-    --foil-active: 0.7;
+    --foil-active: 0.94;
     --foil-sweep-color: rgba(220, 242, 255, 0.94);
     --foil-sweep-opacity: 0.66;
     --foil-cycle: 5.8s;
@@ -1937,6 +1951,108 @@
       185% 185%;
     --foil-repeat: repeat, repeat, repeat, no-repeat;
     --foil-blend: screen, screen, overlay, color;
+  }
+
+  &[data-rarity-effect="starlight"] {
+    --foil-rest: 0.035;
+    --foil-active: 0.92;
+    --foil-sweep-color: rgba(220, 244, 255, 0.94);
+    --foil-sweep-opacity: 0.65;
+    --foil-cycle: 5.5s;
+    --foil-spectrum:
+      repeating-linear-gradient(90deg, transparent 0 7px, rgba(#fff, 0.54) 8px, transparent 9px 16px),
+      repeating-linear-gradient(0deg, transparent 0 8px, rgba(#b7eaff, 0.46) 9px, transparent 10px 18px),
+      conic-gradient(from 110deg at var(--foil-x) var(--foil-y), #66d9ff, #d9a7ff, #ff9ccf, #fff19c, #77f2c1, #66d9ff);
+    --foil-position: var(--foil-x) 0, 0 var(--foil-y), var(--foil-x) var(--foil-y);
+    --foil-size: 118% 100%, 100% 118%, 190% 190%;
+    --foil-repeat: repeat, repeat, no-repeat;
+    --foil-blend: screen, screen, color;
+  }
+
+  &[data-rarity-effect="quarter-century"] {
+    --foil-rest: 0.04;
+    --foil-active: 0.96;
+    --foil-sweep-color: rgba(238, 248, 255, 0.96);
+    --foil-sweep-opacity: 0.7;
+    --foil-cycle: 5.2s;
+    --foil-spectrum:
+      repeating-linear-gradient(45deg, transparent 0 12px, rgba(#fff, 0.55) 13px, transparent 14px 26px),
+      repeating-linear-gradient(-45deg, transparent 0 13px, rgba(#bceeff, 0.46) 14px, transparent 15px 28px),
+      radial-gradient(circle at var(--foil-x) var(--foil-y), #fff 0 2%, #a9e8ff 7%, #d8b4fe 14%, transparent 36%),
+      conic-gradient(from 70deg at var(--foil-x) var(--foil-y), #76e4ff, #f0abfc, #fde68a, #86efac, #76e4ff);
+    --foil-position: 0 0, 0 0, 0 0, var(--foil-x) var(--foil-y);
+    --foil-size: 100% 100%, 100% 100%, 100% 100%, 210% 210%;
+    --foil-repeat: repeat, repeat, no-repeat, no-repeat;
+    --foil-blend: screen, screen, screen, color;
+  }
+
+  &[data-rarity-effect="platinum"] {
+    --foil-rest: 0.03;
+    --foil-active: 0.74;
+    --foil-sweep-color: rgba(235, 247, 255, 0.96);
+    --foil-sweep-opacity: 0.62;
+    --foil-spectrum:
+      repeating-linear-gradient(115deg, #66737a 0 2px, #f8fdff 3px 5px, #a9bdc7 6px 8px, transparent 9px 15px),
+      radial-gradient(circle at var(--foil-x) var(--foil-y), #fff, #b8dce9 14%, transparent 38%);
+    --foil-position: calc(var(--foil-x) / 4) calc(var(--foil-y) / 4), 0 0;
+    --foil-size: 190% 190%, 100% 100%;
+    --foil-repeat: repeat, no-repeat;
+    --foil-blend: screen, screen;
+  }
+
+  &[data-rarity-effect="mosaic"] {
+    --foil-rest: 0.025;
+    --foil-active: 0.7;
+    --foil-sweep-opacity: 0.5;
+    --foil-spectrum:
+      repeating-linear-gradient(90deg, transparent 0 13px, rgba(#fff, 0.4) 14px 15px),
+      repeating-linear-gradient(0deg, transparent 0 10px, rgba(#8be9fd, 0.38) 11px 12px),
+      conic-gradient(from 90deg at var(--foil-x) var(--foil-y), #60a5fa, #c084fc, #fb7185, #facc15, #4ade80, #60a5fa);
+    --foil-position: 0 0, 0 0, var(--foil-x) var(--foil-y);
+    --foil-size: 100% 100%, 100% 100%, 185% 185%;
+    --foil-repeat: repeat, repeat, no-repeat;
+    --foil-blend: screen, screen, color;
+  }
+
+  &[data-rarity-effect="shatterfoil"] {
+    --foil-rest: 0.025;
+    --foil-active: 0.76;
+    --foil-sweep-opacity: 0.54;
+    --foil-spectrum:
+      conic-gradient(from 18deg at 24% 31%, transparent 0 8%, rgba(#fff, 0.7) 9% 10%, transparent 11% 24%, rgba(#7dd3fc, 0.55) 25% 27%, transparent 28% 100%),
+      conic-gradient(from 190deg at 72% 66%, transparent 0 13%, rgba(#f0abfc, 0.58) 14% 17%, transparent 18% 34%, rgba(#fff, 0.62) 35% 37%, transparent 38% 100%),
+      radial-gradient(circle at var(--foil-x) var(--foil-y), #fff 0 2%, #7dd3fc 10%, #f0abfc 19%, transparent 43%);
+    --foil-position: 0 0, 0 0, 0 0;
+    --foil-size: 100% 100%, 100% 100%, 100% 100%;
+    --foil-repeat: no-repeat, no-repeat, no-repeat;
+    --foil-blend: screen, screen, color;
+  }
+
+  &[data-rarity-effect="starfoil"] {
+    --foil-rest: 0.02;
+    --foil-active: 0.66;
+    --foil-sweep-opacity: 0.48;
+    --foil-spectrum:
+      radial-gradient(circle, rgba(#fff, 0.9) 0 1px, rgba(#8ee8ff, 0.52) 2px, transparent 4px),
+      radial-gradient(circle, rgba(#fff, 0.75) 0 1px, rgba(#f0abfc, 0.4) 2px, transparent 4px),
+      radial-gradient(circle at var(--foil-x) var(--foil-y), #fff, #80ddff 13%, #e6a8ff 22%, transparent 42%);
+    --foil-position: 0 0, 9px 13px, 0 0;
+    --foil-size: 23px 23px, 31px 31px, 100% 100%;
+    --foil-repeat: repeat, repeat, no-repeat;
+    --foil-blend: screen, screen, color;
+  }
+
+  &[data-rarity-effect="parallel"] {
+    --foil-rest: 0.02;
+    --foil-active: 0.68;
+    --foil-sweep-opacity: 0.5;
+    --foil-spectrum:
+      repeating-linear-gradient(124deg, transparent 0 5px, rgba(#fff, 0.58) 6px, rgba(#8be9fd, 0.32) 7px, transparent 8px 14px),
+      linear-gradient(110deg, #60a5fa, #c084fc, #facc15, #4ade80, #60a5fa);
+    --foil-position: calc(var(--foil-x) / 5) calc(var(--foil-y) / 5), var(--foil-x) var(--foil-y);
+    --foil-size: 145% 145%, 190% 190%;
+    --foil-repeat: repeat, no-repeat;
+    --foil-blend: screen, color;
   }
 
   &[data-rarity-effect]:hover img {

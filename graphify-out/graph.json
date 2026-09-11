@@ -2710,27 +2710,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts:6"
     },
     {
-      "id": "file::card_finish",
-      "label": "card-finish.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:1"
-    },
-    {
-      "id": "card_finish::variantrarity",
-      "label": "variantRarity",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:24"
-    },
-    {
-      "id": "card_finish::cardfinishfor",
-      "label": "cardFinishFor",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:29"
-    },
-    {
       "id": "file::authpage",
       "label": "AuthPage.tsx",
       "fileType": "code",
@@ -3317,6 +3296,27 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:579"
+    },
+    {
+      "id": "file::card_finish",
+      "label": "card-finish.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:1"
+    },
+    {
+      "id": "card_finish::variantrarity",
+      "label": "variantRarity",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:31"
+    },
+    {
+      "id": "card_finish::cardfinishfor",
+      "label": "cardFinishFor",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:36"
     }
   ],
   "edges": [
@@ -6003,24 +6003,6 @@
       "weight": 1
     },
     {
-      "source": "file::card_finish",
-      "target": "card_finish::variantrarity",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:24",
-      "weight": 1
-    },
-    {
-      "source": "file::card_finish",
-      "target": "card_finish::cardfinishfor",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:29",
-      "weight": 1
-    },
-    {
       "source": "file::authpage",
       "target": "authpage::safenextpath",
       "relation": "contains",
@@ -6712,12 +6694,30 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:579",
       "weight": 1
+    },
+    {
+      "source": "file::card_finish",
+      "target": "card_finish::variantrarity",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:31",
+      "weight": 1
+    },
+    {
+      "source": "file::card_finish",
+      "target": "card_finish::cardfinishfor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:36",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 116,
     "nodes": 474,
     "edges": 377,
-    "builtAt": "2026-09-10T22:52:08.838Z"
+    "builtAt": "2026-09-11T10:21:10.209Z"
   }
 }
