@@ -24,6 +24,7 @@ export default function Home() {
     createSignal<SectionProduct[]>([]);
   const [catalogProducts, setCatalogProducts] =
     createSignal<ShopProduct[]>([]);
+  const [catalogLoading, setCatalogLoading] = createSignal(true);
 
   const upcomingProducts = createMemo(() =>
     catalogProducts()
@@ -43,13 +44,20 @@ export default function Home() {
 
   onMount(async () => {
     try {
-      const [response, catalog] = await Promise.all([
+      const [response, initialCatalog] = await Promise.all([
         fetch("/api/storefront/content"),
         // The full singles catalogue can contain hundreds of embedded card
         // images. The homepage only needs enough live inventory for its hero
         // and product shelves, so keep first paint small and predictable.
         fetchDatabaseCatalogState({ available: true, limit: 12 }),
       ]);
+      const catalog = initialCatalog.products.length
+        ? initialCatalog
+        : await new Promise<Awaited<ReturnType<typeof fetchDatabaseCatalogState>>>(resolve => {
+            window.setTimeout(() => {
+              void fetchDatabaseCatalogState({ available: true, limit: 12 }).then(resolve);
+            }, 700);
+          });
       const result = response.ok
         ? await response.json() as { content: HomeContent | null }
         : { content: null };
@@ -62,7 +70,11 @@ export default function Home() {
           .filter((product): product is NonNullable<typeof product> =>
             Boolean(product),
           );
-        if (chosen.length) setFeaturedProducts(chosen);
+        setFeaturedProducts(
+          chosen.length
+            ? chosen
+            : catalog.products.slice(0, 8),
+        );
       } else {
         setFeaturedProducts(
           catalog.products
@@ -72,6 +84,8 @@ export default function Home() {
       }
     } catch {
       // Never substitute demo inventory when the live catalogue is unavailable.
+    } finally {
+      setCatalogLoading(false);
     }
   });
 
@@ -85,6 +99,7 @@ export default function Home() {
         managedTitle={content().heroTitle}
         managedCopy={content().heroCopy}
         products={catalogProducts()}
+        loading={catalogLoading()}
       />
       <ShopByGame />
       <SetCollections products={catalogProducts()} />

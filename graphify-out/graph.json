@@ -3214,34 +3214,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/app.tsx:68"
     },
     {
-      "id": "file::hero",
-      "label": "Hero.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:1"
-    },
-    {
-      "id": "Hero::flashadded",
-      "label": "flashAdded",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:137"
-    },
-    {
-      "id": "Hero::addslidetocart",
-      "label": "addSlideToCart",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:148"
-    },
-    {
-      "id": "Hero::addproducttocart",
-      "label": "addProductToCart",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:159"
-    },
-    {
       "id": "file::catalog",
       "label": "catalog.ts",
       "fileType": "code",
@@ -3368,13 +3340,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts:6"
     },
     {
-      "id": "file::index",
-      "label": "index.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/index.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/index.tsx:1"
-    },
-    {
       "id": "index::cleaninput",
       "label": "cleanInput",
       "fileType": "code",
@@ -3457,6 +3422,41 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/checkout/order-status.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/checkout/order-status.ts:25"
+    },
+    {
+      "id": "file::hero",
+      "label": "Hero.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:1"
+    },
+    {
+      "id": "Hero::flashadded",
+      "label": "flashAdded",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:158"
+    },
+    {
+      "id": "Hero::addslidetocart",
+      "label": "addSlideToCart",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:169"
+    },
+    {
+      "id": "Hero::addproducttocart",
+      "label": "addProductToCart",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:180"
+    },
+    {
+      "id": "file::index",
+      "label": "index.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/index.tsx:1"
     }
   ],
   "edges": [
@@ -6755,33 +6755,6 @@
       "weight": 1
     },
     {
-      "source": "file::hero",
-      "target": "Hero::flashadded",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:137",
-      "weight": 1
-    },
-    {
-      "source": "file::hero",
-      "target": "Hero::addslidetocart",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:148",
-      "weight": 1
-    },
-    {
-      "source": "file::hero",
-      "target": "Hero::addproducttocart",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:159",
-      "weight": 1
-    },
-    {
       "source": "file::catalog",
       "target": "catalog::databaseproducttoshopproduct",
       "relation": "contains",
@@ -7014,12 +6987,39 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/checkout/order-status.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/checkout/order-status.ts:25",
       "weight": 1
+    },
+    {
+      "source": "file::hero",
+      "target": "Hero::flashadded",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:158",
+      "weight": 1
+    },
+    {
+      "source": "file::hero",
+      "target": "Hero::addslidetocart",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:169",
+      "weight": 1
+    },
+    {
+      "source": "file::hero",
+      "target": "Hero::addproducttocart",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:180",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 119,
     "nodes": 494,
     "edges": 395,
-    "builtAt": "2026-09-14T15:20:20.287Z"
+    "builtAt": "2026-09-14T21:20:48.061Z"
   }
 }

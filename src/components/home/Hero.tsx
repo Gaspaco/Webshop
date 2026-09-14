@@ -14,6 +14,7 @@ type Slide = {
   priceCents: number;
   href: string;
   image: string;
+  fallbackImage: string;
   alt: string;
   theme: string; // accent used for the slide wash
   variantId?: string;
@@ -34,6 +35,7 @@ type Product = {
   name: string;
   game: string;
   image: string;
+  fallbackImage: string;
   rating: number;
   priceCents: number;
   href: string;
@@ -54,10 +56,19 @@ function Stars(props: { rating: number }) {
   );
 }
 
+function useFallbackImage(event: Event) {
+  const image = event.currentTarget as HTMLImageElement;
+  const fallback = image.dataset.fallback;
+  if (!fallback || image.src === fallback) return;
+  image.dataset.fallback = "/images/logo-mark.png";
+  image.src = fallback;
+}
+
 export default function Hero(props: {
   managedTitle?: string;
   managedCopy?: string;
   products?: ShopProduct[];
+  loading?: boolean;
 }) {
   const cart = useCart();
   const [active, setActive] = createSignal(0);
@@ -75,6 +86,10 @@ export default function Hero(props: {
           product.variants?.[0];
         const image = mainVariant?.image || product.image;
         if (!image) return undefined;
+        const fallbackImage =
+          mainVariant?.image && product.image && mainVariant.image !== product.image
+            ? product.image
+            : "/images/logo-mark.png";
         return {
           id: product.id,
           set: product.set ?? product.gameName,
@@ -85,6 +100,7 @@ export default function Hero(props: {
           priceCents: mainVariant?.priceCents ?? product.priceCents ?? 0,
           href: product.href,
           image,
+          fallbackImage,
           alt: product.name,
           theme: GAME_ACCENTS[product.game] ?? "#216b4d",
           variantId: mainVariant?.id,
@@ -106,6 +122,10 @@ export default function Hero(props: {
           product.variants?.[0];
         const image = mainVariant?.image || product.image;
         if (!image) return undefined;
+        const fallbackImage =
+          mainVariant?.image && product.image && mainVariant.image !== product.image
+            ? product.image
+            : "/images/logo-mark.png";
         return {
           id: product.id,
           name:
@@ -114,6 +134,7 @@ export default function Hero(props: {
               : product.name,
           game: product.gameName,
           image,
+          fallbackImage,
           rating: product.rating ?? 5,
           priceCents: mainVariant?.priceCents ?? product.priceCents ?? 0,
           href: product.href,
@@ -185,6 +206,13 @@ export default function Hero(props: {
               >
                 <div class={styles.slideWash} />
                 <div class={styles.slideScrim} />
+                <Show when={props.loading}>
+                  <div class={styles.loadingCards} aria-hidden="true">
+                    <img src="/images/cards/charizard.png" alt="" />
+                    <img src="/images/cards/umbreon.png" alt="" />
+                    <img src="/images/cards/rayquaza.png" alt="" />
+                  </div>
+                </Show>
                 <div class={styles.slideBody}>
                   <div class={styles.slideTags}><span class={styles.gameTag}>TCGHaven</span></div>
                   <h2 class={styles.slideTitle}>{props.managedTitle ?? "Real stock, ready when you are"}</h2>
@@ -205,13 +233,16 @@ export default function Hero(props: {
                 aria-hidden={i() === active() ? "false" : "true"}
               >
                 <div class={styles.slideWash} />
+                <div class={styles.slideArtGlow} />
                 <img
                   class={styles.slideArt}
                   src={slide.image}
+                  data-fallback={slide.fallbackImage}
                   alt={slide.alt}
                   draggable={false}
-                  loading={i() === 0 ? "eager" : "lazy"}
+                  loading="eager"
                   decoding="async"
+                  onError={useFallbackImage}
                 />
                 <div class={styles.slideScrim} />
 
@@ -286,7 +317,32 @@ export default function Hero(props: {
           </Show>
         </div>
 
-        <Show when={bestsellers().length}>
+        <Show
+          when={bestsellers().length}
+          fallback={
+            <Show when={props.loading}>
+              <aside class={`${styles.bestsellers} ${styles.bestLoading}`} aria-hidden="true">
+                <header class={styles.bestHeader}>
+                  <h2>Current stock</h2>
+                  <span>Loading</span>
+                </header>
+                <ul class={styles.bestList}>
+                  <For each={[0, 1, 2, 3, 4]}>
+                    {() => (
+                      <li class={styles.loadingItem}>
+                        <span class={styles.loadingThumb} />
+                        <span class={styles.loadingCopy}>
+                          <i />
+                          <i />
+                        </span>
+                      </li>
+                    )}
+                  </For>
+                </ul>
+              </aside>
+            </Show>
+          }
+        >
         <aside class={styles.bestsellers} aria-label="Bestsellers">
           <header class={styles.bestHeader}>
             <h2>Bestsellers</h2>
@@ -299,7 +355,15 @@ export default function Hero(props: {
                 <li class={styles.bestItem}>
                   <A href={product.href} class={styles.bestLink}>
                     <span class={styles.bestThumb}>
-                      <img src={product.image} alt="" draggable={false} loading="lazy" />
+                      <img
+                        src={product.image}
+                        data-fallback={product.fallbackImage}
+                        alt=""
+                        draggable={false}
+                        loading="eager"
+                        decoding="async"
+                        onError={useFallbackImage}
+                      />
                     </span>
                     <span class={styles.bestInfo}>
                       <span class={styles.bestName}>{product.name}</span>
