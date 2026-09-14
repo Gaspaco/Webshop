@@ -11,7 +11,11 @@ import {
   products,
   productVariants,
 } from "~/db/schema";
-import { getAuthEnv } from "~/lib/env.server";
+import { getAuthEnv, getEmailEnv } from "~/lib/env.server";
+import {
+  escapeEmailHtml,
+  sendTransactionalEmail,
+} from "~/lib/email.server";
 import { getMollieClient } from "~/lib/mollie.server";
 import {
   findShippingDestination,
@@ -65,6 +69,12 @@ type MolliePaymentStatus =
 
 const centsToAmount = (cents: number) => (cents / 100).toFixed(2);
 
+const formatEuros = (cents: number) =>
+  new Intl.NumberFormat("en-NL", {
+    style: "currency",
+    currency: "EUR",
+  }).format(cents / 100);
+
 const normalizeMollieStatus = (status: string): Exclude<MolliePaymentStatus, "canceled"> =>
   status === "canceled" ? "cancelled" : (status as Exclude<MolliePaymentStatus, "canceled">);
 
@@ -74,6 +84,89 @@ function makeOrderNumber() {
 
 function appUrl(path: string) {
   return new URL(path, getAuthEnv().BETTER_AUTH_URL).toString();
+}
+
+async function sendPaidOrderEmails(orderId: string) {
+  const [order] = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1);
+  if (!order) throw new Error("Paid order could not be loaded for email delivery.");
+
+  const items = await db
+    .select({
+      name: orderItems.name,
+      quantity: orderItems.quantity,
+      totalCents: orderItems.totalCents,
+    })
+    .from(orderItems)
+    .where(eq(orderItems.orderId, orderId));
+  const profile = await getStoreProfile();
+  const ownerNotificationEmail =
+    getEmailEnv()?.ORDER_NOTIFICATION_EMAIL ?? profile.businessEmail;
+  const address = order.shippingAddress as {
+    firstName?: string;
+    lastName?: string;
+    streetAndHouseNumber?: string;
+    postalCode?: string;
+    city?: string;
+    country?: string;
+  };
+  const itemText = items
+    .map(item => `${item.quantity} × ${item.name} — ${formatEuros(item.totalCents)}`)
+    .join("\n");
+  const itemHtml = items
+    .map(
+      item =>
+        `<tr><td style="padding:8px 0;color:#26332c">${item.quantity} × ${escapeEmailHtml(item.name)}</td><td style="padding:8px 0;text-align:right;color:#26332c">${escapeEmailHtml(formatEuros(item.totalCents))}</td></tr>`,
+    )
+    .join("");
+  const summaryText = `Subtotal: ${formatEuros(order.subtotalCents)}\nShipping: ${formatEuros(order.shippingCents)}\nDiscount: ${formatEuros(order.discountCents)}\nTotal: ${formatEuros(order.totalCents)}`;
+  const summaryHtml = `<table style="width:100%;border-top:1px solid #dce3df;margin-top:16px;padding-top:12px"><tr><td>Subtotal</td><td style="text-align:right">${escapeEmailHtml(formatEuros(order.subtotalCents))}</td></tr><tr><td>Shipping</td><td style="text-align:right">${escapeEmailHtml(formatEuros(order.shippingCents))}</td></tr>${order.discountCents > 0 ? `<tr><td>Discount</td><td style="text-align:right">−${escapeEmailHtml(formatEuros(order.discountCents))}</td></tr>` : ""}<tr><td style="padding-top:10px;font-weight:700">Total</td><td style="padding-top:10px;text-align:right;font-weight:700">${escapeEmailHtml(formatEuros(order.totalCents))}</td></tr></table>`;
+  const customerName = [address.firstName, address.lastName].filter(Boolean).join(" ");
+  const deliveryText = [
+    customerName,
+    address.streetAndHouseNumber,
+    [address.postalCode, address.city].filter(Boolean).join(" "),
+    address.country,
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const deliveryHtml = [
+    customerName,
+    address.streetAndHouseNumber,
+    [address.postalCode, address.city].filter(Boolean).join(" "),
+    address.country,
+  ]
+    .filter(Boolean)
+    .map(value => escapeEmailHtml(value!))
+    .join("<br>");
+  const shell = (heading: string, intro: string) => `<!doctype html><html lang="en"><body style="margin:0;background:#f4f6f5;color:#111713;font-family:Arial,sans-serif"><div style="max-width:600px;margin:0 auto;padding:40px 20px"><div style="background:#0a0d0c;color:#fff;padding:18px 24px;font-weight:700">TCGHaven</div><div style="background:#fff;padding:30px 24px"><h1 style="margin:0 0 10px;font-size:24px">${escapeEmailHtml(heading)}</h1><p style="margin:0 0 24px;line-height:1.6;color:#46514b">${escapeEmailHtml(intro)}</p><table style="width:100%;border-collapse:collapse">${itemHtml}</table>${summaryHtml}<h2 style="margin:28px 0 8px;font-size:17px">Delivery address</h2><p style="margin:0;line-height:1.6;color:#46514b">${deliveryHtml}</p></div></div></body></html>`;
+
+  await Promise.all([
+    sendTransactionalEmail({
+      to: order.email,
+      subject: `Order confirmed — ${order.orderNumber}`,
+      text: `Thanks for your order${customerName ? `, ${customerName}` : ""}.\n\nOrder ${order.orderNumber}\n\n${itemText}\n\n${summaryText}\n\nDelivery address\n${deliveryText}`,
+      html: shell(
+        `Order ${order.orderNumber} is confirmed`,
+        "Thanks for your order. Payment was received and your order is now being prepared.",
+      ),
+      idempotencyKey: `paid-customer-${order.id}`,
+    }),
+    sendTransactionalEmail({
+      to: ownerNotificationEmail,
+      replyTo: order.email,
+      subject: `New paid order — ${order.orderNumber}`,
+      text: `A paid order was received from ${order.email}.\n\n${itemText}\n\n${summaryText}\n\nDelivery address\n${deliveryText}`,
+      html: shell(
+        `New paid order ${order.orderNumber}`,
+        `Payment was received from ${order.email}.`,
+      ),
+      idempotencyKey: `paid-owner-${order.id}`,
+    }),
+  ]);
 }
 
 async function releaseOrderReservations(orderId: string, discountId: string | null) {
@@ -397,7 +490,7 @@ export async function syncMolliePaymentStatus(paymentId: string) {
   const normalizedStatus = normalizeMollieStatus(molliePayment.status);
   const amountCents = Math.round(Number(molliePayment.amount.value) * 100);
 
-  return db.transaction(async tx => {
+  const result = await db.transaction(async tx => {
     const [storedPayment] = await tx
       .select()
       .from(payments)
@@ -507,8 +600,25 @@ export async function syncMolliePaymentStatus(paymentId: string) {
       status: effectiveStatus,
       amountMatches,
       orderStatus: nextOrderStatus,
+      orderId: storedPayment.orderId,
+      sendPaidEmail: firstPaidTransition,
     };
   });
+
+  if (result.sendPaidEmail) {
+    try {
+      await sendPaidOrderEmails(result.orderId);
+    } catch (error) {
+      console.error("Paid order email delivery failed.", error);
+    }
+  }
+
+  return {
+    paymentId: result.paymentId,
+    status: result.status,
+    amountMatches: result.amountMatches,
+    orderStatus: result.orderStatus,
+  };
 }
 
 export function parseCheckoutInput(input: unknown): CheckoutInput {

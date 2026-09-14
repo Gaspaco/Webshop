@@ -62,6 +62,7 @@ const emailSchema = z
     SMTP_USER: z.string().trim().min(1).max(320).optional(),
     SMTP_PASS: z.string().min(8).max(512).optional(),
     AUTH_EMAIL_FROM: z.string().trim().min(3).max(320).optional(),
+    ORDER_NOTIFICATION_EMAIL: z.string().trim().email().max(254).optional(),
   })
   .superRefine((value, context) => {
     const fields = [
@@ -112,6 +113,7 @@ export const getEmailEnv = () => {
         SMTP_USER: parsed.SMTP_USER,
         SMTP_PASS: parsed.SMTP_PASS,
         AUTH_EMAIL_FROM: parsed.AUTH_EMAIL_FROM,
+        ORDER_NOTIFICATION_EMAIL: parsed.ORDER_NOTIFICATION_EMAIL,
       }
     : null;
 };
