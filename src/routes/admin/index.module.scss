@@ -1840,6 +1840,7 @@
 }
 
 .orderActionGrid input,
+.orderActionGrid select,
 .orderActionGrid textarea,
 .customerControlGrid input,
 .customerControlGrid textarea,
@@ -1858,6 +1859,7 @@
 }
 
 .orderActionGrid input,
+.orderActionGrid select,
 .customerControlGrid input,
 .variantForm input,
 .discountForm input,
@@ -1892,6 +1894,45 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
+}
+
+.postnlLabelTools {
+  display: grid !important;
+  margin-top: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid rgba($primary, 0.2);
+  border-radius: 0.5rem;
+  gap: 0 0.7rem !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: rgba($primary, 0.035);
+}
+
+.postnlLabelTools > strong,
+.postnlLabelTools > p,
+.postnlLabelTools > button {
+  grid-column: 1 / -1;
+}
+
+.postnlLabelTools > strong {
+  color: $white;
+  font-size: 0.7rem;
+}
+
+.postnlLabelTools > p {
+  margin: 0.25rem 0 0;
+  color: $gray-500;
+  font-size: 0.59rem;
+  line-height: 1.45;
+}
+
+.postnlLabelTools label {
+  margin-top: 0.65rem;
+}
+
+.postnlAction {
+  border-color: rgba($primary, 0.35) !important;
+  background: $primary !important;
+  color: #04110a !important;
 }
 
 .dangerAction,

@@ -94,7 +94,12 @@ export function getLaunchReadiness(input: {
       label: "Shipping carrier account",
       detail: "Add the PostNL provider credentials before automatic label creation is enabled.",
       responsible: "owner",
-      configured: present("POSTNL_API_KEY"),
+      configured: present(
+        "POSTNL_API_KEY",
+        "POSTNL_CUSTOMER_NUMBER",
+        "POSTNL_CUSTOMER_CODE",
+        "POSTNL_COLLECTION_LOCATION",
+      ),
       blocking: true,
     },
     {

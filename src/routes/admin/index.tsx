@@ -1564,6 +1564,12 @@ function OrderRow(props: {
   const [trackingUrl, setTrackingUrl] = createSignal(
     props.order.trackingUrl ?? "",
   );
+  const [postnlWeight, setPostnlWeight] = createSignal(
+    props.order.shippingMethod === "postnl_letterbox" ? "500" : "1000",
+  );
+  const [postnlProductCode, setPostnlProductCode] = createSignal(
+    props.order.shippingMethod === "postnl_letterbox" ? "2928" : "3085",
+  );
   const [refundAmount, setRefundAmount] = createSignal(
     (props.order.totalCents / 100).toFixed(2),
   );
@@ -1657,6 +1663,69 @@ function OrderRow(props: {
     });
   };
 
+  const createLabel = async () => {
+    const weightGrams = Number(postnlWeight());
+    if (!Number.isInteger(weightGrams) || weightGrams < 1 || weightGrams > 30_000) {
+      setMessage("Enter a parcel weight between 1 and 30,000 grams.");
+      return;
+    }
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/orders", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "postnl_label",
+          id: props.order.id,
+          weightGrams,
+          productCode: postnlProductCode(),
+        }),
+      });
+      const result = (await response.json()) as {
+        error?: string;
+        barcode?: string;
+        trackingUrl?: string;
+        pdfBase64?: string;
+        filename?: string;
+        mode?: "sandbox" | "production";
+        confirmed?: boolean;
+      };
+      if (!response.ok || !result.pdfBase64 || !result.barcode || !result.trackingUrl) {
+        setMessage(result.error ?? "The PostNL label could not be created.");
+        return;
+      }
+
+      const binary = window.atob(result.pdfBase64.replaceAll(/\s/g, ""));
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+      }
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = result.filename ?? `${props.order.orderNumber}-postnl-label.pdf`;
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+
+      setTrackingNumber(result.barcode);
+      setTrackingUrl(result.trackingUrl);
+      await Promise.resolve(props.onUpdated());
+      setMessage(
+        result.mode === "sandbox"
+          ? "Sandbox label downloaded. No real parcel was announced."
+          : "PostNL label downloaded and shipment announced.",
+      );
+    } catch {
+      setMessage("The PostNL label response could not be processed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const addressLines = () =>
     Object.values(props.order.shippingAddress ?? {}).filter(Boolean);
 
@@ -1746,6 +1815,39 @@ function OrderRow(props: {
                   });
                 }}>
                   <h3>Shipping</h3>
+                  <div class={styles.postnlLabelTools}>
+                    <strong>PostNL label</strong>
+                    <p>Create the barcode and printable PDF after payment is confirmed.</p>
+                    <label>
+                      <span>Parcel type</span>
+                      <select
+                        value={postnlProductCode()}
+                        onChange={event => setPostnlProductCode(event.currentTarget.value)}
+                      >
+                        <option value="3085">Standard parcel (3085)</option>
+                        <option value="2928">Letterbox parcel+ (2928)</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Weight in grams</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="30000"
+                        step="1"
+                        value={postnlWeight()}
+                        onInput={event => setPostnlWeight(event.currentTarget.value)}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      class={styles.postnlAction}
+                      disabled={busy() || Boolean(trackingNumber())}
+                      onClick={() => void createLabel()}
+                    >
+                      {trackingNumber() ? "Tracking already assigned" : "Create and download label"}
+                    </button>
+                  </div>
                   <label>
                     <span>Tracking number</span>
                     <input required value={trackingNumber()} onInput={event => setTrackingNumber(event.currentTarget.value)} />

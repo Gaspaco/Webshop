@@ -85,6 +85,14 @@ const mollieSchema = z.object({
   MOLLIE_API_KEY: z.string().min(1).max(256),
 });
 
+const postnlSchema = z.object({
+  POSTNL_API_KEY: z.string().trim().min(16).max(256),
+  POSTNL_CUSTOMER_NUMBER: z.string().trim().regex(/^\d{1,10}$/),
+  POSTNL_CUSTOMER_CODE: z.string().trim().regex(/^[A-Za-z]{1,4}$/),
+  POSTNL_COLLECTION_LOCATION: z.string().trim().min(1).max(20),
+  POSTNL_MODE: z.enum(["sandbox", "production"]).default("sandbox"),
+});
+
 export const getDatabaseEnv = () =>
   databaseSchema.parse({
     DATABASE_URL:
@@ -118,3 +126,4 @@ export const getEmailEnv = () => {
     : null;
 };
 export const getMollieEnv = () => mollieSchema.parse(process.env);
+export const getPostnlEnv = () => postnlSchema.parse(process.env);

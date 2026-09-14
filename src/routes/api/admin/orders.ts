@@ -17,6 +17,13 @@ import {
   sendTransactionalEmail,
 } from "~/lib/email.server";
 import { getMollieClient } from "~/lib/mollie.server";
+import { checkRateLimit } from "~/lib/rate-limit.server";
+import {
+  createPostnlLabel,
+  PostnlError,
+} from "~/lib/postnl.server";
+import { findShippingDestination } from "~/lib/shipping";
+import { getStoreProfile } from "~/lib/store-profile.server";
 
 const updateOrderSchema = z.object({
   id: z.string().uuid(),
@@ -85,6 +92,12 @@ const actionSchema = z.discriminatedUnion("action", [
     id: z.string().uuid(),
     reason: z.string().trim().min(3).max(500),
   }),
+  z.object({
+    action: z.literal("postnl_label"),
+    id: z.string().uuid(),
+    weightGrams: z.number().int().min(1).max(30_000),
+    productCode: z.string().trim().regex(/^\d{4}$/),
+  }),
 ]);
 
 const amountValue = (cents: number) => (cents / 100).toFixed(2);
@@ -103,6 +116,107 @@ export async function POST(event: APIEvent) {
 
     if (!order) {
       return apiJson({ error: "Order not found." }, { status: 404 });
+    }
+
+    if (input.action === "postnl_label") {
+      if (!["paid", "processing"].includes(order.status)) {
+        return apiJson(
+          { error: "A PostNL label can only be created for a paid order." },
+          { status: 400 },
+        );
+      }
+      if (order.trackingNumber) {
+        return apiJson(
+          { error: "This order already has a tracking number." },
+          { status: 409 },
+        );
+      }
+      if (
+        await checkRateLimit({
+          event,
+          namespace: "admin-postnl-label",
+          identity: guard.session!.user.id,
+          limit: 20,
+          windowMs: 60 * 60 * 1000,
+        })
+      ) {
+        return apiJson(
+          { error: "Too many PostNL label requests. Try again later." },
+          { status: 429 },
+        );
+      }
+
+      const address = order.shippingAddress;
+      const destination = findShippingDestination(address.country ?? "");
+      if (!destination || destination.code !== "NL") {
+        return apiJson(
+          { error: "Automatic PostNL labels currently support Dutch addresses only." },
+          { status: 400 },
+        );
+      }
+      const profile = await getStoreProfile();
+      const senderParts = profile.businessAddress
+        .split(",")
+        .map(part => part.trim())
+        .filter(Boolean);
+      if (!senderParts[0] || !senderParts[1]) {
+        return apiJson(
+          { error: "Complete the business address before creating a PostNL label." },
+          { status: 400 },
+        );
+      }
+      const label = await createPostnlLabel({
+        orderNumber: order.orderNumber,
+        customerEmail: order.email,
+        shippingAddress: {
+          firstName: address.firstName,
+          lastName: address.lastName,
+          streetAndHouseNumber: address.streetAndHouseNumber,
+          postalCode: address.postalCode,
+          city: address.city,
+          countryCode: destination.code,
+        },
+        senderAddress: {
+          companyName: profile.companyName,
+          email: profile.businessEmail,
+          streetAndHouseNumber: senderParts[0],
+          postalCodeAndCity: senderParts[1],
+        },
+        weightGrams: input.weightGrams,
+        productCode: input.productCode,
+      });
+
+      await db
+        .update(orders)
+        .set({
+          status: "processing",
+          trackingNumber: label.barcode,
+          trackingUrl: label.trackingUrl,
+        })
+        .where(eq(orders.id, order.id));
+      await writeAuditLog({
+        event,
+        actorId: guard.session!.user.id,
+        action: "postnl.label_created",
+        entityType: "order",
+        entityId: order.id,
+        summary: `PostNL ${label.mode} label created for ${order.orderNumber}.`,
+        metadata: {
+          mode: label.mode,
+          confirmed: label.confirmed,
+          productCode: input.productCode,
+          weightGrams: input.weightGrams,
+        },
+      });
+
+      return apiJson({
+        barcode: label.barcode,
+        trackingUrl: label.trackingUrl,
+        pdfBase64: label.pdfBase64,
+        filename: `${order.orderNumber}-postnl-label.pdf`,
+        mode: label.mode,
+        confirmed: label.confirmed,
+      });
     }
 
     if (input.action === "ship") {
@@ -254,6 +368,9 @@ export async function POST(event: APIEvent) {
         { error: error.issues[0]?.message ?? "Check the order action." },
         { status: 400 },
       );
+    }
+    if (error instanceof PostnlError) {
+      return apiJson({ error: error.message }, { status: 502 });
     }
     console.error("Admin order action failed", error);
     return apiJson(
