@@ -1,6 +1,6 @@
 import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
-import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
+import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { authClient } from "~/lib/auth-client";
 import {
   meetsPasswordRequirements,
@@ -27,7 +27,6 @@ function safeNextPath() {
 }
 
 export default function AuthPage(props: AuthPageProps) {
-  const session = authClient.useSession();
   const [mode, setMode] = createSignal<AuthMode>(props.initialMode);
   const [name, setName] = createSignal("");
   const [loginEmail, setLoginEmail] = createSignal("");
@@ -47,16 +46,6 @@ export default function AuthPage(props: AuthPageProps) {
   >("idle");
   const [resetMessage, setResetMessage] = createSignal("");
   let resetEmailInput: HTMLInputElement | undefined;
-
-  const isSwitchingAccount = () =>
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("switch") === "1";
-
-  createEffect(() => {
-    const current = session().data?.user as { role?: string } | undefined;
-    if (!current || isSwitchingAccount()) return;
-    window.location.replace(current.role === "admin" ? "/admin" : safeNextPath());
-  });
 
   const switchMode = (nextMode: AuthMode, event: MouseEvent) => {
     event.preventDefault();
@@ -298,7 +287,7 @@ export default function AuthPage(props: AuthPageProps) {
           class={styles.formInner}
           classList={{ [styles.formInnerActive]: mode() === "signup" }}
         >
-          <A href="/" class={styles.backLink}>
+          <A href="/products" class={styles.backLink}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M19 12H5M11 18l-6-6 6-6" />
             </svg>
@@ -445,7 +434,7 @@ export default function AuthPage(props: AuthPageProps) {
           class={styles.formInner}
           classList={{ [styles.formInnerActive]: mode() === "login" }}
         >
-          <A href="/" class={styles.backLink}>
+          <A href="/products" class={styles.backLink}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M19 12H5M11 18l-6-6 6-6" />
             </svg>

@@ -15,7 +15,7 @@ export default function Navbar() {
   const accountHref = () => {
     const currentUser = session().data?.user as { role?: string } | undefined;
     if (!currentUser) return "/login";
-    return currentUser.role === "admin" ? "/login?switch=1" : "/account";
+    return currentUser.role === "admin" ? "/login" : "/account";
   };
 
   const openSearch = () => {
