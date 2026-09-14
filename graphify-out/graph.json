@@ -3200,6 +3200,55 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/sitemap.xml.ts:37"
     },
     {
+      "id": "file::env_server",
+      "label": "env.server.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:1"
+    },
+    {
+      "id": "env.server::requireshttps",
+      "label": "requiresHttps",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:22"
+    },
+    {
+      "id": "env.server::getdatabaseenv",
+      "label": "getDatabaseEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:88"
+    },
+    {
+      "id": "env.server::getauthenv",
+      "label": "getAuthEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:93"
+    },
+    {
+      "id": "env.server::getgoogleauthenv",
+      "label": "getGoogleAuthEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:94"
+    },
+    {
+      "id": "env.server::getemailenv",
+      "label": "getEmailEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:103"
+    },
+    {
+      "id": "env.server::getmollieenv",
+      "label": "getMollieEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:120"
+    },
+    {
       "id": "file::checkout_server",
       "label": "checkout.server.ts",
       "fileType": "code",
@@ -3253,84 +3302,35 @@
       "label": "releaseOrderReservations",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:172"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:173"
     },
     {
       "id": "checkout_server::calculatetrustedcheckout",
       "label": "calculateTrustedCheckout",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:206"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:207"
     },
     {
       "id": "checkout_server::createcheckoutpayment",
       "label": "createCheckoutPayment",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:331"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:332"
     },
     {
       "id": "checkout_server::syncmolliepaymentstatus",
       "label": "syncMolliePaymentStatus",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:473"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:474"
     },
     {
       "id": "checkout_server::parsecheckoutinput",
       "label": "parseCheckoutInput",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:624"
-    },
-    {
-      "id": "file::env_server",
-      "label": "env.server.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:1"
-    },
-    {
-      "id": "env.server::requireshttps",
-      "label": "requiresHttps",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:22"
-    },
-    {
-      "id": "env.server::getdatabaseenv",
-      "label": "getDatabaseEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:88"
-    },
-    {
-      "id": "env.server::getauthenv",
-      "label": "getAuthEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:93"
-    },
-    {
-      "id": "env.server::getgoogleauthenv",
-      "label": "getGoogleAuthEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:94"
-    },
-    {
-      "id": "env.server::getemailenv",
-      "label": "getEmailEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:103"
-    },
-    {
-      "id": "env.server::getmollieenv",
-      "label": "getMollieEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:120"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:625"
     }
   ],
   "edges": [
@@ -6593,6 +6593,60 @@
       "weight": 1
     },
     {
+      "source": "file::env_server",
+      "target": "env.server::requireshttps",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:22",
+      "weight": 1
+    },
+    {
+      "source": "file::env_server",
+      "target": "env.server::getdatabaseenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:88",
+      "weight": 1
+    },
+    {
+      "source": "file::env_server",
+      "target": "env.server::getauthenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:93",
+      "weight": 1
+    },
+    {
+      "source": "file::env_server",
+      "target": "env.server::getgoogleauthenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:94",
+      "weight": 1
+    },
+    {
+      "source": "file::env_server",
+      "target": "env.server::getemailenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:103",
+      "weight": 1
+    },
+    {
+      "source": "file::env_server",
+      "target": "env.server::getmollieenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:120",
+      "weight": 1
+    },
+    {
       "source": "file::checkout_server",
       "target": "checkout.server::centstoamount",
       "relation": "contains",
@@ -6652,7 +6706,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:172",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:173",
       "weight": 1
     },
     {
@@ -6661,7 +6715,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:206",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:207",
       "weight": 1
     },
     {
@@ -6670,7 +6724,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:331",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:332",
       "weight": 1
     },
     {
@@ -6679,7 +6733,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:473",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:474",
       "weight": 1
     },
     {
@@ -6688,61 +6742,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:624",
-      "weight": 1
-    },
-    {
-      "source": "file::env_server",
-      "target": "env.server::requireshttps",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:22",
-      "weight": 1
-    },
-    {
-      "source": "file::env_server",
-      "target": "env.server::getdatabaseenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:88",
-      "weight": 1
-    },
-    {
-      "source": "file::env_server",
-      "target": "env.server::getauthenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:93",
-      "weight": 1
-    },
-    {
-      "source": "file::env_server",
-      "target": "env.server::getgoogleauthenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:94",
-      "weight": 1
-    },
-    {
-      "source": "file::env_server",
-      "target": "env.server::getemailenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:103",
-      "weight": 1
-    },
-    {
-      "source": "file::env_server",
-      "target": "env.server::getmollieenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/env.server.ts:120",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/checkout.server.ts:625",
       "weight": 1
     }
   ],
@@ -6750,6 +6750,6 @@
     "files": 116,
     "nodes": 476,
     "edges": 379,
-    "builtAt": "2026-09-14T10:54:24.905Z"
+    "builtAt": "2026-09-14T10:56:31.280Z"
   }
 }

@@ -147,6 +147,7 @@ async function sendPaidOrderEmails(orderId: string) {
   await Promise.all([
     sendTransactionalEmail({
       to: order.email,
+      replyTo: profile.businessEmail,
       subject: `Order confirmed — ${order.orderNumber}`,
       text: `Thanks for your order${customerName ? `, ${customerName}` : ""}.\n\nOrder ${order.orderNumber}\n\n${itemText}\n\n${summaryText}\n\nDelivery address\n${deliveryText}`,
       html: shell(
