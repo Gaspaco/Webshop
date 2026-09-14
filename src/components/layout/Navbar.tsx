@@ -15,7 +15,7 @@ export default function Navbar() {
   const accountHref = () => {
     const currentUser = session().data?.user as { role?: string } | undefined;
     if (!currentUser) return "/login";
-    return currentUser.role === "admin" ? "/admin" : "/account";
+    return currentUser.role === "admin" ? "/login?switch=1" : "/account";
   };
 
   const openSearch = () => {
@@ -131,7 +131,7 @@ export default function Navbar() {
           <A
             href={accountHref()}
             class={styles.iconBtn}
-            aria-label={accountHref() === "/admin" ? "Owner dashboard" : "Account"}
+            aria-label="Customer account"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="8" r="4" />

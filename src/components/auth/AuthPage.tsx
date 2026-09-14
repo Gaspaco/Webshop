@@ -48,9 +48,13 @@ export default function AuthPage(props: AuthPageProps) {
   const [resetMessage, setResetMessage] = createSignal("");
   let resetEmailInput: HTMLInputElement | undefined;
 
+  const isSwitchingAccount = () =>
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("switch") === "1";
+
   createEffect(() => {
     const current = session().data?.user as { role?: string } | undefined;
-    if (!current) return;
+    if (!current || isSwitchingAccount()) return;
     window.location.replace(current.role === "admin" ? "/admin" : safeNextPath());
   });
 
