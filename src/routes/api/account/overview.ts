@@ -44,6 +44,9 @@ export async function GET(event: APIEvent) {
       currency: orders.currency,
       totalCents: orders.totalCents,
       shippingAddress: orders.shippingAddress,
+      trackingNumber: orders.trackingNumber,
+      trackingUrl: orders.trackingUrl,
+      shippedAt: orders.shippedAt,
       createdAt: orders.createdAt,
     })
     .from(orders)

@@ -57,38 +57,6 @@
   background: #090c0a;
 }
 
-.accountBrand {
-  display: flex;
-  min-height: 3rem;
-  align-items: center;
-  gap: 0.7rem;
-  margin: 0 0.25rem 1.25rem;
-  padding-inline: 0.55rem;
-  color: $white;
-  font-family: $font-display;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-
-  strong { color: $primary-light; }
-}
-
-.accountBrandMark {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  overflow: hidden;
-  border-radius: 0.5rem;
-  background: $primary;
-  place-items: center;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
 // Sits in the sidebar footer beside Sign out: both are ways out of the
 // dashboard, so they read as a pair instead of one squatting in the brand slot.
 .backLink {
@@ -176,8 +144,8 @@
   min-width: 0;
 }
 
-.identity strong,
-.identity span {
+.identity div > strong,
+.identity div > span {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -627,6 +595,15 @@
     &:hover {
       color: $primary-light;
     }
+  }
+
+  small {
+    max-width: 12rem;
+    overflow: hidden;
+    color: $gray-600;
+    font-size: 0.62rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -1480,10 +1457,6 @@
   .sidebar {
     position: relative;
     padding: 0.75rem 1rem 0;
-  }
-
-  .accountBrand {
-    margin-bottom: 0.75rem;
   }
 
   .identity {

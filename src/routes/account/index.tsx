@@ -42,6 +42,9 @@ type AccountOrder = {
   currency: string;
   totalCents: number;
   createdAt: string;
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+  shippedAt: string | null;
   items: Array<{ name: string; quantity: number }>;
 };
 
@@ -702,13 +705,6 @@ export default function Account() {
         {data => (
           <div class={styles.account}>
             <aside class={styles.sidebar}>
-              <A href="/" class={styles.accountBrand} aria-label="TCGHaven home">
-                <span class={styles.accountBrandMark} aria-hidden="true">
-                  <img src="/images/logo-mark.png" alt="" />
-                </span>
-                <span>TCG<strong>Haven</strong></span>
-              </A>
-
               <div class={styles.identity}>
                 <span class={styles.avatar}>
                   <Show when={profileImage()} fallback={initials() || "?"}>
@@ -900,9 +896,25 @@ export default function Account() {
                                 <strong class={styles.orderTotal}>
                                   {formatMoney(order.totalCents, order.currency)}
                                 </strong>
+                                <Show when={order.trackingUrl}>
+                                  {trackingUrl => (
+                                    <a
+                                      href={trackingUrl()}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      Track package
+                                    </a>
+                                  )}
+                                </Show>
                                 <A href={`/returns?order=${encodeURIComponent(order.orderNumber)}`}>
                                   Cancel or return
                                 </A>
+                                <Show when={order.trackingNumber}>
+                                  {trackingNumber => (
+                                    <small>Tracking {trackingNumber()}</small>
+                                  )}
+                                </Show>
                               </div>
                             </article>
                           )}
