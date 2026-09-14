@@ -702,6 +702,13 @@ export default function Account() {
         {data => (
           <div class={styles.account}>
             <aside class={styles.sidebar}>
+              <A href="/" class={styles.accountBrand} aria-label="TCGHaven home">
+                <span class={styles.accountBrandMark} aria-hidden="true">
+                  <img src="/images/logo-mark.png" alt="" />
+                </span>
+                <span>TCG<strong>Haven</strong></span>
+              </A>
+
               <div class={styles.identity}>
                 <span class={styles.avatar}>
                   <Show when={profileImage()} fallback={initials() || "?"}>
@@ -728,6 +735,7 @@ export default function Account() {
                       }
                       onClick={() => setActiveSection(item.id)}
                     >
+                      <AccountNavIcon section={item.id} />
                       {item.label}
                     </button>
                   )}
@@ -849,13 +857,13 @@ export default function Account() {
                           </div>
                         </div>
                         <button type="button" onClick={() => setActiveSection("wishlist")}>
-                          Open wishlist <span>01</span>
+                          Open wishlist <span aria-hidden="true">→</span>
                         </button>
                         <button type="button" onClick={() => setActiveSection("profile")}>
-                          Edit profile <span>02</span>
+                          Edit profile <span aria-hidden="true">→</span>
                         </button>
                         <A href="/contact">
-                          Contact support <span>03</span>
+                          Contact support <span aria-hidden="true">→</span>
                         </A>
                       </section>
                     </div>
@@ -866,7 +874,7 @@ export default function Account() {
                       when={overview()?.orders.length}
                       fallback={
                         <EmptyState
-                          number="01"
+                          kind="orders"
                           title="No orders yet"
                           copy="Your purchases will appear here with their payment and delivery status."
                           action="Start shopping"
@@ -908,7 +916,7 @@ export default function Account() {
                       when={overview()?.wishlist.length}
                       fallback={
                         <EmptyState
-                          number="02"
+                          kind="wishlist"
                           title="Nothing saved yet"
                           copy="Save cards and sealed products you want to revisit."
                           action="Browse the collection"
@@ -1573,7 +1581,7 @@ export default function Account() {
 }
 
 function EmptyState(props: {
-  number: string;
+  kind: "orders" | "wishlist";
   title: string;
   copy: string;
   action: string;
@@ -1581,10 +1589,55 @@ function EmptyState(props: {
 }) {
   return (
     <div class={styles.emptyState}>
-      <span>{props.number}</span>
+      <span class={styles.emptyIcon} aria-hidden="true">
+        <Show
+          when={props.kind === "orders"}
+          fallback={
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20s-7.5-4.6-10-9.3C.4 7.1 2 3.5 5.6 3A5 5 0 0 1 12 5.2 5 5 0 0 1 18.4 3c3.6.5 5.2 4.1 3.6 7.7C19.5 15.4 12 20 12 20Z" />
+            </svg>
+          }
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
+          </svg>
+        </Show>
+      </span>
       <h3>{props.title}</h3>
       <p>{props.copy}</p>
       <A href={props.href}>{props.action}</A>
     </div>
+  );
+}
+
+function AccountNavIcon(props: { section: Section }) {
+  return (
+    <svg class={styles.navIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <Switch>
+        <Match when={props.section === "overview"}>
+          <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h4A1.5 1.5 0 0 1 11 5.5v4A1.5 1.5 0 0 1 9.5 11h-4A1.5 1.5 0 0 1 4 9.5Z" />
+          <path d="M13 5.5A1.5 1.5 0 0 1 14.5 4h4A1.5 1.5 0 0 1 20 5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4A1.5 1.5 0 0 1 13 9.5ZM4 14.5A1.5 1.5 0 0 1 5.5 13h4a1.5 1.5 0 0 1 1.5 1.5v4A1.5 1.5 0 0 1 9.5 20h-4A1.5 1.5 0 0 1 4 18.5ZM13 14.5a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a1.5 1.5 0 0 1-1.5-1.5Z" />
+        </Match>
+        <Match when={props.section === "orders"}>
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
+        </Match>
+        <Match when={props.section === "wishlist"}>
+          <path d="M12 20s-7.5-4.6-10-9.3C.4 7.1 2 3.5 5.6 3A5 5 0 0 1 12 5.2 5 5 0 0 1 18.4 3c3.6.5 5.2 4.1 3.6 7.7C19.5 15.4 12 20 12 20Z" />
+        </Match>
+        <Match when={props.section === "addresses"}>
+          <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" />
+        </Match>
+        <Match when={props.section === "payments"}>
+          <rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18M7 15h3" />
+        </Match>
+        <Match when={props.section === "profile"}>
+          <circle cx="12" cy="8" r="4" /><path d="M5 21a7 7 0 0 1 14 0" />
+        </Match>
+        <Match when={props.section === "security"}>
+          <path d="M12 3 5.5 5.7v5.6c0 4.1 2.6 7.8 6.5 9.7 3.9-1.9 6.5-5.6 6.5-9.7V5.7Z" /><path d="m9.2 12.1 1.8 1.8 3.9-4" />
+        </Match>
+      </Switch>
+    </svg>
   );
 }

@@ -11,7 +11,7 @@
   height: 100dvh;
   min-height: 42rem;
   overflow: hidden;
-  grid-template-columns: 18rem minmax(0, 1fr);
+  grid-template-columns: 17rem minmax(0, 1fr);
   background: #0d0f0e;
 }
 
@@ -41,11 +41,10 @@
 .stats article > span,
 .addressTop > span,
 .wishlistItem > span {
-  color: rgba($white, 0.45);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
+  color: $gray-500;
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0;
 }
 
 .sidebar {
@@ -54,8 +53,40 @@
   min-width: 0;
   min-height: 0;
   flex-direction: column;
-  border-right: 1px solid rgba($white, 0.09);
+  padding: 1rem 0.75rem;
   background: #090c0a;
+}
+
+.accountBrand {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0 0.25rem 1.25rem;
+  padding-inline: 0.55rem;
+  color: $white;
+  font-family: $font-display;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+
+  strong { color: $primary-light; }
+}
+
+.accountBrandMark {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: $primary;
+  place-items: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 // Sits in the sidebar footer beside Sign out: both are ways out of the
@@ -110,9 +141,11 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  min-height: 6.5rem;
-  padding: 1.5rem;
-  border-bottom: 1px solid rgba($white, 0.08);
+  min-height: 4.75rem;
+  margin: 0 0.25rem 1rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: #121614;
 }
 
 .avatar {
@@ -122,7 +155,7 @@
   width: 3rem;
   height: 3rem;
   flex: 0 0 auto;
-  border-radius: 0.75rem;
+  border-radius: 50%;
   background: $primary;
   color: #06120d;
   font-family: $font-body;
@@ -165,17 +198,18 @@
 .navigation {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 1rem;
+  gap: 0.3rem;
+  padding: 0 0.25rem;
 }
 
 .navItem {
   position: relative;
   display: flex;
-  min-height: 3rem;
+  min-height: 2.9rem;
   align-items: center;
-  padding-inline: 1rem;
-  border-radius: 0.5rem;
+  gap: 0.75rem;
+  padding-inline: 0.85rem;
+  border-radius: 0.65rem;
   color: $gray-400;
   font-size: 0.82rem;
   font-weight: 650;
@@ -186,40 +220,27 @@
     transform 180ms ease;
 }
 
-.navItem::before {
-  width: 0.42rem;
-  height: 0.42rem;
-  margin-right: 0.75rem;
-  border-radius: 50%;
-  background: currentColor;
-  content: "";
-  opacity: 0.28;
-  transition:
-    opacity 180ms ease,
-    transform 180ms ease;
+.navIcon {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex: 0 0 auto;
 }
 
 .navItem:hover {
-  background: rgba($white, 0.045);
+  background: rgba($white, 0.055);
   color: $white;
   transform: translateX(2px);
 }
 
 .navItemActive {
-  background: rgba($primary, 0.12);
-  color: $primary-light;
-}
-
-.navItemActive::before {
-  opacity: 1;
-  transform: scale(1.1);
+  background: $primary;
+  color: #06120d;
 }
 
 .sidebarFooter {
   display: flex;
   margin-top: auto;
-  padding: 1rem;
-  border-top: 1px solid rgba($white, 0.08);
+  padding: 1rem 0.25rem 0;
   flex-direction: column;
   gap: 0.75rem;
 }
@@ -260,7 +281,7 @@
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 clamp(1.5rem, 3.5vw, 4rem) 4rem;
+  padding: 0 clamp(1.5rem, 4vw, 4.5rem) 4rem;
   background: #0d0f0e;
 }
 
@@ -269,12 +290,11 @@
   top: 0;
   z-index: 2;
   display: flex;
-  min-height: 9.5rem;
+  min-height: 8.75rem;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
   padding-block: 1.75rem;
-  border-bottom: 1px solid rgba($white, 0.09);
   background: rgba(#0d0f0e, 0.96);
   backdrop-filter: blur(14px);
 }
@@ -283,8 +303,8 @@
   display: block;
   margin-bottom: 0.4rem;
   color: $primary-light;
-  font-size: 0.73rem;
-  font-weight: 700;
+  font-size: 0.76rem;
+  font-weight: 650;
 }
 
 .sectionHeader h1 {
@@ -292,7 +312,7 @@
   font-family: $font-display;
   font-size: clamp(1.9rem, 3vw, 2.35rem);
   font-weight: 800;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
   line-height: 1.05;
 }
 
@@ -355,7 +375,8 @@
   gap: 0.2rem;
   margin-top: 1.25rem;
   padding: 1rem;
-  border: 1px solid rgba(#fbbf24, 0.2);
+  border-radius: 0.65rem;
+  background: rgba(#fbbf24, 0.08);
   color: #fde68a;
   font-size: 0.8rem;
 }
@@ -367,28 +388,26 @@
 .stats {
   display: grid;
   margin-top: 1.5rem;
-  border-block: 1px solid rgba($white, 0.09);
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
 }
 
 .stats article {
   display: flex;
-  min-height: 10.5rem;
+  min-height: 8.75rem;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.25rem;
-}
-
-.stats article:not(:last-child) {
-  border-right: 1px solid rgba($white, 0.09);
+  padding: 1.25rem 1.35rem;
+  border-radius: 0.75rem;
+  background: #151917;
 }
 
 .stats strong {
   color: $white;
   font-family: $font-display;
-  font-size: clamp(2.5rem, 5vw, 4.25rem);
-  font-weight: 600;
-  letter-spacing: -0.06em;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
   line-height: 0.9;
 }
 
@@ -414,8 +433,8 @@
 .settingsPanel,
 .addressCard,
 .addressNote {
-  border: 1px solid rgba($white, 0.09);
-  background: #0e1110;
+  border-radius: 0.75rem;
+  background: #151917;
 }
 
 .panel {
@@ -428,8 +447,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid rgba($white, 0.08);
+  padding-bottom: 0.9rem;
 }
 
 .panelHead h3,
@@ -449,14 +467,17 @@
 .recentOrders {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
 .recentOrder {
   display: grid;
-  min-height: 4.5rem;
+  min-height: 4rem;
   align-items: center;
   gap: 1rem;
-  border-bottom: 1px solid rgba($white, 0.065);
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.6rem;
+  background: #0f1311;
   grid-template-columns: minmax(0, 1fr) auto auto;
 }
 
@@ -490,7 +511,8 @@
   min-height: 1.65rem;
   align-items: center;
   padding-inline: 0.55rem;
-  border: 1px solid rgba($primary, 0.2);
+  border-radius: 999px;
+  background: rgba($primary, 0.12);
   color: $primary-light;
   font-size: 0.65rem;
   font-weight: 700;
@@ -499,16 +521,19 @@
 .quickPanel {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
 .quickPanel > button,
 .quickPanel > a {
   display: flex;
-  min-height: 3.65rem;
+  min-height: 3.15rem;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  border-bottom: 1px solid rgba($white, 0.07);
+  padding-inline: 0.85rem;
+  border-radius: 0.6rem;
+  background: #0f1311;
   color: $gray-300;
   font-size: 0.78rem;
   font-weight: 700;
@@ -518,13 +543,13 @@
 
 .quickPanel > button span,
 .quickPanel > a span {
-  color: $gray-600;
-  font-size: 0.6rem;
+  color: $primary-light;
+  font-size: 1rem;
 }
 
 .quickPanel > button:hover,
 .quickPanel > a:hover {
-  padding-left: 0.35rem;
+  background: rgba($primary, 0.1);
   color: $primary-light;
 }
 
@@ -556,8 +581,9 @@
 }
 
 .orderList {
+  display: grid;
   margin-top: 1.5rem;
-  border-top: 1px solid rgba($white, 0.09);
+  gap: 0.65rem;
 }
 
 .orderRow {
@@ -566,7 +592,8 @@
   align-items: center;
   gap: 1.5rem;
   padding: 1rem;
-  border-bottom: 1px solid rgba($white, 0.09);
+  border-radius: 0.75rem;
+  background: #151917;
   grid-template-columns: minmax(0, 1fr) auto minmax(6rem, auto);
   transition: background $transition-fast;
 }
@@ -644,13 +671,14 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  padding: 1rem;
-  border: 1px solid rgba($white, 0.09);
-  transition: border-color $transition-base, transform $transition-base;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: #151917;
+  transition: background $transition-base, transform $transition-base;
 }
 
 .wishlistItem:hover {
-  border-color: rgba($primary, 0.38);
+  background: #1a201d;
   transform: translateY(-3px);
 }
 
@@ -705,8 +733,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid rgba($white, 0.08);
+  padding-bottom: 1rem;
 }
 
 .addressTop strong {
@@ -755,7 +782,6 @@
   max-width: 38ch;
   margin-top: auto;
   padding-top: 2rem;
-  border-top: 1px solid rgba($white, 0.08);
   color: $gray-400;
   font-size: 0.8rem;
   line-height: 1.65;
@@ -807,8 +833,7 @@
 
 .settingsTitle {
   margin-bottom: 1.5rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid rgba($white, 0.08);
+  padding-bottom: 0.25rem;
 }
 
 .profileImageEditor {
@@ -816,8 +841,9 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba($white, 0.08);
+  padding: 0.8rem;
+  border-radius: 0.65rem;
+  background: #0f1311;
 }
 
 .profileImagePreview {
@@ -966,13 +992,14 @@
 .formMessage {
   margin-bottom: 1rem;
   padding: 0.75rem;
-  border: 1px solid rgba($primary, 0.2);
+  border-radius: 0.6rem;
+  background: rgba($primary, 0.1);
   color: $primary-light;
   font-size: 0.74rem;
 }
 
 .formError {
-  border-color: rgba(#f87171, 0.25);
+  background: rgba(#f87171, 0.08);
   color: #fca5a5;
 }
 
@@ -1014,13 +1041,12 @@
 }
 
 .secondaryAction {
-  border: 1px solid rgba($white, 0.14);
+  background: rgba($white, 0.07);
   color: $white;
 }
 
 .secondaryAction:hover {
-  border-color: rgba($white, 0.3);
-  background: rgba($white, 0.04);
+  background: rgba($white, 0.12);
 }
 
 .primaryAction:disabled,
@@ -1034,14 +1060,15 @@
   min-height: 1.8rem;
   align-items: center;
   padding-inline: 0.65rem;
-  border: 1px solid rgba(#fbbf24, 0.24);
+  border-radius: 999px;
+  background: rgba(#fbbf24, 0.1);
   color: #fde68a;
   font-size: 0.68rem;
   font-weight: 700;
 }
 
 .verificationState > span.verified {
-  border-color: rgba($primary, 0.24);
+  background: rgba($primary, 0.12);
   color: $primary-light;
 }
 
@@ -1066,8 +1093,8 @@
 .paymentHistory,
 .paymentSafety,
 .twoFactorPanel {
-  border: 1px solid rgba($white, 0.09);
-  background: #0e1110;
+  border-radius: 0.75rem;
+  background: #151917;
 }
 
 .paymentHistory {
@@ -1078,6 +1105,7 @@
 .paymentRows {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
 .paymentRow {
@@ -1085,7 +1113,9 @@
   min-height: 5.5rem;
   align-items: center;
   gap: 1rem;
-  border-bottom: 1px solid rgba($white, 0.07);
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.6rem;
+  background: #0f1311;
   grid-template-columns: minmax(0, 1fr) auto minmax(5rem, auto);
 }
 
@@ -1204,8 +1234,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid rgba($white, 0.08);
+  padding-bottom: 0.75rem;
 }
 
 .twoFactorIntro > div > span {
@@ -1226,14 +1255,15 @@
   min-height: 1.8rem;
   align-items: center;
   padding-inline: 0.65rem;
-  border: 1px solid rgba(#fbbf24, 0.24);
+  border-radius: 999px;
+  background: rgba(#fbbf24, 0.1);
   color: #fde68a;
   font-size: 0.68rem;
   font-weight: 700;
 }
 
 .securityStatusActive {
-  border-color: rgba($primary, 0.24);
+  background: rgba($primary, 0.12);
   color: $primary-light;
 }
 
@@ -1312,8 +1342,8 @@
   align-items: center;
   justify-content: center;
   padding-inline: 1rem;
-  border: 1px solid rgba(#f87171, 0.25);
   border-radius: $radius-md;
+  background: rgba(#f87171, 0.08);
   color: #fca5a5;
   font-size: 0.74rem;
   font-weight: 750;
@@ -1323,8 +1353,7 @@
 }
 
 .dangerAction:hover {
-  border-color: rgba(#f87171, 0.5);
-  background: rgba(#f87171, 0.07);
+  background: rgba(#f87171, 0.14);
 }
 
 .dangerAction:disabled {
@@ -1342,7 +1371,6 @@
   max-width: 48rem;
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba($white, 0.08);
 }
 
 .recoveryCodes h4 {
@@ -1378,13 +1406,19 @@
   text-align: center;
 }
 
-.emptyState > span {
+.emptyIcon {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: rgba($primary, 0.12);
   color: $primary-light;
-  font-family: $font-display;
-  font-size: 4.5rem;
-  font-weight: 600;
-  letter-spacing: -0.06em;
-  line-height: 1;
+  place-items: center;
+
+  svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
 }
 
 .emptyState h3 {
@@ -1405,8 +1439,8 @@
   align-items: center;
   margin-top: 1.25rem;
   padding-inline: 1.1rem;
-  border: 1px solid rgba($white, 0.14);
   border-radius: $radius-md;
+  background: rgba($white, 0.07);
   color: $white;
   font-size: 0.75rem;
   font-weight: 700;
@@ -1445,14 +1479,17 @@
 
   .sidebar {
     position: relative;
-    border-right: 0;
-    border-bottom: 1px solid rgba($white, 0.09);
+    padding: 0.75rem 1rem 0;
+  }
+
+  .accountBrand {
+    margin-bottom: 0.75rem;
   }
 
   .identity {
-    min-height: 5rem;
-    padding: 0.85rem 7rem 0.85rem 1rem;
-    border-bottom: 0;
+    min-height: 4.25rem;
+    margin-bottom: 0.75rem;
+    padding: 0.7rem;
   }
 
   .avatar {
@@ -1463,9 +1500,8 @@
   .navigation {
     overflow-x: auto;
     flex-direction: row;
-    gap: 0;
-    padding: 0;
-    border-bottom: 1px solid rgba($white, 0.09);
+    gap: 0.35rem;
+    padding: 0 0 0.75rem;
     scrollbar-width: none;
   }
 
@@ -1474,15 +1510,11 @@
   }
 
   .navItem {
-    min-height: 3.5rem;
+    min-height: 2.75rem;
     flex: 0 0 auto;
     padding-inline: 1rem;
-    border-radius: 0;
+    border-radius: 0.65rem;
     white-space: nowrap;
-  }
-
-  .navItem::before {
-    display: none;
   }
 
   .navItem:hover {
@@ -1490,12 +1522,11 @@
   }
 
   .sidebarFooter {
-    position: absolute;
-    top: 0;
-    right: 0;
-    margin: 0;
-    padding: 1.1rem 1rem;
-    border: 0;
+    position: static;
+    padding: 0.25rem 0 0.75rem;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
 
   .sidebarFooter > span {
@@ -1523,11 +1554,6 @@
 
   .stats article {
     min-height: 8rem;
-  }
-
-  .stats article:not(:last-child) {
-    border-right: 0;
-    border-bottom: 1px solid rgba($white, 0.09);
   }
 
   .orderRow {
@@ -1627,7 +1653,6 @@
   }
 
   .navItem,
-  .navItem::before,
   .quickPanel > button,
   .quickPanel > a,
   .wishlistItem,
