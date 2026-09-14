@@ -206,21 +206,25 @@ export default function Hero(props: {
               >
                 <div class={styles.slideWash} />
                 <div class={styles.slideScrim} />
-                <Show when={props.loading}>
-                  <div class={styles.loadingCards} aria-hidden="true">
+                <Show
+                  when={props.loading}
+                  fallback={
+                    <div class={styles.slideBody}>
+                      <div class={styles.slideTags}><span class={styles.gameTag}>TCGHaven</span></div>
+                      <h2 class={styles.slideTitle}>{props.managedTitle ?? "Browse the current collection"}</h2>
+                      <p class={styles.slideBlurb}>{props.managedCopy ?? "There are no published products available right now."}</p>
+                      <div class={styles.slideFooter}>
+                        <A href="/products" class={styles.slideCta}>Browse products</A>
+                      </div>
+                    </div>
+                  }
+                >
+                  <div class={styles.loadingCards} aria-label="Loading current products" role="status">
                     <img src="/images/cards/charizard.png" alt="" />
                     <img src="/images/cards/umbreon.png" alt="" />
                     <img src="/images/cards/rayquaza.png" alt="" />
                   </div>
                 </Show>
-                <div class={styles.slideBody}>
-                  <div class={styles.slideTags}><span class={styles.gameTag}>TCGHaven</span></div>
-                  <h2 class={styles.slideTitle}>{props.managedTitle ?? "Real stock, ready when you are"}</h2>
-                  <p class={styles.slideBlurb}>{props.managedCopy ?? "Published products appear here as soon as they are available."}</p>
-                  <div class={styles.slideFooter}>
-                    <A href="/products" class={styles.slideCta}>Browse live stock</A>
-                  </div>
-                </div>
               </article>
             }
           >

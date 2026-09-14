@@ -12,10 +12,11 @@ export default function Navbar() {
   const [query, setQuery] = createSignal("");
   let searchInput: HTMLInputElement | undefined;
   let wrapRef: HTMLFormElement | undefined;
-  const accountHref = () =>
-    (session().data?.user as { role?: string } | undefined)?.role === "admin"
-      ? "/admin"
-      : "/account";
+  const accountHref = () => {
+    const currentUser = session().data?.user as { role?: string } | undefined;
+    if (!currentUser) return "/login";
+    return currentUser.role === "admin" ? "/admin" : "/account";
+  };
 
   const openSearch = () => {
     setSearchOpen(true);

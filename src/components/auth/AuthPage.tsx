@@ -50,7 +50,8 @@ export default function AuthPage(props: AuthPageProps) {
 
   createEffect(() => {
     const current = session().data?.user as { role?: string } | undefined;
-    if (current?.role === "admin") window.location.replace("/admin");
+    if (!current) return;
+    window.location.replace(current.role === "admin" ? "/admin" : safeNextPath());
   });
 
   const switchMode = (nextMode: AuthMode, event: MouseEvent) => {

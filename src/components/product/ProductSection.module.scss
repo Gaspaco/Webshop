@@ -960,8 +960,11 @@
 }
 
 .quickAdd {
+  align-self: flex-start;
+  width: fit-content;
+  max-width: 100%;
   min-height: 3.25rem;
-  padding-inline: 1rem;
+  padding-inline: 1.25rem;
   border-radius: $radius-md;
   background: $primary;
   color: #04130c;

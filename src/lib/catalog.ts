@@ -132,32 +132,12 @@ export type DatabaseCatalogState = {
   managedSlugs: string[];
 };
 
-type CatalogRequest = {
-  slug?: string;
-  limit?: number;
-  available?: boolean;
-};
-
-export async function fetchDatabaseCatalogState(
-  request?: string | CatalogRequest,
-): Promise<DatabaseCatalogState> {
-  const options = typeof request === "string" ? { slug: request } : request;
-  const params = new URLSearchParams();
-  if (options?.slug) params.set("slug", options.slug);
-  if (options?.limit) params.set("limit", String(options.limit));
-  if (options?.available) params.set("available", "1");
-  const query = params.size ? `?${params.toString()}` : "";
-  const response = await fetch(`/api/catalog/products${query}`, {
-    cache: "no-store",
-    headers: { Accept: "application/json" },
-  });
-  if (!response.ok) return { products: [], managedSlugs: [] };
-  const data = (await response.json()) as {
-    products: DatabaseCatalogProduct[];
-    managedSlugs?: string[];
-  };
+export function databaseCatalogRowsToState(
+  rows: DatabaseCatalogProduct[],
+  managedSlugs: string[],
+): DatabaseCatalogState {
   const grouped = new Map<string, ShopProduct>();
-  for (const databaseProduct of data.products) {
+  for (const databaseProduct of rows) {
     const mapped = databaseProductToShopProduct(databaseProduct);
     const existing = grouped.get(mapped.id);
     if (!existing) {
@@ -190,8 +170,38 @@ export async function fetchDatabaseCatalogState(
   }
   return {
     products: [...grouped.values()],
-    managedSlugs: data.managedSlugs ?? data.products.map(product => product.slug),
+    managedSlugs,
   };
+}
+
+type CatalogRequest = {
+  slug?: string;
+  limit?: number;
+  available?: boolean;
+};
+
+export async function fetchDatabaseCatalogState(
+  request?: string | CatalogRequest,
+): Promise<DatabaseCatalogState> {
+  const options = typeof request === "string" ? { slug: request } : request;
+  const params = new URLSearchParams();
+  if (options?.slug) params.set("slug", options.slug);
+  if (options?.limit) params.set("limit", String(options.limit));
+  if (options?.available) params.set("available", "1");
+  const query = params.size ? `?${params.toString()}` : "";
+  const response = await fetch(`/api/catalog/products${query}`, {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) return { products: [], managedSlugs: [] };
+  const data = (await response.json()) as {
+    products: DatabaseCatalogProduct[];
+    managedSlugs?: string[];
+  };
+  return databaseCatalogRowsToState(
+    data.products,
+    data.managedSlugs ?? data.products.map(product => product.slug),
+  );
 }
 
 export async function fetchDatabaseCatalog(slug?: string) {

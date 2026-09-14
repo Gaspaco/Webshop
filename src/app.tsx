@@ -54,7 +54,7 @@ function AppShell(props: ParentProps) {
     location.pathname === "/admin" ||
     location.pathname.startsWith("/admin/");
   const chromeless = () => isAuthRoute() || isDashboard();
-  const skipsBrandLoader = () => isHomeRoute() || isDashboard();
+  const skipsBrandLoader = () => isHomeRoute() || isDashboard() || isAuthRoute();
 
   // Routes that read a pending resource suspend, so the fallback below is what
   // the visitor actually looks at while the catalogue loads. Match its shape to
