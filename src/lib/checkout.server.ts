@@ -1,5 +1,5 @@
 import { and, eq, sql } from "drizzle-orm";
-import { PaymentMethod, type PaymentCreateParams } from "@mollie/api-client";
+import type { PaymentCreateParams } from "@mollie/api-client";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -28,7 +28,7 @@ const shippingMethodSchema = z.enum([
   "postnl_parcel",
   "postnl_international",
 ]);
-const paymentMethodSchema = z.enum(["mollie", "bank"]);
+const paymentMethodSchema = z.literal("mollie");
 
 const checkoutInputSchema = z.object({
   items: z
@@ -421,10 +421,6 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
       orderNumber: order.orderNumber,
     },
   };
-
-  if (checkout.paymentMethod === "bank") {
-    paymentParameters.method = PaymentMethod.banktransfer;
-  }
 
   let molliePayment;
   try {

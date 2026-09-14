@@ -132,10 +132,21 @@ export type DatabaseCatalogState = {
   managedSlugs: string[];
 };
 
+type CatalogRequest = {
+  slug?: string;
+  limit?: number;
+  available?: boolean;
+};
+
 export async function fetchDatabaseCatalogState(
-  slug?: string,
+  request?: string | CatalogRequest,
 ): Promise<DatabaseCatalogState> {
-  const query = slug ? `?slug=${encodeURIComponent(slug)}` : "";
+  const options = typeof request === "string" ? { slug: request } : request;
+  const params = new URLSearchParams();
+  if (options?.slug) params.set("slug", options.slug);
+  if (options?.limit) params.set("limit", String(options.limit));
+  if (options?.available) params.set("available", "1");
+  const query = params.size ? `?${params.toString()}` : "";
   const response = await fetch(`/api/catalog/products${query}`, {
     cache: "no-store",
     headers: { Accept: "application/json" },

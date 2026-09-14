@@ -66,13 +66,15 @@ export default function Hero(props: {
 
   const slides = createMemo<Slide[]>(() =>
     (props.products ?? [])
-      .filter(product => product.image && (product.stock ?? 0) > 0)
-      .slice(0, 3)
-      .map(product => {
+      .filter(product => (product.stock ?? 0) > 0)
+      .map((product): Slide | undefined => {
         const mainVariant =
-          product.variants?.find(variant => variant.isDefault) ??
+          product.variants?.find(variant => variant.isDefault && variant.stock > 0) ??
           product.variants?.find(variant => variant.stock > 0) ??
+          product.variants?.find(variant => variant.isDefault) ??
           product.variants?.[0];
+        const image = mainVariant?.image || product.image;
+        if (!image) return undefined;
         return {
           id: product.id,
           set: product.set ?? product.gameName,
@@ -82,34 +84,44 @@ export default function Hero(props: {
           blurb: product.description ?? `Available now from our ${product.gameName} catalogue.`,
           priceCents: mainVariant?.priceCents ?? product.priceCents ?? 0,
           href: product.href,
-          image: mainVariant?.image ?? product.image!,
+          image,
           alt: product.name,
           theme: GAME_ACCENTS[product.game] ?? "#216b4d",
           variantId: mainVariant?.id,
         };
-      }),
+      })
+      .filter((slide): slide is Slide => Boolean(slide))
+      .slice(0, 3),
   );
 
   const bestsellers = createMemo<Product[]>(() => {
     const live = (props.products ?? [])
-      .filter(product => product.image && (product.stock ?? 0) > 0)
-      .slice(0, 5)
-      .map(product => {
+      .filter(product => (product.stock ?? 0) > 0)
+      .map((product): Product | undefined => {
         const mainVariant =
+          product.variants?.find(variant => variant.isDefault && variant.stock > 0) ??
+          product.variants?.find(variant => variant.id === product.variantId && variant.stock > 0) ??
+          product.variants?.find(variant => variant.stock > 0) ??
           product.variants?.find(variant => variant.isDefault) ??
-          product.variants?.find(variant => variant.id === product.variantId) ??
           product.variants?.[0];
+        const image = mainVariant?.image || product.image;
+        if (!image) return undefined;
         return {
           id: product.id,
-          name: product.set ? `${product.name} · ${product.set}` : product.name,
+          name:
+            product.set && product.set.trim().toLowerCase() !== product.name.trim().toLowerCase()
+              ? `${product.name} · ${product.set}`
+              : product.name,
           game: product.gameName,
-          image: mainVariant?.image ?? product.image!,
+          image,
           rating: product.rating ?? 5,
           priceCents: mainVariant?.priceCents ?? product.priceCents ?? 0,
           href: product.href,
           variantId: mainVariant?.id,
         };
-      });
+      })
+      .filter((product): product is Product => Boolean(product))
+      .slice(0, 5);
     return live;
   });
 
@@ -193,7 +205,14 @@ export default function Hero(props: {
                 aria-hidden={i() === active() ? "false" : "true"}
               >
                 <div class={styles.slideWash} />
-                <img class={styles.slideArt} src={slide.image} alt={slide.alt} draggable={false} />
+                <img
+                  class={styles.slideArt}
+                  src={slide.image}
+                  alt={slide.alt}
+                  draggable={false}
+                  loading={i() === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                />
                 <div class={styles.slideScrim} />
 
                 <div class={styles.slideBody}>

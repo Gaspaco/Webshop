@@ -2,32 +2,55 @@
 
 .page {
   min-height: calc(100dvh - $header-height);
-  padding: clamp(1.5rem, 4vh, 3rem) 0 clamp(4rem, 8vh, 7rem);
+  padding: 1.25rem 0 5rem;
   background: #0d0e0d;
 }
 
 .header {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  padding: clamp(1.25rem, 3vh, 2rem) 0 clamp(1.5rem, 3vh, 2.25rem);
+  padding: 1.25rem 0 1.5rem;
   border-bottom: 1px solid rgba($white, 0.12);
 
   h1 {
+    margin: 0;
     color: $white;
     font-family: $font-display;
-    font-size: clamp(2.25rem, 4vw, 3.4rem);
+    font-size: 2.1rem;
     font-weight: 800;
-    letter-spacing: -0.035em;
-    line-height: 1;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
   }
 
   p {
-    margin-top: 0.65rem;
+    margin: 0.3rem 0 0;
     color: $gray-400;
-    font-size: 0.95rem;
-    line-height: 1.55;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+}
+
+.headerCopy {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.checkoutMark {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: $radius-md;
+  background: rgba($primary, 0.12);
+  color: $primary-light;
+
+  svg {
+    width: 1.35rem;
+    height: 1.35rem;
   }
 }
 
@@ -64,73 +87,61 @@
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(21rem, 24rem);
-  gap: clamp(2rem, 5vw, 5rem);
+  grid-template-columns: minmax(0, 1fr) minmax(22rem, 25rem);
+  gap: clamp(1.5rem, 3vw, 2.75rem);
   align-items: start;
-  padding-top: clamp(1.5rem, 4vh, 3rem);
+  padding-top: 1.75rem;
 }
 
 .formPanel {
   min-width: 0;
+  padding-inline: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid rgba($white, 0.11);
+  border-radius: $radius-xl;
+  background: #121312;
 }
 
 .section {
-  padding: clamp(1.75rem, 4vh, 2.5rem) 0;
+  padding: 1.65rem 0 1.75rem;
   border-bottom: 1px solid rgba($white, 0.1);
-
-  &:first-child {
-    padding-top: 0;
-  }
 }
 
 .sectionHeading {
-  display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr);
-  gap: 0.75rem;
-  align-items: start;
-
-  > span {
-    display: grid;
-    width: 2rem;
-    height: 2rem;
-    place-items: center;
-    border: 1px solid rgba($white, 0.14);
-    border-radius: $radius-full;
-    color: $primary-light;
-    font-size: 0.67rem;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-  }
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
 
   h2 {
     margin: 0;
     color: $white;
     font-family: $font-display;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 750;
     letter-spacing: -0.015em;
+    white-space: nowrap;
   }
 
   p {
-    max-width: 50ch;
-    margin: 0.25rem 0 0;
+    max-width: 44ch;
+    margin: 0;
     color: $gray-500;
-    font-size: 0.82rem;
+    font-size: 0.76rem;
     line-height: 1.5;
+    text-align: right;
   }
 }
 
 .sectionBody {
   display: grid;
-  gap: 1rem;
-  margin-top: 1rem;
-  margin-left: 3rem;
+  gap: 0.85rem;
+  margin-top: 1.15rem;
 }
 
 .gridTwo {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 .field {
@@ -139,9 +150,9 @@
 
   > span {
     margin: 0;
-    color: $gray-300;
-    font-size: 0.78rem;
-    font-weight: 700;
+    color: $gray-200;
+    font-size: 0.75rem;
+    font-weight: 650;
   }
 
   > small {
@@ -155,9 +166,9 @@
   select,
   textarea {
     width: 100%;
-    border: 1px solid rgba($white, 0.13);
-    border-radius: $radius-sm;
-    background: #151615;
+    border: 1px solid rgba($white, 0.14);
+    border-radius: $radius-md;
+    background: #0d0e0d;
     color: $white;
     font: inherit;
     line-height: 1.5;
@@ -173,17 +184,17 @@
     }
 
     &:focus {
-      outline: 2px solid rgba($primary, 0.38);
-      outline-offset: 1px;
+      outline: 2px solid rgba($primary, 0.3);
+      outline-offset: 2px;
       border-color: $primary;
-      background: #191a19;
+      background: #101110;
     }
   }
 
   input,
   select {
-    height: 3rem;
-    padding-inline: 0.9rem;
+    height: 2.85rem;
+    padding-inline: 0.8rem;
   }
 
   select {
@@ -192,7 +203,7 @@
   }
 
   textarea {
-    min-height: 6.5rem;
+    min-height: 5.5rem;
     padding: 0.8rem 0.9rem;
     resize: vertical;
   }
@@ -200,7 +211,9 @@
 
 .optionStack {
   display: grid;
-  border-block: 1px solid rgba($white, 0.12);
+  overflow: hidden;
+  border: 1px solid rgba($white, 0.12);
+  border-radius: $radius-md;
 }
 
 .option {
@@ -208,8 +221,8 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.9rem;
   align-items: center;
-  min-height: 4.5rem;
-  padding: 0.85rem 0.25rem;
+  min-height: 4rem;
+  padding: 0.75rem 0.9rem;
   color: $gray-300;
   cursor: pointer;
   transition: background $transition-fast, color $transition-fast;
@@ -219,7 +232,7 @@
   }
 
   &:has(input:checked) {
-    background: rgba($primary, 0.065);
+    background: rgba($primary, 0.09);
     color: $white;
   }
 
@@ -230,7 +243,7 @@
   input {
     width: 1.05rem;
     height: 1.05rem;
-    margin-left: 0.6rem;
+    margin: 0;
     accent-color: $primary;
   }
 
@@ -253,12 +266,116 @@
   }
 
   em {
-    padding-right: 0.6rem;
     color: $primary-light;
-    font-size: 0.82rem;
+    font-size: 0.75rem;
     font-style: normal;
     font-weight: 750;
     white-space: nowrap;
+  }
+}
+
+.paymentProvider {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: center;
+  min-height: 4rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba($primary, 0.28);
+  border-radius: $radius-md;
+  background: rgba($primary, 0.07);
+
+  > span:nth-child(2) {
+    display: grid;
+    gap: 0.18rem;
+  }
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  small {
+    max-width: 56ch;
+    color: $gray-400;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  em {
+    color: $primary-light;
+    font-size: 0.75rem;
+    font-style: normal;
+    font-weight: 750;
+  }
+}
+
+.paymentProviderIcon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: $radius-sm;
+  background: rgba($primary, 0.13);
+  color: $primary-light;
+
+  svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+}
+
+.orderNote {
+  padding-block: 1rem;
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    color: $gray-200;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    > span {
+      display: grid;
+      gap: 0.16rem;
+    }
+
+    strong {
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    small {
+      color: $gray-500;
+      font-size: 0.72rem;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      transition: transform $transition-fast;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $primary-light;
+      outline-offset: 0.3rem;
+    }
+  }
+
+  &[open] summary svg {
+    transform: rotate(180deg);
+  }
+
+  .field {
+    margin-top: 1rem;
   }
 }
 
@@ -266,11 +383,11 @@
   position: sticky;
   top: calc($header-height + 1.25rem);
   display: grid;
-  gap: 1.25rem;
+  gap: 1.15rem;
   padding: 1.4rem;
-  border-top: 2px solid $primary;
-  border-radius: 0 0 $radius-md $radius-md;
-  background: #161716;
+  border: 1px solid rgba($white, 0.11);
+  border-radius: $radius-xl;
+  background: #121312;
 }
 
 .summaryHeading {
@@ -279,11 +396,21 @@
   justify-content: space-between;
   gap: 1rem;
 
-  h2 {
-    color: $white;
-    font-family: $font-display;
-    font-size: 1.15rem;
-    letter-spacing: -0.015em;
+  > div {
+    display: grid;
+    gap: 0.15rem;
+
+    h2 {
+      color: $white;
+      font-family: $font-display;
+      font-size: 1.05rem;
+      letter-spacing: -0.015em;
+    }
+
+    span {
+      color: $gray-500;
+      font-size: 0.7rem;
+    }
   }
 
   a {
@@ -301,7 +428,7 @@
 .items {
   display: grid;
   max-height: 20rem;
-  gap: 1rem;
+  gap: 0.85rem;
   padding: 0.25rem 0.3rem 0.25rem 0;
   overflow-y: auto;
   scrollbar-color: $gray-700 transparent;
@@ -322,6 +449,7 @@
   height: 4.25rem;
   place-items: center;
   border-radius: $radius-sm;
+  border: 1px solid rgba($white, 0.08);
   background: #0d0e0d;
 
   img {
@@ -380,12 +508,39 @@
 }
 
 .shippingStatus {
-  padding-block: 0.75rem;
+  display: grid;
+  gap: 0.55rem;
+  padding-block: 0.8rem;
   border-block: 1px solid rgba($white, 0.08);
-  color: $primary-light;
-  font-size: 0.76rem;
-  font-weight: 700;
-  text-align: center;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: $gray-400;
+    font-size: 0.7rem;
+
+    span:first-child {
+      color: $primary-light;
+      font-weight: 700;
+    }
+  }
+}
+
+.shippingTrack {
+  display: block;
+  height: 0.2rem;
+  overflow: hidden;
+  border-radius: $radius-full;
+  background: rgba($white, 0.1);
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: $primary;
+    transition: width $transition-base;
+  }
 }
 
 .discount {
@@ -529,6 +684,7 @@
 
 .submit {
   width: 100%;
+  min-height: 3.25rem;
 
   &:disabled {
     cursor: wait;
@@ -579,15 +735,7 @@
   }
 }
 
-.kicker {
-  color: $primary-light;
-  font-family: $font-display;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.empty,
-.confirmation {
+.empty {
   display: grid;
   justify-items: start;
   gap: 1rem;
@@ -610,32 +758,310 @@
   }
 }
 
-.confirmIcon {
+.confirmation {
   display: grid;
-  width: 3.25rem;
-  height: 3.25rem;
-  place-items: center;
-  border: 1px solid rgba($primary, 0.45);
-  border-radius: $radius-full;
-  color: $primary-light;
+  align-content: center;
+  min-height: calc(100dvh - $header-height - 4rem);
+  max-width: 68rem;
+  margin-inline: auto;
+  padding: 3rem 0 5rem;
+  color: $white;
 
-  svg {
-    width: 1.5rem;
-    height: 1.5rem;
+  &[data-state="failed"] {
+    .confirmIcon {
+      border-color: rgba(#f87171, 0.4);
+      background: rgba(#f87171, 0.1);
+      color: #fca5a5;
+    }
+
+    .confirmStatus,
+    .paymentState {
+      color: #fca5a5;
+    }
+
+    .paymentState i {
+      background: #f87171;
+    }
+  }
+
+  &[data-state="unknown"] {
+    .confirmIcon {
+      border-color: rgba($accent-gold, 0.42);
+      background: rgba($accent-gold, 0.08);
+      color: $accent-gold;
+    }
+
+    .confirmStatus,
+    .paymentState {
+      color: $accent-gold;
+    }
+
+    .paymentState i {
+      background: $accent-gold;
+    }
   }
 }
 
-.confirmSummary {
-  width: min(100%, 28rem);
-  margin-top: 0.5rem;
-  border-top-color: rgba($primary, 0.24);
+.confirmHeader {
+  display: grid;
+  grid-template-columns: 4.25rem minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid rgba($white, 0.14);
+
+  h1 {
+    max-width: 19ch;
+    margin: 0.35rem 0 0;
+    color: $white;
+    font-family: $font-display;
+    font-size: 3.25rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+}
+
+.confirmStatus {
+  margin: 0;
+  color: $primary-light;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.confirmDescription {
+  max-width: 60ch;
+  margin: 0.9rem 0 0;
+  color: $gray-300;
+  font-size: 1rem;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+.confirmIcon {
+  display: grid;
+  width: 4.25rem;
+  height: 4.25rem;
+  place-items: center;
+  border: 1px solid rgba($primary, 0.45);
+  border-radius: $radius-full;
+  background: rgba($primary, 0.08);
+  color: $primary-light;
+
+  svg {
+    width: 1.65rem;
+    height: 1.65rem;
+  }
+}
+
+.statusSpinner {
+  width: 1.45rem;
+  height: 1.45rem;
+  border: 2px solid rgba($primary-light, 0.25);
+  border-top-color: $primary-light;
+  border-radius: $radius-full;
+  animation: status-spin 900ms linear infinite;
+}
+
+.confirmGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.8fr);
+  gap: clamp(3rem, 7vw, 6.5rem);
+  padding: 2.75rem 0;
+  border-bottom: 1px solid rgba($white, 0.14);
+}
+
+.orderReceipt {
+  min-width: 0;
+
+  > header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba($white, 0.22);
+
+    span {
+      color: $gray-400;
+      font-size: 0.8rem;
+      font-weight: 650;
+    }
+
+    strong {
+      color: $white;
+      font-size: 0.95rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.015em;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  dl {
+    margin: 0;
+
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      min-height: 3.75rem;
+      border-bottom: 1px solid rgba($white, 0.09);
+    }
+
+    dt {
+      color: $gray-400;
+      font-size: 0.82rem;
+    }
+
+    dd {
+      margin: 0;
+      color: $gray-100;
+      font-size: 0.84rem;
+      font-weight: 650;
+      text-align: right;
+    }
+  }
+
+  > p {
+    margin: 1rem 0 0;
+    color: $gray-500;
+    font-size: 0.75rem;
+    line-height: 1.55;
+  }
+}
+
+.paymentState {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: $primary-light;
+
+  i {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: $radius-full;
+    background: $primary;
+    box-shadow: 0 0 0 0.2rem rgba($primary, 0.1);
+  }
+}
+
+.nextSteps {
+  h2 {
+    margin: 0 0 1.25rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+
+  ol {
+    display: grid;
+    gap: 1.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    gap: 0.8rem;
+
+    > span {
+      display: grid;
+      width: 1.75rem;
+      height: 1.75rem;
+      place-items: center;
+      border: 1px solid rgba($white, 0.18);
+      border-radius: $radius-full;
+      color: $gray-400;
+      font-size: 0.68rem;
+      font-weight: 750;
+    }
+
+    strong {
+      color: $gray-100;
+      font-size: 0.84rem;
+    }
+
+    p {
+      margin: 0.2rem 0 0;
+      color: $gray-500;
+      font-size: 0.76rem;
+      line-height: 1.5;
+    }
+  }
+}
+
+.stepComplete > span {
+  border-color: rgba($primary, 0.5) !important;
+  background: rgba($primary, 0.12);
+  color: $primary-light !important;
+}
+
+.confirmFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 1.5rem;
+
+  > p {
+    margin: 0;
+    color: $gray-500;
+    font-size: 0.78rem;
+
+    a {
+      color: $gray-200;
+      text-decoration: underline;
+      text-underline-offset: 0.18rem;
+
+      &:hover {
+        color: $primary-light;
+      }
+    }
+  }
 }
 
 .confirmActions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 0.65rem;
+}
+
+.statusButton {
+  min-height: 3.1rem;
+  padding-inline: 1rem;
+  border: 0;
+  background: transparent;
+  color: $gray-300;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $primary-light;
+  }
+
+  &:disabled {
+    color: $gray-600;
+    cursor: wait;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $accent-gold;
+    outline-offset: 2px;
+  }
+}
+
+@keyframes status-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: $bp-lg) {
@@ -645,7 +1071,6 @@
 
   .summary {
     position: static;
-    order: -1;
   }
 
   .items {
@@ -668,8 +1093,43 @@
     grid-template-columns: 1fr;
   }
 
-  .sectionBody {
-    margin-left: 0;
+  .sectionHeading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    p {
+      text-align: left;
+    }
+  }
+
+  .confirmation {
+    min-height: 0;
+    padding-top: 2rem;
+  }
+
+  .confirmHeader {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    gap: 1rem;
+
+    h1 {
+      font-size: 2.45rem;
+    }
+  }
+
+  .confirmIcon {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .confirmGrid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .confirmFooter {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
@@ -679,7 +1139,10 @@
   }
 
   .summary {
-    margin-inline: -0.35rem;
+    padding-inline: 1rem;
+  }
+
+  .formPanel {
     padding-inline: 1rem;
   }
 
@@ -692,8 +1155,49 @@
     }
   }
 
+  .paymentProvider {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    em {
+      grid-column: 2;
+    }
+  }
+
   .itemPrice {
     display: none;
+  }
+
+  .confirmHeader {
+    grid-template-columns: 1fr;
+
+    h1 {
+      font-size: 2.05rem;
+    }
+  }
+
+  .confirmIcon {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .orderReceipt > header,
+  .orderReceipt dl > div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding-block: 0.85rem;
+  }
+
+  .orderReceipt dl dd {
+    text-align: left;
+  }
+
+  .confirmActions {
+    width: 100%;
+
+    a {
+      flex: 1 1 10rem;
+    }
   }
 }
 
@@ -704,9 +1208,16 @@
   .field select,
   .field textarea,
   .option,
+  .orderNote summary svg,
+  .shippingTrack i,
   .submit,
   .primaryLink,
-  .secondaryLink {
+  .secondaryLink,
+  .statusButton {
     transition-duration: 0.01ms;
+  }
+
+  .statusSpinner {
+    animation: none;
   }
 }

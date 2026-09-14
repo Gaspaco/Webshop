@@ -45,7 +45,10 @@ export default function Home() {
     try {
       const [response, catalog] = await Promise.all([
         fetch("/api/storefront/content"),
-        fetchDatabaseCatalogState(),
+        // The full singles catalogue can contain hundreds of embedded card
+        // images. The homepage only needs enough live inventory for its hero
+        // and product shelves, so keep first paint small and predictable.
+        fetchDatabaseCatalogState({ available: true, limit: 12 }),
       ]);
       const result = response.ok
         ? await response.json() as { content: HomeContent | null }

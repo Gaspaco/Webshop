@@ -37,6 +37,7 @@ export default function App() {
 
 function AppShell(props: ParentProps) {
   const location = useLocation();
+  const isHomeRoute = () => location.pathname === "/";
   const isAuthRoute = () =>
     [
       "/login",
@@ -49,9 +50,11 @@ function AppShell(props: ParentProps) {
     );
   const isDashboard = () =>
     location.pathname === "/account" ||
+    location.pathname.startsWith("/account/") ||
     location.pathname === "/admin" ||
-    location.pathname === "/admin/login";
+    location.pathname.startsWith("/admin/");
   const chromeless = () => isAuthRoute() || isDashboard();
+  const skipsBrandLoader = () => isHomeRoute() || isDashboard();
 
   // Routes that read a pending resource suspend, so the fallback below is what
   // the visitor actually looks at while the catalogue loads. Match its shape to
@@ -68,9 +71,11 @@ function AppShell(props: ParentProps) {
     <MetaProvider>
       <Title>My Little TCG Haven</Title>
       <script
-        innerHTML={`try{if(sessionStorage.getItem("${LOADER_SESSION_KEY}")==="true"){document.documentElement.classList.add("loader-seen")}}catch{}`}
+        innerHTML={`try{if(location.pathname==="/"||location.pathname==="/account"||location.pathname.startsWith("/account/")||location.pathname==="/admin"||location.pathname.startsWith("/admin/")){sessionStorage.setItem("${LOADER_SESSION_KEY}","true");document.documentElement.classList.add("loader-seen")}else if(sessionStorage.getItem("${LOADER_SESSION_KEY}")==="true"){document.documentElement.classList.add("loader-seen")}}catch{}`}
       />
-      <LoadingScreen />
+      <Show when={!skipsBrandLoader()}>
+        <LoadingScreen />
+      </Show>
       {!chromeless() && <Navbar />}
       <Suspense
         fallback={

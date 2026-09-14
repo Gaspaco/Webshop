@@ -5,6 +5,7 @@ import {
   createEffect,
   createSignal,
   For,
+  onCleanup,
   onMount,
   Show,
   type JSX,
@@ -29,7 +30,6 @@ type ShippingMethod =
   | "postnl_letterbox"
   | "postnl_parcel"
   | "postnl_international";
-type PaymentMethod = "mollie" | "bank";
 
 const checkoutSchema = z.object({
   email: z.string().trim().email().max(254),
@@ -45,7 +45,7 @@ const checkoutSchema = z.object({
     "postnl_parcel",
     "postnl_international",
   ]),
-  paymentMethod: z.enum(["mollie", "bank"]),
+  paymentMethod: z.literal("mollie"),
 });
 
 const cleanInput = (value: string) => value.replace(/\s+/g, " ").trim();
@@ -67,7 +67,6 @@ export default function Checkout() {
     createSignal<ShippingMethod>("postnl_parcel");
   const [storeProfile, setStoreProfile] =
     createSignal<StoreProfile>(DEFAULT_STORE_PROFILE);
-  const [paymentMethod, setPaymentMethod] = createSignal<PaymentMethod>("mollie");
   const [email, setEmail] = createSignal("");
   const [firstName, setFirstName] = createSignal("");
   const [lastName, setLastName] = createSignal("");
@@ -242,7 +241,7 @@ export default function Checkout() {
       country: country(),
       notes: notes(),
       shippingMethod: shippingMethod(),
-      paymentMethod: paymentMethod(),
+      paymentMethod: "mollie",
     });
 
     if (!parsed.success) {
@@ -289,7 +288,6 @@ export default function Checkout() {
         return;
       }
 
-      cart.clear();
       window.location.assign(result.checkoutUrl);
     } catch {
       setError("Checkout is unavailable right now. Please try again later.");
@@ -307,9 +305,17 @@ export default function Checkout() {
           fallback={<PaymentReturn orderNumber={searchParams.order} />}
         >
             <header class={styles.header}>
-              <div>
-                <h1>Checkout</h1>
-                <p>Your order is reserved once payment is confirmed.</p>
+              <div class={styles.headerCopy}>
+                <span class={styles.checkoutMark} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 3 5 6v5c0 4.6 2.8 8.1 7 10 4.2-1.9 7-5.4 7-10V6l-7-3Z" />
+                    <path d="m9.5 12 1.7 1.7 3.6-3.8" />
+                  </svg>
+                </span>
+                <div>
+                  <h1>Checkout</h1>
+                  <p>Secure payment through Mollie and tracked PostNL delivery.</p>
+                </div>
               </div>
               <A href="/cart" class={styles.backLink}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -332,11 +338,10 @@ export default function Checkout() {
               }
             >
               <form class={styles.layout} onSubmit={submitOrder}>
-              <section class={styles.formPanel} aria-label="Checkout details">
+              <div class={styles.formPanel}>
                 <CheckoutSection
-                  step="01"
-                  title="Contact"
-                  description="Where we send your receipt and order updates."
+                  title="Delivery details"
+                  description="Your receipt, delivery updates, and shipping address."
                 >
                   <div class={styles.gridTwo}>
                     <label class={styles.field}>
@@ -368,16 +373,8 @@ export default function Checkout() {
                           )}
                         </For>
                       </select>
-                      <small>PostNL delivery is available to every destination listed here.</small>
                     </label>
                   </div>
-                </CheckoutSection>
-
-                <CheckoutSection
-                  step="02"
-                  title="Delivery address"
-                  description="Use the address exactly as PostNL should receive it."
-                >
                   <div class={styles.gridTwo}>
                     <label class={styles.field}>
                       <span>First name</span>
@@ -452,9 +449,8 @@ export default function Checkout() {
                 </CheckoutSection>
 
                 <CheckoutSection
-                  step="03"
-                  title="Shipping"
-                  description="Choose the format that fits your order."
+                  title="Delivery method"
+                  description="PostNL options are based on the destination above."
                 >
                   <div class={styles.optionStack}>
                     <For each={shippingOptions()}>
@@ -483,61 +479,53 @@ export default function Checkout() {
                 </CheckoutSection>
 
                 <CheckoutSection
-                  step="04"
                   title="Payment"
-                  description="Mollie keeps your payment details outside this store."
+                  description="Payment details are handled securely outside TCGHaven."
                 >
-                  <div class={styles.optionStack}>
-                    <label class={styles.option}>
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="mollie"
-                        checked={paymentMethod() === "mollie"}
-                        onChange={() => setPaymentMethod("mollie")}
-                      />
-                      <span>
-                        <strong>Mollie checkout</strong>
-                        <small>iDEAL, Bancontact, card, and more</small>
-                      </span>
-                    </label>
-                    <label class={styles.option}>
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="bank"
-                        checked={paymentMethod() === "bank"}
-                        onChange={() => setPaymentMethod("bank")}
-                      />
-                      <span>
-                        <strong>Bank transfer</strong>
-                        <small>We reserve your order while payment arrives</small>
-                      </span>
-                    </label>
+                  <div class={styles.paymentProvider}>
+                    <span class={styles.paymentProviderIcon} aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                        <path d="M3 10h18M7 15h3" />
+                      </svg>
+                    </span>
+                    <span>
+                      <strong>Mollie secure checkout</strong>
+                      <small>Choose iDEAL, Bancontact, credit card, or another available method after continuing.</small>
+                    </span>
+                    <em>Selected</em>
                   </div>
                 </CheckoutSection>
 
-                <CheckoutSection
-                  step="05"
-                  title="Order note"
-                  description="Optional instructions for packing or delivery."
-                >
+                <details class={styles.orderNote}>
+                  <summary>
+                    <span>
+                      <strong>Add an order note</strong>
+                      <small>Optional packing or delivery instructions</small>
+                    </span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </summary>
                   <label class={styles.field}>
-                    <span>Anything we should know?</span>
+                    <span>Order note</span>
                     <textarea
-                      rows={4}
+                      rows={3}
                       maxlength={400}
-                      placeholder="Condition questions, pickup timing, or packing notes"
+                      placeholder="Anything the shop should know about this order"
                       value={notes()}
                       onInput={event => setNotes(event.currentTarget.value)}
                     />
                   </label>
-                </CheckoutSection>
-              </section>
+                </details>
+              </div>
 
               <aside class={styles.summary} aria-label="Order summary">
                 <div class={styles.summaryHeading}>
-                  <h2>Your order</h2>
+                  <div>
+                    <h2>Order summary</h2>
+                    <span>{cart.count()} {cart.count() === 1 ? "item" : "items"}</span>
+                  </div>
                   <A href="/cart">Edit cart</A>
                 </div>
                 <div class={styles.items}>
@@ -560,11 +548,28 @@ export default function Checkout() {
                   </For>
                 </div>
 
-                <p class={styles.shippingStatus}>
-                  {freeShippingRemaining() > 0
-                    ? `${formatPrice(freeShippingRemaining())} away from free shipping`
-                    : "Free shipping applied"}
-                </p>
+                <div class={styles.shippingStatus}>
+                  <div>
+                    <span>
+                      {freeShippingRemaining() > 0
+                        ? `${formatPrice(freeShippingRemaining())} away from free shipping`
+                        : "Free shipping applied"}
+                    </span>
+                    <span>{formatPrice(storeProfile().freeShippingThresholdCents)}</span>
+                  </div>
+                  <span class={styles.shippingTrack} aria-hidden="true">
+                    <i
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          (subtotalCents() /
+                            Math.max(storeProfile().freeShippingThresholdCents, 1)) *
+                            100,
+                        )}%`,
+                      }}
+                    />
+                  </span>
+                </div>
 
                 <div class={styles.discount}>
                   <label>
@@ -625,9 +630,7 @@ export default function Checkout() {
                 >
                   {isSubmitting()
                     ? "Preparing payment..."
-                    : paymentMethod() === "mollie"
-                      ? `Pay ${formatPrice(totalCents())} securely`
-                      : "Place order with payment obligation"}
+                    : `Pay ${formatPrice(totalCents())} securely`}
                 </button>
 
                 <p class={styles.legalConsent}>
@@ -638,7 +641,7 @@ export default function Checkout() {
                     <path d="M12 3 5 6v5c0 4.6 2.8 8.1 7 10 4.2-1.9 7-5.4 7-10V6l-7-3Z" />
                     <path d="m9.5 12 1.7 1.7 3.6-3.8" />
                   </svg>
-                  Prices, stock, and shipping are checked again on the server before payment.
+                  Prices and stock are verified again before payment.
                 </p>
               </aside>
               </form>
@@ -650,7 +653,6 @@ export default function Checkout() {
 }
 
 function CheckoutSection(props: {
-  step: string;
   title: string;
   description: string;
   children: JSX.Element;
@@ -658,11 +660,8 @@ function CheckoutSection(props: {
   return (
     <section class={styles.section}>
       <header class={styles.sectionHeading}>
-        <span>{props.step}</span>
-        <div>
-          <h2>{props.title}</h2>
-          <p>{props.description}</p>
-        </div>
+        <h2>{props.title}</h2>
+        <p>{props.description}</p>
       </header>
       <div class={styles.sectionBody}>{props.children}</div>
     </section>
@@ -678,40 +677,268 @@ function SummaryRow(props: { label: string; value: string }) {
   );
 }
 
+type PaymentReturnData = {
+  orderNumber: string;
+  orderStatus:
+    | "pending"
+    | "paid"
+    | "processing"
+    | "shipped"
+    | "completed"
+    | "cancelled"
+    | "refunded";
+  paymentStatus:
+    | "open"
+    | "pending"
+    | "authorized"
+    | "paid"
+    | "failed"
+    | "cancelled"
+    | "expired"
+    | "refunded"
+    | null;
+  totalCents: number;
+  currency: string;
+  createdAt: string;
+};
+
+type ConfirmationState = "checking" | "paid" | "failed" | "unknown";
+
 function PaymentReturn(props: { orderNumber: string | string[] | undefined }) {
+  const cart = useCart();
+  const [order, setOrder] = createSignal<PaymentReturnData | null>(null);
+  const [error, setError] = createSignal("");
+  const [refreshing, setRefreshing] = createSignal(false);
+  let attempts = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
   const orderNumber = () =>
     Array.isArray(props.orderNumber) ? props.orderNumber[0] : props.orderNumber;
 
-  return (
-    <section class={styles.confirmation}>
-      <span class={styles.confirmIcon}>
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M20 6 9 17l-5-5" />
-        </svg>
-      </span>
-      <p class={styles.kicker}>Payment received</p>
-      <h1>We are checking your payment.</h1>
-      <p>
-        Mollie sent you back to TCGHaven. If payment is complete, the webhook
-        will mark order {orderNumber() ?? "your order"} as paid.
-      </p>
+  const confirmationState = createMemo<ConfirmationState>(() => {
+    const current = order();
+    if (error() && !current) return "unknown";
+    if (!current) return "checking";
+    if (
+      ["paid", "processing", "shipped", "completed"].includes(
+        current.orderStatus,
+      ) || current.paymentStatus === "paid"
+    ) {
+      return "paid";
+    }
+    if (
+      current.orderStatus === "cancelled" ||
+      ["failed", "cancelled", "expired"].includes(
+        current.paymentStatus ?? "",
+      )
+    ) {
+      return "failed";
+    }
+    return "checking";
+  });
 
-      <div class={styles.confirmActions}>
-        <A href="/products" class={styles.primaryLink}>
-          Continue shopping
-        </A>
-        <A href="/account" class={styles.secondaryLink}>
-          View account
-        </A>
+  const statusLabel = () => {
+    if (confirmationState() === "paid") return "Payment confirmed";
+    if (confirmationState() === "failed") return "Payment incomplete";
+    if (confirmationState() === "unknown") return "Status unavailable";
+    return "Confirming payment";
+  };
+
+  const heading = () => {
+    if (confirmationState() === "paid") return "Your order is confirmed";
+    if (confirmationState() === "failed") return "Payment was not completed";
+    if (confirmationState() === "unknown") return "We could not refresh your order";
+    return "We are confirming your order";
+  };
+
+  const description = () => {
+    if (confirmationState() === "paid") {
+      return "Your items are reserved and the shop can start preparing them. Your receipt is sent to the email used at checkout.";
+    }
+    if (confirmationState() === "failed") {
+      return "No completed payment was recorded. You can return to the shop and try again when you are ready.";
+    }
+    if (confirmationState() === "unknown") {
+      return "Your order reference is safe. Check again in a moment or contact us if the status does not update.";
+    }
+    return "This normally takes only a few seconds. You can keep this page open while we receive the final confirmation.";
+  };
+
+  const checkStatus = async (manual = false) => {
+    const reference = orderNumber();
+    if (!reference || refreshing()) return;
+    if (timer) clearTimeout(timer);
+    setRefreshing(true);
+    if (manual) setError("");
+
+    try {
+      const response = await fetch(
+        `/api/checkout/order-status?order=${encodeURIComponent(reference)}`,
+        { headers: { Accept: "application/json" } },
+      );
+      const result = (await response.json()) as {
+        order?: PaymentReturnData;
+        error?: string;
+      };
+      if (!response.ok || !result.order) {
+        throw new Error(result.error ?? "The order status is unavailable.");
+      }
+      setOrder(result.order);
+      setError("");
+      attempts += 1;
+
+      if (
+        ["paid", "processing", "shipped", "completed"].includes(
+          result.order.orderStatus,
+        ) || result.order.paymentStatus === "paid"
+      ) {
+        cart.clear();
+        return;
+      }
+
+      const terminal =
+        result.order.orderStatus === "cancelled" ||
+        ["failed", "cancelled", "expired"].includes(
+          result.order.paymentStatus ?? "",
+        );
+      if (!terminal && attempts < 10) {
+        timer = setTimeout(() => void checkStatus(), 2500);
+      }
+    } catch (statusError) {
+      setError(
+        statusError instanceof Error
+          ? statusError.message
+          : "The order status is unavailable.",
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  onMount(() => void checkStatus());
+  onCleanup(() => {
+    if (timer) clearTimeout(timer);
+  });
+
+  return (
+    <section
+      class={styles.confirmation}
+      data-state={confirmationState()}
+      aria-live="polite"
+    >
+      <header class={styles.confirmHeader}>
+        <span class={styles.confirmIcon} aria-hidden="true">
+          <Show
+            when={confirmationState() !== "checking"}
+            fallback={<span class={styles.statusSpinner} />}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <Show
+                when={confirmationState() === "paid"}
+                fallback={<path d="M6 6l12 12M18 6 6 18" />}
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </Show>
+            </svg>
+          </Show>
+        </span>
+        <div>
+          <p class={styles.confirmStatus}>{statusLabel()}</p>
+          <h1>{heading()}</h1>
+          <p class={styles.confirmDescription}>{description()}</p>
+        </div>
+      </header>
+
+      <div class={styles.confirmGrid}>
+        <section class={styles.orderReceipt} aria-label="Order details">
+          <header>
+            <span>Order reference</span>
+            <strong>{orderNumber() ?? "Unavailable"}</strong>
+          </header>
+          <dl>
+            <div>
+              <dt>Payment</dt>
+              <dd>
+                <span class={styles.paymentState}>
+                  <i aria-hidden="true" />
+                  {statusLabel()}
+                </span>
+              </dd>
+            </div>
+            <Show when={order()}>
+              {current => (
+                <div>
+                  <dt>Order total</dt>
+                  <dd>{formatPrice(current().totalCents)}</dd>
+                </div>
+              )}
+            </Show>
+            <div>
+              <dt>Delivery</dt>
+              <dd>PostNL tracking by email</dd>
+            </div>
+          </dl>
+          <p>Keep this reference if you need help with your order.</p>
+        </section>
+
+        <aside class={styles.nextSteps} aria-label="What happens next">
+          <h2>What happens next</h2>
+          <ol>
+            <li classList={{ [styles.stepComplete]: confirmationState() === "paid" }}>
+              <span>1</span>
+              <div>
+                <strong>Payment confirmation</strong>
+                <p>We match the payment securely to your order.</p>
+              </div>
+            </li>
+            <li>
+              <span>2</span>
+              <div>
+                <strong>Careful packing</strong>
+                <p>Your cards are checked and protected for transport.</p>
+              </div>
+            </li>
+            <li>
+              <span>3</span>
+              <div>
+                <strong>PostNL tracking</strong>
+                <p>You receive the tracking link as soon as it ships.</p>
+              </div>
+            </li>
+          </ol>
+        </aside>
       </div>
+
+      <footer class={styles.confirmFooter}>
+        <div class={styles.confirmActions}>
+          <A href="/account" class={styles.primaryLink}>
+            View your orders
+          </A>
+          <A href="/products" class={styles.secondaryLink}>
+            Continue shopping
+          </A>
+          <Show when={confirmationState() === "checking" || confirmationState() === "unknown"}>
+            <button
+              type="button"
+              class={styles.statusButton}
+              disabled={refreshing()}
+              onClick={() => void checkStatus(true)}
+            >
+              {refreshing() ? "Checking status" : "Check status again"}
+            </button>
+          </Show>
+        </div>
+        <p>
+          Need help? <A href="/contact">Contact TCGHaven</A>
+        </p>
+      </footer>
     </section>
   );
 }
