@@ -14,7 +14,7 @@ import ProductCard, {
   type ProductVariantOption,
   type SectionProduct,
 } from "~/components/product/ProductCard";
-import { ALL_PRODUCTS, CATEGORY_LIST, type ShopProduct } from "~/lib/categories";
+import { CATEGORY_LIST, type ShopProduct } from "~/lib/categories";
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { useCart } from "~/lib/cart";
 import styles from "./index.module.scss";
@@ -126,12 +126,7 @@ export default function Products() {
     () => fetchDatabaseCatalogState(),
   );
   const allProducts = createMemo(() => {
-    const managed = databaseCatalog()?.products ?? [];
-    const managedIds = new Set(databaseCatalog()?.managedSlugs ?? []);
-    return [
-      ...ALL_PRODUCTS.filter(product => !managedIds.has(product.id)),
-      ...managed,
-    ];
+    return databaseCatalog()?.products ?? [];
   });
 
   onMount(() => setClientReady(true));

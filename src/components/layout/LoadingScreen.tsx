@@ -1,23 +1,13 @@
-import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
+import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import styles from "./LoadingScreen.module.scss";
 
 const MINIMUM_DISPLAY_MS = 1700;
 const MAXIMUM_ASSET_WAIT_MS = 2200;
 const EXIT_DURATION_MS = 1100;
-const CARD_CHANGE_MS = 720;
 const LOADER_SESSION_KEY = "tcg-haven-loader-seen";
-
-const LOADER_CARDS = [
-  { src: "/images/cards/umbreon.png", name: "Umbreon VMAX" },
-  { src: "/images/cards/charizard.png", name: "Charizard Base Set" },
-  { src: "/images/cards/rayquaza.png", name: "Rayquaza VMAX" },
-  { src: "/images/cards/venusaur.png", name: "Venusaur Base Set" },
-  { src: "/images/cards/blastoise.png", name: "Blastoise Base Set" },
-];
 
 export default function LoadingScreen() {
   const [progress, setProgress] = createSignal(0);
-  const [activeCard, setActiveCard] = createSignal(0);
   const [leaving, setLeaving] = createSignal(false);
   const [gone, setGone] = createSignal(false);
 
@@ -42,12 +32,6 @@ export default function LoadingScreen() {
     let removeTimer = 0;
 
     document.body.style.overflow = "hidden";
-    setActiveCard(Math.floor(Math.random() * LOADER_CARDS.length));
-
-    const cardRotation = window.setInterval(() => {
-      setActiveCard(current => (current + 1) % LOADER_CARDS.length);
-    }, CARD_CHANGE_MS);
-
     const imageReadiness = Array.from(document.images).map(image => {
       if (image.complete) return Promise.resolve();
       return image.decode?.().catch(() => undefined) ?? Promise.resolve();
@@ -96,7 +80,6 @@ export default function LoadingScreen() {
       clearTimeout(assetLimit);
       clearTimeout(exitTimer);
       clearTimeout(removeTimer);
-      clearInterval(cardRotation);
       document.body.style.overflow = previousOverflow;
     });
   });
@@ -123,43 +106,29 @@ export default function LoadingScreen() {
         <div class={styles.content}>
           <div class={styles.composition} aria-hidden="true">
             <div class={styles.intro}>
-              <span class={styles.index}>Collection / 026</span>
+              <span class={styles.index}>Live catalogue</span>
               <p class={styles.statement}>A rare find is almost ready.</p>
               <span class={styles.subline}>Selected with care</span>
             </div>
 
-            <div class={styles.cardStage}>
-              <span class={styles.cardNumber}>
-                {String(activeCard() + 1).padStart(2, "0")} / 26
-              </span>
-              <div class={styles.cardShell}>
-                <For each={LOADER_CARDS}>
-                  {(card, index) => (
-                    <>
-                      <img
-                        class={styles.cardGhost}
-                        classList={{ [styles.activeCard]: index() === activeCard() }}
-                        src={card.src}
-                        alt=""
-                      />
-                      <div
-                        class={styles.cardReveal}
-                        classList={{ [styles.activeCard]: index() === activeCard() }}
-                        style={{ "clip-path": `inset(${100 - progress()}% 0 0 0)` }}
-                      >
-                        <img src={card.src} alt="" />
-                      </div>
-                    </>
-                  )}
-                </For>
+            <div class={styles.markStage}>
+              <span class={styles.cardNumber}>TCGH / NL</span>
+              <div class={styles.markShell}>
+                <img class={styles.markGhost} src="/images/logo-mark.png" alt="" />
+                <div
+                  class={styles.markReveal}
+                  style={{ "clip-path": `inset(${100 - progress()}% 0 0 0)` }}
+                >
+                  <img src="/images/logo-mark.png" alt="" />
+                </div>
                 <span
                   class={styles.revealLine}
                   style={{ top: `${100 - progress()}%` }}
                 />
               </div>
               <div class={styles.cardDetails}>
-                <span>{LOADER_CARDS[activeCard()].name}</span>
-                <span>Curated single</span>
+                <span>TCGHaven</span>
+                <span>Preparing live stock</span>
               </div>
             </div>
           </div>

@@ -25,7 +25,7 @@ function collectSets(products: ShopProduct[]): SetEntry[] {
   const grouped = new Map<string, SetEntry>();
 
   for (const product of products) {
-    if (!product.set || !product.game) continue;
+    if (product.productType !== "sealed" || !product.set || !product.game) continue;
     const key = `${product.game}:${product.set}`;
     const current = grouped.get(key);
     grouped.set(key, {

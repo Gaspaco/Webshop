@@ -1,37 +1,10 @@
 import { A } from "@solidjs/router";
-import { For } from "solid-js";
 import styles from "./HavenBand.module.scss";
-
-const TRENDING = [
-  { name: "Charizard", image: "/images/cards/charizard.png", href: "/products?q=Charizard" },
-  { name: "Umbreon VMAX", image: "/images/cards/umbreon.png", href: "/products?q=Umbreon%20VMAX" },
-  { name: "Pikachu", image: "/images/cards/pikachu.png", href: "/products?q=Pikachu" },
-  { name: "Rayquaza VMAX", image: "/images/cards/rayquaza.png", href: "/products?q=Rayquaza%20VMAX" },
-  { name: "Palkia V", image: "/images/cards/palkia.png", href: "/products?q=Palkia%20V" },
-  { name: "Venusaur", image: "/images/cards/venusaur.png", href: "/products?q=Venusaur" },
-];
 
 export default function HavenBand() {
   return (
     <section class={styles.section}>
       <div class={styles.wide}>
-        {/* Trending searches */}
-        <div class={styles.trending}>
-          <h2 class={styles.trendingTitle}>Trending searches</h2>
-          <div class={styles.trendingRow}>
-            <For each={TRENDING}>
-              {card => (
-                <A href={card.href} class={styles.trendingCard}>
-                  <span class={styles.trendingThumb}>
-                    <img src={card.image} alt="" draggable={false} />
-                  </span>
-                  <span class={styles.trendingName}>{card.name}</span>
-                </A>
-              )}
-            </For>
-          </div>
-        </div>
-
         {/* Trust strip */}
         <dl class={styles.perks}>
           <div class={styles.perk}>

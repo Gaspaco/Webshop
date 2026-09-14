@@ -17,7 +17,6 @@ import {
   user,
 } from "~/db/schema";
 import { apiJson, requireAdmin } from "~/lib/admin.server";
-import { ALL_PRODUCTS } from "~/lib/categories";
 import { getLaunchReadiness } from "~/lib/readiness.server";
 import { parseStoreProfile } from "~/lib/store-profile";
 
@@ -247,80 +246,13 @@ export async function GET(event: APIEvent) {
     ...product,
     variants: variantsByProduct.get(product.id) ?? [],
   }));
-  const managedSlugs = new Set(managedCatalog.map(product => product.slug));
-  const starterCatalog = ALL_PRODUCTS
-    .filter(product => !managedSlugs.has(product.id))
-    .map(product => {
-      const priceCents =
-        product.priceCents ?? product.priceRangeCents?.[0] ?? 0;
-      const sku = `STARTER-${product.id}`
-        .replace(/[^A-Za-z0-9_-]/g, "-")
-        .slice(0, 80)
-        .toUpperCase();
-      const variant = {
-        id: `static:${product.id}`,
-        sku: product.variants?.[0]?.sku ?? sku,
-        barcode: null,
-        name: product.variants?.[0]?.name ?? product.condition ?? "Default",
-        condition: product.variants?.[0]?.condition ?? product.condition ?? null,
-        language: product.variants?.[0]?.language ?? product.language ?? "English",
-        finish: product.variants?.[0]?.finish ?? product.finish ?? null,
-        imageUrl: product.variants?.[0]?.image ?? null,
-        isDefault: true,
-        priceCents: product.variants?.[0]?.priceCents ?? priceCents,
-        compareAtPriceCents: null,
-        stock: product.stock ?? 1,
-        reservedStock: 0,
-        trackInventory: true,
-      };
-      return {
-        id: `static:${product.id}`,
-        name: product.name,
-        slug: product.id,
-        description: product.description ?? null,
-        brand: null,
-        game: product.game,
-        productType:
-          product.productType ?? (product.image ? "single" : "sealed"),
-        status: "active" as const,
-        imageUrls: product.image ? [product.image] : [],
-        metadata: {
-          set: product.set ?? null,
-          badge: product.badge ?? null,
-          cardNumber: product.cardNumber ?? null,
-          rarity: product.rarity ?? null,
-          setCode: product.setCode ?? null,
-          illustrator: product.illustrator ?? null,
-          gradingCompany: product.gradingCompany ?? null,
-          grade: product.grade ?? null,
-          certificationNumber: product.certificationNumber ?? null,
-          trailerUrl: product.trailerUrl ?? null,
-          source: "starter",
-        },
-        createdAt: new Date(0),
-        updatedAt: new Date(0),
-        variantId: variant.id,
-        sku: variant.sku,
-        barcode: null,
-        variantName: variant.name,
-        condition: variant.condition,
-        language: variant.language,
-        finish: variant.finish,
-        priceCents: variant.priceCents,
-        compareAtPriceCents: null,
-        stock: variant.stock,
-        reservedStock: variant.reservedStock,
-        trackInventory: true,
-        variants: [variant],
-      };
-    });
-  const catalog = [...managedCatalog, ...starterCatalog];
+  const catalog = managedCatalog;
   const content = Object.fromEntries(
     contentRows.map(contentRow => [contentRow.key, contentRow.value]),
   );
   const storeProfile = parseStoreProfile(content.business);
   const readiness = getLaunchReadiness({
-    unconvertedStarterProducts: starterCatalog.length,
+    unconvertedStarterProducts: 0,
     storeProfile,
   });
   const customers = customerRows.filter(customer => customer.role !== "admin");

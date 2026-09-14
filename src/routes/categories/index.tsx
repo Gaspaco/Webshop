@@ -27,17 +27,11 @@ export default function Categories() {
 
   onMount(() => setClientReady(true));
 
-  // The shop page counts static and database products together, so this page
-  // has to as well - otherwise the two disagree about how much is in stock.
   const games = createMemo(() => {
     const managed = databaseCatalog()?.products ?? [];
-    const managedIds = new Set(databaseCatalog()?.managedSlugs ?? []);
 
     return CATEGORY_LIST.map(game => {
-      const products = [
-        ...game.products.filter(product => !managedIds.has(product.id)),
-        ...managed.filter(product => product.game === game.slug),
-      ];
+      const products = managed.filter(product => product.game === game.slug);
       const priced = products.map(priceOf).filter(cents => cents > 0);
 
       return {

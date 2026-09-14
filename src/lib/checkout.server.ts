@@ -11,7 +11,6 @@ import {
   products,
   productVariants,
 } from "~/db/schema";
-import { findProduct } from "~/lib/categories";
 import { getAuthEnv } from "~/lib/env.server";
 import { getMollieClient } from "~/lib/mollie.server";
 import {
@@ -32,12 +31,7 @@ const checkoutInputSchema = z.object({
     .array(
       z.object({
         id: z.string().trim().min(1).max(120),
-        variantId: z
-          .union([
-            z.string().uuid(),
-            z.string().startsWith("static:").max(180),
-          ])
-          .optional(),
+        variantId: z.string().uuid().optional(),
         quantity: z.number().int().min(1).max(99),
       }),
     )
@@ -124,9 +118,7 @@ export async function calculateTrustedCheckout(input: unknown) {
   }
   const storeProfile = await getStoreProfile();
   const lines = await Promise.all(parsed.items.map(async item => {
-    const [databaseProduct] = item.variantId?.startsWith("static:")
-      ? []
-      : await db
+    const [databaseProduct] = await db
           .select({
             id: products.id,
             slug: products.slug,
@@ -171,29 +163,7 @@ export async function calculateTrustedCheckout(input: unknown) {
       };
     }
 
-    const staticProduct = findProduct(item.id);
-    const staticVariant = item.variantId
-      ? staticProduct?.variants?.find(variant => variant.id === item.variantId)
-      : staticProduct?.variants?.find(variant => variant.stock > 0);
-    const staticPriceCents = staticVariant?.priceCents ?? staticProduct?.priceCents;
-    if (
-      !staticProduct ||
-      staticPriceCents === undefined ||
-      (staticProduct.priceRangeCents && !staticVariant) ||
-      (staticVariant && staticVariant.stock < item.quantity)
-    ) {
-      throw new Error(`Product is not purchasable: ${item.id}`);
-    }
-    return {
-      id: staticProduct.id,
-      variantId: null,
-      sku: staticVariant?.sku ?? staticProduct.id,
-      name: `${staticProduct.set ? `${staticProduct.name} (${staticProduct.set})` : staticProduct.name}${staticVariant ? `, ${staticVariant.name}` : ""}`,
-      image: staticVariant?.image ?? staticProduct.image ?? "",
-      quantity: item.quantity,
-      unitPriceCents: staticPriceCents,
-      totalCents: staticPriceCents * item.quantity,
-    };
+    throw new Error(`Product is not purchasable: ${item.id}`);
   }));
 
   const subtotalCents = lines.reduce((sum, item) => sum + item.totalCents, 0);

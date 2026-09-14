@@ -138,13 +138,13 @@
   line-height: 0.96;
 }
 
-.cardStage {
+.markStage {
   position: relative;
-  width: min(19rem, 26vw);
+  width: min(15rem, 23vw);
   justify-self: center;
 }
 
-.cardStage::before {
+.markStage::before {
   position: absolute;
   inset: -2rem;
   border: 1px solid rgba($white, 0.07);
@@ -158,44 +158,34 @@
   color: rgba($white, 0.4);
 }
 
-.cardShell {
+.markShell {
   position: relative;
-  aspect-ratio: 0.716;
+  aspect-ratio: 1;
   box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.34);
 }
 
-.cardGhost,
-.cardReveal,
-.cardReveal img {
+.markGhost,
+.markReveal,
+.markReveal img {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
-.cardGhost {
-  opacity: 0;
+.markGhost {
+  opacity: 0.16;
   filter: grayscale(1) contrast(0.78);
-  transition: opacity 520ms ease;
 }
 
-.cardReveal {
+.markReveal {
   overflow: hidden;
-  opacity: 0;
-  transition:
-    clip-path 240ms cubic-bezier(0.25, 1, 0.5, 1),
-    opacity 520ms ease;
-  will-change: clip-path;
-}
-
-.cardGhost.activeCard {
-  opacity: 0.18;
-}
-
-.cardReveal.activeCard {
   opacity: 1;
+  transition:
+    clip-path 240ms cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: clip-path;
 }
 
 .revealLine {
@@ -312,12 +302,12 @@
     display: none;
   }
 
-  .cardStage {
+  .markStage {
     width: min(10.5rem, 40vw);
     align-self: center;
   }
 
-  .cardStage::before {
+  .markStage::before {
     inset: -1rem;
   }
 
@@ -341,13 +331,13 @@
 }
 
 @media (max-height: 650px) and (min-width: $bp-md) {
-  .cardStage {
+  .markStage {
     width: min(14rem, 22vw);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cardReveal,
+  .markReveal,
   .revealLine,
   .panel,
   .content,

@@ -16,6 +16,9 @@ export function getLaunchReadiness(input: {
   unconvertedStarterProducts: number;
   storeProfile: StoreProfile;
 }) {
+  const mollieKey = process.env.MOLLIE_API_KEY?.trim() ?? "";
+  const mollieLive = mollieKey.startsWith("live_");
+  const mollieTest = mollieKey.startsWith("test_");
   const items: LaunchReadinessItem[] = [
     {
       id: "database",
@@ -30,9 +33,13 @@ export function getLaunchReadiness(input: {
       id: "mollie-live",
       category: "commerce",
       label: "Mollie live payments",
-      detail: "A live Mollie key must be configured before accepting real orders.",
+      detail: mollieLive
+        ? "Mollie live mode is configured for real customer payments."
+        : mollieTest
+          ? "Mollie test mode is connected. Add the live API key to the production environment before accepting real orders."
+          : "Add a Mollie API key before creating checkout payments.",
       responsible: "owner",
-      configured: process.env.MOLLIE_API_KEY?.startsWith("live_") ?? false,
+      configured: mollieLive,
       blocking: true,
     },
     {

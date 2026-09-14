@@ -16,52 +16,18 @@ type Slide = {
   image: string;
   alt: string;
   theme: string; // accent used for the slide wash
+  variantId?: string;
 };
 
-const SLIDES: Slide[] = [
-  {
-    id: "umbreon-vmax-alt-art",
-    set: "Evolving Skies",
-    game: "Pokémon",
-    tag: "Alt-art singles",
-    title: "Umbreon VMAX has landed",
-    blurb:
-      "The moonlit alt-art everyone chases, freshly graded and ready to ship from our Dutch stock.",
-    priceCents: 18995,
-    href: "/categories/pokemon",
-    image: "/images/cards/umbreon.png",
-    alt: "Umbreon VMAX alternate-art card under a moonlit rainbow sky",
-    theme: "#5b3aa6",
-  },
-  {
-    id: "charizard-base-set",
-    set: "Base Set Originals",
-    game: "Pokémon",
-    tag: "Base Set icon",
-    title: "First-edition Charizard",
-    blurb:
-      "The 1999 holo that started it all. Honest grades, real photos, no surprises at checkout.",
-    priceCents: 24995,
-    href: "/categories/pokemon",
-    image: "/images/cards/charizard.png",
-    alt: "First-edition Base Set Charizard holographic card",
-    theme: "#c2410c",
-  },
-  {
-    id: "rayquaza-vmax",
-    set: "Silver Tempest",
-    game: "Pokémon",
-    tag: "New arrivals",
-    title: "Rayquaza VMAX restock",
-    blurb:
-      "Back on the shelf in near-mint and PSA-ready condition. Limited copies, weekly drops.",
-    priceCents: 15995,
-    href: "/categories/pokemon",
-    image: "/images/cards/rayquaza.png",
-    alt: "Rayquaza VMAX alternate-art card",
-    theme: "#047857",
-  },
-];
+const GAME_ACCENTS: Record<string, string> = {
+  pokemon: "#216b4d",
+  yugioh: "#72522b",
+  magic: "#7a3828",
+  lorcana: "#6d4ba3",
+  riftbound: "#287a8c",
+  digimon: "#315fa8",
+  cyberpunk: "#9b7a13",
+};
 
 type Product = {
   id: string;
@@ -73,14 +39,6 @@ type Product = {
   href: string;
   variantId?: string;
 };
-
-const BESTSELLERS: Product[] = [
-  { id: "umbreon-vmax-alt-art", name: "Umbreon VMAX Alt Art", game: "Pokémon", image: "/images/cards/umbreon.png", rating: 5, priceCents: 18995, href: "/products" },
-  { id: "charizard-base-set", name: "Charizard · Base Set", game: "Pokémon", image: "/images/cards/charizard.png", rating: 5, priceCents: 24995, href: "/products" },
-  { id: "pikachu-crown-zenith", name: "Pikachu · Crown Zenith", game: "Pokémon", image: "/images/cards/pikachu.png", rating: 4, priceCents: 2495, href: "/products" },
-  { id: "blastoise-base-set", name: "Blastoise · Base Set", game: "Pokémon", image: "/images/cards/blastoise.png", rating: 4, priceCents: 11995, href: "/products" },
-  { id: "mewtwo-base-set", name: "Mewtwo · Base Set", game: "Pokémon", image: "/images/cards/mewtwo.png", rating: 5, priceCents: 8995, href: "/products" },
-];
 
 function Stars(props: { rating: number }) {
   return (
@@ -106,6 +64,32 @@ export default function Hero(props: {
   const [paused, setPaused] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
 
+  const slides = createMemo<Slide[]>(() =>
+    (props.products ?? [])
+      .filter(product => product.image && (product.stock ?? 0) > 0)
+      .slice(0, 3)
+      .map(product => {
+        const mainVariant =
+          product.variants?.find(variant => variant.isDefault) ??
+          product.variants?.find(variant => variant.stock > 0) ??
+          product.variants?.[0];
+        return {
+          id: product.id,
+          set: product.set ?? product.gameName,
+          game: product.gameName,
+          tag: product.badge ?? (product.productType === "sealed" ? "Sealed" : "Single card"),
+          title: product.name,
+          blurb: product.description ?? `Available now from our ${product.gameName} catalogue.`,
+          priceCents: mainVariant?.priceCents ?? product.priceCents ?? 0,
+          href: product.href,
+          image: mainVariant?.image ?? product.image!,
+          alt: product.name,
+          theme: GAME_ACCENTS[product.game] ?? "#216b4d",
+          variantId: mainVariant?.id,
+        };
+      }),
+  );
+
   const bestsellers = createMemo<Product[]>(() => {
     const live = (props.products ?? [])
       .filter(product => product.image && (product.stock ?? 0) > 0)
@@ -126,13 +110,14 @@ export default function Hero(props: {
           variantId: mainVariant?.id,
         };
       });
-    return live.length ? live : BESTSELLERS;
+    return live;
   });
 
   onMount(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = setInterval(() => {
-      if (!paused()) setActive(i => (i + 1) % SLIDES.length);
+      const count = slides().length;
+      if (!paused() && count > 1) setActive(i => (i + 1) % count);
     }, 6000);
     onCleanup(() => clearInterval(id));
   });
@@ -151,6 +136,7 @@ export default function Hero(props: {
   const addSlideToCart = (slide: Slide) => {
     cart.addItem({
       id: slide.id,
+      variantId: slide.variantId,
       name: slide.title,
       image: slide.image,
       priceCents: slide.priceCents,
@@ -177,7 +163,28 @@ export default function Hero(props: {
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          <For each={SLIDES}>
+          <Show
+            when={slides().length}
+            fallback={
+              <article
+                class={styles.slide}
+                classList={{ [styles.slideActive]: true }}
+                style={{ "--theme": "#216b4d" }}
+              >
+                <div class={styles.slideWash} />
+                <div class={styles.slideScrim} />
+                <div class={styles.slideBody}>
+                  <div class={styles.slideTags}><span class={styles.gameTag}>TCGHaven</span></div>
+                  <h2 class={styles.slideTitle}>{props.managedTitle ?? "Real stock, ready when you are"}</h2>
+                  <p class={styles.slideBlurb}>{props.managedCopy ?? "Published products appear here as soon as they are available."}</p>
+                  <div class={styles.slideFooter}>
+                    <A href="/products" class={styles.slideCta}>Browse live stock</A>
+                  </div>
+                </div>
+              </article>
+            }
+          >
+          <For each={slides()}>
             {(slide, i) => (
               <article
                 class={styles.slide}
@@ -239,9 +246,11 @@ export default function Hero(props: {
               </article>
             )}
           </For>
+          </Show>
 
+          <Show when={slides().length > 1}>
           <div class={styles.dots} role="tablist" aria-label="Featured sets">
-            <For each={SLIDES}>
+            <For each={slides()}>
               {(slide, i) => (
                 <button
                   type="button"
@@ -255,8 +264,10 @@ export default function Hero(props: {
               )}
             </For>
           </div>
+          </Show>
         </div>
 
+        <Show when={bestsellers().length}>
         <aside class={styles.bestsellers} aria-label="Bestsellers">
           <header class={styles.bestHeader}>
             <h2>Bestsellers</h2>
@@ -304,6 +315,7 @@ export default function Hero(props: {
             </For>
           </ul>
         </aside>
+        </Show>
       </div>
     </section>
   );

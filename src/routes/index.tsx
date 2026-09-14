@@ -8,7 +8,7 @@ import ShopByGame from "~/components/home/ShopByGame";
 import CollectionPaths from "~/components/home/CollectionPaths";
 import ProductSection, { type SectionProduct } from "~/components/product/ProductSection";
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
-import { ALL_PRODUCTS, type ShopProduct } from "~/lib/categories";
+import type { ShopProduct } from "~/lib/categories";
 import styles from "./index.module.scss";
 
 type HomeContent = {
@@ -18,27 +18,12 @@ type HomeContent = {
   featuredProductSlugs?: string[];
 };
 
-const NEW_ARRIVAL_IDS = [
-  "palkia-v-astral",
-  "crystal-revenge-box",
-  "venusaur-base",
-  "rayquaza-vmax-st",
-  "bloomburrow-box",
-  "blastoise-base-set",
-  "mewtwo-base-set",
-  "charizard-base-set",
-];
-
-const NEW_ARRIVALS: SectionProduct[] = NEW_ARRIVAL_IDS
-  .map(id => ALL_PRODUCTS.find(product => product.id === id))
-  .filter((product): product is ShopProduct => Boolean(product));
-
 export default function Home() {
   const [content, setContent] = createSignal<HomeContent>({});
   const [featuredProducts, setFeaturedProducts] =
-    createSignal<SectionProduct[]>(NEW_ARRIVALS);
+    createSignal<SectionProduct[]>([]);
   const [catalogProducts, setCatalogProducts] =
-    createSignal<ShopProduct[]>(ALL_PRODUCTS);
+    createSignal<ShopProduct[]>([]);
 
   const upcomingProducts = createMemo(() =>
     catalogProducts()
@@ -62,37 +47,28 @@ export default function Home() {
         fetch("/api/storefront/content"),
         fetchDatabaseCatalogState(),
       ]);
-      if (!response.ok) return;
-      const result = (await response.json()) as {
-        content: HomeContent | null;
-      };
+      const result = response.ok
+        ? await response.json() as { content: HomeContent | null }
+        : { content: null };
       const managed = result.content ?? {};
       setContent(managed);
-      const managedSlugs = new Set(catalog.managedSlugs);
-      const mergedCatalog = [
-        ...ALL_PRODUCTS.filter(product => !managedSlugs.has(product.id)),
-        ...catalog.products,
-      ];
-      setCatalogProducts(mergedCatalog);
+      setCatalogProducts(catalog.products);
       if (managed.featuredProductSlugs?.length) {
         const chosen = managed.featuredProductSlugs
-          .map(slug => mergedCatalog.find(product => product.id === slug))
+          .map(slug => catalog.products.find(product => product.id === slug))
           .filter((product): product is NonNullable<typeof product> =>
             Boolean(product),
           );
         if (chosen.length) setFeaturedProducts(chosen);
       } else {
-        const merged = NEW_ARRIVALS.flatMap(product => {
-          const managedProduct = catalog.products.find(
-            candidate => candidate.id === product.id,
-          );
-          if (managedProduct) return [managedProduct];
-          return managedSlugs.has(product.id) ? [] : [product];
-        });
-        setFeaturedProducts(merged);
+        setFeaturedProducts(
+          catalog.products
+            .filter(product => (product.stock ?? 0) > 0)
+            .slice(0, 8),
+        );
       }
     } catch {
-      // The designed defaults stay visible if managed content is unavailable.
+      // Never substitute demo inventory when the live catalogue is unavailable.
     }
   });
 
@@ -117,11 +93,13 @@ export default function Home() {
           viewAllHref="/products?q=pre-order"
         />
       </Show>
-      <ProductSection
-        heading="New arrivals and best sellers"
-        sub="Fresh stock and the products collectors keep coming back for."
-        products={featuredProducts()}
-      />
+      <Show when={featuredProducts().length}>
+        <ProductSection
+          heading="New arrivals and best sellers"
+          sub="Fresh stock and the products collectors keep coming back for."
+          products={featuredProducts()}
+        />
+      </Show>
       <CollectionPaths />
       <ShopNote />
       <HavenBand />

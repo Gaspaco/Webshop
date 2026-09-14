@@ -2,21 +2,15 @@ import type { APIEvent } from "@solidjs/start/server";
 import { eq } from "drizzle-orm";
 import { db } from "~/db";
 import { products } from "~/db/schema";
-import { ALL_PRODUCTS, CATEGORY_LIST } from "~/lib/categories";
-import { groupProductsBySet } from "~/lib/game-storefront";
+import { CATEGORY_LIST } from "~/lib/categories";
 
 const GAME_PATHS = CATEGORY_LIST.flatMap(category => {
   const root = `/categories/${category.slug}`;
-  const setPaths = groupProductsBySet(
-    ALL_PRODUCTS.filter(product => product.game === category.slug),
-  ).map(set => `${root}/sets/${set.path}`);
-
   return [
     root,
     `${root}/releases`,
     `${root}/sets`,
     `${root}/products`,
-    ...setPaths,
   ];
 });
 
@@ -49,19 +43,12 @@ export async function GET(event: APIEvent) {
       .from(products)
       .where(eq(products.status, "active"));
   } catch {
-    // Static products still produce a useful sitemap during a database outage.
+    // Keep the static site routes available during a database outage.
   }
-  const managed = new Set(databaseProducts.map(product => product.slug));
-  const productEntries = [
-    ...databaseProducts.map(product => ({
+  const productEntries = databaseProducts.map(product => ({
       path: `/products/${product.slug}`,
       lastModified: product.updatedAt.toISOString(),
-    })),
-    ...ALL_PRODUCTS.filter(product => !managed.has(product.id)).map(product => ({
-      path: `/products/${product.id}`,
-      lastModified: undefined,
-    })),
-  ];
+    }));
   const urls = [
     ...STATIC_PATHS.map(path => ({ path, lastModified: undefined as string | undefined })),
     ...productEntries,

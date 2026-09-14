@@ -9,13 +9,11 @@ import {
   onMount,
   Show,
 } from "solid-js";
-import ProductCard, {
+import {
   BoxArt,
-  type ProductVariantOption,
-  type SectionProduct,
 } from "~/components/product/ProductCard";
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
-import { findProduct, relatedProducts, type ShopProduct } from "~/lib/categories";
+import type { ShopProduct } from "~/lib/categories";
 import { formatPrice, useCart } from "~/lib/cart";
 import { cardFinishFor, variantRarity } from "~/lib/card-finish";
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
@@ -150,12 +148,7 @@ export default function ProductDetail() {
   const product = () => {
     const id = params.id ?? "";
     const catalog = databaseCatalog();
-    if (catalog?.managedSlugs.includes(id)) {
-      // Resolve the exact slug that was clicked instead of relying on result
-      // order. This stays correct if the endpoint ever returns extra rows.
-      return catalog.products.find(candidate => candidate.id === id);
-    }
-    return findProduct(id);
+    return catalog?.products.find(candidate => candidate.id === id);
   };
 
   const [quantity, setQuantity] = createSignal(1);
@@ -165,7 +158,6 @@ export default function ProductDetail() {
   const [saved, setSaved] = createSignal(false);
   const [wishlistBusy, setWishlistBusy] = createSignal(false);
   const [wishlistMessage, setWishlistMessage] = createSignal("");
-  const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
   const [bulkOpen, setBulkOpen] = createSignal(false);
   const [bulkPicks, setBulkPicks] = createSignal<Record<string, number>>({});
   const [bulkAdded, setBulkAdded] = createSignal(0);
@@ -419,31 +411,6 @@ export default function ProductDetail() {
 
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
-  };
-
-  const addRelated = (
-    item: SectionProduct,
-    variant?: ProductVariantOption,
-  ) => {
-    const priceCents = variant?.priceCents ?? item.priceCents;
-    if (priceCents === undefined) return;
-
-    cart.addItem({
-      id: item.id,
-      variantId: variant?.id,
-      name: `${item.set ? `${item.name} · ${item.set}` : item.name}${variant ? ` (${variant.name})` : ""}`,
-      image: variant?.image ?? item.image ?? "/images/logo-mark.png",
-      priceCents,
-    });
-
-    setJustAdded(previous => new Set(previous).add(item.id));
-    setTimeout(() => {
-      setJustAdded(previous => {
-        const next = new Set(previous);
-        next.delete(item.id);
-        return next;
-      });
-    }, 1400);
   };
 
   return (
@@ -871,35 +838,6 @@ export default function ProductDetail() {
               </For>
             </section>
 
-            <Show when={relatedProducts(item()).length}>
-              <section class={styles.related}>
-                <div class={styles.relatedHead}>
-                  <div>
-                    <h2>More from {item().gameName}</h2>
-                    <p>Continue browsing the same collection.</p>
-                  </div>
-                  <A href={`/categories/${item().game}`}>
-                    View all
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                      <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
-                  </A>
-                </div>
-
-                <div class={styles.relatedGrid}>
-                  <For each={relatedProducts(item())}>
-                    {related => (
-                      <ProductCard
-                        product={related}
-                        isJustAdded={() => justAdded().has(related.id)}
-                        onAdd={addRelated}
-                        fill
-                      />
-                    )}
-                  </For>
-                </div>
-              </section>
-            </Show>
           </div>
         </main>
       )}
