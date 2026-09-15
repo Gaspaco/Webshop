@@ -10,11 +10,26 @@ export default function AdminLogin() {
   const [password, setPassword] = createSignal("");
   const [showPassword, setShowPassword] = createSignal(false);
   const [loading, setLoading] = createSignal(false);
+  const [preparing, setPreparing] = createSignal(false);
   const [error, setError] = createSignal("");
+  let handledExistingSession = false;
 
   createEffect(() => {
-    const current = session().data?.user as { role?: string } | undefined;
-    if (current?.role === "admin") window.location.replace("/admin");
+    const currentSession = session();
+    if (currentSession.isPending || handledExistingSession) return;
+
+    const current = currentSession.data?.user as { role?: string } | undefined;
+    if (current?.role === "admin") {
+      handledExistingSession = true;
+      window.location.replace("/admin");
+      return;
+    }
+
+    if (current) {
+      handledExistingSession = true;
+      setPreparing(true);
+      void authClient.signOut().finally(() => setPreparing(false));
+    }
   });
 
   const signIn = async (event: SubmitEvent) => {
@@ -112,8 +127,16 @@ export default function AdminLogin() {
             <p class={styles.error} role="alert">{error()}</p>
           </Show>
 
-          <button class={styles.submit} type="submit" disabled={loading()}>
-            {loading() ? "Checking access" : "Open owner dashboard"}
+          <button
+            class={styles.submit}
+            type="submit"
+            disabled={loading() || preparing()}
+          >
+            {preparing()
+              ? "Preparing owner sign in"
+              : loading()
+                ? "Checking access"
+                : "Open owner dashboard"}
           </button>
         </form>
 

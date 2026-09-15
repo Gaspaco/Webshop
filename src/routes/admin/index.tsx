@@ -548,9 +548,8 @@ async function loadDashboard() {
     headers: { Accept: "application/json" },
   });
   if (response.status === 401 || response.status === 403) {
-    const error = new Error("OWNER_ACCESS_REQUIRED");
-    (error as Error & { status?: number }).status = response.status;
-    throw error;
+    window.location.replace("/admin/login");
+    return new Promise<never>(() => undefined);
   }
   if (!response.ok) throw new Error("Dashboard could not be loaded.");
   return response.json() as Promise<AdminDashboard>;
