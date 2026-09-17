@@ -4,7 +4,11 @@ import { z } from "zod";
 import { db } from "~/db";
 import { orders, returnRequests } from "~/db/schema";
 import { auth } from "~/lib/auth";
-import { escapeEmailHtml, sendTransactionalEmail } from "~/lib/email.server";
+import {
+  escapeEmailHtml,
+  renderTransactionalEmail,
+  sendTransactionalEmail,
+} from "~/lib/email.server";
 import { checkRateLimit } from "~/lib/rate-limit.server";
 import { validateJsonRequest } from "~/lib/request-security.server";
 
@@ -94,7 +98,14 @@ export async function POST(event: APIEvent) {
         to: order.email,
         subject: `Withdrawal or return request received for ${order.orderNumber}`,
         text: `We received your withdrawal or return request for ${order.orderNumber}. Reference: ${created.id}. The shop owner will review it and contact you with the next step. Do not send an item back until you receive return instructions.`,
-        html: `<p>We received your withdrawal or return request for <strong>${escapeEmailHtml(order.orderNumber)}</strong>.</p><p>Reference: <strong>${escapeEmailHtml(created.id)}</strong></p><p>The shop owner will review it and contact you with the next step. Do not send an item back until you receive return instructions.</p>`,
+        html: renderTransactionalEmail({
+          preheader: `We received your return request for ${order.orderNumber}.`,
+          label: "Request received",
+          heading: "We are reviewing your return",
+          intro: "Your request is saved. The shop owner will review the details and contact you with the next step.",
+          contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#f3f5f4" style="padding:18px;border-radius:7px;color:#526058;font-size:14px;line-height:22px"><strong style="color:#101512">Order</strong><br>${escapeEmailHtml(order.orderNumber)}<br><br><strong style="color:#101512">Return reference</strong><br>${escapeEmailHtml(created.id)}</td></tr></table>`,
+          notice: "Please do not send anything back yet. Wait until you receive return instructions from TCGHaven.",
+        }),
         idempotencyKey: `return-request-${created.id}`,
       });
     } catch {

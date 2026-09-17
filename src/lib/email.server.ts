@@ -22,6 +22,94 @@ export const escapeEmailHtml = (value: string) =>
       })[character]!,
   );
 
+type EmailAction = {
+  label: string;
+  url: string;
+};
+
+type TransactionalEmailTemplate = {
+  preheader: string;
+  label: string;
+  heading: string;
+  intro: string;
+  contentHtml?: string;
+  afterActionHtml?: string;
+  action?: EmailAction;
+  notice?: string;
+};
+
+/**
+ * Shared, table-based email chrome for reliable rendering in Gmail, Outlook,
+ * Apple Mail, and narrow mobile clients. Callers must escape dynamic HTML used
+ * in contentHtml before passing it to this renderer.
+ */
+export function renderTransactionalEmail(input: TransactionalEmailTemplate) {
+  const action = input.action
+    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#10b981" style="border-radius:7px"><a href="${escapeEmailHtml(input.action.url)}" style="display:inline-block;padding:14px 22px;color:#07110d;font-size:15px;line-height:20px;font-weight:800;text-decoration:none;border-radius:7px">${escapeEmailHtml(input.action.label)}</a></td></tr></table>`
+    : "";
+  const notice = input.notice
+    ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#eef7f3" style="padding:16px 18px;border-radius:7px;color:#34473e;font-size:13px;line-height:20px"><strong style="color:#087a57">Good to know</strong><br>${escapeEmailHtml(input.notice)}</td></tr></table>`
+    : "";
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light only">
+    <title>${escapeEmailHtml(input.heading)}</title>
+    <style>
+      @media only screen and (max-width: 640px) {
+        .email-shell { width: 100% !important; }
+        .email-pad { padding-left: 24px !important; padding-right: 24px !important; }
+        .email-heading { font-size: 28px !important; line-height: 34px !important; }
+        .email-meta { display: none !important; }
+      }
+    </style>
+  </head>
+  <body style="margin:0;padding:0;background:#edf0ee;color:#101512;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${escapeEmailHtml(input.preheader)}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#edf0ee">
+      <tr>
+        <td align="center" style="padding:38px 16px">
+          <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" class="email-shell" style="width:620px;max-width:620px;background:#ffffff">
+            <tr><td height="6" bgcolor="#10b981" style="height:6px;line-height:6px;font-size:0">&nbsp;</td></tr>
+            <tr>
+              <td bgcolor="#0c0f0e" class="email-pad" style="padding:24px 34px">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="color:#ffffff;font-size:20px;line-height:24px;font-weight:800;letter-spacing:-0.4px">TCG<span style="color:#24d39c">Haven</span></td>
+                    <td align="right" class="email-meta" style="color:#93a19a;font-size:12px;line-height:18px">Cards, sealed products, collector essentials</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td class="email-pad" style="padding:42px 42px 38px">
+                <p style="margin:0 0 13px;color:#087a57;font-size:12px;line-height:16px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase">${escapeEmailHtml(input.label)}</p>
+                <h1 class="email-heading" style="margin:0;color:#101512;font-size:34px;line-height:40px;font-weight:800;letter-spacing:-1px">${escapeEmailHtml(input.heading)}</h1>
+                <p style="margin:15px 0 0;max-width:500px;color:#4c5b53;font-size:16px;line-height:25px">${escapeEmailHtml(input.intro)}</p>
+                ${input.contentHtml ?? ""}
+                ${action}
+                ${input.afterActionHtml ?? ""}
+                ${notice}
+              </td>
+            </tr>
+            <tr>
+              <td bgcolor="#0c0f0e" class="email-pad" style="padding:24px 34px;color:#98a39e;font-size:12px;line-height:19px">
+                <strong style="color:#ffffff">TCGHaven</strong><br>
+                Questions? Reply to this email or contact <a href="mailto:info@tcghaven.com" style="color:#5ce5b8;text-decoration:none">info@tcghaven.com</a>.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}
+
 let smtpTransport: Transporter | null = null;
 let smtpTransportKey = "";
 
@@ -92,20 +180,19 @@ const authEmailHtml = (input: {
   copy: string;
   actionLabel: string;
   actionUrl: string;
-}) => `<!doctype html>
-<html lang="en">
-  <body style="margin:0;background:#f4f6f5;color:#111713;font-family:Arial,sans-serif">
-    <div style="max-width:560px;margin:0 auto;padding:40px 20px">
-      <div style="background:#0a0d0c;color:#ffffff;padding:18px 24px;font-weight:700">TCGHaven</div>
-      <div style="background:#ffffff;padding:32px 24px">
-        <h1 style="margin:0 0 12px;font-size:24px">${escapeEmailHtml(input.heading)}</h1>
-        <p style="margin:0 0 24px;line-height:1.6;color:#46514b">${escapeEmailHtml(input.copy)}</p>
-        <a href="${escapeEmailHtml(input.actionUrl)}" style="display:inline-block;background:#10b981;color:#07110d;text-decoration:none;font-weight:700;padding:13px 18px;border-radius:8px">${escapeEmailHtml(input.actionLabel)}</a>
-        <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#65716a">If you did not request this, you can ignore this email.</p>
-      </div>
-    </div>
-  </body>
-</html>`;
+}) =>
+  renderTransactionalEmail({
+    preheader: input.copy,
+    label: "Account security",
+    heading: input.heading,
+    intro: input.copy,
+    action: {
+      label: input.actionLabel,
+      url: input.actionUrl,
+    },
+    afterActionHtml: `<p style="margin:24px 0 0;color:#758079;font-size:12px;line-height:19px;word-break:break-all">Button not working? Copy this secure link into your browser:<br><a href="${escapeEmailHtml(input.actionUrl)}" style="color:#087a57;text-decoration:underline">${escapeEmailHtml(input.actionUrl)}</a></p>`,
+    notice: "If you did not request this, no action is needed. Your account remains unchanged.",
+  });
 
 export const sendVerificationEmail = async (input: {
   email: string;

@@ -14,6 +14,7 @@ import {
 } from "~/lib/admin.server";
 import {
   escapeEmailHtml,
+  renderTransactionalEmail,
   sendTransactionalEmail,
 } from "~/lib/email.server";
 import { getMollieClient } from "~/lib/mollie.server";
@@ -234,7 +235,18 @@ export async function POST(event: APIEvent) {
         to: order.email,
         subject: `Your TCGHaven order ${order.orderNumber} has shipped`,
         text: `Your order has shipped. Tracking number: ${input.trackingNumber}\nTrack it here: ${input.trackingUrl}`,
-        html: `<p>Your TCGHaven order <strong>${escapeEmailHtml(order.orderNumber)}</strong> has shipped.</p><p>Tracking number: ${escapeEmailHtml(input.trackingNumber)}</p><p><a href="${escapeEmailHtml(input.trackingUrl)}">Track your package</a></p>`,
+        html: renderTransactionalEmail({
+          preheader: `${order.orderNumber} is on its way with PostNL.`,
+          label: "Dispatched",
+          heading: "Your cards are on the way",
+          intro: `Order ${order.orderNumber} has left TCGHaven. PostNL tracking may take a little while to show its first scan.`,
+          contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#101512" style="padding:18px;color:#ffffff;font-size:13px;line-height:20px"><span style="color:#91a098">PostNL tracking number</span><br><strong style="font-size:18px;letter-spacing:.4px">${escapeEmailHtml(input.trackingNumber)}</strong></td></tr></table>`,
+          action: {
+            label: "Track package",
+            url: input.trackingUrl,
+          },
+          notice: "Tracking updates are supplied by PostNL. The first scan can appear after your parcel reaches their sorting network.",
+        }),
         idempotencyKey: `shipped-${order.id}-${input.trackingNumber}`,
       }).catch(() => console.error("Shipping email delivery failed."));
 

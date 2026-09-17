@@ -8,7 +8,11 @@ import {
   requireAdmin,
   writeAuditLog,
 } from "~/lib/admin.server";
-import { escapeEmailHtml, sendTransactionalEmail } from "~/lib/email.server";
+import {
+  escapeEmailHtml,
+  renderTransactionalEmail,
+  sendTransactionalEmail,
+} from "~/lib/email.server";
 import { getEmailEnv } from "~/lib/env.server";
 import { validateJsonRequest } from "~/lib/request-security.server";
 import { getStoreProfile } from "~/lib/store-profile.server";
@@ -65,14 +69,22 @@ export async function POST(event: APIEvent) {
         subject: `Re: ${message.topic}`,
         replyTo: profile.businessEmail,
         text: `${input.reply}\n\n---\nOn ${new Date(message.createdAt).toLocaleDateString("en-NL")} you wrote:\n${quoted}\n\n${profile.companyName}\n${profile.businessEmail}`,
-        html:
-          `<div style="font-family:Arial,sans-serif;color:#111713;line-height:1.6">` +
-          `<p>${escapeEmailHtml(input.reply).replaceAll("\n", "<br>")}</p>` +
-          `<hr style="border:none;border-top:1px solid #d9e0dc;margin:24px 0">` +
-          `<p style="color:#65716a;font-size:13px">On ${escapeEmailHtml(new Date(message.createdAt).toLocaleDateString("en-NL"))} you wrote:</p>` +
-          `<blockquote style="margin:0;padding-left:12px;border-left:3px solid #d9e0dc;color:#65716a;font-size:13px">${escapeEmailHtml(message.message).replaceAll("\n", "<br>")}</blockquote>` +
-          `<p style="margin-top:24px;font-size:13px;color:#65716a">${escapeEmailHtml(profile.companyName)}<br>${escapeEmailHtml(profile.businessEmail)}</p>` +
-          `</div>`,
+        html: renderTransactionalEmail({
+          preheader: `TCGHaven replied to your message about ${message.topic}.`,
+          label: "A reply from TCGHaven",
+          heading: message.topic,
+          intro: "Thanks for contacting us. Here is our response:",
+          contentHtml:
+            `<div style="margin:22px 0 0;color:#26332c;font-size:15px;line-height:24px">${escapeEmailHtml(input.reply).replaceAll("\n", "<br>")}</div>` +
+            `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#f3f5f4" style="padding:18px;border-radius:7px;color:#66726b;font-size:13px;line-height:21px">` +
+            `<strong style="display:block;margin-bottom:8px;color:#3d4942">Your message from ${escapeEmailHtml(new Date(message.createdAt).toLocaleDateString("en-NL"))}</strong>` +
+            `${escapeEmailHtml(message.message).replaceAll("\n", "<br>")}</td></tr></table>` +
+            `<p style="margin:24px 0 0;color:#526058;font-size:13px;line-height:20px">${escapeEmailHtml(profile.companyName)}<br><a href="mailto:${escapeEmailHtml(profile.businessEmail)}" style="color:#087a57">${escapeEmailHtml(profile.businessEmail)}</a></p>`,
+          action: {
+            label: "Reply to TCGHaven",
+            url: `mailto:${profile.businessEmail}`,
+          },
+        }),
         idempotencyKey: `contact-reply-${message.id}-${Date.now()}`,
       });
     } catch {

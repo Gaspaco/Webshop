@@ -3,7 +3,11 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { contactMessages } from "~/db/schema";
-import { escapeEmailHtml, sendTransactionalEmail } from "~/lib/email.server";
+import {
+  escapeEmailHtml,
+  renderTransactionalEmail,
+  sendTransactionalEmail,
+} from "~/lib/email.server";
 import { getEmailEnv } from "~/lib/env.server";
 import { checkRateLimit } from "~/lib/rate-limit.server";
 import { validateJsonRequest } from "~/lib/request-security.server";
@@ -92,7 +96,17 @@ export async function POST(event: APIEvent) {
           to: profile.contactNotificationEmail,
           subject: `Website contact: ${input.topic}`,
           text: `Name: ${input.name}\nEmail: ${input.email}\nTopic: ${input.topic}\n\n${input.message}`,
-          html: `<h1>New website message</h1><p><strong>Name:</strong> ${escapeEmailHtml(input.name)}</p><p><strong>Email:</strong> ${escapeEmailHtml(input.email)}</p><p><strong>Topic:</strong> ${escapeEmailHtml(input.topic)}</p><p>${escapeEmailHtml(input.message).replaceAll("\n", "<br>")}</p>`,
+          html: renderTransactionalEmail({
+            preheader: `${input.name} sent a message about ${input.topic}.`,
+            label: "Customer message",
+            heading: input.topic,
+            intro: `${input.name} contacted TCGHaven through the website.`,
+            contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#f3f5f4" style="padding:18px;border-radius:7px;color:#526058;font-size:14px;line-height:22px"><strong style="color:#101512">From</strong><br>${escapeEmailHtml(input.name)} · <a href="mailto:${escapeEmailHtml(input.email)}" style="color:#087a57">${escapeEmailHtml(input.email)}</a></td></tr></table><div style="margin:22px 0 0;color:#26332c;font-size:15px;line-height:24px;white-space:normal">${escapeEmailHtml(input.message).replaceAll("\n", "<br>")}</div>`,
+            action: {
+              label: "Reply to customer",
+              url: `mailto:${input.email}`,
+            },
+          }),
           replyTo: input.email,
           idempotencyKey: `contact-${storedMessage.id}`,
         });

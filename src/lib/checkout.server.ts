@@ -14,6 +14,7 @@ import {
 import { getAuthEnv, getEmailEnv } from "~/lib/env.server";
 import {
   escapeEmailHtml,
+  renderTransactionalEmail,
   sendTransactionalEmail,
 } from "~/lib/email.server";
 import { getMollieClient } from "~/lib/mollie.server";
@@ -114,16 +115,16 @@ async function sendPaidOrderEmails(orderId: string) {
     country?: string;
   };
   const itemText = items
-    .map(item => `${item.quantity} × ${item.name} — ${formatEuros(item.totalCents)}`)
+    .map(item => `${item.quantity} × ${item.name}: ${formatEuros(item.totalCents)}`)
     .join("\n");
   const itemHtml = items
     .map(
       item =>
-        `<tr><td style="padding:8px 0;color:#26332c">${item.quantity} × ${escapeEmailHtml(item.name)}</td><td style="padding:8px 0;text-align:right;color:#26332c">${escapeEmailHtml(formatEuros(item.totalCents))}</td></tr>`,
+        `<tr><td style="padding:13px 0;border-bottom:1px solid #e5e9e7;color:#26332c;font-size:14px;line-height:20px"><strong style="color:#101512">${item.quantity} ×</strong> ${escapeEmailHtml(item.name)}</td><td style="padding:13px 0;border-bottom:1px solid #e5e9e7;text-align:right;white-space:nowrap;color:#26332c;font-size:14px;line-height:20px">${escapeEmailHtml(formatEuros(item.totalCents))}</td></tr>`,
     )
     .join("");
   const summaryText = `Subtotal: ${formatEuros(order.subtotalCents)}\nShipping: ${formatEuros(order.shippingCents)}\nDiscount: ${formatEuros(order.discountCents)}\nTotal: ${formatEuros(order.totalCents)}`;
-  const summaryHtml = `<table style="width:100%;border-top:1px solid #dce3df;margin-top:16px;padding-top:12px"><tr><td>Subtotal</td><td style="text-align:right">${escapeEmailHtml(formatEuros(order.subtotalCents))}</td></tr><tr><td>Shipping</td><td style="text-align:right">${escapeEmailHtml(formatEuros(order.shippingCents))}</td></tr>${order.discountCents > 0 ? `<tr><td>Discount</td><td style="text-align:right">−${escapeEmailHtml(formatEuros(order.discountCents))}</td></tr>` : ""}<tr><td style="padding-top:10px;font-weight:700">Total</td><td style="padding-top:10px;text-align:right;font-weight:700">${escapeEmailHtml(formatEuros(order.totalCents))}</td></tr></table>`;
+  const summaryHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:18px;color:#526058;font-size:14px;line-height:21px"><tr><td style="padding:4px 0">Subtotal</td><td style="padding:4px 0;text-align:right">${escapeEmailHtml(formatEuros(order.subtotalCents))}</td></tr><tr><td style="padding:4px 0">Shipping</td><td style="padding:4px 0;text-align:right">${escapeEmailHtml(formatEuros(order.shippingCents))}</td></tr>${order.discountCents > 0 ? `<tr><td style="padding:4px 0;color:#087a57">Discount</td><td style="padding:4px 0;text-align:right;color:#087a57">−${escapeEmailHtml(formatEuros(order.discountCents))}</td></tr>` : ""}<tr><td style="padding:13px 0 0;border-top:2px solid #101512;color:#101512;font-size:16px;font-weight:800">Total paid</td><td style="padding:13px 0 0;border-top:2px solid #101512;text-align:right;color:#101512;font-size:18px;font-weight:800">${escapeEmailHtml(formatEuros(order.totalCents))}</td></tr></table>`;
   const customerName = [address.firstName, address.lastName].filter(Boolean).join(" ");
   const deliveryText = [
     customerName,
@@ -142,29 +143,48 @@ async function sendPaidOrderEmails(orderId: string) {
     .filter(Boolean)
     .map(value => escapeEmailHtml(value!))
     .join("<br>");
-  const shell = (heading: string, intro: string) => `<!doctype html><html lang="en"><body style="margin:0;background:#f4f6f5;color:#111713;font-family:Arial,sans-serif"><div style="max-width:600px;margin:0 auto;padding:40px 20px"><div style="background:#0a0d0c;color:#fff;padding:18px 24px;font-weight:700">TCGHaven</div><div style="background:#fff;padding:30px 24px"><h1 style="margin:0 0 10px;font-size:24px">${escapeEmailHtml(heading)}</h1><p style="margin:0 0 24px;line-height:1.6;color:#46514b">${escapeEmailHtml(intro)}</p><table style="width:100%;border-collapse:collapse">${itemHtml}</table>${summaryHtml}<h2 style="margin:28px 0 8px;font-size:17px">Delivery address</h2><p style="margin:0;line-height:1.6;color:#46514b">${deliveryHtml}</p></div></div></body></html>`;
+  const orderDetailsHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#101512" style="padding:15px 18px;color:#ffffff;font-size:13px;line-height:18px"><span style="color:#91a098">Order reference</span><br><strong style="font-size:16px;letter-spacing:.3px">${escapeEmailHtml(order.orderNumber)}</strong></td></tr><tr><td style="padding:8px 0 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${itemHtml}</table>${summaryHtml}</td></tr></table><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#f3f5f4" style="padding:18px;border-radius:7px"><strong style="display:block;margin-bottom:7px;color:#101512;font-size:14px">Delivery address</strong><span style="color:#526058;font-size:14px;line-height:22px">${deliveryHtml}</span></td></tr></table>`;
 
   await Promise.all([
     sendTransactionalEmail({
       to: order.email,
       replyTo: profile.businessEmail,
-      subject: `Order confirmed — ${order.orderNumber}`,
+      subject: `Order confirmed: ${order.orderNumber}`,
       text: `Thanks for your order${customerName ? `, ${customerName}` : ""}.\n\nOrder ${order.orderNumber}\n\n${itemText}\n\n${summaryText}\n\nDelivery address\n${deliveryText}`,
-      html: shell(
-        `Order ${order.orderNumber} is confirmed`,
-        "Thanks for your order. Payment was received and your order is now being prepared.",
-      ),
+      html: renderTransactionalEmail({
+        preheader: `Payment received for ${order.orderNumber}. Your order is being prepared.`,
+        label: "Payment received",
+        heading: "Your order is confirmed",
+        intro: `Thanks for your order${customerName ? `, ${customerName}` : ""}. We received your payment and will prepare your items for PostNL delivery.`,
+        contentHtml: orderDetailsHtml,
+        ...(order.userId
+          ? {
+              action: {
+                label: "View order history",
+                url: appUrl("/account?section=orders"),
+              },
+            }
+          : {}),
+        notice: "We will send another email with tracking information as soon as your parcel is ready.",
+      }),
       idempotencyKey: `paid-customer-${order.id}`,
     }),
     sendTransactionalEmail({
       to: ownerNotificationEmail,
       replyTo: order.email,
-      subject: `New paid order — ${order.orderNumber}`,
+      subject: `New paid order: ${order.orderNumber}`,
       text: `A paid order was received from ${order.email}.\n\n${itemText}\n\n${summaryText}\n\nDelivery address\n${deliveryText}`,
-      html: shell(
-        `New paid order ${order.orderNumber}`,
-        `Payment was received from ${order.email}.`,
-      ),
+      html: renderTransactionalEmail({
+        preheader: `${order.orderNumber} has been paid and is ready for fulfilment.`,
+        label: "Owner notification",
+        heading: "A paid order is ready",
+        intro: `Payment was received from ${order.email}. Review the order and prepare it for dispatch.`,
+        contentHtml: orderDetailsHtml,
+        action: {
+          label: "Open order dashboard",
+          url: appUrl("/admin"),
+        },
+      }),
       idempotencyKey: `paid-owner-${order.id}`,
     }),
   ]);
