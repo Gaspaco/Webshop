@@ -479,7 +479,11 @@ export default function ProductDetail() {
                     >
                       <div
                         class={styles.interactiveCard}
-                        data-rarity-effect={cardFinishFor(item(), displayVariant())}
+                        data-rarity-effect={
+                          displayVariant()?.image
+                            ? undefined
+                            : cardFinishFor(item(), displayVariant())
+                        }
                         onPointerMove={moveDetailCard}
                         onPointerLeave={resetDetailCard}
                       >

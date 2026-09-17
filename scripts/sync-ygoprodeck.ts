@@ -108,6 +108,26 @@ const [{ db }, schema, { sql }] = await Promise.all([
 const { yugiohCards, yugiohPrintings } = schema;
 const syncedAt = new Date();
 
+// Keep separately enriched printing artwork when refreshing the YGOPRODeck
+// snapshot. The reference sync owns card/set facts; the image sync owns these
+// fields, so neither job is allowed to erase the other job's work.
+const existingPrintingImages = new Map(
+  (await db
+    .select({
+      cardId: yugiohPrintings.cardId,
+      setCode: yugiohPrintings.setCode,
+      rarity: yugiohPrintings.rarity,
+      imageSourceUrl: yugiohPrintings.imageSourceUrl,
+      imageSourcePageUrl: yugiohPrintings.imageSourcePageUrl,
+      imageStorageUrl: yugiohPrintings.imageStorageUrl,
+      imageFileName: yugiohPrintings.imageFileName,
+      imageProvider: yugiohPrintings.imageProvider,
+      imageSyncedAt: yugiohPrintings.imageSyncedAt,
+    })
+    .from(yugiohPrintings))
+    .map(row => [`${row.cardId}\u0000${row.setCode}\u0000${row.rarity}`, row]),
+);
+
 const cardRows = snapshot.data.map(card => ({
   id: card.id,
   name: card.name,
@@ -158,12 +178,19 @@ const printingMap = new Map<string, {
   rarity: string;
   rarityCode: string | null;
   sourcePriceCents: number | null;
+  imageSourceUrl: string | null;
+  imageSourcePageUrl: string | null;
+  imageStorageUrl: string | null;
+  imageFileName: string | null;
+  imageProvider: string | null;
+  imageSyncedAt: Date | null;
   syncedAt: Date;
 }>();
 
 for (const card of snapshot.data) {
   for (const printing of card.card_sets ?? []) {
     const key = `${card.id}\u0000${printing.set_code}\u0000${printing.set_rarity}`;
+    const existingImage = existingPrintingImages.get(key);
     printingMap.set(key, {
       cardId: card.id,
       setName: printing.set_name,
@@ -171,6 +198,12 @@ for (const card of snapshot.data) {
       rarity: printing.set_rarity,
       rarityCode: printing.set_rarity_code ?? null,
       sourcePriceCents: priceToCents(printing.set_price),
+      imageSourceUrl: existingImage?.imageSourceUrl ?? null,
+      imageSourcePageUrl: existingImage?.imageSourcePageUrl ?? null,
+      imageStorageUrl: existingImage?.imageStorageUrl ?? null,
+      imageFileName: existingImage?.imageFileName ?? null,
+      imageProvider: existingImage?.imageProvider ?? null,
+      imageSyncedAt: existingImage?.imageSyncedAt ?? null,
       syncedAt,
     });
   }

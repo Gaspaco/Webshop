@@ -98,7 +98,11 @@ export default function ProductCard(props: ProductCardProps) {
     p.variants?.[0],
   );
   const displayVariant = createMemo(() => selectedVariant() ?? mainVariant());
-  const rarityEffect = createMemo(() => cardFinishFor(p, displayVariant()));
+  // A variant-specific scan already contains its real foil treatment. Keep
+  // the synthetic material only as a fallback for the generic card image.
+  const rarityEffect = createMemo(() =>
+    displayVariant()?.image ? undefined : cardFinishFor(p, displayVariant()),
+  );
   const displayPrice = createMemo(
     () => displayVariant()?.priceCents ?? p.priceCents ?? p.priceRangeCents?.[0] ?? 0,
   );

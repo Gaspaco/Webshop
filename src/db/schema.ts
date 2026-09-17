@@ -512,6 +512,16 @@ export const yugiohPrintings = pgTable(
     rarity: text("rarity").notNull(),
     rarityCode: text("rarity_code"),
     sourcePriceCents: integer("source_price_cents"),
+    // Printing-specific artwork is discovered separately from the core card
+    // metadata. `imageSourceUrl` is provenance only; storefronts must use the
+    // owner-controlled `imageStorageUrl` so a page view never hotlinks or
+    // calls a third-party card database.
+    imageSourceUrl: text("image_source_url"),
+    imageSourcePageUrl: text("image_source_page_url"),
+    imageStorageUrl: text("image_storage_url"),
+    imageFileName: text("image_file_name"),
+    imageProvider: text("image_provider"),
+    imageSyncedAt: timestamp("image_synced_at", { withTimezone: true }),
     syncedAt: timestamp("synced_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

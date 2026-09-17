@@ -23,6 +23,7 @@ app.config.timestamp_*.js
 # Temp
 gitignore
 .cache/ygoprodeck/
+.cache/yugipedia/
 
 # System Files
 .DS_Store

@@ -15,9 +15,11 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:sync:yugioh": "bun scripts/sync-ygoprodeck.ts",
+    "db:sync:yugioh-images": "bun scripts/sync-yugipedia-images.ts",
     "admin:create": "bun scripts/create-admin.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1134.0",
     "@better-auth/infra": "0.3.7",
     "@mollie/api-client": "^4.6.0",
     "@solidjs/meta": "^0.29.4",
@@ -33,6 +35,7 @@
     "postgres": "^3.4.9",
     "qrcode": "1.5.4",
     "sass": "^1.101.0",
+    "sharp": "0.35.4",
     "solid-js": "^1.9.5",
     "vinxi": "^0.5.7",
     "zod": "^4.4.3"

@@ -223,7 +223,11 @@ export async function POST(event: APIEvent) {
           setCode: String(card.id),
           rarity: "Unspecified",
           rarityCode: null,
+          imageStorageUrl: null,
+          imageProvider: null,
         }];
+    const printingArtwork = variants.find(printing => printing.imageStorageUrl)?.imageStorageUrl ?? null;
+    const productArtwork = printingArtwork ?? image;
     const skus = await uniqueSkus(
       variants.map((printing, index) =>
         skuFor(card.id, printing.setCode, printing.rarity, index),
@@ -241,7 +245,7 @@ export async function POST(event: APIEvent) {
           game: "yugioh",
           productType: "single",
           status: "draft",
-          imageUrls: image ? [image] : [],
+          imageUrls: productArtwork ? [productArtwork] : [],
           metadata: {
             source: "ygoprodeck",
             sourceCardId: card.id,
@@ -256,6 +260,7 @@ export async function POST(event: APIEvent) {
             attack: card.attack,
             defense: card.defense,
             level: card.level,
+            printingImageProvider: printingArtwork ? "yugipedia" : null,
           },
         })
         .returning({ id: products.id, name: products.name, slug: products.slug });
@@ -269,7 +274,9 @@ export async function POST(event: APIEvent) {
           condition: "Near Mint",
           language: "English",
           finish: printing.rarity,
-          imageUrl: null,
+          // Only owner-controlled cached URLs reach the storefront. The
+          // Yugipedia source URL remains provenance and is never hotlinked.
+          imageUrl: printing.imageStorageUrl ?? null,
           isDefault: index === 0,
           priceCents: card.cardmarketPriceCents ?? 0,
           stock: 0,
@@ -285,12 +292,17 @@ export async function POST(event: APIEvent) {
       action: "catalogue.ygoprodeck_added",
       entityType: "product",
       entityId: created.id,
-      summary: `${created.name} added from the local YGOPRODeck library as a draft${image ? "" : " without artwork"}.`,
-      metadata: { cardId: card.id, variants: variants.length, hasImage: Boolean(image) },
+      summary: `${created.name} added from the local YGOPRODeck library as a draft${productArtwork ? "" : " without artwork"}.`,
+      metadata: {
+        cardId: card.id,
+        variants: variants.length,
+        hasImage: Boolean(productArtwork),
+        printingImages: variants.filter(printing => Boolean(printing.imageStorageUrl)).length,
+      },
     });
 
     return apiJson(
-      { product: created, variants: variants.length, hasImage: Boolean(image) },
+      { product: created, variants: variants.length, hasImage: Boolean(productArtwork) },
       { status: 201 },
     );
   } catch (error) {

@@ -54,6 +54,34 @@ The raw snapshot is stored in `.cache/ygoprodeck/cards.json` and is excluded
 from Git. Imported product images are downloaded once and stored with the
 product; storefront pages do not hotlink the YGOPRODeck image server.
 
+#### Optional printing-specific images
+
+The Yugipedia enrichment job can identify a curated scan for an exact set and
+rarity while keeping YGOPRODeck as the source for card facts, prices, and set
+printings. It is deliberately bounded, cached for 30 days, and throttled to
+less than one request per second:
+
+```bash
+bun run db:sync:yugioh-images --card="Dark Magician" --limit=1
+bun run db:sync:yugioh-images --set="Rarity Collection 5" --limit=20
+```
+
+Those commands save source provenance only. They do not expose or hotlink the
+third-party scan. To optimize matched scans to WebP, upload them to the shop's
+R2 bucket, and make them available to subsequently imported variants, first
+obtain written permission covering commercial use, rehosting, and image
+optimization. Then configure the R2 variables, set
+`YUGIPEDIA_IMAGE_USE_AUTHORIZED=true`, and add `--upload`:
+
+```bash
+bun run db:sync:yugioh-images --set="Rarity Collection 5" --limit=20 --upload
+```
+
+The importer uses the owner-controlled R2 URL for each matching variant. A
+generic YGOPRODeck image and the CSS rarity material remain the fallback where
+Yugipedia has no exact scan. Existing products are not rewritten by the sync;
+re-import or update their variant artwork explicitly from the admin catalogue.
+
 ## Railway
 
 1. Create a Railway project and add a PostgreSQL service.
