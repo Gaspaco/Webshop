@@ -2,7 +2,6 @@ import { A } from "@solidjs/router";
 import { createEffect, createMemo, createSignal, For, onCleanup, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import { formatPrice } from "~/lib/cart";
-import { cardFinishFor } from "~/lib/card-finish";
 import styles from "./ProductSection.module.scss";
 
 export type BoxTheme =
@@ -44,6 +43,7 @@ export type SectionProduct = {
   finish?: string;
   game?: string;
   preorder?: boolean;
+  productType?: string;
   variants?: ProductVariantOption[];
   variantId?: string;
 };
@@ -98,10 +98,10 @@ export default function ProductCard(props: ProductCardProps) {
     p.variants?.[0],
   );
   const displayVariant = createMemo(() => selectedVariant() ?? mainVariant());
-  // A variant-specific scan already contains its real foil treatment. Keep
-  // the synthetic material only as a fallback for the generic card image.
-  const rarityEffect = createMemo(() =>
-    displayVariant()?.image ? undefined : cardFinishFor(p, displayVariant()),
+  const hasCardTilt = createMemo(() =>
+    p.productType === "single" || (
+      p.game === "yugioh" && Boolean(p.rarity || p.finish || displayVariant()?.finish)
+    ),
   );
   const displayPrice = createMemo(
     () => displayVariant()?.priceCents ?? p.priceCents ?? p.priceRangeCents?.[0] ?? 0,
@@ -118,26 +118,18 @@ export default function ProductCard(props: ProductCardProps) {
     setQuickViewOpen(true);
   };
 
-  const moveFoil = (event: PointerEvent & { currentTarget: HTMLSpanElement }) => {
-    if (event.pointerType === "touch") return;
+  const moveCard = (event: PointerEvent & { currentTarget: HTMLSpanElement }) => {
+    if (event.pointerType === "touch" || !hasCardTilt()) return;
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
     const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
-    const distance = Math.hypot(x - 0.5, y - 0.5) / Math.SQRT1_2;
-    const strength = Math.max(0.72, Math.min(1, 1.08 - distance * 0.36));
-    event.currentTarget.style.setProperty("--foil-x", `${(x * 100).toFixed(1)}%`);
-    event.currentTarget.style.setProperty("--foil-y", `${(y * 100).toFixed(1)}%`);
-    event.currentTarget.style.setProperty("--foil-strength", strength.toFixed(2));
-    event.currentTarget.style.setProperty("--foil-tilt-x", `${((0.5 - y) * 3).toFixed(2)}deg`);
-    event.currentTarget.style.setProperty("--foil-tilt-y", `${((x - 0.5) * 3.5).toFixed(2)}deg`);
+    event.currentTarget.style.setProperty("--card-tilt-x", `${((0.5 - y) * 3).toFixed(2)}deg`);
+    event.currentTarget.style.setProperty("--card-tilt-y", `${((x - 0.5) * 3.5).toFixed(2)}deg`);
   };
 
-  const resetFoil = (event: PointerEvent & { currentTarget: HTMLSpanElement }) => {
-    event.currentTarget.style.removeProperty("--foil-x");
-    event.currentTarget.style.removeProperty("--foil-y");
-    event.currentTarget.style.removeProperty("--foil-strength");
-    event.currentTarget.style.removeProperty("--foil-tilt-x");
-    event.currentTarget.style.removeProperty("--foil-tilt-y");
+  const resetCard = (event: PointerEvent & { currentTarget: HTMLSpanElement }) => {
+    event.currentTarget.style.removeProperty("--card-tilt-x");
+    event.currentTarget.style.removeProperty("--card-tilt-y");
   };
 
   const confirmVariant = () => {
@@ -189,10 +181,9 @@ export default function ProductCard(props: ProductCardProps) {
           </Show>
           <span
             class={styles.cardArtwork}
-            classList={{ [styles.cardArtworkFoil]: Boolean(rarityEffect()) }}
-            data-rarity-effect={rarityEffect()}
-            onPointerMove={moveFoil}
-            onPointerLeave={resetFoil}
+            classList={{ [styles.cardArtworkTilt]: hasCardTilt() }}
+            onPointerMove={moveCard}
+            onPointerLeave={resetCard}
           >
             <img
               src={p.image}
@@ -202,7 +193,6 @@ export default function ProductCard(props: ProductCardProps) {
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageFailed(true)}
             />
-            <span class={styles.foilSweep} aria-hidden="true" />
           </span>
         </Show>
         <Show when={p.badge}>
