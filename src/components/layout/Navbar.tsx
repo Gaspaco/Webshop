@@ -14,7 +14,11 @@ export default function Navbar() {
   let wrapRef: HTMLFormElement | undefined;
   const accountHref = () => {
     const currentUser = session().data?.user as { role?: string } | undefined;
-    if (!currentUser) return "/login";
+    // During hydration Better Auth has not restored the session yet. Sending
+    // the visitor to /login in that short window makes an authenticated user
+    // look logged out. Let /account perform the authoritative session check.
+    if (session().isPending || session().error) return "/account";
+    if (!currentUser) return "/login?next=%2Faccount";
     return currentUser.role === "admin" ? "/admin" : "/account";
   };
 

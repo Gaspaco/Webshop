@@ -18,12 +18,32 @@ type AuthPageProps = {
 
 function safeNextPath() {
   const candidate = new URLSearchParams(window.location.search).get("next");
-  return candidate &&
-    candidate.startsWith("/") &&
-    !candidate.startsWith("//") &&
-    !candidate.includes("\\")
-    ? candidate
-    : "/account";
+  if (
+    !candidate ||
+    !candidate.startsWith("/") ||
+    candidate.startsWith("//") ||
+    candidate.includes("\\")
+  ) {
+    return "/account";
+  }
+
+  // Authentication entry points and the homepage are never useful account
+  // return destinations. They previously allowed a successful sign-in to
+  // appear to bounce straight back home or show the sign-in form again.
+  const pathname = candidate.split(/[?#]/, 1)[0].replace(/\/+$/, "") || "/";
+  if (
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/verify-email" ||
+    pathname === "/reset-password" ||
+    pathname === "/two-factor" ||
+    pathname === "/admin/login"
+  ) {
+    return "/account";
+  }
+
+  return candidate;
 }
 
 export default function AuthPage(props: AuthPageProps) {
@@ -55,8 +75,13 @@ export default function AuthPage(props: AuthPageProps) {
     setLoading(false);
     setMode(nextMode);
 
-    const nextPath = nextMode === "signup" ? "/signup" : "/login";
-    window.history.pushState({ authMode: nextMode }, "", nextPath);
+    const authPath = nextMode === "signup" ? "/signup" : "/login";
+    const returnPath = safeNextPath();
+    window.history.pushState(
+      { authMode: nextMode },
+      "",
+      `${authPath}?next=${encodeURIComponent(returnPath)}`,
+    );
   };
 
   const continueWithGoogle = async () => {
@@ -96,9 +121,8 @@ export default function AuthPage(props: AuthPageProps) {
       password: loginPassword(),
     });
 
-    setLoading(false);
-
     if (authError) {
+      setLoading(false);
       if (
         authError.status === 403 ||
         authError.code === "EMAIL_NOT_VERIFIED"
@@ -120,10 +144,35 @@ export default function AuthPage(props: AuthPageProps) {
     }
 
     if (authData && "twoFactorRedirect" in authData) {
+      setLoading(false);
       return;
     }
 
-    const signedInUser = authData?.user as { role?: string } | undefined;
+    // Confirm that the browser received the session cookie before leaving the
+    // form. This prevents a successful credential response from being followed
+    // by a confusing account -> login bounce.
+    let sessionResult;
+    try {
+      sessionResult = await authClient.getSession();
+    } catch {
+      setLoading(false);
+      setError(
+        "You are signed in, but we could not confirm the session. Check your connection and try again.",
+      );
+      return;
+    }
+    const signedInUser = sessionResult.data?.user as
+      | { role?: string }
+      | undefined;
+
+    if (!signedInUser) {
+      setLoading(false);
+      setError(
+        "Your details were accepted, but the browser did not keep the session. Enable cookies for TCGHaven and try again.",
+      );
+      return;
+    }
+
     window.location.assign(
       signedInUser?.role === "admin" ? "/admin" : safeNextPath(),
     );
@@ -255,6 +304,20 @@ export default function AuthPage(props: AuthPageProps) {
     const handleKeydown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && resetOpen()) closePasswordReset();
     };
+
+    // If an authenticated visitor reaches an auth route through a stale link
+    // or during session hydration, take them to their account instead of
+    // presenting another sign-in form.
+    void authClient
+      .getSession()
+      .then(({ data }) => {
+        const currentUser = data?.user as { role?: string } | undefined;
+        if (!currentUser) return;
+        window.location.replace(
+          currentUser.role === "admin" ? "/admin" : safeNextPath(),
+        );
+      })
+      .catch(() => undefined);
 
     window.addEventListener("popstate", handleHistory);
     window.addEventListener("keydown", handleKeydown);

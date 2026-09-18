@@ -36,6 +36,69 @@
   animation: pulse 1.1s ease-in-out infinite alternate;
 }
 
+.sessionError {
+  display: flex;
+  width: min(34rem, calc(100% - 2rem));
+  min-height: 100dvh;
+  margin-inline: auto;
+  flex-direction: column;
+  justify-content: center;
+  color: $white;
+}
+
+.sessionError > p {
+  margin: 0 0 0.8rem;
+  color: $primary-light;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sessionError h1 {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  line-height: 0.98;
+}
+
+.sessionError > span {
+  margin-top: 1rem;
+  color: $gray-400;
+  line-height: 1.6;
+}
+
+.sessionError > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.sessionError button,
+.sessionError a {
+  display: inline-flex;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1.15rem;
+  border: 0;
+  border-radius: 0.45rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.sessionError button {
+  background: $primary;
+  color: #06100b;
+}
+
+.sessionError a {
+  background: rgba($white, 0.06);
+  color: $white;
+}
+
 .settingsTitle > span,
 .panelHead > div > span,
 .stats article > span,

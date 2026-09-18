@@ -278,7 +278,10 @@ export default function Account() {
       navigate("/admin", { replace: true });
       return;
     }
-    if (!session().isPending && !session().data) {
+    // A temporary get-session failure must not be treated as a signed-out
+    // response. Otherwise a customer with a valid cookie is bounced back to
+    // login when the account service is briefly unavailable.
+    if (!session().isPending && !session().error && !session().data) {
       const requestedSection = searchParams.section;
       const returnPath =
         typeof requestedSection === "string" &&
@@ -696,10 +699,27 @@ export default function Account() {
             : undefined
         }
         fallback={
-          <div class={styles.loading} role="status">
-            <span />
-            Loading your account
-          </div>
+          <Show
+            when={!session().isPending && session().error}
+            fallback={
+              <div class={styles.loading} role="status">
+                <span />
+                Loading your account
+              </div>
+            }
+          >
+            <section class={styles.sessionError} role="alert">
+              <p>Account connection</p>
+              <h1>We could not load your session.</h1>
+              <span>Your login has not been cleared. Try the connection again.</span>
+              <div>
+                <button type="button" onClick={() => void session().refetch()}>
+                  Try again
+                </button>
+                <A href="/">Back to the shop</A>
+              </div>
+            </section>
+          </Show>
         }
       >
         {data => (
