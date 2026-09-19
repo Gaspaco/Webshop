@@ -1,73 +1,76 @@
 @use "../../styles/variables" as *;
 
 .section {
-  padding-block: clamp(3rem, 6vh, 4.5rem);
+  padding-block: clamp(3.5rem, 7vh, 6rem);
   background: #0b120e;
 }
 
 .wide {
-  width: min(64rem, calc(100% - clamp(2rem, 4vw, 3rem)));
+  display: grid;
+  grid-template-columns: minmax(17rem, 0.75fr) minmax(32rem, 1.25fr);
+  gap: clamp(3rem, 8vw, 9rem);
+  width: min($container-wide, calc(100% - clamp(2rem, 4vw, 3rem)));
   margin-inline: auto;
 }
 
-.finder { min-width: 0; }
-
 .heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 2rem;
-  margin-bottom: 1.25rem;
-
   h2 {
+    max-width: 12ch;
     color: $white;
     font-family: $font-display;
-    font-size: clamp(1.5rem, 2.5vw, 2rem);
-    font-weight: 750;
-    line-height: 1.2;
+    font-size: clamp(2.2rem, 4vw, 4.25rem);
+    font-weight: 850;
+    line-height: 0.98;
+    text-wrap: balance;
   }
 
   p {
-    color: $gray-400;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    max-width: 35ch;
+    margin-top: 1.2rem;
+    color: $gray-300;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    text-wrap: pretty;
   }
 }
+
+.finder { min-width: 0; }
 
 .search {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  min-height: 3.75rem;
+  min-height: 4.25rem;
+  border-bottom: 2px solid $primary;
   background: $white;
 
   > svg {
-    width: 1.15rem;
-    height: 1.15rem;
-    margin-left: 1.15rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-left: 1.25rem;
     color: $gray-600;
   }
 
   input {
     min-width: 0;
     height: 100%;
-    padding-inline: 0.85rem;
+    padding-inline: 1rem;
     border: 0;
     outline: 0;
     background: transparent;
     color: $background;
     font: inherit;
-    font-size: 0.95rem;
+    font-size: 1rem;
 
     &::placeholder { color: $gray-600; opacity: 1; }
   }
 
   button {
     align-self: stretch;
-    min-width: 7rem;
-    padding-inline: 1.4rem;
+    padding-inline: 1.5rem;
     background: $primary;
     color: #04130c;
+    font-family: $font-display;
     font-size: 0.875rem;
     font-weight: 800;
     transition: background $transition-fast;
@@ -77,46 +80,61 @@
   }
 }
 
-.belowSearch {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1.5rem;
-  margin-top: 1rem;
-  color: $gray-400;
-  font-size: 0.8rem;
-  line-height: 1.5;
-}
-
 .shortcuts {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 1rem;
-
-  span { color: $gray-500; }
+  gap: 0.65rem 1.4rem;
+  padding-block: 1.25rem;
+  border-bottom: 1px solid rgba($white, 0.1);
 
   a {
     color: $gray-300;
-    text-decoration: underline;
-    text-decoration-color: $gray-600;
-    text-underline-offset: 0.2em;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: color $transition-fast;
+
+    &::after {
+      margin-left: 0.45rem;
+      color: $primary;
+      content: "›";
+    }
 
     &:hover { color: $white; }
-    &:focus-visible { outline: 2px solid $primary-light; outline-offset: 3px; }
+    &:focus-visible { outline: 2px solid $primary-light; outline-offset: 4px; }
   }
 }
 
 .request {
-  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 1.25rem;
+
+  p {
+    color: $gray-400;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  strong { color: $gray-200; }
 
   a {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.5rem;
     color: $primary-light;
-    text-decoration: underline;
-    text-decoration-color: rgba($primary-light, 0.4);
-    text-underline-offset: 0.2em;
+    font-size: 0.8rem;
+    font-weight: 800;
 
-    &:hover { color: $white; }
-    &:focus-visible { outline: 2px solid $primary-light; outline-offset: 3px; }
+    svg {
+      width: 0.95rem;
+      transition: transform $transition-fast;
+    }
+
+    &:hover svg { transform: translateX(3px); }
+    &:focus-visible { outline: 2px solid $primary-light; outline-offset: 4px; }
   }
 }
 
@@ -132,33 +150,34 @@
   border: 0;
 }
 
-@media (max-width: $bp-md) {
-  .heading {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  .belowSearch {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.7rem;
+@media (max-width: $bp-lg) {
+  .wide {
+    grid-template-columns: 1fr;
+    gap: 2.25rem;
   }
 }
 
 @media (max-width: $bp-sm) {
-  .section { padding-block: 2.75rem; }
+  .section { padding-block: 3.5rem; }
+  .heading h2 { font-size: clamp(2.25rem, 12vw, 3.25rem); }
 
   .search {
     grid-template-columns: auto minmax(0, 1fr);
 
     button {
       grid-column: 1 / -1;
-      min-height: 3.1rem;
+      min-height: 3.25rem;
     }
+  }
+
+  .request {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.85rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .search button { transition-duration: 0.01ms; }
+  .search button,
+  .request a svg { transition-duration: 0.01ms; }
 }
