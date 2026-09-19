@@ -14,25 +14,27 @@ export default function HavenBand() {
   return (
     <section class={styles.section}>
       <div class={styles.wide}>
-        {/* Trust strip */}
-        <dl class={styles.perks}>
-          <div class={styles.perk}>
-            <dt>Honest grading</dt>
-            <dd>Real photos, real conditions. No surprises at your door.</dd>
+        <div class={styles.serviceNote}>
+          <div class={styles.serviceLead}>
+            <p>Packed by the people who listed it.</p>
+            <span>A small collector-run shop in Rotterdam.</span>
           </div>
-          <div class={styles.perk}>
-            <dt>PostNL delivery</dt>
-            <dd>Packed with care, shipped tracked from the Netherlands.</dd>
-          </div>
-          <div class={styles.perk}>
-            <dt>Secure checkout</dt>
-            <dd>Pay with iDEAL, cards, and more through Mollie.</dd>
-          </div>
-          <div class={styles.perk}>
-            <dt>Run by collectors</dt>
-            <dd>We chase the same cards you do. Small shop, real people.</dd>
-          </div>
-        </dl>
+
+          <dl class={styles.serviceFacts}>
+            <div>
+              <dt>Condition</dt>
+              <dd>Checked under clear light before listing</dd>
+            </div>
+            <div>
+              <dt>Delivery</dt>
+              <dd>Tracked with PostNL from the Netherlands</dd>
+            </div>
+            <div>
+              <dt>Payment</dt>
+              <dd>iDEAL and cards, processed by Mollie</dd>
+            </div>
+          </dl>
+        </div>
 
         <div class={styles.accountPanel}>
           <div class={styles.accountHeading}>

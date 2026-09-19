@@ -1,60 +1,46 @@
 import { A } from "@solidjs/router";
-import { onCleanup, onMount } from "solid-js";
-import { dealCard, revealOnScroll } from "~/lib/motion";
 import styles from "./ShopNote.module.scss";
 
-/**
- * The one section on the homepage that isn't a product grid. TCGHaven is a
- * one-person shop, so the page says so in the owner's own voice.
- */
 export default function ShopNote() {
-  let artRef: HTMLDivElement | undefined;
-  let noteRef: HTMLDivElement | undefined;
-
-  onMount(() => {
-    // The card is dealt onto the table; the note lifts in just behind it.
-    const stopArt = artRef ? dealCard(artRef) : undefined;
-    const stopNote = noteRef
-      ? revealOnScroll(noteRef, { children: "h2, p, a", y: 18, delay: 0.12 })
-      : undefined;
-    onCleanup(() => {
-      stopArt?.();
-      stopNote?.();
-    });
-  });
-
   return (
-    <section class={styles.section}>
+    <section class={styles.section} aria-labelledby="catalogue-finder-title">
       <div class={styles.wide}>
-        <div class={styles.panel}>
-          <div class={styles.art} ref={artRef}>
-            <img
-              src="/images/cards/charizard.png"
-              alt="First-edition Base Set Charizard holographic card"
-              draggable={false}
+        <div class={styles.heading}>
+          <h2 id="catalogue-finder-title">Find the exact card.</h2>
+          <p>Search names, set codes, rarities, and every variation in the catalogue.</p>
+        </div>
+
+        <div class={styles.finder}>
+          <form action="/products" method="get" class={styles.search} role="search">
+            <label for="catalogue-search" class={styles.srOnly}>Search the catalogue</label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-4-4" />
+            </svg>
+            <input
+              id="catalogue-search"
+              name="q"
+              type="search"
+              placeholder="Card name, set code, or rarity"
+              autocomplete="off"
+              maxlength={80}
+              required
             />
-          </div>
+            <button type="submit">Search catalogue</button>
+          </form>
 
-          <div class={styles.note} ref={noteRef}>
-            <h2 class={styles.heading}>
-              Every card that leaves here, I graded myself.
-            </h2>
+          <nav class={styles.shortcuts} aria-label="Catalogue shortcuts">
+            <A href="/products?q=yu-gi-oh">Yu-Gi-Oh!</A>
+            <A href="/products?q=pokemon">Pokémon</A>
+            <A href="/products?q=single">Single cards</A>
+            <A href="/products?q=pre-order">Pre-orders</A>
+          </nav>
 
-            <p>
-              TCGHaven is one person in Rotterdam. I buy the stock, photograph
-              each card as it actually looks, write the condition notes, and
-              pack the mailers on my kitchen table.
-            </p>
-            <p>
-              That is the whole operation. If something arrives wrong, you are
-              emailing the person who packed it, and I will make it right.
-            </p>
-
-            <p class={styles.signature}>Alex</p>
-
-            <A href="/about" class={styles.link}>
-              Read the full story
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <div class={styles.request}>
+            <p><strong>Not in the catalogue?</strong> Send the card name and set code.</p>
+            <A href="/contact">
+              Request a card
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
             </A>

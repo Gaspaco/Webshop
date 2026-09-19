@@ -13,48 +13,81 @@
   margin-inline: auto;
 }
 
-// ---------- Trust strip ----------
-// A plain divided row, not four identical cards. The repetition
-// of boxed panels was the actual problem, not the content.
-
-// Four commitments as a plain row. Circular icon badges above each heading
-// read as a template and carried no information the headings didn't.
-
-.perks {
+.serviceNote {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(1.75rem, 3vw, 3rem);
-  padding-block: clamp(1.75rem, 4vh, 2.5rem);
+  grid-template-columns: minmax(17rem, 0.75fr) minmax(30rem, 1.25fr);
+  gap: clamp(2.5rem, 6vw, 7rem);
+  align-items: start;
+  padding-block: clamp(2rem, 4vh, 3rem);
   border-top: 1px solid rgba($white, 0.1);
-  margin: 0;
 
   @media (max-width: $bp-lg) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 2rem;
+    grid-template-columns: minmax(15rem, 0.8fr) minmax(24rem, 1.2fr);
+    gap: 2rem;
   }
 
-  @media (max-width: $bp-sm) {
+  @media (max-width: $bp-md) {
     grid-template-columns: 1fr;
+    gap: 1.75rem;
   }
 }
 
-.perk {
-  min-width: 0;
-
-  dt {
+.serviceLead {
+  p {
+    max-width: 19ch;
     color: $white;
     font-family: $font-display;
-    font-size: 1rem;
-    font-weight: 750;
-    letter-spacing: -0.01em;
+    font-size: clamp(1.4rem, 2vw, 2rem);
+    font-weight: 780;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  span {
+    display: block;
+    margin-top: 0.7rem;
+    color: $gray-400;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+}
+
+.serviceFacts {
+  display: grid;
+  margin: 0;
+
+  > div {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 0.35fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: baseline;
+    padding-block: 0.85rem;
+    border-bottom: 1px solid rgba($white, 0.09);
+
+    &:first-child { padding-top: 0; }
+  }
+
+  dt {
+    color: $primary-light;
+    font-size: 0.75rem;
+    font-weight: 800;
   }
 
   dd {
-    max-width: 30ch;
-    margin: 0.45rem 0 0;
-    color: $gray-500;
-    font-size: 0.875rem;
-    line-height: 1.6;
+    min-width: 0;
+    margin: 0;
+    color: $gray-200;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: $bp-sm) {
+    > div {
+      grid-template-columns: 1fr;
+      gap: 0.3rem;
+      padding-block: 0.9rem;
+    }
   }
 }
 

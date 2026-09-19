@@ -1226,20 +1226,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/GameTiles.tsx:1"
     },
     {
-      "id": "file::shopnote",
-      "label": "ShopNote.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx:1"
-    },
-    {
-      "id": "shopnote::shopnote",
-      "label": "ShopNote",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx:10"
-    },
-    {
       "id": "file::motion",
       "label": "motion.ts",
       "fileType": "code",
@@ -1728,20 +1714,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:36"
-    },
-    {
-      "id": "file::havenband",
-      "label": "HavenBand.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:1"
-    },
-    {
-      "id": "havenband::havenband",
-      "label": "HavenBand",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:4"
     },
     {
       "id": "file::setcollections",
@@ -3492,6 +3464,27 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:536"
+    },
+    {
+      "id": "file::havenband",
+      "label": "HavenBand.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:1"
+    },
+    {
+      "id": "havenband::havenband",
+      "label": "HavenBand",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:6"
+    },
+    {
+      "id": "file::shopnote",
+      "label": "ShopNote.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx:1"
     }
   ],
   "edges": [
@@ -4549,15 +4542,6 @@
       "weight": 1
     },
     {
-      "source": "file::shopnote",
-      "target": "shopnote::shopnote",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx:10",
-      "weight": 1
-    },
-    {
       "source": "file::motion",
       "target": "motion::setup",
       "relation": "contains",
@@ -5032,15 +5016,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/card-finish.ts:36",
-      "weight": 1
-    },
-    {
-      "source": "file::havenband",
-      "target": "havenband::havenband",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:4",
       "weight": 1
     },
     {
@@ -7076,12 +7051,21 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:536",
       "weight": 1
+    },
+    {
+      "source": "file::havenband",
+      "target": "havenband::havenband",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:6",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 120,
-    "nodes": 499,
-    "edges": 398,
-    "builtAt": "2026-09-19T16:58:51.019Z"
+    "nodes": 498,
+    "edges": 397,
+    "builtAt": "2026-09-19T17:18:15.961Z"
   }
 }
