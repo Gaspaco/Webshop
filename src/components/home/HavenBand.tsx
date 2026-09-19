@@ -15,40 +15,17 @@ export default function HavenBand() {
     <section class={styles.section}>
       <div class={styles.wide}>
         <div class={styles.serviceNote}>
-          <div class={styles.serviceLead}>
-            <p>Packed by the people who listed it.</p>
-            <span>A small collector-run shop in Rotterdam.</span>
-          </div>
-
-          <dl class={styles.serviceFacts}>
-            <div>
-              <dt>Condition</dt>
-              <dd>Checked under clear light before listing</dd>
-            </div>
-            <div>
-              <dt>Delivery</dt>
-              <dd>Tracked with PostNL from the Netherlands</dd>
-            </div>
-            <div>
-              <dt>Payment</dt>
-              <dd>iDEAL and cards, processed by Mollie</dd>
-            </div>
-          </dl>
+          <p>
+            <strong>Cards are checked and packed in Rotterdam.</strong>{" "}
+            Orders ship tracked with PostNL, and payments are handled by Mollie.
+          </p>
+          <A href="/shipping">Shipping and returns</A>
         </div>
 
         <div class={styles.accountPanel}>
           <div class={styles.accountHeading}>
-            <span>Member access</span>
-            <h2>Pick up where you left off.</h2>
-          </div>
-
-          <div class={styles.accountInfo}>
-            <p>Keep the practical parts of collecting together.</p>
-            <ul aria-label="Account benefits">
-              <li>Orders</li>
-              <li>Addresses</li>
-              <li>Wishlist</li>
-            </ul>
+            <h2>Orders and saved cards</h2>
+            <p>Sign in to view your orders, addresses, and wishlist.</p>
           </div>
 
           <div class={styles.accountActions}>
