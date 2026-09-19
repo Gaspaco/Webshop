@@ -325,13 +325,23 @@
 }
 
 .dot {
-  width: 0.5rem;
-  height: 0.5rem;
+  position: relative;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
   border-radius: $radius-full;
-  background: rgba($white, 0.3);
-  transition: background $transition-fast, width $transition-base;
 
-  &:hover { background: rgba($white, 0.6); }
+  &::before {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: $radius-full;
+    background: rgba($white, 0.3);
+    content: "";
+    transition: background $transition-fast, width $transition-base;
+  }
+
+  &:hover::before { background: rgba($white, 0.6); }
 
   &:focus-visible {
     outline: 2px solid $primary-light;
@@ -340,10 +350,12 @@
 }
 
 .dotActive {
-  width: 1.5rem;
-  background: $primary;
+  &::before {
+    width: 1.5rem;
+    background: $primary;
+  }
 
-  &:hover { background: $primary; }
+  &:hover::before { background: $primary; }
 }
 
 // ---------- Bestsellers ----------
@@ -467,8 +479,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   flex-shrink: 0;
   border-radius: $radius-full;
   background: rgba($white, 0.06);
@@ -568,6 +580,93 @@
 
 @keyframes stockLoading {
   to { background: rgba($white, 0.11); }
+}
+
+@media (max-width: $bp-sm) {
+  .featured {
+    min-height: 36rem;
+  }
+
+  .slideArt {
+    top: 1rem;
+    right: 0.5rem;
+    width: 54%;
+    height: 42%;
+    opacity: 1;
+    transform: rotate(4deg);
+  }
+
+  .slideActive .slideArt {
+    animation-name: artInMobile;
+  }
+
+  .slideArtGlow {
+    top: 12%;
+    right: -8%;
+    width: 70%;
+    height: 48%;
+    transform: none;
+  }
+
+  .slideScrim {
+    background: linear-gradient(
+      to bottom,
+      rgba(#070908, 0.08) 0%,
+      rgba(#070908, 0.22) 28%,
+      rgba(#070908, 0.94) 44%,
+      #070908 64%
+    );
+  }
+
+  .slideBody {
+    padding: 1.5rem;
+  }
+
+  .slideBlurb {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    margin-bottom: 1.25rem;
+  }
+
+  .slideFooter {
+    gap: 0.75rem;
+  }
+
+  .slideCta {
+    max-width: 100%;
+    height: auto;
+    min-height: 3rem;
+    padding-block: 0.65rem;
+  }
+
+  .dots {
+    top: 1rem;
+    right: auto;
+    bottom: auto;
+    left: 0.75rem;
+  }
+}
+
+@media (max-width: 23rem) {
+  .slideBody {
+    padding-inline: 1.25rem;
+  }
+
+  .slideTitle {
+    font-size: 1.65rem;
+  }
+
+  .slideCta {
+    padding-inline: 1rem;
+  }
+}
+
+@keyframes artInMobile {
+  from { opacity: 0; transform: translateX(2rem) rotate(8deg); }
+  to { opacity: 1; transform: rotate(4deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -10,6 +10,7 @@
 }
 
 .inner {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -210,6 +211,21 @@
   .inner {
     gap: 0.75rem;
   }
+
+  .searchOpen {
+    position: absolute;
+    z-index: $z-dropdown;
+    inset: 0;
+    width: 100%;
+    min-width: 0;
+    background: $background;
+
+    .searchInput {
+      width: auto;
+      min-width: 0;
+      flex: 1;
+    }
+  }
 }
 
 @media (max-width: 26rem) {
@@ -229,6 +245,13 @@
 
   .wishlistBtn {
     display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .iconBtn {
+    width: 2.75rem;
+    height: 2.75rem;
   }
 }
 

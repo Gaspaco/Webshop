@@ -117,7 +117,9 @@ export function databaseProductToShopProduct(
         condition: product.condition ?? undefined,
         language: product.language ?? undefined,
         finish: product.finish ?? undefined,
-        image: product.variantImageUrl ?? undefined,
+        // A variation without its own photo inherits the product upload. This
+        // keeps every option previewable while preserving exact variant scans.
+        image: product.variantImageUrl ?? product.imageUrls[0] ?? undefined,
         isDefault: product.isDefault,
         priceCents: product.priceCents,
         compareAtPriceCents: product.compareAtPriceCents ?? undefined,

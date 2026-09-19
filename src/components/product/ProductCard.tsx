@@ -110,6 +110,7 @@ export default function ProductCard(props: ProductCardProps) {
     () => displayVariant()?.compareAtPriceCents ?? p.compareAtPriceCents,
   );
   const hasChoices = () => (p.variants?.length ?? 0) > 1;
+  const hasAvailableChoice = () => p.variants?.some(variant => variant.stock > 0) ?? false;
   const isUnavailable = () =>
     !p.preorder && !hasChoices() && Boolean(mainVariant() && mainVariant()!.stock <= 0);
 
@@ -224,8 +225,13 @@ export default function ProductCard(props: ProductCardProps) {
           <Show
             when={!hasChoices()}
             fallback={
-              <button type="button" class={styles.addBtn} aria-label={`Choose ${p.name} options`} onClick={openQuickView}>
-                <span>Choose</span>
+              <button
+                type="button"
+                class={styles.addBtn}
+                aria-label={`${hasAvailableChoice() ? "Choose" : "Preview"} ${p.name} options`}
+                onClick={openQuickView}
+              >
+                <span>{hasAvailableChoice() ? "Choose" : "Preview"}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="m9 6 6 6-6 6" />
                 </svg>
@@ -297,15 +303,18 @@ export default function ProductCard(props: ProductCardProps) {
               <div class={styles.quickViewBody}>
                 <span class={styles.quickViewSet}>{p.set ?? "Choose a format"}</span>
                 <h2 id={`quick-view-title-${p.id}`}>{p.name}</h2>
-                <p>Select the exact format before adding this product to your cart.</p>
+                <p>Compare printing, condition, language, and availability.</p>
 
                 <div class={styles.quickVariants}>
                   <For each={p.variants}>
                     {variant => (
                       <button
                         type="button"
-                        disabled={variant.stock <= 0}
-                        classList={{ [styles.quickVariantActive]: selectedVariantId() === variant.id }}
+                        aria-pressed={selectedVariantId() === variant.id}
+                        classList={{
+                          [styles.quickVariantActive]: selectedVariantId() === variant.id,
+                          [styles.quickVariantOut]: variant.stock <= 0,
+                        }}
                         onClick={() => setSelectedVariantId(variant.id)}
                       >
                         <span>
@@ -329,7 +338,11 @@ export default function ProductCard(props: ProductCardProps) {
                   disabled={!selectedVariant() || selectedVariant()!.stock <= 0}
                   onClick={confirmVariant}
                 >
-                  {selectedVariant() ? `Add ${selectedVariant()!.name} to cart` : "Choose a variant"}
+                  {selectedVariant()?.stock === 0
+                    ? "Out of stock"
+                    : selectedVariant()
+                      ? `Add ${selectedVariant()!.name} to cart`
+                      : "Choose a variant"}
                 </button>
                 <A href={p.href} class={styles.quickDetails}>View full product details</A>
               </div>

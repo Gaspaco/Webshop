@@ -384,7 +384,7 @@ export default function ProductDetail() {
   };
 
   const addMain = (item: ShopProduct) => {
-    if (item.priceCents === undefined) return;
+    if (item.priceCents === undefined || (item.stock ?? 0) <= 0) return;
 
     const selected = selectedVariant();
     const variantLabel = isSealedProduct(item)
@@ -567,7 +567,7 @@ export default function ProductDetail() {
                         </option>
                         <For each={item().variants}>
                           {variant => (
-                            <option value={variant.id} disabled={variant.stock <= 0}>
+                            <option value={variant.id}>
                               {variant.name}
                               {" · "}
                               {formatPrice(variant.priceCents)}
@@ -611,7 +611,7 @@ export default function ProductDetail() {
                       <button
                         type="button"
                         aria-label="Decrease quantity"
-                        disabled={quantity() === 1}
+                        disabled={quantity() === 1 || activeProduct()?.stock === 0}
                         onClick={() => setQuantity(value => Math.max(1, value - 1))}
                       >
                         −
@@ -620,6 +620,7 @@ export default function ProductDetail() {
                       <button
                         type="button"
                         aria-label="Increase quantity"
+                        disabled={activeProduct()?.stock === 0 || quantity() >= (activeProduct()?.stock ?? 0)}
                         onClick={() => setQuantity(value => Math.min(99, activeProduct()?.stock ?? 99, value + 1))}
                       >
                         +
@@ -652,7 +653,9 @@ export default function ProductDetail() {
                       >
                         {(item().variants?.length ?? 0) > 1 && !selectedVariant()
                           ? "Choose a variant"
-                          : "Add to cart"}
+                          : activeProduct()?.stock === 0
+                            ? "Out of stock"
+                            : "Add to cart"}
                       </Show>
                     </button>
                   </div>

@@ -509,6 +509,34 @@
   .card {
     width: min(19rem, 82vw);
   }
+
+  .card.cardFill {
+    width: 100%;
+  }
+
+  .cardBody {
+    min-height: 8.25rem;
+    padding: 0.75rem;
+  }
+
+  .cardFooter {
+    gap: 0.4rem;
+  }
+
+  .cardPrice {
+    font-size: 1rem;
+  }
+
+  .addBtn {
+    width: 2.75rem;
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+
+    > span {
+      display: none;
+    }
+  }
 }
 
 .quickViewBackdrop {
@@ -621,8 +649,7 @@
     color: $white;
     text-align: left;
 
-    &:hover:not(:disabled) { border-color: rgba($primary-light, 0.6); }
-    &:disabled { opacity: 0.42; cursor: not-allowed; }
+    &:hover { border-color: rgba($primary-light, 0.6); }
 
     > span {
       display: grid;
@@ -639,6 +666,10 @@
 .quickVariantActive {
   border-color: $primary !important;
   background: rgba($primary, 0.1);
+}
+
+.quickVariantOut {
+  > span:last-child small { color: #fca5a5; }
 }
 
 .quickAdd {

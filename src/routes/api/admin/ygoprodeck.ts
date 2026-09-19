@@ -57,6 +57,40 @@ async function uniqueSkus(candidates: string[]) {
   });
 }
 
+async function downloadCardImage(source: string | null) {
+  if (!source) return null;
+
+  try {
+    const url = new URL(source);
+    if (url.protocol !== "https:" || url.hostname !== "images.ygoprodeck.com") {
+      throw new Error("Unexpected YGOPRODeck image host.");
+    }
+
+    const response = await fetch(url, {
+      headers: { "User-Agent": "TCGHaven catalogue import (info@tcghaven.com)" },
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!response.ok) throw new Error(`Card image returned ${response.status}.`);
+
+    const contentType = response.headers.get("content-type")?.split(";")[0] ?? "";
+    if (!["image/jpeg", "image/png", "image/webp"].includes(contentType)) {
+      throw new Error("Card image returned an unsupported file type.");
+    }
+
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength > 850_000) {
+      throw new Error("Card image is larger than the catalogue image limit.");
+    }
+
+    return `data:${contentType};base64,${Buffer.from(bytes).toString("base64")}`;
+  } catch (error) {
+    // A missing fallback must not discard the card or its printings. Exact
+    // printing scans can still supply artwork for the variants that have one.
+    console.warn(`YGOPRODeck image unavailable for ${source}`, error);
+    return null;
+  }
+}
+
 async function searchResponse(
   cardRows: YugiohCardRow[],
   printingRows: YugiohPrintingRow[],
@@ -197,10 +231,12 @@ export async function POST(event: APIEvent) {
           imageStorageUrl: null,
           imageProvider: null,
         }];
-    const printingArtwork = variants
-      .map(preferredPrintingImage)
+    const genericArtwork = await downloadCardImage(card.imageSourceUrl);
+    const exactVariantArtwork = variants.map(preferredPrintingImage);
+    const variantArtwork = exactVariantArtwork.map(image => image ?? genericArtwork);
+    const printingArtwork = exactVariantArtwork
       .find((image): image is string => Boolean(image)) ?? null;
-    const productArtwork = printingArtwork;
+    const productArtwork = printingArtwork ?? genericArtwork;
     const skus = await uniqueSkus(
       variants.map((printing, index) =>
         skuFor(card.id, printing.setCode, printing.rarity, index),
@@ -233,7 +269,11 @@ export async function POST(event: APIEvent) {
             attack: card.attack,
             defense: card.defense,
             level: card.level,
-            printingImageProvider: printingArtwork ? "yugipedia" : null,
+            printingImageProvider: printingArtwork
+              ? "yugipedia"
+              : genericArtwork
+                ? "ygoprodeck"
+                : null,
           },
         })
         .returning({ id: products.id, name: products.name, slug: products.slug });
@@ -247,10 +287,9 @@ export async function POST(event: APIEvent) {
           condition: "Near Mint",
           language: "English",
           finish: printing.rarity,
-          // Yugipedia source files are exposed through our validated,
-          // first-party cache route; the storefront never receives the
-          // third-party URL directly.
-          imageUrl: preferredPrintingImage(printing),
+          // Prefer the exact printing scan. Every other printing receives the
+          // retained generic card image, including variants with zero stock.
+          imageUrl: variantArtwork[index] ?? null,
           isDefault: index === 0,
           priceCents: card.cardmarketPriceCents ?? 0,
           stock: 0,
@@ -271,7 +310,8 @@ export async function POST(event: APIEvent) {
         cardId: card.id,
         variants: variants.length,
         hasImage: Boolean(productArtwork),
-        printingImages: variants.filter(printing => Boolean(printing.imageStorageUrl)).length,
+        printingImages: exactVariantArtwork.filter(Boolean).length,
+        variantImages: variantArtwork.filter(Boolean).length,
       },
     });
 

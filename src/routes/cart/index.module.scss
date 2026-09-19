@@ -324,6 +324,81 @@
   }
 }
 
+@media (max-width: $bp-sm) {
+  .page {
+    padding-block: 1.5rem 3rem;
+  }
+
+  .heading {
+    margin-bottom: 1.25rem;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.875rem;
+    padding: 1rem;
+  }
+
+  .thumb {
+    width: 4.5rem;
+    height: 6rem;
+  }
+
+  .rowName {
+    overflow-wrap: anywhere;
+  }
+
+  .qtyBtn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .qtyValue {
+    min-width: 1.75rem;
+  }
+
+  .rowEnd {
+    align-items: flex-end;
+  }
+
+  .removeBtn {
+    width: 2.75rem;
+    height: 2.75rem;
+    justify-content: center;
+    overflow: hidden;
+    font-size: 0;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+
+  .summary {
+    position: static;
+  }
+}
+
+@media (max-width: 23rem) {
+  .row {
+    grid-template-columns: 4rem minmax(0, 1fr);
+  }
+
+  .thumb {
+    width: 4rem;
+    height: 5.5rem;
+  }
+
+  .rowEnd {
+    grid-column: 2;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .heading,
   .empty,
