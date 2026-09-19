@@ -51,8 +51,8 @@ bun scripts/sync-ygoprodeck.ts --download-only # download once without changing 
 ```
 
 The raw snapshot is stored in `.cache/ygoprodeck/cards.json` and is excluded
-from Git. Imported product images are downloaded once and stored with the
-product; storefront pages do not hotlink the YGOPRODeck image server.
+from Git. YGOPRODeck remains the local source for searchable card facts,
+prices, and known printings; new imports do not download its generic artwork.
 
 #### Optional printing-specific images
 
@@ -64,23 +64,27 @@ less than one request per second:
 ```bash
 bun run db:sync:yugioh-images --card="Dark Magician" --limit=1
 bun run db:sync:yugioh-images --set="Rarity Collection 5" --limit=20
+bun run db:sync:yugioh-images --catalogue --limit=500
+bun run db:sync:yugioh-images --catalogue --offset=250 --limit=250
 ```
 
-Those commands save source provenance only. They do not expose or hotlink the
-third-party scan. To optimize matched scans to WebP, upload them to the shop's
-R2 bucket, and make them available to subsequently imported variants, first
-obtain written permission covering commercial use, rehosting, and image
-optimization. Then configure the R2 variables, set
-`YUGIPEDIA_IMAGE_USE_AUTHORIZED=true`, and add `--upload`:
+Matched images are exposed through a validated same-origin route and cached at
+the CDN for 30 days. The sync also updates matching existing catalogue products
+and variants. The storefront never receives a Yugipedia source URL, and
+ambiguous set/rarity matches are skipped rather than guessed.
+
+Permanent optimized object storage is optional. To convert matched scans to
+WebP and upload them to the shop's R2 bucket, first obtain permission covering
+commercial use, rehosting, and image optimization. Then configure the R2
+variables, set `YUGIPEDIA_IMAGE_USE_AUTHORIZED=true`, and add `--upload`:
 
 ```bash
 bun run db:sync:yugioh-images --set="Rarity Collection 5" --limit=20 --upload
 ```
 
-The importer uses the owner-controlled R2 URL for each matching variant. A
-generic YGOPRODeck image and the CSS rarity material remain the fallback where
-Yugipedia has no exact scan. Existing products are not rewritten by the sync;
-re-import or update their variant artwork explicitly from the admin catalogue.
+When R2 is configured, the importer prefers the owner-controlled R2 URL. When
+it is not, it uses the same-origin cached route. Products for which Yugipedia
+has no exact scan keep their existing manually managed image.
 
 ## Railway
 
