@@ -14,21 +14,56 @@ export type HomeContent = {
   featuredProductSlugs?: string[];
 };
 
-export const getHomeData = query(async () => {
-  const [catalogRows, contentRows] = await Promise.all([
-    loadDatabaseCatalogRows({ available: true, limit: 5 }),
-    db
-      .select({ value: storefrontContent.value })
-      .from(storefrontContent)
-      .where(eq(storefrontContent.key, "home"))
-      .limit(1),
-  ]);
+const emptyHomeData = () => ({
+  catalog: { products: [], managedSlugs: [] },
+  content: {} as HomeContent,
+});
 
-  return {
-    catalog: databaseCatalogRowsToState(
-      catalogRows.products,
-      catalogRows.managedSlugs,
-    ),
-    content: (contentRows[0]?.value ?? {}) as HomeContent,
-  };
+export const getHomeData = query(async () => {
+  try {
+    const [catalogRows, contentRows] = await Promise.all([
+      loadDatabaseCatalogRows({
+        available: true,
+        limit: 5,
+        includeManagedSlugs: false,
+      }),
+      db
+        .select({ value: storefrontContent.value })
+        .from(storefrontContent)
+        .where(eq(storefrontContent.key, "home"))
+        .limit(1),
+    ]);
+
+    // The homepage only needs one buyable option per card. Full variation data
+    // remains available on catalogue and product pages. Replacing embedded data
+    // images with public image endpoints keeps the first HTML response small.
+    const seenProducts = new Set<string>();
+    const compactRows = catalogRows.products
+      .filter(row => row.stock > row.reservedStock)
+      .filter(row => {
+        if (seenProducts.has(row.id)) return false;
+        seenProducts.add(row.id);
+        return true;
+      })
+      .map(row => ({
+        ...row,
+        imageUrls: row.imageUrls.length
+          ? [`/api/catalog/image?product=${encodeURIComponent(row.id)}`]
+          : [],
+        variantImageUrl: row.variantImageUrl
+          ? `/api/catalog/image?variant=${encodeURIComponent(row.variantId)}`
+          : null,
+      }));
+
+    return {
+      catalog: databaseCatalogRowsToState(compactRows, []),
+      content: (contentRows[0]?.value ?? {}) as HomeContent,
+    };
+  } catch (error) {
+    console.error(
+      "Homepage data load failed; rendering the catalogue fallback.",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+    return emptyHomeData();
+  }
 }, "home-data");

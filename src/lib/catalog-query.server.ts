@@ -7,6 +7,7 @@ export type CatalogQueryOptions = {
   slug?: string;
   available?: boolean;
   limit?: number;
+  includeManagedSlugs?: boolean;
 };
 
 export async function loadDatabaseCatalogRows(
@@ -67,11 +68,13 @@ export async function loadDatabaseCatalogRows(
             asc(productVariants.createdAt),
           )
       : Promise.resolve([]),
-    db
-      .select({ slug: products.slug })
-      .from(products)
-      .where(productWhere)
-      .limit(options.slug ? 1 : 1000),
+    options.includeManagedSlugs === false
+      ? Promise.resolve([])
+      : db
+          .select({ slug: products.slug })
+          .from(products)
+          .where(productWhere)
+          .limit(options.slug ? 1 : 1000),
   ]);
 
   return {
