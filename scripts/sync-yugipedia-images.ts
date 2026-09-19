@@ -2,8 +2,9 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { and, asc, eq, ilike } from "drizzle-orm";
+import { and, asc, eq, ilike, inArray, sql } from "drizzle-orm";
 import sharp from "sharp";
+import { yugipediaPrintingImagePath } from "../src/lib/yugipedia-image";
 
 const API_URL = "https://yugipedia.com/api.php";
 const CACHE_ROOT = resolve(".cache/yugipedia");
@@ -47,16 +48,21 @@ const args = new Map(
 );
 const cardQuery = args.get("--card")?.trim();
 const setQuery = args.get("--set")?.trim();
+const catalogue = args.has("--catalogue");
 const upload = args.has("--upload");
 const refresh = args.has("--refresh");
 const requestedLimit = Number(args.get("--limit") ?? 10);
 const cardLimit = Number.isInteger(requestedLimit)
-  ? Math.max(1, Math.min(requestedLimit, 50))
+  ? Math.max(1, Math.min(requestedLimit, 500))
   : 10;
+const requestedOffset = Number(args.get("--offset") ?? 0);
+const cardOffset = Number.isInteger(requestedOffset)
+  ? Math.max(0, requestedOffset)
+  : 0;
 
-if (!cardQuery && !setQuery) {
+if (!cardQuery && !setQuery && !catalogue) {
   throw new Error(
-    "Choose a bounded sync: --card=\"Dark Magician\" or --set=\"Rarity Collection 5\". Use --limit=N (maximum 50).",
+    "Choose a bounded sync: --card=\"Dark Magician\", --set=\"Rarity Collection 5\", or --catalogue. Use --limit=N (maximum 500) and --offset=N.",
   );
 }
 
@@ -78,6 +84,10 @@ function safeCacheName(value: string) {
   return createHash("sha256").update(value).digest("hex");
 }
 
+function cachePath(namespace: string, key: string) {
+  return resolve(CACHE_ROOT, namespace, `${safeCacheName(key)}.json`);
+}
+
 async function fileIsFresh(path: string) {
   try {
     const details = await stat(path);
@@ -88,7 +98,7 @@ async function fileIsFresh(path: string) {
 }
 
 async function cachedJson<T>(namespace: string, key: string, load: () => Promise<T>) {
-  const path = resolve(CACHE_ROOT, namespace, `${safeCacheName(key)}.json`);
+  const path = cachePath(namespace, key);
   if (!refresh && await fileIsFresh(path)) {
     return JSON.parse(await readFile(path, "utf8")) as T;
   }
@@ -100,8 +110,6 @@ async function cachedJson<T>(namespace: string, key: string, load: () => Promise
 }
 
 async function apiRequest<T>(params: Record<string, string>) {
-  await waitForRequestSlot();
-
   const url = new URL(API_URL);
   for (const [key, value] of Object.entries({
     format: "json",
@@ -111,17 +119,42 @@ async function apiRequest<T>(params: Record<string, string>) {
     url.searchParams.set(key, value);
   }
 
-  const response = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      "User-Agent": USER_AGENT,
-    },
-    signal: AbortSignal.timeout(30_000),
-  });
-  if (!response.ok) {
-    throw new Error(`Yugipedia returned ${response.status}. The sync stopped without retrying.`);
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await waitForRequestSlot();
+    try {
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": USER_AGENT,
+        },
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (response.ok) return await response.json() as T;
+
+      const temporary = response.status === 429 || response.status >= 500;
+      if (!temporary || attempt === 3) {
+        throw new Error(`Yugipedia returned ${response.status}.`);
+      }
+
+      const retryAfter = Number(response.headers.get("retry-after") ?? 0) * 1_000;
+      const backoff = Math.max(retryAfter, 2_000 * 2 ** attempt);
+      console.warn(
+        `Yugipedia returned ${response.status}; retrying in ${Math.ceil(backoff / 1_000)}s.`,
+      );
+      await new Promise(resolveDelay => setTimeout(resolveDelay, backoff));
+    } catch (error) {
+      if (attempt === 3 || (error instanceof Error && error.message.startsWith("Yugipedia returned"))) {
+        throw error;
+      }
+      const backoff = 2_000 * 2 ** attempt;
+      console.warn(
+        `Yugipedia request failed; retrying in ${Math.ceil(backoff / 1_000)}s.`,
+      );
+      await new Promise(resolveDelay => setTimeout(resolveDelay, backoff));
+    }
   }
-  return await response.json() as T;
+
+  throw new Error("Yugipedia request failed after four attempts.");
 }
 
 async function cardImageFileNames(cardName: string) {
@@ -151,8 +184,36 @@ async function cardImageFileNames(cardName: string) {
   return singleImage ? [singleImage] : [];
 }
 
-async function imageInfo(fileName: string) {
-  return cachedJson<ImageInfo | null>("files", fileName, async () => {
+function chunks<T>(values: T[], size: number) {
+  const result: T[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    result.push(values.slice(index, index + size));
+  }
+  return result;
+}
+
+function normalizedFileName(value: string) {
+  return value
+    .replace(/^File:/i, "")
+    .replace(/_/g, " ")
+    .trim()
+    .toLocaleLowerCase("en");
+}
+
+async function imageInfoBatch(fileNames: string[]) {
+  const result = new Map<string, ImageInfo | null>();
+  const missing: string[] = [];
+
+  for (const fileName of [...new Set(fileNames)]) {
+    const path = cachePath("files", fileName);
+    if (!refresh && await fileIsFresh(path)) {
+      result.set(fileName, JSON.parse(await readFile(path, "utf8")) as ImageInfo | null);
+    } else {
+      missing.push(fileName);
+    }
+  }
+
+  for (const batch of chunks(missing, 50)) {
     const payload = await apiRequest<{
       query?: { pages?: Array<{
         title: string;
@@ -170,21 +231,34 @@ async function imageInfo(fileName: string) {
       prop: "imageinfo|info",
       inprop: "url",
       iiprop: "url|mime|size",
-      titles: `File:${fileName}`,
+      titles: batch.map(fileName => `File:${fileName}`).join("|"),
     });
-    const page = payload.query?.pages?.[0];
-    const info = page?.imageinfo?.[0];
-    if (!page?.fullurl || !info?.url || !info.mime?.startsWith("image/")) return null;
-    return {
-      fileName,
-      sourceUrl: info.url,
-      sourcePageUrl: page.fullurl,
-      mime: info.mime,
-      width: info.width ?? 0,
-      height: info.height ?? 0,
-      size: info.size ?? 0,
-    };
-  });
+    const pages = new Map(
+      (payload.query?.pages ?? []).map(page => [normalizedFileName(page.title), page]),
+    );
+
+    for (const fileName of batch) {
+      const page = pages.get(normalizedFileName(fileName));
+      const info = page?.imageinfo?.[0];
+      const value = page?.fullurl && info?.url && info.mime?.startsWith("image/")
+        ? {
+            fileName,
+            sourceUrl: info.url,
+            sourcePageUrl: page.fullurl,
+            mime: info.mime,
+            width: info.width ?? 0,
+            height: info.height ?? 0,
+            size: info.size ?? 0,
+          }
+        : null;
+      const path = cachePath("files", fileName);
+      await mkdir(dirname(path), { recursive: true });
+      await writeFile(path, JSON.stringify(value), "utf8");
+      result.set(fileName, value);
+    }
+  }
+
+  return result;
 }
 
 function setToken(setCode: string) {
@@ -302,7 +376,20 @@ const [{ db }, schema] = await Promise.all([
   import("../src/db/index"),
   import("../src/db/schema"),
 ]);
-const { yugiohCards, yugiohPrintings } = schema;
+const { productVariants, products, yugiohCards, yugiohPrintings } = schema;
+
+const catalogueCardIds = catalogue
+  ? (await db
+      .select({ metadata: products.metadata })
+      .from(products)
+      .where(sql`${products.metadata}->>'source' = 'ygoprodeck'`))
+      .map(row => Number(row.metadata.sourceCardId))
+      .filter((value): value is number => Number.isInteger(value) && value > 0)
+  : [];
+
+if (catalogue && !catalogueCardIds.length) {
+  throw new Error("No imported Yu-Gi-Oh catalogue products were found.");
+}
 
 const rows = await db
   .select({
@@ -318,12 +405,17 @@ const rows = await db
   .where(and(
     cardQuery ? ilike(yugiohCards.name, `%${cardQuery}%`) : undefined,
     setQuery ? ilike(yugiohPrintings.setName, `%${setQuery}%`) : undefined,
+    catalogue ? inArray(yugiohPrintings.cardId, catalogueCardIds) : undefined,
   ))
   .orderBy(asc(yugiohCards.name), asc(yugiohPrintings.setName), asc(yugiohPrintings.rarity));
 
+const encounteredCardIds = new Set<number>();
 const selectedCardIds = new Set<number>();
 const selected = rows.filter(row => {
   if (selectedCardIds.has(row.cardId)) return true;
+  if (encounteredCardIds.has(row.cardId)) return false;
+  encounteredCardIds.add(row.cardId);
+  if (encounteredCardIds.size <= cardOffset) return false;
   if (selectedCardIds.size >= cardLimit) return false;
   selectedCardIds.add(row.cardId);
   return true;
@@ -341,24 +433,74 @@ for (const row of selected) {
 let matched = 0;
 let uploaded = 0;
 let unmatched = 0;
+let updatedProducts = 0;
+
+type MatchedPrinting = Printing & { storefrontUrl: string };
+
+async function updateCatalogueProduct(
+  cardId: number,
+  matchedPrintings: MatchedPrinting[],
+) {
+  if (!matchedPrintings.length) return false;
+
+  const [product] = await db
+    .select({
+      id: products.id,
+      metadata: products.metadata,
+    })
+    .from(products)
+    .where(sql`${products.metadata}->>'sourceCardId' = ${String(cardId)}`)
+    .limit(1);
+  if (!product) return false;
+
+  for (const printing of matchedPrintings) {
+    await db
+      .update(productVariants)
+      .set({ imageUrl: printing.storefrontUrl })
+      .where(and(
+        eq(productVariants.productId, product.id),
+        eq(
+          productVariants.name,
+          `${printing.setName} · ${printing.rarity}`.slice(0, 120),
+        ),
+      ));
+  }
+
+  await db
+    .update(products)
+    .set({
+      imageUrls: [matchedPrintings[0]!.storefrontUrl],
+      metadata: {
+        ...product.metadata,
+        imageProvider: "yugipedia",
+        printingImageProvider: "yugipedia",
+      },
+    })
+    .where(eq(products.id, product.id));
+  return true;
+}
 
 for (const printings of byCard.values()) {
   const cardName = printings[0]!.cardName;
   const fileNames = await cardImageFileNames(cardName);
-  const infoByFile = new Map<string, ImageInfo | null>();
+  const matchedFiles = printings.map(printing => ({
+    printing,
+    fileName: matchFile(printing, fileNames),
+  }));
+  const infoByFile = await imageInfoBatch(
+    matchedFiles
+      .map(match => match.fileName)
+      .filter((value): value is string => Boolean(value)),
+  );
+  const catalogueMatches: MatchedPrinting[] = [];
 
-  for (const printing of printings) {
-    const fileName = matchFile(printing, fileNames);
+  for (const { printing, fileName } of matchedFiles) {
     if (!fileName) {
       unmatched += 1;
       continue;
     }
 
-    let info = infoByFile.get(fileName);
-    if (info === undefined) {
-      info = await imageInfo(fileName);
-      infoByFile.set(fileName, info);
-    }
+    const info = infoByFile.get(fileName);
     if (!info) {
       unmatched += 1;
       continue;
@@ -378,16 +520,24 @@ for (const printings of byCard.values()) {
       .where(eq(yugiohPrintings.id, printing.id));
     matched += 1;
     if (storageUrl) uploaded += 1;
+    catalogueMatches.push({
+      ...printing,
+      storefrontUrl: storageUrl ?? yugipediaPrintingImagePath(printing.id),
+    });
+  }
+
+  if (await updateCatalogueProduct(printings[0]!.cardId, catalogueMatches)) {
+    updatedProducts += 1;
   }
 
   console.log(`${cardName}: ${fileNames.length} curated scan${fileNames.length === 1 ? "" : "s"} inspected.`);
 }
 
 console.log(
-  `Yugipedia enrichment complete: ${matched} printing matches, ${uploaded} optimized R2 uploads, ${unmatched} unmatched printings.`,
+  `Yugipedia enrichment complete: ${matched} printing matches, ${uploaded} optimized R2 uploads, ${updatedProducts} catalogue products updated, ${unmatched} unmatched printings.`,
 );
 if (!upload) {
   console.log(
-    "Discovery only: source provenance was saved, but storefront images were not changed. Use --upload only after permission and R2 are configured.",
+    "Images are served through the first-party 30-day cache route. Configure authorized R2 upload later for permanent object storage.",
   );
 }

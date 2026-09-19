@@ -9,6 +9,7 @@ import {
   yugiohPrintings,
 } from "~/db/schema";
 import { apiJson, requireAdmin, toSlug, writeAuditLog } from "~/lib/admin.server";
+import { preferredPrintingImage } from "~/lib/yugipedia-image";
 
 const importCardSchema = z.object({ cardId: z.number().int().positive() });
 
@@ -54,37 +55,6 @@ async function uniqueSkus(candidates: string[]) {
     taken.add(sku);
     return sku;
   });
-}
-
-async function downloadCardImage(source: string | null) {
-  if (!source) return null;
-
-  try {
-    const url = new URL(source);
-    if (url.protocol !== "https:" || url.hostname !== "images.ygoprodeck.com") {
-      throw new Error("Unexpected YGOPRODeck image host.");
-    }
-
-    const response = await fetch(url, {
-      headers: { "User-Agent": "TCGHaven catalogue import (info@tcghaven.com)" },
-      signal: AbortSignal.timeout(20_000),
-    });
-    if (!response.ok) throw new Error(`Card image returned ${response.status}.`);
-    const contentType = response.headers.get("content-type")?.split(";")[0] ?? "";
-    if (!["image/jpeg", "image/png", "image/webp"].includes(contentType)) {
-      throw new Error("Card image returned an unsupported file type.");
-    }
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.byteLength > 850_000) {
-      throw new Error("Card image is larger than the catalogue image limit.");
-    }
-    return `data:${contentType};base64,${Buffer.from(bytes).toString("base64")}`;
-  } catch (error) {
-    // The artwork is a nice-to-have, not a reason to lose the card. The import
-    // reports the miss so the admin can add an image on the draft.
-    console.warn(`YGOPRODeck image unavailable for ${source}`, error);
-    return null;
-  }
 }
 
 async function searchResponse(
@@ -215,7 +185,6 @@ export async function POST(event: APIEvent) {
       .from(yugiohPrintings)
       .where(eq(yugiohPrintings.cardId, card.id))
       .orderBy(asc(yugiohPrintings.setName), asc(yugiohPrintings.rarity));
-    const image = await downloadCardImage(card.imageSourceUrl);
     const variants = printings.length
       ? printings
       : [{
@@ -223,11 +192,15 @@ export async function POST(event: APIEvent) {
           setCode: String(card.id),
           rarity: "Unspecified",
           rarityCode: null,
+          id: crypto.randomUUID(),
+          imageSourceUrl: null,
           imageStorageUrl: null,
           imageProvider: null,
         }];
-    const printingArtwork = variants.find(printing => printing.imageStorageUrl)?.imageStorageUrl ?? null;
-    const productArtwork = printingArtwork ?? image;
+    const printingArtwork = variants
+      .map(preferredPrintingImage)
+      .find((image): image is string => Boolean(image)) ?? null;
+    const productArtwork = printingArtwork;
     const skus = await uniqueSkus(
       variants.map((printing, index) =>
         skuFor(card.id, printing.setCode, printing.rarity, index),
@@ -274,9 +247,10 @@ export async function POST(event: APIEvent) {
           condition: "Near Mint",
           language: "English",
           finish: printing.rarity,
-          // Only owner-controlled cached URLs reach the storefront. The
-          // Yugipedia source URL remains provenance and is never hotlinked.
-          imageUrl: printing.imageStorageUrl ?? null,
+          // Yugipedia source files are exposed through our validated,
+          // first-party cache route; the storefront never receives the
+          // third-party URL directly.
+          imageUrl: preferredPrintingImage(printing),
           isDefault: index === 0,
           priceCents: card.cardmarketPriceCents ?? 0,
           stock: 0,
