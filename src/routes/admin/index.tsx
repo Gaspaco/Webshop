@@ -229,6 +229,20 @@ type YugiohCard = {
   printings: YugiohPrinting[];
 };
 
+type MagicCard = {
+  id: string;
+  scryfallId: string;
+  name: string;
+  typeLine: string;
+  manaCost: string;
+  setName: string;
+  setCode: string;
+  rarity: string;
+  image: string | null;
+  referencePriceCents: number;
+  importedStatus: "draft" | "active" | "archived" | null;
+};
+
 type AdminDashboard = {
   owner: { id: string; name: string; email: string; image: string | null };
   metrics: {
@@ -2810,6 +2824,16 @@ export default function Admin() {
   const [yugiohSelected, setYugiohSelected] = createSignal<Set<number>>(new Set());
   const [yugiohBulkRunning, setYugiohBulkRunning] = createSignal(false);
   let yugiohSearchController: AbortController | undefined;
+  const [magicQuery, setMagicQuery] = createSignal("");
+  const [magicSearchBy, setMagicSearchBy] = createSignal<"card" | "set">("card");
+  const [magicMatchedSets, setMagicMatchedSets] = createSignal<string[]>([]);
+  const [magicCards, setMagicCards] = createSignal<MagicCard[]>([]);
+  const [magicSearching, setMagicSearching] = createSignal(false);
+  const [magicImporting, setMagicImporting] = createSignal<Set<string>>(new Set());
+  const [magicMessage, setMagicMessage] = createSignal("");
+  const [magicSelected, setMagicSelected] = createSignal<Set<string>>(new Set());
+  const [magicBulkRunning, setMagicBulkRunning] = createSignal(false);
+  let magicSearchController: AbortController | undefined;
   let imageInput: HTMLInputElement | undefined;
   const [selectedVariantIds, setSelectedVariantIds] = createSignal<Set<string>>(
     new Set(),
@@ -3282,6 +3306,162 @@ export default function Admin() {
       await refetch();
     } finally {
       setYugiohImporting(previous => {
+        const next = new Set(previous);
+        next.delete(card.id);
+        return next;
+      });
+    }
+  };
+
+  const searchMagicCards = async (event: SubmitEvent) => {
+    event.preventDefault();
+    magicSearchController?.abort();
+    const controller = new AbortController();
+    magicSearchController = controller;
+    setMagicSearching(true);
+    setMagicMessage("");
+    setMagicSelected(new Set<string>());
+    try {
+      const response = await fetch(
+        `/api/admin/scryfall?by=${magicSearchBy()}&q=${encodeURIComponent(magicQuery().trim())}`,
+        {
+          credentials: "same-origin",
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
+        },
+      );
+      const result = (await response.json().catch(() => ({}))) as {
+        cards?: MagicCard[];
+        matchedSets?: string[];
+        error?: string;
+      };
+      if (!response.ok) {
+        setMagicMessage(result.error ?? "Scryfall could not be searched.");
+        return;
+      }
+      setMagicCards(result.cards ?? []);
+      setMagicMatchedSets(result.matchedSets ?? []);
+      if (!result.cards?.length) setMagicMessage("No matching Magic cards found.");
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        setMagicMessage("Scryfall could not be searched.");
+      }
+    } finally {
+      if (magicSearchController === controller) setMagicSearching(false);
+    }
+  };
+
+  const importMagicCard = async (card: MagicCard) => {
+    const response = await fetch("/api/admin/scryfall", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ oracleId: card.id }),
+    });
+    const result = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      printings?: number;
+      variants?: number;
+      hasImage?: boolean;
+    };
+    if (response.ok) {
+      setMagicCards(cards => cards.map(item =>
+        item.id === card.id ? { ...item, importedStatus: "draft" } : item,
+      ));
+    }
+    return { ok: response.ok, ...result };
+  };
+
+  const selectableMagicCards = () =>
+    magicCards().filter(card => !card.importedStatus);
+
+  const toggleMagicSelected = (cardId: string) => {
+    setMagicSelected(previous => {
+      const next = new Set(previous);
+      if (next.has(cardId)) next.delete(cardId);
+      else next.add(cardId);
+      return next;
+    });
+  };
+
+  const toggleAllMagicSelected = () => {
+    const selectable = selectableMagicCards();
+    setMagicSelected(previous =>
+      previous.size === selectable.length
+        ? new Set<string>()
+        : new Set<string>(selectable.map(card => card.id)),
+    );
+  };
+
+  const runMagicBulkImport = async (chosen: MagicCard[]) => {
+    if (!chosen.length) return;
+    setMagicBulkRunning(true);
+    setMagicMessage(`Adding ${chosen.length} Magic cards...`);
+
+    let added = 0;
+    let variants = 0;
+    const failed: string[] = [];
+
+    for (const [index, card] of chosen.entries()) {
+      setMagicMessage(`Adding ${index + 1} of ${chosen.length}: ${card.name}`);
+      setMagicImporting(previous => new Set(previous).add(card.id));
+      try {
+        const result = await importMagicCard(card);
+        if (result.ok) {
+          added += 1;
+          variants += result.variants ?? 0;
+        } else {
+          failed.push(`${card.name} (${result.error ?? "failed"})`);
+        }
+      } catch {
+        failed.push(`${card.name} (network error)`);
+      } finally {
+        setMagicImporting(previous => {
+          const next = new Set(previous);
+          next.delete(card.id);
+          return next;
+        });
+      }
+    }
+
+    setMagicSelected(new Set<string>());
+    setMagicBulkRunning(false);
+    setMagicMessage(
+      [
+        `Added ${added} of ${chosen.length} cards as drafts with ${variants} variants.`,
+        failed.length ? `Skipped: ${failed.slice(0, 3).join("; ")}${failed.length > 3 ? ` and ${failed.length - 3} more` : ""}.` : "",
+      ].filter(Boolean).join(" "),
+    );
+    await refetch();
+  };
+
+  const addSelectedMagicCards = () =>
+    runMagicBulkImport(
+      magicCards().filter(card => magicSelected().has(card.id)),
+    );
+
+  const addAllMagicResults = () =>
+    runMagicBulkImport(selectableMagicCards());
+
+  const addMagicCard = async (card: MagicCard) => {
+    setMagicImporting(previous => new Set(previous).add(card.id));
+    setMagicMessage("");
+    try {
+      const result = await importMagicCard(card);
+      if (!result.ok) {
+        setMagicMessage(result.error ?? "The Magic card could not be added.");
+        return;
+      }
+      setMagicMessage(
+        `${card.name} added as a draft with ${result.printings ?? 0} printings and ${result.variants ?? 0} zero-stock variants.${
+          result.hasImage === false ? " No artwork was available, so add an image before publishing." : ""
+        }`,
+      );
+      await refetch();
+    } catch {
+      setMagicMessage("The Magic card could not be added. Check your connection and try again.");
+    } finally {
+      setMagicImporting(previous => {
         const next = new Set(previous);
         next.delete(card.id);
         return next;
@@ -4374,6 +4554,150 @@ export default function Admin() {
                                 {card.importedStatus
                                   ? card.importedStatus === "active" ? "Live" : "Already added"
                                   : yugiohImporting().has(card.id) ? "Adding card" : "Add as draft"}
+                              </button>
+                            </article>
+                          )}
+                        </For>
+                      </div>
+                    </Show>
+                  </section>
+
+                  <section class={styles.yugiohLibrary}>
+                    <div class={styles.yugiohLibraryHead}>
+                      <div>
+                        <h2>Magic card library</h2>
+                        <p>
+                          Search Scryfall by card or set. Each card is saved as a private draft with every paper printing and finish, including artwork for zero-stock variants.
+                        </p>
+                      </div>
+                      <span>Live Scryfall data</span>
+                    </div>
+
+                    <form class={styles.yugiohSearch} onSubmit={searchMagicCards}>
+                      <label class={styles.yugiohSearchMode}>
+                        <span>Search by</span>
+                        <select
+                          value={magicSearchBy()}
+                          onChange={event => {
+                            setMagicSearchBy(event.currentTarget.value as "card" | "set");
+                            setMagicCards([]);
+                            setMagicMatchedSets([]);
+                            setMagicSelected(new Set<string>());
+                            setMagicMessage("");
+                          }}
+                        >
+                          <option value="card">Card name</option>
+                          <option value="set">Set name</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span>{magicSearchBy() === "set" ? "Set name or code" : "Card name"}</span>
+                        <input
+                          type="search"
+                          value={magicQuery()}
+                          onInput={event => setMagicQuery(event.currentTarget.value)}
+                          placeholder={magicSearchBy() === "set"
+                            ? "Wilds of Eldraine, WOE"
+                            : "Black Lotus, Sol Ring, Llanowar Elves"}
+                        />
+                      </label>
+                      <button type="submit" disabled={magicSearching()}>
+                        {magicSearching()
+                          ? "Searching"
+                          : magicSearchBy() === "set" ? "Find set" : "Find cards"}
+                      </button>
+                    </form>
+
+                    <Show when={magicMatchedSets().length}>
+                      <p class={styles.yugiohSetMatch}>
+                        Set{magicMatchedSets().length === 1 ? "" : "s"}: {magicMatchedSets().join(", ")}
+                      </p>
+                    </Show>
+
+                    <Show when={magicMessage()}>
+                      <p class={styles.importMessage} role="status">{magicMessage()}</p>
+                    </Show>
+
+                    <Show when={selectableMagicCards().length}>
+                      <div class={styles.yugiohBulkBar}>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={
+                              magicSelected().size > 0 &&
+                              magicSelected().size === selectableMagicCards().length
+                            }
+                            onChange={toggleAllMagicSelected}
+                          />
+                          <span>Select all {selectableMagicCards().length}</span>
+                        </label>
+                        <button
+                          type="button"
+                          disabled={
+                            magicBulkRunning() ||
+                            (!magicSelected().size && magicSearchBy() !== "set")
+                          }
+                          onClick={() => {
+                            if (magicSelected().size) void addSelectedMagicCards();
+                            else void addAllMagicResults();
+                          }}
+                        >
+                          {magicBulkRunning()
+                            ? "Adding cards..."
+                            : magicSelected().size
+                              ? `Import ${magicSelected().size} selected as drafts`
+                              : magicSearchBy() === "set"
+                                ? `Import all ${selectableMagicCards().length} cards as drafts`
+                                : "Select cards to import"}
+                        </button>
+                      </div>
+                    </Show>
+
+                    <Show when={magicCards().length}>
+                      <div class={styles.yugiohResults}>
+                        <For each={magicCards()}>
+                          {card => (
+                            <article classList={{ [styles.yugiohRowPicked]: magicSelected().has(card.id) }}>
+                              <div class={styles.magicCardVisual}>
+                                <Show
+                                  when={card.image}
+                                  fallback={<span>{card.setCode}</span>}
+                                >
+                                  {image => <img src={image()} alt="" loading="lazy" />}
+                                </Show>
+                                <Show when={!card.importedStatus}>
+                                  <label class={styles.magicCardPick}>
+                                    <input
+                                      type="checkbox"
+                                      checked={magicSelected().has(card.id)}
+                                      disabled={magicBulkRunning()}
+                                      onChange={() => toggleMagicSelected(card.id)}
+                                      aria-label={`Select ${card.name}`}
+                                    />
+                                  </label>
+                                </Show>
+                              </div>
+                              <div class={styles.yugiohCardInfo}>
+                                <strong>{card.name}</strong>
+                                <span>{[card.typeLine, card.manaCost].filter(Boolean).join(" · ")}</span>
+                                <small>{card.setName} ({card.setCode}) · {card.rarity}</small>
+                              </div>
+                              <div class={styles.yugiohCardPrice}>
+                                <span>Reference</span>
+                                <strong>
+                                  {card.referencePriceCents
+                                    ? formatMoney(card.referencePriceCents)
+                                    : "No EUR price"}
+                                </strong>
+                              </div>
+                              <button
+                                type="button"
+                                disabled={Boolean(card.importedStatus) || magicImporting().has(card.id)}
+                                onClick={() => void addMagicCard(card)}
+                              >
+                                {card.importedStatus
+                                  ? card.importedStatus === "active" ? "Live" : "Already added"
+                                  : magicImporting().has(card.id) ? "Adding card" : "Add as draft"}
                               </button>
                             </article>
                           )}
