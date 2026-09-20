@@ -243,6 +243,16 @@ type MagicCard = {
   importedStatus: "draft" | "active" | "archived" | null;
 };
 
+type PokemonCard = {
+  id: string;
+  name: string;
+  localId: string;
+  setName: string;
+  setCode: string;
+  image: string | null;
+  importedStatus: "draft" | "active" | "archived" | null;
+};
+
 type AdminDashboard = {
   owner: { id: string; name: string; email: string; image: string | null };
   metrics: {
@@ -2824,6 +2834,16 @@ export default function Admin() {
   const [yugiohSelected, setYugiohSelected] = createSignal<Set<number>>(new Set());
   const [yugiohBulkRunning, setYugiohBulkRunning] = createSignal(false);
   let yugiohSearchController: AbortController | undefined;
+  const [pokemonQuery, setPokemonQuery] = createSignal("");
+  const [pokemonSearchBy, setPokemonSearchBy] = createSignal<"card" | "set">("card");
+  const [pokemonMatchedSets, setPokemonMatchedSets] = createSignal<string[]>([]);
+  const [pokemonCards, setPokemonCards] = createSignal<PokemonCard[]>([]);
+  const [pokemonSearching, setPokemonSearching] = createSignal(false);
+  const [pokemonImporting, setPokemonImporting] = createSignal<Set<string>>(new Set());
+  const [pokemonMessage, setPokemonMessage] = createSignal("");
+  const [pokemonSelected, setPokemonSelected] = createSignal<Set<string>>(new Set());
+  const [pokemonBulkRunning, setPokemonBulkRunning] = createSignal(false);
+  let pokemonSearchController: AbortController | undefined;
   const [magicQuery, setMagicQuery] = createSignal("");
   const [magicSearchBy, setMagicSearchBy] = createSignal<"card" | "set">("card");
   const [magicMatchedSets, setMagicMatchedSets] = createSignal<string[]>([]);
@@ -3306,6 +3326,161 @@ export default function Admin() {
       await refetch();
     } finally {
       setYugiohImporting(previous => {
+        const next = new Set(previous);
+        next.delete(card.id);
+        return next;
+      });
+    }
+  };
+
+  const searchPokemonCards = async (event: SubmitEvent) => {
+    event.preventDefault();
+    pokemonSearchController?.abort();
+    const controller = new AbortController();
+    pokemonSearchController = controller;
+    setPokemonSearching(true);
+    setPokemonMessage("");
+    setPokemonSelected(new Set<string>());
+    try {
+      const response = await fetch(
+        `/api/admin/tcgdex?by=${pokemonSearchBy()}&q=${encodeURIComponent(pokemonQuery().trim())}`,
+        {
+          credentials: "same-origin",
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
+        },
+      );
+      const result = (await response.json().catch(() => ({}))) as {
+        cards?: PokemonCard[];
+        matchedSets?: string[];
+        error?: string;
+      };
+      if (!response.ok) {
+        setPokemonMessage(result.error ?? "The Pokémon card library could not be searched.");
+        return;
+      }
+      setPokemonCards(result.cards ?? []);
+      setPokemonMatchedSets(result.matchedSets ?? []);
+      if (!result.cards?.length) setPokemonMessage("No matching Pokémon cards found.");
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        setPokemonMessage("The Pokémon card library could not be searched.");
+      }
+    } finally {
+      if (pokemonSearchController === controller) setPokemonSearching(false);
+    }
+  };
+
+  const importPokemonCard = async (card: PokemonCard) => {
+    const response = await fetch("/api/admin/tcgdex", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cardId: card.id }),
+    });
+    const result = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      variants?: number;
+      hasImage?: boolean;
+    };
+    if (response.ok) {
+      setPokemonCards(cards => cards.map(item =>
+        item.id === card.id ? { ...item, importedStatus: "draft" } : item,
+      ));
+    }
+    return { ok: response.ok, ...result };
+  };
+
+  const selectablePokemonCards = () =>
+    pokemonCards().filter(card => !card.importedStatus);
+
+  const togglePokemonSelected = (cardId: string) => {
+    setPokemonSelected(previous => {
+      const next = new Set(previous);
+      if (next.has(cardId)) next.delete(cardId);
+      else next.add(cardId);
+      return next;
+    });
+  };
+
+  const toggleAllPokemonSelected = () => {
+    const selectable = selectablePokemonCards();
+    setPokemonSelected(previous =>
+      previous.size === selectable.length
+        ? new Set<string>()
+        : new Set<string>(selectable.map(card => card.id)),
+    );
+  };
+
+  const runPokemonBulkImport = async (chosen: PokemonCard[]) => {
+    if (!chosen.length) return;
+    setPokemonBulkRunning(true);
+    setPokemonMessage(`Adding ${chosen.length} Pokémon cards...`);
+
+    let added = 0;
+    let variants = 0;
+    const failed: string[] = [];
+
+    for (const [index, card] of chosen.entries()) {
+      setPokemonMessage(`Adding ${index + 1} of ${chosen.length}: ${card.name}`);
+      setPokemonImporting(previous => new Set(previous).add(card.id));
+      try {
+        const result = await importPokemonCard(card);
+        if (result.ok) {
+          added += 1;
+          variants += result.variants ?? 0;
+        } else {
+          failed.push(`${card.name} (${result.error ?? "failed"})`);
+        }
+      } catch {
+        failed.push(`${card.name} (network error)`);
+      } finally {
+        setPokemonImporting(previous => {
+          const next = new Set(previous);
+          next.delete(card.id);
+          return next;
+        });
+      }
+    }
+
+    setPokemonSelected(new Set<string>());
+    setPokemonBulkRunning(false);
+    setPokemonMessage(
+      [
+        `Added ${added} of ${chosen.length} cards as drafts with ${variants} variants.`,
+        failed.length ? `Skipped: ${failed.slice(0, 3).join("; ")}${failed.length > 3 ? ` and ${failed.length - 3} more` : ""}.` : "",
+      ].filter(Boolean).join(" "),
+    );
+    await refetch();
+  };
+
+  const addSelectedPokemonCards = () =>
+    runPokemonBulkImport(
+      pokemonCards().filter(card => pokemonSelected().has(card.id)),
+    );
+
+  const addAllPokemonResults = () =>
+    runPokemonBulkImport(selectablePokemonCards());
+
+  const addPokemonCard = async (card: PokemonCard) => {
+    setPokemonImporting(previous => new Set(previous).add(card.id));
+    setPokemonMessage("");
+    try {
+      const result = await importPokemonCard(card);
+      if (!result.ok) {
+        setPokemonMessage(result.error ?? "The Pokémon card could not be added.");
+        return;
+      }
+      setPokemonMessage(
+        `${card.name} from ${card.setName} added as a draft with ${result.variants ?? 0} zero-stock variants.${
+          result.hasImage === false ? " No artwork was available, so add an image before publishing." : ""
+        }`,
+      );
+      await refetch();
+    } catch {
+      setPokemonMessage("The Pokémon card could not be added. Check your connection and try again.");
+    } finally {
+      setPokemonImporting(previous => {
         const next = new Set(previous);
         next.delete(card.id);
         return next;
@@ -4554,6 +4729,146 @@ export default function Admin() {
                                 {card.importedStatus
                                   ? card.importedStatus === "active" ? "Live" : "Already added"
                                   : yugiohImporting().has(card.id) ? "Adding card" : "Add as draft"}
+                              </button>
+                            </article>
+                          )}
+                        </For>
+                      </div>
+                    </Show>
+                  </section>
+
+                  <section class={styles.yugiohLibrary}>
+                    <div class={styles.yugiohLibraryHead}>
+                      <div>
+                        <h2>Pokémon card library</h2>
+                        <p>
+                          Search TCGdex by card or set. Each printing becomes a private draft with its normal, reverse-holo, holo, promo, and first-edition variants at zero stock.
+                        </p>
+                      </div>
+                      <span>Live TCGdex data</span>
+                    </div>
+
+                    <form class={styles.yugiohSearch} onSubmit={searchPokemonCards}>
+                      <label class={styles.yugiohSearchMode}>
+                        <span>Search by</span>
+                        <select
+                          value={pokemonSearchBy()}
+                          onChange={event => {
+                            setPokemonSearchBy(event.currentTarget.value as "card" | "set");
+                            setPokemonCards([]);
+                            setPokemonMatchedSets([]);
+                            setPokemonSelected(new Set<string>());
+                            setPokemonMessage("");
+                          }}
+                        >
+                          <option value="card">Card name</option>
+                          <option value="set">Set name</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span>{pokemonSearchBy() === "set" ? "Set name" : "Card name"}</span>
+                        <input
+                          type="search"
+                          value={pokemonQuery()}
+                          onInput={event => setPokemonQuery(event.currentTarget.value)}
+                          placeholder={pokemonSearchBy() === "set"
+                            ? "Obsidian Flames, 151"
+                            : "Charizard, Pikachu, Umbreon"}
+                        />
+                      </label>
+                      <button type="submit" disabled={pokemonSearching()}>
+                        {pokemonSearching()
+                          ? "Searching"
+                          : pokemonSearchBy() === "set" ? "Find set" : "Find cards"}
+                      </button>
+                    </form>
+
+                    <Show when={pokemonMatchedSets().length}>
+                      <p class={styles.yugiohSetMatch}>
+                        Set{pokemonMatchedSets().length === 1 ? "" : "s"}: {pokemonMatchedSets().join(", ")}
+                      </p>
+                    </Show>
+
+                    <Show when={pokemonMessage()}>
+                      <p class={styles.importMessage} role="status">{pokemonMessage()}</p>
+                    </Show>
+
+                    <Show when={selectablePokemonCards().length}>
+                      <div class={styles.yugiohBulkBar}>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={
+                              pokemonSelected().size > 0 &&
+                              pokemonSelected().size === selectablePokemonCards().length
+                            }
+                            onChange={toggleAllPokemonSelected}
+                          />
+                          <span>Select all {selectablePokemonCards().length}</span>
+                        </label>
+                        <button
+                          type="button"
+                          disabled={
+                            pokemonBulkRunning() ||
+                            (!pokemonSelected().size && pokemonSearchBy() !== "set")
+                          }
+                          onClick={() => {
+                            if (pokemonSelected().size) void addSelectedPokemonCards();
+                            else void addAllPokemonResults();
+                          }}
+                        >
+                          {pokemonBulkRunning()
+                            ? "Adding cards..."
+                            : pokemonSelected().size
+                              ? `Import ${pokemonSelected().size} selected as drafts`
+                              : pokemonSearchBy() === "set"
+                                ? `Import all ${selectablePokemonCards().length} cards as drafts`
+                                : "Select cards to import"}
+                        </button>
+                      </div>
+                    </Show>
+
+                    <Show when={pokemonCards().length}>
+                      <div class={styles.yugiohResults}>
+                        <For each={pokemonCards()}>
+                          {card => (
+                            <article classList={{ [styles.yugiohRowPicked]: pokemonSelected().has(card.id) }}>
+                              <div class={styles.magicCardVisual}>
+                                <Show
+                                  when={card.image}
+                                  fallback={<span>{card.setCode}</span>}
+                                >
+                                  {image => <img src={image()} alt="" loading="lazy" />}
+                                </Show>
+                                <Show when={!card.importedStatus}>
+                                  <label class={styles.magicCardPick}>
+                                    <input
+                                      type="checkbox"
+                                      checked={pokemonSelected().has(card.id)}
+                                      disabled={pokemonBulkRunning()}
+                                      onChange={() => togglePokemonSelected(card.id)}
+                                      aria-label={`Select ${card.name} from ${card.setName}`}
+                                    />
+                                  </label>
+                                </Show>
+                              </div>
+                              <div class={styles.yugiohCardInfo}>
+                                <strong>{card.name}</strong>
+                                <span>{card.setName} ({card.setCode})</span>
+                                <small>Card {card.localId}</small>
+                              </div>
+                              <div class={styles.yugiohCardPrice}>
+                                <span>Printing</span>
+                                <strong>{card.localId}</strong>
+                              </div>
+                              <button
+                                type="button"
+                                disabled={Boolean(card.importedStatus) || pokemonImporting().has(card.id)}
+                                onClick={() => void addPokemonCard(card)}
+                              >
+                                {card.importedStatus
+                                  ? card.importedStatus === "active" ? "Live" : "Already added"
+                                  : pokemonImporting().has(card.id) ? "Adding card" : "Add as draft"}
                               </button>
                             </article>
                           )}
