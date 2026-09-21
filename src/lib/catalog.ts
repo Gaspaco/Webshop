@@ -186,23 +186,44 @@ export async function fetchDatabaseCatalogState(
   request?: string | CatalogRequest,
 ): Promise<DatabaseCatalogState> {
   const options = typeof request === "string" ? { slug: request } : request;
-  const params = new URLSearchParams();
-  if (options?.slug) params.set("slug", options.slug);
-  if (options?.limit) params.set("limit", String(options.limit));
-  if (options?.available) params.set("available", "1");
-  const query = params.size ? `?${params.toString()}` : "";
-  const response = await fetch(`/api/catalog/products${query}`, {
-    cache: "no-store",
-    headers: { Accept: "application/json" },
-  });
-  if (!response.ok) return { products: [], managedSlugs: [] };
-  const data = (await response.json()) as {
-    products: DatabaseCatalogProduct[];
-    managedSlugs?: string[];
-  };
+  const pageSize = options?.limit ?? 200;
+  const rows: DatabaseCatalogProduct[] = [];
+  const managedSlugs = new Set<string>();
+  let offset = 0;
+  let pages = 0;
+
+  do {
+    const params = new URLSearchParams({
+      limit: String(pageSize),
+      offset: String(offset),
+    });
+    if (options?.slug) params.set("slug", options.slug);
+    if (options?.available) params.set("available", "1");
+
+    const response = await fetch(`/api/catalog/products?${params.toString()}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) return { products: [], managedSlugs: [] };
+    const data = (await response.json()) as {
+      products: DatabaseCatalogProduct[];
+      managedSlugs?: string[];
+      hasMore?: boolean;
+      nextOffset?: number | null;
+    };
+    rows.push(...data.products);
+    for (const slug of data.managedSlugs ?? []) managedSlugs.add(slug);
+
+    pages += 1;
+    if (options?.slug || options?.limit || !data.hasMore || data.nextOffset == null) break;
+    offset = data.nextOffset;
+  } while (pages < 100);
+
   return databaseCatalogRowsToState(
-    data.products,
-    data.managedSlugs ?? data.products.map(product => product.slug),
+    rows,
+    managedSlugs.size
+      ? [...managedSlugs]
+      : [...new Set(rows.map(product => product.slug))],
   );
 }
 

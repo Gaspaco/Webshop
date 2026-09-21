@@ -7,13 +7,19 @@ export type CatalogQueryOptions = {
   slug?: string;
   available?: boolean;
   limit?: number;
+  offset?: number;
   includeManagedSlugs?: boolean;
 };
 
 export async function loadDatabaseCatalogRows(
   options: CatalogQueryOptions = {},
-): Promise<{ products: DatabaseCatalogProduct[]; managedSlugs: string[] }> {
+): Promise<{
+  products: DatabaseCatalogProduct[];
+  managedSlugs: string[];
+  hasMore: boolean;
+}> {
   const limit = Math.min(Math.max(options.limit ?? 500, 1), 500);
+  const offset = Math.max(options.offset ?? 0, 0);
   const productWhere = and(
     eq(products.status, "active"),
     options.slug ? eq(products.slug, options.slug) : undefined,
@@ -25,13 +31,16 @@ export async function loadDatabaseCatalogRows(
       : undefined,
   );
 
-  const publicProducts = await db
+  const productPage = await db
     .selectDistinct({ id: products.id, createdAt: products.createdAt })
     .from(products)
     .innerJoin(productVariants, eq(productVariants.productId, products.id))
     .where(where)
-    .orderBy(asc(products.createdAt))
-    .limit(options.slug ? 1 : limit);
+    .orderBy(desc(products.createdAt), desc(products.id))
+    .limit(options.slug ? 1 : limit + 1)
+    .offset(options.slug ? 0 : offset);
+  const hasMore = !options.slug && productPage.length > limit;
+  const publicProducts = productPage.slice(0, limit);
   const publicProductIds = publicProducts.map(product => product.id);
 
   const [rows, managedRows] = await Promise.all([
@@ -80,5 +89,6 @@ export async function loadDatabaseCatalogRows(
   return {
     products: rows,
     managedSlugs: managedRows.map(product => product.slug),
+    hasMore,
   };
 }
