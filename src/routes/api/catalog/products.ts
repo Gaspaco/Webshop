@@ -10,8 +10,8 @@ export async function GET(event: APIEvent) {
     ? Math.min(Math.max(requestedLimit, 1), 500)
     : 200;
   const requestedOffset = Number.parseInt(url.searchParams.get("offset") ?? "0", 10);
-  const offset = Number.isFinite(requestedOffset)
-    ? Math.min(Math.max(requestedOffset, 0), 100_000)
+  const offset = Number.isSafeInteger(requestedOffset) && requestedOffset >= 0
+    ? requestedOffset
     : 0;
   const catalog = await loadDatabaseCatalogRows({
     slug,

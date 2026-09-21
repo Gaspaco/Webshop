@@ -3911,7 +3911,7 @@
       "label": "fetchDatabaseCatalog",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.ts:230"
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.ts:232"
     },
     {
       "id": "file::products",
@@ -3926,6 +3926,20 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts:4"
+    },
+    {
+      "id": "file::catalog_test",
+      "label": "catalog.test.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.test.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.test.ts:1"
+    },
+    {
+      "id": "catalog_test::makeproduct",
+      "label": "makeProduct",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.test.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.test.ts:10"
     }
   ],
   "edges": [
@@ -8030,7 +8044,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.ts:230",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.ts:232",
       "weight": 1
     },
     {
@@ -8041,12 +8055,21 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts:4",
       "weight": 1
+    },
+    {
+      "source": "file::catalog_test",
+      "target": "catalog_test::makeproduct",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.test.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.test.ts:10",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 123,
-    "nodes": 561,
-    "edges": 457,
-    "builtAt": "2026-09-21T09:58:51.579Z"
+    "files": 124,
+    "nodes": 563,
+    "edges": 458,
+    "builtAt": "2026-09-21T10:03:39.854Z"
   }
 }

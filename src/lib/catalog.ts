@@ -190,9 +190,8 @@ export async function fetchDatabaseCatalogState(
   const rows: DatabaseCatalogProduct[] = [];
   const managedSlugs = new Set<string>();
   let offset = 0;
-  let pages = 0;
 
-  do {
+  while (true) {
     const params = new URLSearchParams({
       limit: String(pageSize),
       offset: String(offset),
@@ -214,10 +213,13 @@ export async function fetchDatabaseCatalogState(
     rows.push(...data.products);
     for (const slug of data.managedSlugs ?? []) managedSlugs.add(slug);
 
-    pages += 1;
     if (options?.slug || options?.limit || !data.hasMore || data.nextOffset == null) break;
+
+    if (!Number.isSafeInteger(data.nextOffset) || data.nextOffset <= offset) {
+      throw new Error("Catalogue pagination did not advance.");
+    }
     offset = data.nextOffset;
-  } while (pages < 100);
+  }
 
   return databaseCatalogRowsToState(
     rows,

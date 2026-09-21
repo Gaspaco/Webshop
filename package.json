@@ -8,6 +8,7 @@
     "build": "vinxi build",
     "start": "vinxi start",
     "preview": "vinxi preview",
+    "test": "bun test",
     "typecheck": "tsc --noEmit",
     "security:check": "npm audit --audit-level=high && npm ls esbuild brace-expansion browserslist nanoid",
     "db:generate": "drizzle-kit generate",
