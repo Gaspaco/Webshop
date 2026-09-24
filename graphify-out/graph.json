@@ -2850,27 +2850,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/[id].tsx:536"
     },
     {
-      "id": "file::havenband",
-      "label": "HavenBand.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:1"
-    },
-    {
-      "id": "havenband::havenband",
-      "label": "HavenBand",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:6"
-    },
-    {
-      "id": "file::shopnote",
-      "label": "ShopNote.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx:1"
-    },
-    {
       "id": "file::home_data_server",
       "label": "home-data.server.ts",
       "fileType": "code",
@@ -3940,6 +3919,27 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.test.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.test.ts:10"
+    },
+    {
+      "id": "file::havenband",
+      "label": "HavenBand.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:1"
+    },
+    {
+      "id": "havenband::havenband",
+      "label": "HavenBand",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:6"
+    },
+    {
+      "id": "file::shopnote",
+      "label": "ShopNote.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/ShopNote.tsx:1"
     }
   ],
   "edges": [
@@ -6797,15 +6797,6 @@
       "weight": 1
     },
     {
-      "source": "file::havenband",
-      "target": "havenband::havenband",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:6",
-      "weight": 1
-    },
-    {
       "source": "file::home_data_server",
       "target": "home-data.server::emptyhomedata",
       "relation": "contains",
@@ -8064,12 +8055,21 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.test.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/catalog.test.ts:10",
       "weight": 1
+    },
+    {
+      "source": "file::havenband",
+      "target": "havenband::havenband",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/HavenBand.tsx:6",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 124,
     "nodes": 563,
     "edges": 458,
-    "builtAt": "2026-09-21T10:03:39.854Z"
+    "builtAt": "2026-09-24T15:34:43.680Z"
   }
 }

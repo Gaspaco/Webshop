@@ -6,8 +6,8 @@ export default function ShopNote() {
     <section class={styles.section} aria-labelledby="catalogue-finder-title">
       <div class={styles.wide}>
         <div class={styles.heading}>
-          <h2 id="catalogue-finder-title">Find the exact card.</h2>
-          <p>Search names, set codes, rarities, and every variation in the catalogue.</p>
+          <h2 id="catalogue-finder-title">Search by card details.</h2>
+          <p>Enter a name, set number, or rarity to narrow down the printing.</p>
         </div>
 
         <div class={styles.finder}>
@@ -21,7 +21,7 @@ export default function ShopNote() {
               id="catalogue-search"
               name="q"
               type="search"
-              placeholder="Card name, set code, or rarity"
+              placeholder="Try a card name, set number, or rarity"
               autocomplete="off"
               maxlength={80}
               required
@@ -30,14 +30,14 @@ export default function ShopNote() {
           </form>
 
           <nav class={styles.shortcuts} aria-label="Catalogue shortcuts">
-            <A href="/products?q=yu-gi-oh">Yu-Gi-Oh!</A>
             <A href="/products?q=pokemon">Pokémon</A>
-            <A href="/products?q=single">Single cards</A>
+            <A href="/products?q=yu-gi-oh">Yu-Gi-Oh!</A>
+            <A href="/products?q=magic">Magic: The Gathering</A>
             <A href="/products?q=pre-order">Pre-orders</A>
           </nav>
 
           <div class={styles.request}>
-            <p><strong>Not in the catalogue?</strong> Send the card name and set code.</p>
+            <p><strong>Missing a printing?</strong> Send us the card name and set number.</p>
             <A href="/contact">
               Request a card
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">

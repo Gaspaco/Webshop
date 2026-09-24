@@ -16,22 +16,22 @@ export default function HavenBand() {
       <div class={styles.wide}>
         <div class={styles.serviceNote}>
           <div class={styles.serviceLead}>
-            <p>Packed by the people who listed it.</p>
-            <span>A small collector-run shop in Rotterdam.</span>
+            <p>How card listings work.</p>
+            <span>Each printing stays separate, even after it sells out.</span>
           </div>
 
           <dl class={styles.serviceFacts}>
             <div>
-              <dt>Condition</dt>
-              <dd>Checked under clear light before listing</dd>
+              <dt>Variations</dt>
+              <dd>Every finish, language, and condition keeps its matching image</dd>
             </div>
             <div>
-              <dt>Delivery</dt>
-              <dd>Tracked with PostNL from the Netherlands</dd>
+              <dt>Sold out</dt>
+              <dd>Unavailable printings stay visible for comparison</dd>
             </div>
             <div>
-              <dt>Payment</dt>
-              <dd>iDEAL and cards, processed by Mollie</dd>
+              <dt>Shipping</dt>
+              <dd>Orders are packed in Rotterdam and tracked with PostNL</dd>
             </div>
           </dl>
         </div>
