@@ -61,7 +61,9 @@ export function databaseProductToShopProduct(
     id: product.slug,
     name: product.name,
     set: typeof metadata.set === "string" ? metadata.set : undefined,
-    image: product.imageUrls[0] || undefined,
+    // A one-variant product may only have a variant photo. Use it as the card
+    // cover instead of showing a placeholder until a second variant exists.
+    image: product.variantImageUrl ?? product.imageUrls[0] ?? undefined,
     theme: game,
     priceCents: product.priceCents,
     compareAtPriceCents: product.compareAtPriceCents ?? undefined,

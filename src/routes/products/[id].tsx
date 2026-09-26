@@ -11,6 +11,7 @@ import {
 } from "solid-js";
 import {
   BoxArt,
+  variantsWithAvailableFirst,
 } from "~/components/product/ProductCard";
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import type { ShopProduct } from "~/lib/categories";
@@ -247,6 +248,8 @@ export default function ProductDetail() {
   const displayVariant = () => {
     return selectedVariant() ?? mainVariant();
   };
+
+  const orderedVariants = () => variantsWithAvailableFirst(product()?.variants);
 
   const moveDetailCard = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
     if (event.pointerType === "touch") return;
@@ -565,13 +568,16 @@ export default function ProductDetail() {
                         <option value="">
                           {isSealedProduct(item()) ? "Select a format" : "Select a printing"}
                         </option>
-                        <For each={item().variants}>
+                        <For each={orderedVariants()}>
                           {variant => (
-                            <option value={variant.id}>
+                            <option
+                              value={variant.id}
+                              class={variant.stock > 0 ? styles.variantIn : styles.variantOut}
+                            >
                               {variant.name}
                               {" · "}
                               {formatPrice(variant.priceCents)}
-                              {variant.stock > 0 ? ` · ${variant.stock} available` : " · sold out"}
+                              {variant.stock > 0 ? ` · ${variant.stock} in stock` : " · out of stock"}
                             </option>
                           )}
                         </For>
@@ -588,8 +594,11 @@ export default function ProductDetail() {
                           <span>
                             {[variant().condition, variant().language].filter(Boolean).join(" · ")}
                           </span>
-                          <span classList={{ [styles.variantOut]: variant().stock <= 0 }}>
-                            {variant().stock > 0 ? `${variant().stock} available` : "Sold out"}
+                          <span classList={{
+                            [styles.variantIn]: variant().stock > 0,
+                            [styles.variantOut]: variant().stock <= 0,
+                          }}>
+                            {variant().stock > 0 ? `${variant().stock} in stock` : "Out of stock"}
                           </span>
                         </p>
                       )}

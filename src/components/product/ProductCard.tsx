@@ -48,6 +48,16 @@ export type SectionProduct = {
   variantId?: string;
 };
 
+export function variantsWithAvailableFirst(variants: ProductVariantOption[] = []) {
+  return variants
+    .map((variant, index) => ({ variant, index }))
+    .sort((left, right) => {
+      const stockOrder = Number(right.variant.stock > 0) - Number(left.variant.stock > 0);
+      return stockOrder || left.index - right.index;
+    })
+    .map(({ variant }) => variant);
+}
+
 export function Stars(props: { rating: number }) {
   return (
     <span class={styles.stars} aria-label={`${props.rating} out of 5 stars`}>
@@ -98,6 +108,8 @@ export default function ProductCard(props: ProductCardProps) {
     p.variants?.[0],
   );
   const displayVariant = createMemo(() => selectedVariant() ?? mainVariant());
+  const displayImage = createMemo(() => displayVariant()?.image ?? p.image);
+  const orderedVariants = createMemo(() => variantsWithAvailableFirst(p.variants));
   const hasCardTilt = createMemo(() =>
     p.productType === "single" || (
       p.game === "yugioh" && Boolean(p.rarity || p.finish || displayVariant()?.finish)
@@ -141,7 +153,7 @@ export default function ProductCard(props: ProductCardProps) {
   };
 
   createEffect(() => {
-    p.image;
+    displayImage();
     setImageFailed(false);
     setImageLoaded(false);
   });
@@ -171,7 +183,7 @@ export default function ProductCard(props: ProductCardProps) {
         href={p.href}
         class={styles.cardMedia}
       >
-        <Show when={p.image && !imageFailed()} fallback={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}>
+        <Show when={displayImage() && !imageFailed()} fallback={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}>
           {/* Database artwork arrives as a base64 data URL and can take seconds
               to decode. Hold the themed placeholder until it has, so the card is
               never an empty grey box. */}
@@ -187,7 +199,7 @@ export default function ProductCard(props: ProductCardProps) {
             onPointerLeave={resetCard}
           >
             <img
-              src={p.image}
+              src={displayImage()}
               alt={p.set ? `${p.name}, ${p.set}` : p.name}
               draggable={false}
               loading="lazy"
@@ -242,7 +254,7 @@ export default function ProductCard(props: ProductCardProps) {
               type="button"
               class={styles.addBtn}
               classList={{ [styles.addBtnDone]: props.isJustAdded() }}
-              onClick={() => props.onAdd(p, p.variants?.[0])}
+              onClick={() => props.onAdd(p, mainVariant())}
               disabled={isUnavailable()}
               aria-label={isUnavailable() ? `${p.name} is sold out` : `Add ${p.name} to cart`}
             >
@@ -306,7 +318,7 @@ export default function ProductCard(props: ProductCardProps) {
                 <p>Compare printing, condition, language, and availability.</p>
 
                 <div class={styles.quickVariants}>
-                  <For each={p.variants}>
+                  <For each={orderedVariants()}>
                     {variant => (
                       <button
                         type="button"
@@ -325,7 +337,9 @@ export default function ProductCard(props: ProductCardProps) {
                         </span>
                         <span>
                           <strong>{formatPrice(variant.priceCents)}</strong>
-                          <small>{variant.stock > 0 ? `${variant.stock} available` : "Sold out"}</small>
+                          <small class={variant.stock > 0 ? styles.quickVariantStock : styles.quickVariantSoldOut}>
+                            {variant.stock > 0 ? `${variant.stock} in stock` : "Out of stock"}
+                          </small>
                         </span>
                       </button>
                     )}

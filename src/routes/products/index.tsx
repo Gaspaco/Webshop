@@ -46,6 +46,19 @@ const SORT_OPTIONS = [
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "name";
 
+function searchValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
+function validOption(
+  value: string | string[] | undefined,
+  options: Array<{ key: string }>,
+  fallback: string,
+) {
+  const candidate = searchValue(value);
+  return options.some(option => option.key === candidate) ? candidate : fallback;
+}
+
 function priceOf(product: SectionProduct) {
   const mainVariant =
     product.variants?.find(variant => variant.isDefault) ??
@@ -111,13 +124,15 @@ export default function Products() {
   const cart = useCart();
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = createSignal(
-    typeof searchParams.q === "string" ? searchParams.q : "",
+    searchValue(searchParams.q),
   );
-  const [game, setGame] = createSignal("all");
-  const [type, setType] = createSignal("all");
-  const [price, setPrice] = createSignal("all");
-  const [stockOnly, setStockOnly] = createSignal(false);
-  const [sort, setSort] = createSignal<SortKey>("featured");
+  const [game, setGame] = createSignal(validOption(searchParams.game, GAME_OPTIONS, "all"));
+  const [type, setType] = createSignal(validOption(searchParams.type, TYPE_OPTIONS, "all"));
+  const [price, setPrice] = createSignal(validOption(searchParams.price, PRICE_OPTIONS, "all"));
+  const [stockOnly, setStockOnly] = createSignal(searchValue(searchParams.stock) === "1");
+  const [sort, setSort] = createSignal<SortKey>(
+    validOption(searchParams.sort, SORT_OPTIONS, "featured") as SortKey,
+  );
   const [filtersOpen, setFiltersOpen] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
   const [clientReady, setClientReady] = createSignal(false);
@@ -133,11 +148,42 @@ export default function Products() {
 
   createEffect(
     on(
-      () => searchParams.q,
-      query => setSearch(typeof query === "string" ? query : ""),
+      () => [
+        searchParams.q,
+        searchParams.game,
+        searchParams.type,
+        searchParams.price,
+        searchParams.stock,
+        searchParams.sort,
+      ] as const,
+      ([query, gameFilter, typeFilter, priceFilter, stockFilter, sortFilter]) => {
+        setSearch(searchValue(query));
+        setGame(validOption(gameFilter, GAME_OPTIONS, "all"));
+        setType(validOption(typeFilter, TYPE_OPTIONS, "all"));
+        setPrice(validOption(priceFilter, PRICE_OPTIONS, "all"));
+        setStockOnly(searchValue(stockFilter) === "1");
+        setSort(validOption(sortFilter, SORT_OPTIONS, "featured") as SortKey);
+      },
       { defer: true },
     ),
   );
+
+  // Keep the active catalogue view in the URL. Browser Back then restores the
+  // exact search, facets, and sort after somebody opens a product.
+  createEffect(() => {
+    if (!clientReady()) return;
+    setSearchParams(
+      {
+        q: search().trim() || undefined,
+        game: game() === "all" ? undefined : game(),
+        type: type() === "all" ? undefined : type(),
+        price: price() === "all" ? undefined : price(),
+        stock: stockOnly() ? "1" : undefined,
+        sort: sort() === "featured" ? undefined : sort(),
+      },
+      { replace: true },
+    );
+  });
 
   // Everything except the game facet, so the sidebar can show honest counts
   // for each game against the rest of the current filter state.
@@ -185,7 +231,6 @@ export default function Products() {
 
   const clearSearch = () => {
     setSearch("");
-    if (searchParams.q) setSearchParams({ q: undefined }, { replace: true });
   };
 
   // Every active filter as a removable chip, so the current state of the

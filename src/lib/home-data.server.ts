@@ -24,7 +24,10 @@ export const getHomeData = query(async () => {
     const [catalogRows, contentRows] = await Promise.all([
       loadDatabaseCatalogRows({
         available: true,
-        limit: 5,
+        // Pull enough recent products to find a sealed release for each of the
+        // three hero games. The previous five-product window could easily be
+        // filled by one game, which made the hero order unpredictable.
+        limit: 60,
         includeManagedSlugs: false,
       }),
       db
@@ -53,7 +56,8 @@ export const getHomeData = query(async () => {
         variantImageUrl: row.variantImageUrl
           ? `/api/catalog/image?variant=${encodeURIComponent(row.variantId)}`
           : null,
-      }));
+      }))
+      .slice(0, 40);
 
     return {
       catalog: databaseCatalogRowsToState(compactRows, []),

@@ -86,6 +86,16 @@ export async function loadDatabaseCatalogRows(
           .limit(options.slug ? 1 : 1000),
   ]);
 
+  // `IN (...)` does not preserve the order of `productPage`. Restore it here
+  // so every catalogue consumer receives newest products first. The sort is
+  // stable, so each product's default variant remains first.
+  const productOrder = new Map(publicProductIds.map((id, index) => [id, index]));
+  rows.sort(
+    (left, right) =>
+      (productOrder.get(left.id) ?? Number.MAX_SAFE_INTEGER) -
+      (productOrder.get(right.id) ?? Number.MAX_SAFE_INTEGER),
+  );
+
   return {
     products: rows,
     managedSlugs: managedRows.map(product => product.slug),

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import {
+  databaseCatalogRowsToState,
+  databaseProductToShopProduct,
   fetchDatabaseCatalogState,
   type DatabaseCatalogProduct,
 } from "./catalog";
@@ -83,5 +85,39 @@ describe("fetchDatabaseCatalogState", () => {
       fetchDatabaseCatalogState(),
       /Catalogue pagination did not advance\./,
     );
+  });
+});
+
+describe("catalogue image selection", () => {
+  it("uses a variant-only image as the product card cover", () => {
+    const row = makeProduct(1);
+    row.variantImageUrl = "https://images.example.test/variant.webp";
+
+    const product = databaseProductToShopProduct(row);
+
+    assert.equal(product.image, row.variantImageUrl);
+    assert.equal(product.variants?.[0]?.image, row.variantImageUrl);
+  });
+
+  it("uses the default variant image for a grouped product", () => {
+    const lower = makeProduct(1);
+    lower.slug = "shared-card";
+    lower.id = "shared-product";
+    lower.isDefault = false;
+    lower.priceCents = 100;
+    lower.variantImageUrl = "https://images.example.test/lower.webp";
+
+    const main = makeProduct(2);
+    main.slug = "shared-card";
+    main.id = "shared-product";
+    main.isDefault = true;
+    main.priceCents = 500;
+    main.variantImageUrl = "https://images.example.test/main.webp";
+
+    const state = databaseCatalogRowsToState([lower, main], []);
+
+    assert.equal(state.products[0]?.image, main.variantImageUrl);
+    assert.equal(state.products[0]?.priceCents, 500);
+    assert.equal(state.products[0]?.variantId, main.variantId);
   });
 });

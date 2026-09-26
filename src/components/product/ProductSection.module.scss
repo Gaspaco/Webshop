@@ -672,6 +672,9 @@
   > span:last-child small { color: #fca5a5; }
 }
 
+.quickVariantStock { color: #5ee6ad !important; }
+.quickVariantSoldOut { color: #fca5a5 !important; }
+
 .quickAdd {
   align-self: flex-start;
   width: fit-content;

@@ -30,6 +30,8 @@ const GAME_ACCENTS: Record<string, string> = {
   cyberpunk: "#9b7a13",
 };
 
+const HERO_GAME_ORDER = ["pokemon", "magic", "yugioh"] as const;
+
 type Product = {
   id: string;
   name: string;
@@ -75,9 +77,19 @@ export default function Hero(props: {
   const [paused, setPaused] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
 
-  const slides = createMemo<Slide[]>(() =>
-    (props.products ?? [])
-      .filter(product => (product.stock ?? 0) > 0)
+  const slides = createMemo<Slide[]>(() => {
+    const newestSealedByGame = HERO_GAME_ORDER
+      .map(game =>
+        (props.products ?? []).find(
+          product =>
+            product.game === game &&
+            product.productType === "sealed" &&
+            (product.stock ?? 0) > 0,
+        ),
+      )
+      .filter((product): product is ShopProduct => Boolean(product));
+
+    return newestSealedByGame
       .map((product): Slide | undefined => {
         const mainVariant =
           product.variants?.find(variant => variant.isDefault && variant.stock > 0) ??
@@ -106,9 +118,8 @@ export default function Hero(props: {
           variantId: mainVariant?.id,
         };
       })
-      .filter((slide): slide is Slide => Boolean(slide))
-      .slice(0, 3),
-  );
+      .filter((slide): slide is Slide => Boolean(slide));
+  });
 
   const bestsellers = createMemo<Product[]>(() => {
     const live = (props.products ?? [])
