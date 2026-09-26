@@ -29,6 +29,7 @@ import styles from "./index.module.scss";
 type Section =
   | "overview"
   | "orders"
+  | "deliveries"
   | "wishlist"
   | "addresses"
   | "payments"
@@ -78,6 +79,7 @@ type AccountOverview = {
 const NAV_ITEMS: Array<{ id: Section; label: string }> = [
   { id: "overview", label: "Overview" },
   { id: "orders", label: "Orders" },
+  { id: "deliveries", label: "Deliveries" },
   { id: "wishlist", label: "Wishlist" },
   { id: "addresses", label: "Addresses" },
   { id: "payments", label: "Payments" },
@@ -93,6 +95,10 @@ const SECTION_COPY: Record<Section, { title: string; description: string }> = {
   orders: {
     title: "Your orders",
     description: "Review purchases and follow their current status.",
+  },
+  deliveries: {
+    title: "Deliveries",
+    description: "Follow every parcel from our packing table to your door.",
   },
   wishlist: {
     title: "Your wishlist",
@@ -141,6 +147,26 @@ function readablePaymentMethod(method: string | null) {
   return method
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, character => character.toUpperCase());
+}
+
+const DELIVERY_STATUSES = new Set(["paid", "processing", "shipped", "completed"]);
+
+function isDelivery(order: AccountOrder) {
+  return DELIVERY_STATUSES.has(order.status);
+}
+
+function deliveryStage(status: string) {
+  if (status === "completed") return 4;
+  if (status === "shipped") return 3;
+  if (status === "processing") return 2;
+  return 1;
+}
+
+function deliveryMessage(order: AccountOrder) {
+  if (order.status === "completed") return "Delivered and complete";
+  if (order.status === "shipped") return "Your parcel is with PostNL";
+  if (order.status === "processing") return "We are packing your order";
+  return "Payment received, ready for packing";
 }
 
 async function prepareProfileImage(file: File) {
@@ -335,6 +361,10 @@ export default function Account() {
 
   const totalSpent = () =>
     overview()?.orders.reduce((total, order) => total + order.totalCents, 0) ?? 0;
+
+  const deliveries = () => overview()?.orders.filter(isDelivery) ?? [];
+  const activeDeliveries = () =>
+    deliveries().filter(order => order.status !== "completed");
 
   const selectProfileImage = async (
     event: Event & { currentTarget: HTMLInputElement },
@@ -808,6 +838,37 @@ export default function Account() {
 
                 <Switch>
                   <Match when={activeSection() === "overview"}>
+                    <Show when={activeDeliveries()[0]}>
+                      {order => (
+                        <section class={styles.deliverySpotlight}>
+                          <div class={styles.deliverySpotlightIcon} aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z" />
+                              <circle cx="7" cy="18" r="2" />
+                              <circle cx="18" cy="18" r="2" />
+                            </svg>
+                          </div>
+                          <div class={styles.deliverySpotlightCopy}>
+                            <span>Active delivery</span>
+                            <strong>{deliveryMessage(order())}</strong>
+                            <small>
+                              {order().orderNumber}
+                              {activeDeliveries().length > 1
+                                ? ` and ${activeDeliveries().length - 1} more active ${activeDeliveries().length === 2 ? "order" : "orders"}`
+                                : ""}
+                            </small>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setActiveSection("deliveries")}
+                          >
+                            View delivery
+                            <span aria-hidden="true">→</span>
+                          </button>
+                        </section>
+                      )}
+                    </Show>
+
                     <div class={styles.stats}>
                       <article>
                         <span>Orders</span>
@@ -875,6 +936,9 @@ export default function Account() {
                         <button type="button" onClick={() => setActiveSection("wishlist")}>
                           Open wishlist <span aria-hidden="true">→</span>
                         </button>
+                        <button type="button" onClick={() => setActiveSection("deliveries")}>
+                          Track deliveries <span aria-hidden="true">→</span>
+                        </button>
                         <button type="button" onClick={() => setActiveSection("profile")}>
                           Edit profile <span aria-hidden="true">→</span>
                         </button>
@@ -938,6 +1002,135 @@ export default function Account() {
                               </div>
                             </article>
                           )}
+                        </For>
+                      </div>
+                    </Show>
+                  </Match>
+
+                  <Match when={activeSection() === "deliveries"}>
+                    <Show
+                      when={deliveries().length}
+                      fallback={
+                        <EmptyState
+                          kind="deliveries"
+                          title="No deliveries yet"
+                          copy="Paid orders appear here as soon as we start preparing them."
+                          action="Browse the shop"
+                          href="/products"
+                        />
+                      }
+                    >
+                      <div class={styles.deliveryList}>
+                        <For each={deliveries()}>
+                          {order => {
+                            const currentStage = () => deliveryStage(order.status);
+                            return (
+                              <article class={styles.deliveryCard}>
+                                <header class={styles.deliveryHeader}>
+                                  <div>
+                                    <span>
+                                      {order.status === "completed"
+                                        ? "Past delivery"
+                                        : "Active delivery"}
+                                    </span>
+                                    <h2>{deliveryMessage(order)}</h2>
+                                    <p>
+                                      Order {order.orderNumber} placed {formatDate(order.createdAt)}
+                                    </p>
+                                  </div>
+                                  <span
+                                    class={styles.deliveryBadge}
+                                    classList={{
+                                      [styles.deliveryBadgeComplete]:
+                                        order.status === "completed",
+                                    }}
+                                  >
+                                    {readableStatus(order.status)}
+                                  </span>
+                                </header>
+
+                                <ol class={styles.deliveryTimeline} aria-label={`Delivery progress for ${order.orderNumber}`}>
+                                  <For
+                                    each={[
+                                      "Payment received",
+                                      "Preparing order",
+                                      "With PostNL",
+                                      "Delivered",
+                                    ]}
+                                  >
+                                    {(label, index) => {
+                                      const step = () => index() + 1;
+                                      return (
+                                        <li
+                                          classList={{
+                                            [styles.deliveryStepDone]: step() < currentStage(),
+                                            [styles.deliveryStepCurrent]: step() === currentStage(),
+                                          }}
+                                          aria-current={
+                                            step() === currentStage() ? "step" : undefined
+                                          }
+                                        >
+                                          <span aria-hidden="true">
+                                            {step() < currentStage() ? "✓" : step()}
+                                          </span>
+                                          <strong>{label}</strong>
+                                        </li>
+                                      );
+                                    }}
+                                  </For>
+                                </ol>
+
+                                <div class={styles.deliveryDetails}>
+                                  <div>
+                                    <span>Inside this order</span>
+                                    <strong>
+                                      {order.items.length
+                                        ? order.items
+                                            .map(item => `${item.quantity} x ${item.name}`)
+                                            .join(", ")
+                                        : "Order details will appear here"}
+                                    </strong>
+                                  </div>
+                                  <Show when={order.shippedAt}>
+                                    {shippedAt => (
+                                      <div>
+                                        <span>Handed to PostNL</span>
+                                        <strong>{formatDate(shippedAt())}</strong>
+                                      </div>
+                                    )}
+                                  </Show>
+                                  <div>
+                                    <span>Tracking code</span>
+                                    <strong>{order.trackingNumber ?? "Added after dispatch"}</strong>
+                                  </div>
+                                </div>
+
+                                <footer class={styles.deliveryFooter}>
+                                  <p>
+                                    {order.trackingUrl
+                                      ? "PostNL has the latest scan and delivery estimate."
+                                      : order.status === "completed"
+                                        ? "This delivery has been completed."
+                                        : "We will add your PostNL link as soon as the parcel leaves us."}
+                                  </p>
+                                  <Show when={order.trackingUrl}>
+                                    {trackingUrl => (
+                                      <a
+                                        href={trackingUrl()}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        Track with PostNL
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                          <path d="M7 17 17 7M8 7h9v9" />
+                                        </svg>
+                                      </a>
+                                    )}
+                                  </Show>
+                                </footer>
+                              </article>
+                            );
+                          }}
                         </For>
                       </div>
                     </Show>
@@ -1614,7 +1807,7 @@ export default function Account() {
 }
 
 function EmptyState(props: {
-  kind: "orders" | "wishlist";
+  kind: "orders" | "deliveries" | "wishlist";
   title: string;
   copy: string;
   action: string;
@@ -1623,19 +1816,26 @@ function EmptyState(props: {
   return (
     <div class={styles.emptyState}>
       <span class={styles.emptyIcon} aria-hidden="true">
-        <Show
-          when={props.kind === "orders"}
-          fallback={
+        <Switch>
+          <Match when={props.kind === "orders"}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+              <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
+            </svg>
+          </Match>
+          <Match when={props.kind === "deliveries"}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z" />
+              <circle cx="7" cy="18" r="2" />
+              <circle cx="18" cy="18" r="2" />
+            </svg>
+          </Match>
+          <Match when={props.kind === "wishlist"}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 20s-7.5-4.6-10-9.3C.4 7.1 2 3.5 5.6 3A5 5 0 0 1 12 5.2 5 5 0 0 1 18.4 3c3.6.5 5.2 4.1 3.6 7.7C19.5 15.4 12 20 12 20Z" />
             </svg>
-          }
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-            <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
-          </svg>
-        </Show>
+          </Match>
+        </Switch>
       </span>
       <h3>{props.title}</h3>
       <p>{props.copy}</p>
@@ -1654,6 +1854,9 @@ function AccountNavIcon(props: { section: Section }) {
         </Match>
         <Match when={props.section === "orders"}>
           <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
+        </Match>
+        <Match when={props.section === "deliveries"}>
+          <path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z" /><circle cx="7" cy="18" r="2" /><circle cx="18" cy="18" r="2" />
         </Match>
         <Match when={props.section === "wishlist"}>
           <path d="M12 20s-7.5-4.6-10-9.3C.4 7.1 2 3.5 5.6 3A5 5 0 0 1 12 5.2 5 5 0 0 1 18.4 3c3.6.5 5.2 4.1 3.6 7.7C19.5 15.4 12 20 12 20Z" />

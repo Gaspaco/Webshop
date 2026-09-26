@@ -423,6 +423,87 @@
   gap: 0.75rem;
 }
 
+.deliverySpotlight {
+  display: grid;
+  min-height: 6.75rem;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1rem 1.15rem;
+  border-radius: 0.75rem;
+  background:
+    linear-gradient(90deg, rgba($primary, 0.14), rgba($primary, 0.025) 58%),
+    #151917;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.deliverySpotlightIcon {
+  display: grid;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 0.65rem;
+  background: $primary;
+  color: #06120d;
+  place-items: center;
+}
+
+.deliverySpotlightIcon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.deliverySpotlightCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.deliverySpotlightCopy > span {
+  color: $primary-light;
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+
+.deliverySpotlightCopy > strong {
+  margin-top: 0.2rem;
+  overflow: hidden;
+  color: $white;
+  font-family: $font-display;
+  font-size: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deliverySpotlightCopy > small {
+  margin-top: 0.2rem;
+  color: $gray-500;
+  font-size: 0.68rem;
+}
+
+.deliverySpotlight > button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.65rem;
+  padding-inline: 1rem;
+  border-radius: 0.5rem;
+  background: rgba($white, 0.075);
+  color: $white;
+  font-size: 0.73rem;
+  font-weight: 750;
+  transition: background $transition-fast, color $transition-fast;
+}
+
+.deliverySpotlight > button span {
+  color: $primary-light;
+  font-size: 1rem;
+}
+
+.deliverySpotlight > button:hover {
+  background: rgba($primary, 0.13);
+  color: $primary-light;
+}
+
 .stats article {
   display: flex;
   min-height: 8.75rem;
@@ -698,6 +779,213 @@
   color: $white;
   font-family: $font-display;
   text-align: right;
+}
+
+.deliveryList {
+  display: grid;
+  max-width: 72rem;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+
+.deliveryCard {
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  border-radius: 0.75rem;
+  background: #151917;
+}
+
+.deliveryHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.deliveryHeader > div > span {
+  color: $primary-light;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.deliveryHeader h2 {
+  margin-top: 0.3rem;
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  letter-spacing: -0.025em;
+}
+
+.deliveryHeader p {
+  margin-top: 0.35rem;
+  color: $gray-500;
+  font-size: 0.75rem;
+}
+
+.deliveryBadge {
+  display: inline-flex;
+  min-height: 1.85rem;
+  align-items: center;
+  flex: 0 0 auto;
+  padding-inline: 0.7rem;
+  border-radius: 999px;
+  background: rgba($primary, 0.13);
+  color: $primary-light;
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+
+.deliveryBadgeComplete {
+  background: rgba($white, 0.065);
+  color: $gray-400;
+}
+
+.deliveryTimeline {
+  display: grid;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.deliveryTimeline li {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+  color: $gray-600;
+}
+
+.deliveryTimeline li::after {
+  position: absolute;
+  top: 50%;
+  left: 2.4rem;
+  width: calc(100% - 2.8rem);
+  height: 1px;
+  background: rgba($white, 0.09);
+  content: "";
+}
+
+.deliveryTimeline li:last-child::after {
+  display: none;
+}
+
+.deliveryTimeline li > span {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #202522;
+  color: $gray-500;
+  font-size: 0.67rem;
+  font-weight: 800;
+  place-items: center;
+}
+
+.deliveryTimeline li > strong {
+  position: relative;
+  z-index: 1;
+  padding-right: 0.65rem;
+  background: #151917;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.deliveryTimeline .deliveryStepDone,
+.deliveryTimeline .deliveryStepCurrent {
+  color: $white;
+}
+
+.deliveryTimeline .deliveryStepDone::after {
+  background: rgba($primary, 0.48);
+}
+
+.deliveryTimeline .deliveryStepDone > span {
+  background: rgba($primary, 0.18);
+  color: $primary-light;
+}
+
+.deliveryTimeline .deliveryStepCurrent > span {
+  background: $primary;
+  color: #06120d;
+  box-shadow: 0 0 0 0.3rem rgba($primary, 0.1);
+}
+
+.deliveryDetails {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
+  border-radius: 0.65rem;
+  background: #0f1311;
+  grid-template-columns: minmax(0, 1.7fr) minmax(8rem, 0.7fr) minmax(10rem, 0.8fr);
+}
+
+.deliveryDetails > div {
+  min-width: 0;
+}
+
+.deliveryDetails span,
+.deliveryDetails strong {
+  display: block;
+}
+
+.deliveryDetails span {
+  color: $gray-600;
+  font-size: 0.63rem;
+  font-weight: 700;
+}
+
+.deliveryDetails strong {
+  margin-top: 0.3rem;
+  overflow: hidden;
+  color: $gray-300;
+  font-size: 0.73rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deliveryFooter {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.deliveryFooter p {
+  color: $gray-500;
+  font-size: 0.72rem;
+}
+
+.deliveryFooter a {
+  display: inline-flex;
+  min-height: 2.65rem;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 0 0 auto;
+  padding-inline: 1rem;
+  border-radius: 0.5rem;
+  background: $primary;
+  color: #06120d;
+  font-size: 0.73rem;
+  font-weight: 800;
+  transition: background $transition-fast, transform $transition-fast;
+}
+
+.deliveryFooter a svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.deliveryFooter a:hover {
+  background: $primary-light;
+  transform: translateY(-1px);
 }
 
 .wishlistGrid {
@@ -1605,6 +1893,30 @@
     text-align: left;
   }
 
+  .deliveryTimeline {
+    gap: 0.8rem;
+    grid-template-columns: 1fr;
+  }
+
+  .deliveryTimeline li::after {
+    top: 2rem;
+    left: 1rem;
+    width: 1px;
+    height: calc(100% - 1.2rem);
+  }
+
+  .deliveryTimeline li > strong {
+    padding-right: 0;
+  }
+
+  .deliveryDetails {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .deliveryDetails > div:first-child {
+    grid-column: 1 / -1;
+  }
+
   .paymentRow {
     grid-template-columns: minmax(0, 1fr) auto;
   }
@@ -1636,6 +1948,29 @@
 
   .sectionHeader p {
     max-width: 26ch;
+  }
+
+  .deliverySpotlight {
+    align-items: start;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .deliverySpotlight > button {
+    grid-column: 1 / -1;
+  }
+
+  .deliveryHeader,
+  .deliveryFooter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .deliveryDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .deliveryDetails > div:first-child {
+    grid-column: auto;
   }
 
   .headerActions {
@@ -1691,6 +2026,8 @@
   .navItem,
   .quickPanel > button,
   .quickPanel > a,
+  .deliverySpotlight > button,
+  .deliveryFooter a,
   .wishlistItem,
   .field input,
   .primaryAction,
