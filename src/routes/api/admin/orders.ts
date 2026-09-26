@@ -125,7 +125,7 @@ async function deliverTrackingEmail(input: {
         label: "Dispatched",
         heading: "Your cards are on the way",
         intro: `Order ${input.order.orderNumber} has left TCGHaven. PostNL tracking may take a little while to show its first scan.`,
-        contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#101512" style="padding:18px;color:#ffffff;font-size:13px;line-height:20px"><span style="color:#91a098">PostNL tracking number</span><br><strong style="font-size:18px;letter-spacing:.4px">${escapeEmailHtml(input.trackingNumber)}</strong></td></tr></table>`,
+        contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0b0e0c" style="margin:30px 0 0;background:#0b0e0c;border-left:4px solid #19c892"><tr><td style="padding:18px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px"><span style="color:#7f8d85">PostNL tracking number</span><br><strong style="font-size:18px;letter-spacing:.4px">${escapeEmailHtml(input.trackingNumber)}</strong></td></tr></table>`,
         action: {
           label: "Track package",
           url: input.trackingUrl,

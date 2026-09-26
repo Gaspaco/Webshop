@@ -75,11 +75,11 @@ export async function POST(event: APIEvent) {
           heading: message.topic,
           intro: "Thanks for contacting us. Here is our response:",
           contentHtml:
-            `<div style="margin:22px 0 0;color:#26332c;font-size:15px;line-height:24px">${escapeEmailHtml(input.reply).replaceAll("\n", "<br>")}</div>` +
-            `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#f3f5f4" style="padding:18px;border-radius:7px;color:#66726b;font-size:13px;line-height:21px">` +
-            `<strong style="display:block;margin-bottom:8px;color:#3d4942">Your message from ${escapeEmailHtml(new Date(message.createdAt).toLocaleDateString("en-NL"))}</strong>` +
+            `<div style="margin:24px 0 0;color:#d5ddd8;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:25px">${escapeEmailHtml(input.reply).replaceAll("\n", "<br>")}</div>` +
+            `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#17201c" style="margin:30px 0 0;background:#17201c"><tr><td style="padding:18px;color:#929f98;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:21px">` +
+            `<strong style="display:block;margin-bottom:8px;color:#ffffff">Your message from ${escapeEmailHtml(new Date(message.createdAt).toLocaleDateString("en-NL"))}</strong>` +
             `${escapeEmailHtml(message.message).replaceAll("\n", "<br>")}</td></tr></table>` +
-            `<p style="margin:24px 0 0;color:#526058;font-size:13px;line-height:20px">${escapeEmailHtml(profile.companyName)}<br><a href="mailto:${escapeEmailHtml(profile.businessEmail)}" style="color:#087a57">${escapeEmailHtml(profile.businessEmail)}</a></p>`,
+            `<p style="margin:24px 0 0;color:#929f98;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px">${escapeEmailHtml(profile.companyName)}<br><a href="mailto:${escapeEmailHtml(profile.businessEmail)}" style="color:#5ce5b8">${escapeEmailHtml(profile.businessEmail)}</a></p>`,
           action: {
             label: "Reply to TCGHaven",
             url: `mailto:${profile.businessEmail}`,

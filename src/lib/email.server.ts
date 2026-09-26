@@ -45,10 +45,10 @@ type TransactionalEmailTemplate = {
  */
 export function renderTransactionalEmail(input: TransactionalEmailTemplate) {
   const action = input.action
-    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#10b981" style="border-radius:7px"><a href="${escapeEmailHtml(input.action.url)}" style="display:inline-block;padding:14px 22px;color:#07110d;font-size:15px;line-height:20px;font-weight:800;text-decoration:none;border-radius:7px">${escapeEmailHtml(input.action.label)}</a></td></tr></table>`
+    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#19c892" style="border-radius:6px"><a href="${escapeEmailHtml(input.action.url)}" style="display:inline-block;padding:15px 24px;color:#07110d;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:20px;font-weight:800;text-decoration:none;border-radius:6px">${escapeEmailHtml(input.action.label)}&nbsp;&nbsp;→</a></td></tr></table>`
     : "";
   const notice = input.notice
-    ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#eef7f3" style="padding:16px 18px;border-radius:7px;color:#34473e;font-size:13px;line-height:20px"><strong style="color:#087a57">Good to know</strong><br>${escapeEmailHtml(input.notice)}</td></tr></table>`
+    ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:32px 0 0"><tr><td width="4" bgcolor="#19c892" style="width:4px;font-size:0;line-height:0">&nbsp;</td><td bgcolor="#17201c" style="padding:16px 18px;color:#bac5bf;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:21px"><strong style="display:block;margin-bottom:3px;color:#ffffff;font-size:13px">Good to know</strong>${escapeEmailHtml(input.notice)}</td></tr></table>`
     : "";
 
   return `<!doctype html>
@@ -63,33 +63,36 @@ export function renderTransactionalEmail(input: TransactionalEmailTemplate) {
       @media only screen and (max-width: 640px) {
         .email-shell { width: 100% !important; }
         .email-pad { padding-left: 24px !important; padding-right: 24px !important; }
-        .email-heading { font-size: 28px !important; line-height: 34px !important; }
+        .email-main { padding-top: 34px !important; padding-bottom: 34px !important; }
+        .email-heading { font-size: 29px !important; line-height: 35px !important; }
         .email-meta { display: none !important; }
+        .email-footer-cell { display: block !important; width: 100% !important; text-align: left !important; }
+        .email-footer-right { padding-top: 12px !important; }
       }
     </style>
   </head>
-  <body style="margin:0;padding:0;background:#edf0ee;color:#101512;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%">
+  <body style="margin:0;padding:0;background:#080b09;color:#ffffff;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;word-spacing:normal">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${escapeEmailHtml(input.preheader)}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#edf0ee">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#080b09" style="background:#080b09">
       <tr>
-        <td align="center" style="padding:38px 16px">
-          <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" class="email-shell" style="width:620px;max-width:620px;background:#ffffff">
-            <tr><td height="6" bgcolor="#10b981" style="height:6px;line-height:6px;font-size:0">&nbsp;</td></tr>
+        <td align="center" style="padding:40px 16px">
+          <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" class="email-shell" style="width:620px;max-width:620px;background:#111512">
+            <tr><td height="4" bgcolor="#19c892" style="height:4px;line-height:4px;font-size:0">&nbsp;</td></tr>
             <tr>
-              <td bgcolor="#0c0f0e" class="email-pad" style="padding:24px 34px">
+              <td bgcolor="#0b0e0c" class="email-pad" style="padding:23px 34px">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                   <tr>
-                    <td style="color:#ffffff;font-size:20px;line-height:24px;font-weight:800;letter-spacing:-0.4px">TCG<span style="color:#24d39c">Haven</span></td>
-                    <td align="right" class="email-meta" style="color:#93a19a;font-size:12px;line-height:18px">Cards, sealed products, collector essentials</td>
+                    <td style="color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:21px;line-height:25px;font-weight:800;letter-spacing:-0.5px"><span style="display:inline-block;margin-right:9px;padding:4px 7px;border-radius:5px;background:#19c892;color:#07110d;font-size:13px;line-height:16px;vertical-align:2px">TCG</span>Haven</td>
+                    <td align="right" class="email-meta" style="color:#718078;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:18px;letter-spacing:.7px;text-transform:uppercase">Rotterdam · Est. for collectors</td>
                   </tr>
                 </table>
               </td>
             </tr>
             <tr>
-              <td class="email-pad" style="padding:42px 42px 38px">
-                <p style="margin:0 0 13px;color:#087a57;font-size:12px;line-height:16px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase">${escapeEmailHtml(input.label)}</p>
-                <h1 class="email-heading" style="margin:0;color:#101512;font-size:34px;line-height:40px;font-weight:800;letter-spacing:-1px">${escapeEmailHtml(input.heading)}</h1>
-                <p style="margin:15px 0 0;max-width:500px;color:#4c5b53;font-size:16px;line-height:25px">${escapeEmailHtml(input.intro)}</p>
+              <td bgcolor="#111512" class="email-pad email-main" style="padding:46px 42px 42px">
+                <p style="margin:0 0 14px;color:#31d9a5;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:16px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase">${escapeEmailHtml(input.label)}</p>
+                <h1 class="email-heading" style="margin:0;max-width:510px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:36px;line-height:42px;font-weight:800;letter-spacing:-1.1px">${escapeEmailHtml(input.heading)}</h1>
+                <p style="margin:17px 0 0;max-width:510px;color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:26px">${escapeEmailHtml(input.intro)}</p>
                 ${input.contentHtml ?? ""}
                 ${action}
                 ${input.afterActionHtml ?? ""}
@@ -97,9 +100,20 @@ export function renderTransactionalEmail(input: TransactionalEmailTemplate) {
               </td>
             </tr>
             <tr>
-              <td bgcolor="#0c0f0e" class="email-pad" style="padding:24px 34px;color:#98a39e;font-size:12px;line-height:19px">
-                <strong style="color:#ffffff">TCGHaven</strong><br>
-                Questions? Reply to this email or contact <a href="mailto:info@tcghaven.com" style="color:#5ce5b8;text-decoration:none">info@tcghaven.com</a>.
+              <td bgcolor="#0b0e0c" class="email-pad" style="padding:25px 34px">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td class="email-footer-cell" style="color:#7f8d85;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:19px">
+                      <strong style="color:#ffffff">TCGHaven</strong><br>
+                      Herman Robbersstraat 68e, Rotterdam<br>
+                      KVK 88839621 · VAT NL004659858B77
+                    </td>
+                    <td align="right" class="email-footer-cell email-footer-right" style="color:#7f8d85;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:19px">
+                      Need help? <a href="mailto:info@tcghaven.com" style="color:#5ce5b8;text-decoration:none">info@tcghaven.com</a><br>
+                      Secure payments by Mollie · Delivery by PostNL
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
           </table>
@@ -202,7 +216,7 @@ const authEmailHtml = (input: {
       label: input.actionLabel,
       url: input.actionUrl,
     },
-    afterActionHtml: `<p style="margin:24px 0 0;color:#758079;font-size:12px;line-height:19px;word-break:break-all">Button not working? Copy this secure link into your browser:<br><a href="${escapeEmailHtml(input.actionUrl)}" style="color:#087a57;text-decoration:underline">${escapeEmailHtml(input.actionUrl)}</a></p>`,
+    afterActionHtml: `<p style="margin:24px 0 0;color:#718078;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:19px;word-break:break-all">Button not working? Copy this secure link into your browser:<br><a href="${escapeEmailHtml(input.actionUrl)}" style="color:#5ce5b8;text-decoration:underline">${escapeEmailHtml(input.actionUrl)}</a></p>`,
     notice: "If you did not request this, no action is needed. Your account remains unchanged.",
   });
 
@@ -249,7 +263,7 @@ export const sendTwoFactorCodeEmail = async (input: {
 }) => {
   const greeting = input.name?.trim() ? `Hi ${input.name.trim()}, ` : "";
   const code = input.otp.replace(/\D/g, "");
-  const codeHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#101512" align="center" style="padding:22px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:34px;line-height:40px;font-weight:800;letter-spacing:8px">${escapeEmailHtml(code)}</td></tr></table>`;
+  const codeHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#0b0e0c" align="center" style="padding:24px;border:1px solid #24312b;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:35px;line-height:42px;font-weight:800;letter-spacing:9px">${escapeEmailHtml(code)}</td></tr></table>`;
 
   return sendTransactionalEmail({
     to: input.email,
@@ -316,7 +330,7 @@ export const sendNewSignInEmail = async (input: {
   }).format(input.signedInAt);
   const ipAddress = input.ipAddress?.trim() || "Not available";
   const greeting = input.name?.trim() ? `Hi ${input.name.trim()}, ` : "";
-  const detailsHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0;background:#f3f5f4"><tr><td style="padding:18px 20px;color:#526058;font-size:13px;line-height:20px"><strong style="display:block;margin-bottom:3px;color:#101512;font-size:14px">Time</strong>${escapeEmailHtml(signedInAt)} (Amsterdam)</td></tr><tr><td style="padding:0 20px 18px;color:#526058;font-size:13px;line-height:20px"><strong style="display:block;margin-bottom:3px;color:#101512;font-size:14px">Device</strong>${escapeEmailHtml(device)}</td></tr><tr><td style="padding:0 20px 18px;color:#526058;font-size:13px;line-height:20px"><strong style="display:block;margin-bottom:3px;color:#101512;font-size:14px">IP address</strong>${escapeEmailHtml(ipAddress)}</td></tr></table>`;
+  const detailsHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0b0e0c" style="margin:30px 0 0;background:#0b0e0c;border:1px solid #24312b"><tr><td style="padding:18px 20px;color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px"><strong style="display:block;margin-bottom:3px;color:#ffffff;font-size:13px">Time</strong>${escapeEmailHtml(signedInAt)} (Amsterdam)</td></tr><tr><td style="padding:0 20px 18px;color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px"><strong style="display:block;margin-bottom:3px;color:#ffffff;font-size:13px">Device</strong>${escapeEmailHtml(device)}</td></tr><tr><td style="padding:0 20px 18px;color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px"><strong style="display:block;margin-bottom:3px;color:#ffffff;font-size:13px">IP address</strong>${escapeEmailHtml(ipAddress)}</td></tr></table>`;
 
   return sendTransactionalEmail({
     to: input.email,
@@ -329,7 +343,7 @@ export const sendNewSignInEmail = async (input: {
       intro: `${greeting}a new sign-in to your TCGHaven account was completed.`,
       contentHtml: detailsHtml,
       action: {
-        label: "This wasn't me — reset password",
+        label: "This wasn't me: reset password",
         url: input.recoveryUrl,
       },
       notice:

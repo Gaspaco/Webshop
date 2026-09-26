@@ -101,7 +101,7 @@ export async function POST(event: APIEvent) {
             label: "Customer message",
             heading: input.topic,
             intro: `${input.name} contacted TCGHaven through the website.`,
-            contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#f3f5f4" style="padding:18px;border-radius:7px;color:#526058;font-size:14px;line-height:22px"><strong style="color:#101512">From</strong><br>${escapeEmailHtml(input.name)} · <a href="mailto:${escapeEmailHtml(input.email)}" style="color:#087a57">${escapeEmailHtml(input.email)}</a></td></tr></table><div style="margin:22px 0 0;color:#26332c;font-size:15px;line-height:24px;white-space:normal">${escapeEmailHtml(input.message).replaceAll("\n", "<br>")}</div>`,
+            contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0b0e0c" style="margin:30px 0 0;background:#0b0e0c;border:1px solid #24312b"><tr><td style="padding:18px;color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px"><strong style="color:#ffffff">From</strong><br>${escapeEmailHtml(input.name)} · <a href="mailto:${escapeEmailHtml(input.email)}" style="color:#5ce5b8">${escapeEmailHtml(input.email)}</a></td></tr></table><div style="margin:24px 0 0;color:#d5ddd8;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:25px;white-space:normal">${escapeEmailHtml(input.message).replaceAll("\n", "<br>")}</div>`,
             action: {
               label: "Reply to customer",
               url: `mailto:${input.email}`,

@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { describeLoginDevice } from "./email.server";
+import {
+  describeLoginDevice,
+  renderTransactionalEmail,
+} from "./email.server";
 
 describe("describeLoginDevice", () => {
   it("describes Chrome on macOS", () => {
@@ -23,5 +26,43 @@ describe("describeLoginDevice", () => {
 
   it("handles missing user-agent data", () => {
     assert.equal(describeLoginDevice(null), "Unknown browser or device");
+  });
+});
+
+describe("renderTransactionalEmail", () => {
+  it("escapes customer-controlled copy and action values", () => {
+    const html = renderTransactionalEmail({
+      preheader: "A <private> update",
+      label: "Order & delivery",
+      heading: "Hello <script>alert(1)</script>",
+      intro: 'A "safe" message',
+      action: {
+        label: "Open <account>",
+        url: 'https://www.tcghaven.com/account?next="unsafe"&step=1',
+      },
+      notice: "Never share <codes>.",
+    });
+
+    assert.ok(!html.includes("<script>alert(1)</script>"));
+    assert.ok(html.includes("Hello &lt;script&gt;alert(1)&lt;/script&gt;"));
+    assert.ok(html.includes("Open &lt;account&gt;"));
+    assert.ok(html.includes("&quot;unsafe&quot;&amp;step=1"));
+    assert.ok(html.includes("Never share &lt;codes&gt;."));
+  });
+
+  it("uses self-contained email-safe branding", () => {
+    const html = renderTransactionalEmail({
+      preheader: "Order update",
+      label: "Payment received",
+      heading: "Your order is confirmed",
+      intro: "We are preparing your cards.",
+    });
+
+    assert.ok(html.includes('role="presentation"'));
+    assert.ok(html.includes("TCGHaven"));
+    assert.ok(html.includes("Secure payments by Mollie"));
+    assert.ok(!/<script\b/i.test(html));
+    assert.ok(!/<img\b/i.test(html));
+    assert.ok(!/https?:\/\/fonts\./i.test(html));
   });
 });
