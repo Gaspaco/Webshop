@@ -110,7 +110,6 @@ export default function Privacy() {
                 <li><strong>Vercel:</strong> application hosting, delivery, and operational request logs.</li>
                 <li><strong>Railway:</strong> PostgreSQL database hosting and related infrastructure.</li>
                 <li><strong>The configured mail host:</strong> account verification, password reset, order, return, and customer-service email.</li>
-                <li><strong>Google:</strong> authentication information if you choose Google sign-in.</li>
                 <li><strong>Authorities and advisers:</strong> information required by law, necessary for legal claims, or needed to investigate fraud.</li>
               </ul>
               <p>

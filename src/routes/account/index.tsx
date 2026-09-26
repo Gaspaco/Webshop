@@ -1648,9 +1648,9 @@ export default function Account() {
                                 onSubmit={beginTwoFactor}
                               >
                                 <p>
-                                  Add a second check at sign in using Google
-                                  Authenticator, 1Password, Authy, or another
-                                  TOTP app. After setup, you can also request a
+                                  Add a second check at sign in using 1Password,
+                                  Authy, or another TOTP app. After setup, you
+                                  can also request a
                                   one-time code through your verified email.
                                 </p>
                                 <label class={styles.field}>

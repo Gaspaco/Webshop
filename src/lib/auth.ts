@@ -11,11 +11,7 @@ import {
   sendTwoFactorCodeEmail,
   sendVerificationEmail,
 } from "~/lib/email.server";
-import {
-  getAuthEnv,
-  getEmailEnv,
-  getGoogleAuthEnv,
-} from "~/lib/env.server";
+import { getAuthEnv, getEmailEnv } from "~/lib/env.server";
 import {
   meetsPasswordRequirements,
   PASSWORD_MAX_LENGTH,
@@ -29,7 +25,6 @@ import {
 
 const authEnv = getAuthEnv();
 const emailEnv = getEmailEnv();
-const googleAuthEnv = getGoogleAuthEnv();
 const authUrl = new URL(authEnv.BETTER_AUTH_URL);
 const usesHttps = authUrl.protocol === "https:";
 const trustedOrigins = new Set([authUrl.origin]);
@@ -100,18 +95,6 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [...trustedOrigins],
-  ...(googleAuthEnv
-    ? {
-        socialProviders: {
-          google: {
-            clientId: googleAuthEnv.GOOGLE_CLIENT_ID,
-            clientSecret: googleAuthEnv.GOOGLE_CLIENT_SECRET,
-            accessType: "online" as const,
-            prompt: "select_account" as const,
-          },
-        },
-      }
-    : {}),
   hooks: {
     before: createAuthMiddleware(async context => {
       if (

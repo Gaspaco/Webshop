@@ -230,15 +230,6 @@ export function getLaunchReadiness(input: {
       manuallyConfirmed: manuallyConfirmed("legal-review"),
     },
     {
-      id: "google-login",
-      category: "growth",
-      label: "Google sign in",
-      detail: "Optional OAuth credentials allow customers to use their Google account.",
-      responsible: "owner",
-      configured: present("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"),
-      blocking: false,
-    },
-    {
       id: "merchant-center",
       category: "growth",
       label: "Google Merchant Center",
