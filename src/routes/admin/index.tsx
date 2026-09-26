@@ -286,6 +286,7 @@ type AdminDashboard = {
   readiness: {
     ready: boolean;
     blockers: number;
+    recommendations: number;
     complete: number;
     total: number;
     items: Array<{
@@ -296,6 +297,8 @@ type AdminDashboard = {
       responsible: "developer" | "owner" | "joint";
       configured: boolean;
       blocking: boolean;
+      confirmationId?: "backups" | "vat" | "legal-review";
+      manuallyConfirmed?: boolean;
     }>;
   };
 };
@@ -2863,6 +2866,8 @@ export default function Admin() {
   const [bulkPrice, setBulkPrice] = createSignal("");
   const [bulkMessage, setBulkMessage] = createSignal("");
   const [bulkBusy, setBulkBusy] = createSignal(false);
+  const [readinessBusy, setReadinessBusy] = createSignal<string | null>(null);
+  const [readinessMessage, setReadinessMessage] = createSignal("");
   const filteredProducts = () =>
     (dashboard()?.products ?? []).filter(product =>
       matchesCatalogueFilters(
@@ -2976,6 +2981,45 @@ export default function Admin() {
       return;
     }
     void applyBulk({ priceCents: Math.round(value * 100) });
+  };
+  const updateReadinessConfirmation = async (
+    id: "backups" | "vat" | "legal-review",
+    confirmed: boolean,
+  ) => {
+    const verb = confirmed ? "confirm" : "reopen";
+    if (
+      !window.confirm(
+        confirmed
+          ? "Only confirm this after the required review or restore test is genuinely complete. This action is recorded in the security activity log."
+          : `Reopen this requirement and mark it incomplete?`,
+      )
+    ) return;
+
+    setReadinessBusy(id);
+    setReadinessMessage("");
+    try {
+      const response = await fetch("/api/admin/readiness", {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, confirmed, acknowledgement: true }),
+      });
+      const result = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
+      if (!response.ok) {
+        setReadinessMessage(result.error ?? `Could not ${verb} this requirement.`);
+        return;
+      }
+      await refetch();
+      setReadinessMessage(
+        confirmed ? "Requirement confirmed and recorded." : "Requirement reopened.",
+      );
+    } catch {
+      setReadinessMessage("The readiness update could not reach the server.");
+    } finally {
+      setReadinessBusy(null);
+    }
   };
   const deleteSelectedProducts = async () => {
     const targets = bulkTargets();
@@ -3853,12 +3897,15 @@ export default function Admin() {
                           : `${data().readiness.blockers} required items still need attention.`}
                       </h2>
                       <p>
-                        Developer tasks configure the application. Owner tasks require the shop owner's company data, provider accounts, commercial decisions, or formal approval.
+                        Live evidence is checked where possible. Owner approvals remain separate from technical configuration so the dashboard never claims a legal or operational decision was made automatically.
                       </p>
                     </div>
                     <div class={styles.readinessScore}>
                       <strong>{data().readiness.complete}</strong>
                       <span>of {data().readiness.total} complete</span>
+                      <small>
+                        {data().readiness.blockers} required · {data().readiness.recommendations} recommended
+                      </small>
                     </div>
                   </section>
 
@@ -3874,6 +3921,12 @@ export default function Admin() {
                       <p>Legal identity, VAT policy, carrier and payment accounts, rates, policies, and final approval.</p>
                     </article>
                   </div>
+
+                  <Show when={readinessMessage()}>
+                    <p class={styles.readinessMessage} role="status">
+                      {readinessMessage()}
+                    </p>
+                  </Show>
 
                   <For each={READINESS_CATEGORIES}>
                     {([category, label]) => (
@@ -3894,6 +3947,30 @@ export default function Admin() {
                                 <div>
                                   <strong>{item.label}</strong>
                                   <p>{item.detail}</p>
+                                  <Show
+                                    when={
+                                      item.confirmationId &&
+                                      (!item.configured || item.manuallyConfirmed)
+                                    }
+                                  >
+                                    <button
+                                      type="button"
+                                      class={styles.readinessConfirm}
+                                      disabled={readinessBusy() === item.confirmationId}
+                                      onClick={() =>
+                                        void updateReadinessConfirmation(
+                                          item.confirmationId!,
+                                          !item.manuallyConfirmed,
+                                        )
+                                      }
+                                    >
+                                      {readinessBusy() === item.confirmationId
+                                        ? "Saving"
+                                        : item.manuallyConfirmed
+                                          ? "Reopen requirement"
+                                          : "Confirm completed"}
+                                    </button>
+                                  </Show>
                                 </div>
                                 <span class={styles.readinessOwner}>
                                   {item.responsible === "joint"
@@ -3902,7 +3979,7 @@ export default function Admin() {
                                       ? "Shop owner"
                                       : "Developer"}
                                 </span>
-                                <b>{item.configured ? "Configured" : item.blocking ? "Required" : "Optional"}</b>
+                                <b>{item.configured ? "Verified" : item.blocking ? "Required" : "Recommended"}</b>
                               </article>
                             )}
                           </For>

@@ -2678,6 +2678,13 @@
     font-size: 0.7rem;
     font-weight: 700;
   }
+
+  small {
+    margin-top: 0.4rem;
+    color: $gray-600;
+    font-size: 0.62rem;
+    font-weight: 700;
+  }
 }
 
 .readinessRoles {
@@ -2717,6 +2724,15 @@
 
 .readinessGroup {
   margin-top: 3rem;
+}
+
+.readinessMessage {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background: rgba($primary, 0.08);
+  color: $primary-light;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .readinessList {
@@ -2768,6 +2784,24 @@
   color: $gray-400;
   font-size: 0.7rem;
   font-weight: 700;
+}
+
+.readinessConfirm {
+  margin-top: 0.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: $primary-light;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.24rem;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.55;
+  }
 }
 
 .readinessDone {

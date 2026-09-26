@@ -18,6 +18,7 @@ import {
 } from "~/db/schema";
 import { apiJson, requireAdmin } from "~/lib/admin.server";
 import { getLaunchReadiness } from "~/lib/readiness.server";
+import { parseReadinessConfirmations } from "~/lib/readiness-confirmations";
 import { parseStoreProfile } from "~/lib/store-profile";
 
 export async function GET(event: APIEvent) {
@@ -251,9 +252,22 @@ export async function GET(event: APIEvent) {
     contentRows.map(contentRow => [contentRow.key, contentRow.value]),
   );
   const storeProfile = parseStoreProfile(content.business);
+  const activeProducts = catalog.filter(product => product.status === "active").length;
+  const embeddedImageCount = catalog.reduce(
+    (total, product) =>
+      total +
+      product.imageUrls.filter(image => image.startsWith("data:image/")).length +
+      product.variants.filter(variant => variant.imageUrl?.startsWith("data:image/")).length,
+    0,
+  );
   const readiness = getLaunchReadiness({
     unconvertedStarterProducts: 0,
     storeProfile,
+    activeProducts,
+    paidPayments: paymentRows.filter(payment => payment.status === "paid").length,
+    trackedOrders: orderRows.filter(order => order.trackingNumber).length,
+    embeddedImageCount,
+    confirmations: parseReadinessConfirmations(content.readiness),
   });
   const customers = customerRows.filter(customer => customer.role !== "admin");
   const paidRevenue = orderRows
@@ -293,7 +307,7 @@ export async function GET(event: APIEvent) {
     },
     metrics: {
       revenueCents: paidRevenue,
-      activeProducts: catalog.filter(product => product.status === "active").length,
+      activeProducts,
       openOrders: orderRows.filter(order =>
         ["pending", "paid", "processing"].includes(order.status),
       ).length,
