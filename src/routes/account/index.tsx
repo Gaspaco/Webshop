@@ -683,7 +683,7 @@ export default function Account() {
 
   const signOut = async () => {
     await authClient.signOut();
-    navigate("/", { replace: true });
+    window.location.replace("/");
   };
 
   return (

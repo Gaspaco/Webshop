@@ -1,5 +1,3 @@
-"use server";
-
 import { query } from "@solidjs/router";
 import { eq } from "drizzle-orm";
 import { db } from "~/db";
@@ -20,6 +18,8 @@ const emptyHomeData = () => ({
 });
 
 export const getHomeData = query(async () => {
+  "use server";
+
   try {
     const [catalogRows, contentRows] = await Promise.all([
       loadDatabaseCatalogRows({
