@@ -8,6 +8,7 @@ import * as schema from "~/db/schema";
 import {
   sendNewSignInEmail,
   sendPasswordResetEmail,
+  sendTwoFactorCodeEmail,
   sendVerificationEmail,
 } from "~/lib/email.server";
 import {
@@ -221,6 +222,8 @@ export const auth = betterAuth({
       "/send-verification-email": { window: 600, max: 3 },
       "/change-email": { window: 600, max: 3 },
       "/two-factor/enable": { window: 600, max: 5 },
+      "/two-factor/send-otp": { window: 300, max: 5 },
+      "/two-factor/verify-otp": { window: 300, max: 10 },
       "/two-factor/verify-totp": { window: 300, max: 10 },
       "/two-factor/verify-backup-code": { window: 300, max: 10 },
     },
@@ -273,6 +276,23 @@ export const auth = betterAuth({
       issuer: "TCGHaven",
       twoFactorCookieMaxAge: 60 * 10,
       trustDeviceMaxAge: 60 * 60 * 24 * 30,
+      ...(emailEnv
+        ? {
+            otpOptions: {
+              digits: 6,
+              period: 5,
+              allowedAttempts: 5,
+              storeOTP: "hashed" as const,
+              sendOTP: async ({ user, otp }) => {
+                await sendTwoFactorCodeEmail({
+                  email: user.email,
+                  name: user.name,
+                  otp,
+                });
+              },
+            },
+          }
+        : {}),
       backupCodeOptions: {
         storeBackupCodes: "encrypted",
       },

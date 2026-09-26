@@ -66,6 +66,57 @@
   line-height: 1.6;
 }
 
+.methodPicker {
+  display: grid;
+  margin-top: 1.75rem;
+  gap: 0.5rem;
+}
+
+.methodOption {
+  display: grid;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba($white, 0.1);
+  border-radius: 0.5rem;
+  background: #090c0a;
+  color: $white;
+  gap: 0.25rem;
+  text-align: left;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.methodOption:hover,
+.methodOptionActive {
+  border-color: rgba($primary, 0.6);
+  background: rgba($primary, 0.08);
+}
+
+.methodOption strong {
+  font-size: 0.78rem;
+}
+
+.methodOption span {
+  color: $gray-400;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.methodOption:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.notice {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba($primary, 0.09);
+  color: $primary-light;
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
 .shell form {
   display: flex;
   margin-top: 2rem;
@@ -175,8 +226,14 @@
   color: $white;
 }
 
+.methodSwitch:disabled {
+  color: $gray-500;
+  cursor: wait;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .primary {
+  .primary,
+  .methodOption {
     transition: none;
   }
 }

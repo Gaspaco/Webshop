@@ -1,16 +1,41 @@
 import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
-import { createSignal, Show } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import { authClient } from "~/lib/auth-client";
 import styles from "./index.module.scss";
 
-type VerificationMethod = "authenticator" | "recovery";
+type VerificationMethod = "authenticator" | "email" | "recovery";
+
+const METHODS: Array<{
+  id: VerificationMethod;
+  label: string;
+  description: string;
+}> = [
+  {
+    id: "authenticator",
+    label: "Authenticator app",
+    description: "Use the current six-digit app code.",
+  },
+  {
+    id: "email",
+    label: "Email code",
+    description: "Receive a one-time code by email.",
+  },
+  {
+    id: "recovery",
+    label: "Recovery code",
+    description: "Use one of your saved backup codes.",
+  },
+];
 
 export default function TwoFactorChallenge() {
   const [method, setMethod] = createSignal<VerificationMethod>("authenticator");
   const [code, setCode] = createSignal("");
   const [trustDevice, setTrustDevice] = createSignal(false);
   const [loading, setLoading] = createSignal(false);
+  const [sendingEmail, setSendingEmail] = createSignal(false);
+  const [emailSent, setEmailSent] = createSignal(false);
+  const [notice, setNotice] = createSignal("");
   const [error, setError] = createSignal("");
 
   const submit = async (event: SubmitEvent) => {
@@ -21,6 +46,8 @@ export default function TwoFactorChallenge() {
       setError(
         method() === "authenticator"
           ? "Enter the six-digit code from your authenticator app."
+          : method() === "email"
+            ? "Enter the six-digit code sent to your email."
           : "Enter one of your recovery codes.",
       );
       return;
@@ -29,16 +56,20 @@ export default function TwoFactorChallenge() {
     setLoading(true);
     setError("");
 
-    const result =
-      method() === "authenticator"
-        ? await authClient.twoFactor.verifyTotp({
+    const result = await (method() === "authenticator"
+      ? authClient.twoFactor.verifyTotp({
+          code: normalizedCode,
+          trustDevice: trustDevice(),
+        })
+      : method() === "email"
+        ? authClient.twoFactor.verifyOtp({
             code: normalizedCode,
             trustDevice: trustDevice(),
           })
-        : await authClient.twoFactor.verifyBackupCode({
+        : authClient.twoFactor.verifyBackupCode({
             code: normalizedCode,
             trustDevice: trustDevice(),
-          });
+          }));
 
     setLoading(false);
 
@@ -57,12 +88,64 @@ export default function TwoFactorChallenge() {
     window.location.assign("/account");
   };
 
-  const switchMethod = () => {
-    setMethod(value =>
-      value === "authenticator" ? "recovery" : "authenticator",
-    );
+  const selectMethod = async (nextMethod: VerificationMethod) => {
+    if (nextMethod === method() || sendingEmail()) return;
+
+    setMethod(nextMethod);
     setCode("");
     setError("");
+    setNotice("");
+
+    if (nextMethod !== "email" || emailSent()) return;
+
+    setSendingEmail(true);
+    try {
+      const result = await authClient.twoFactor.sendOtp();
+      if (result.error) {
+        setError(
+          result.error.status === 429
+            ? "Too many email-code requests. Wait a few minutes and try again."
+            : "We could not send an email code. Use your authenticator or recovery code.",
+        );
+        return;
+      }
+
+      setEmailSent(true);
+      setNotice("A six-digit code was sent to your verified email. It expires in 5 minutes.");
+    } catch {
+      setError(
+        "We could not reach the email service. Use your authenticator or recovery code.",
+      );
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const resendEmailCode = async () => {
+    if (sendingEmail()) return;
+    setSendingEmail(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const result = await authClient.twoFactor.sendOtp();
+      if (result.error) {
+        setError(
+          result.error.status === 429
+            ? "Too many email-code requests. Wait a few minutes and try again."
+            : "A new code could not be sent. Try again or use your authenticator.",
+        );
+        return;
+      }
+
+      setNotice("A new six-digit code was sent. Only the newest code will work.");
+    } catch {
+      setError(
+        "We could not reach the email service. Try again or use your authenticator.",
+      );
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   return (
@@ -85,23 +168,49 @@ export default function TwoFactorChallenge() {
         <p>
           {method() === "authenticator"
             ? "Open your authenticator app and enter the current code."
+            : method() === "email"
+              ? "Enter the one-time code sent to your verified email address."
             : "Use one unused recovery code from the set you saved."}
         </p>
+
+        <div class={styles.methodPicker} aria-label="Verification method">
+          <For each={METHODS}>
+            {option => (
+              <button
+                type="button"
+                class={styles.methodOption}
+                classList={{ [styles.methodOptionActive]: method() === option.id }}
+                aria-pressed={method() === option.id}
+                disabled={sendingEmail() || loading()}
+                onClick={() => void selectMethod(option.id)}
+              >
+                <strong>{option.label}</strong>
+                <span>{option.description}</span>
+              </button>
+            )}
+          </For>
+        </div>
+
+        <Show when={notice()}>
+          <p class={styles.notice} role="status">{notice()}</p>
+        </Show>
 
         <form onSubmit={submit}>
           <label>
             <span>
               {method() === "authenticator"
                 ? "Authenticator code"
+                : method() === "email"
+                  ? "Email security code"
                 : "Recovery code"}
             </span>
             <input
               type="text"
-              inputmode={method() === "authenticator" ? "numeric" : "text"}
+              inputmode={method() === "recovery" ? "text" : "numeric"}
               autocomplete="one-time-code"
-              maxlength={method() === "authenticator" ? 6 : 64}
+              maxlength={method() === "recovery" ? 64 : 6}
               placeholder={
-                method() === "authenticator" ? "000000" : "Recovery code"
+                method() === "recovery" ? "Recovery code" : "000000"
               }
               value={code()}
               autofocus
@@ -125,20 +234,24 @@ export default function TwoFactorChallenge() {
             </p>
           </Show>
 
-          <button class={styles.primary} disabled={loading()}>
+          <button
+            class={styles.primary}
+            disabled={loading() || sendingEmail() || (method() === "email" && !emailSent())}
+          >
             {loading() ? "Checking code" : "Verify sign in"}
           </button>
         </form>
 
-        <button
-          type="button"
-          class={styles.methodSwitch}
-          onClick={switchMethod}
-        >
-          {method() === "authenticator"
-            ? "Use a recovery code"
-            : "Use authenticator app"}
-        </button>
+        <Show when={method() === "email" && emailSent()}>
+          <button
+            type="button"
+            class={styles.methodSwitch}
+            disabled={sendingEmail()}
+            onClick={() => void resendEmailCode()}
+          >
+            {sendingEmail() ? "Sending a new code" : "Send a new email code"}
+          </button>
+        </Show>
 
         <A href="/login" class={styles.cancel}>
           Return to sign in

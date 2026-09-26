@@ -1457,7 +1457,8 @@ export default function Account() {
                                 <p>
                                   Add a second check at sign in using Google
                                   Authenticator, 1Password, Authy, or another
-                                  TOTP app.
+                                  TOTP app. After setup, you can also request a
+                                  one-time code through your verified email.
                                 </p>
                                 <label class={styles.field}>
                                   <span>Current password</span>

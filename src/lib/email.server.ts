@@ -242,6 +242,32 @@ export const sendPasswordResetEmail = async (input: {
     idempotencyKey: `reset-${await tokenFingerprint(input.token)}`,
   });
 
+export const sendTwoFactorCodeEmail = async (input: {
+  email: string;
+  name?: string | null;
+  otp: string;
+}) => {
+  const greeting = input.name?.trim() ? `Hi ${input.name.trim()}, ` : "";
+  const code = input.otp.replace(/\D/g, "");
+  const codeHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#101512" align="center" style="padding:22px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:34px;line-height:40px;font-weight:800;letter-spacing:8px">${escapeEmailHtml(code)}</td></tr></table>`;
+
+  return sendTransactionalEmail({
+    to: input.email,
+    subject: `${code} is your TCGHaven security code`,
+    text: `${greeting}use this one-time code to finish signing in to TCGHaven: ${code}\n\nThe code expires in 5 minutes. Never share it with anyone. If you did not try to sign in, reset your password immediately.`,
+    html: renderTransactionalEmail({
+      preheader: `${code} is your one-time TCGHaven security code.`,
+      label: "Two-factor authentication",
+      heading: "Finish signing in",
+      intro: `${greeting}enter this one-time code on the TCGHaven sign-in screen.`,
+      contentHtml: codeHtml,
+      notice:
+        "This code expires in 5 minutes and can only be used once. TCGHaven will never ask you to share it by phone, chat, or email.",
+    }),
+    idempotencyKey: `two-factor-${await tokenFingerprint(`${input.email}:${code}`)}`,
+  });
+};
+
 export function describeLoginDevice(userAgent?: string | null) {
   if (!userAgent) return "Unknown browser or device";
 
