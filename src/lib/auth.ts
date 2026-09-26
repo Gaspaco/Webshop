@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { db } from "~/db";
 import * as schema from "~/db/schema";
 import {
+  sendNewSignInEmail,
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "~/lib/email.server";
@@ -152,6 +153,33 @@ export const auth = betterAuth({
         throw new APIError("BAD_REQUEST", {
           message: PASSWORD_REQUIREMENTS_MESSAGE,
         });
+      }
+    }),
+    after: createAuthMiddleware(async context => {
+      if (!emailEnv) return;
+
+      const completedSignIn =
+        context.path === "/sign-in/email" ||
+        context.path === "/two-factor/verify-totp" ||
+        context.path === "/two-factor/verify-backup-code" ||
+        context.path === "/two-factor/verify-otp" ||
+        context.path.startsWith("/callback/");
+      const newSession = context.context.newSession;
+      if (!completedSignIn || !newSession) return;
+
+      try {
+        await sendNewSignInEmail({
+          email: newSession.user.email,
+          name: newSession.user.name,
+          signedInAt: newSession.session.createdAt,
+          ipAddress: newSession.session.ipAddress,
+          userAgent: newSession.session.userAgent,
+          recoveryUrl: new URL("/login?recovery=1", authUrl).toString(),
+          sessionId: newSession.session.id,
+        });
+      } catch {
+        // A mail outage must never prevent a legitimate, completed sign-in.
+        console.error("New sign-in notification delivery failed.");
       }
     }),
   },

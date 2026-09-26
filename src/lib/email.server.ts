@@ -241,3 +241,74 @@ export const sendPasswordResetEmail = async (input: {
     }),
     idempotencyKey: `reset-${await tokenFingerprint(input.token)}`,
   });
+
+export function describeLoginDevice(userAgent?: string | null) {
+  if (!userAgent) return "Unknown browser or device";
+
+  const browser = /Edg\//.test(userAgent)
+    ? "Microsoft Edge"
+    : /OPR\//.test(userAgent)
+      ? "Opera"
+      : /Firefox\//.test(userAgent)
+        ? "Firefox"
+        : /Chrome\//.test(userAgent)
+          ? "Chrome"
+          : /Safari\//.test(userAgent)
+            ? "Safari"
+            : "Web browser";
+  const platform = /iPhone/.test(userAgent)
+    ? "iPhone"
+    : /iPad/.test(userAgent)
+      ? "iPad"
+      : /Android/.test(userAgent)
+        ? "Android"
+        : /Windows/.test(userAgent)
+          ? "Windows"
+          : /Macintosh|Mac OS X/.test(userAgent)
+            ? "macOS"
+            : /Linux/.test(userAgent)
+              ? "Linux"
+              : "unknown device";
+
+  return `${browser} on ${platform}`;
+}
+
+export const sendNewSignInEmail = async (input: {
+  email: string;
+  name?: string | null;
+  signedInAt: Date;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  recoveryUrl: string;
+  sessionId: string;
+}) => {
+  const device = describeLoginDevice(input.userAgent);
+  const signedInAt = new Intl.DateTimeFormat("en-NL", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Europe/Amsterdam",
+  }).format(input.signedInAt);
+  const ipAddress = input.ipAddress?.trim() || "Not available";
+  const greeting = input.name?.trim() ? `Hi ${input.name.trim()}, ` : "";
+  const detailsHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0;background:#f3f5f4"><tr><td style="padding:18px 20px;color:#526058;font-size:13px;line-height:20px"><strong style="display:block;margin-bottom:3px;color:#101512;font-size:14px">Time</strong>${escapeEmailHtml(signedInAt)} (Amsterdam)</td></tr><tr><td style="padding:0 20px 18px;color:#526058;font-size:13px;line-height:20px"><strong style="display:block;margin-bottom:3px;color:#101512;font-size:14px">Device</strong>${escapeEmailHtml(device)}</td></tr><tr><td style="padding:0 20px 18px;color:#526058;font-size:13px;line-height:20px"><strong style="display:block;margin-bottom:3px;color:#101512;font-size:14px">IP address</strong>${escapeEmailHtml(ipAddress)}</td></tr></table>`;
+
+  return sendTransactionalEmail({
+    to: input.email,
+    subject: "New sign-in to your TCGHaven account",
+    text: `${greeting}a new sign-in to your TCGHaven account was completed.\n\nTime: ${signedInAt} (Amsterdam)\nDevice: ${device}\nIP address: ${ipAddress}\n\nIf this was not you, reset your password now: ${input.recoveryUrl}`,
+    html: renderTransactionalEmail({
+      preheader: "A new sign-in to your TCGHaven account was completed.",
+      label: "Security notification",
+      heading: "New sign-in to your account",
+      intro: `${greeting}a new sign-in to your TCGHaven account was completed.`,
+      contentHtml: detailsHtml,
+      action: {
+        label: "This wasn't me — reset password",
+        url: input.recoveryUrl,
+      },
+      notice:
+        "If this was you, no action is needed. If not, reset your password immediately; completing the reset signs out every existing session.",
+    }),
+    idempotencyKey: `login-alert-${input.sessionId}`,
+  });
+};

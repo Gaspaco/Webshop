@@ -289,6 +289,14 @@ export default function AuthPage(props: AuthPageProps) {
 
   onMount(() => {
     const search = new URLSearchParams(window.location.search);
+    if (search.get("recovery") === "1") {
+      setResetStatus("idle");
+      setResetMessage("");
+      setResetOpen(true);
+      requestAnimationFrame(() => resetEmailInput?.focus());
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
     if (search.get("oauth") === "google" || search.has("error")) {
       setError(
         "Google could not complete the sign-in. Try again or use your email.",
