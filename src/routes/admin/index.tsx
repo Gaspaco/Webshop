@@ -102,6 +102,11 @@ type AdminOrder = {
   trackingNumber: string | null;
   trackingUrl: string | null;
   shippedAt: string | null;
+  trackingEmailStatus: "not_sent" | "sent" | "failed";
+  trackingEmailSentAt: string | null;
+  trackingEmailLastAttemptAt: string | null;
+  trackingEmailAttempts: number;
+  trackingEmailError: string | null;
   items: AdminOrderItem[];
   payment: {
     id: string;
@@ -478,6 +483,16 @@ function formatDate(value: string) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("en-NL", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(new Date(value));
 }
 
@@ -1642,6 +1657,10 @@ function OrderRow(props: {
           amountCents: number;
           reason: string;
           confirmation: "REFUND";
+        }
+      | {
+          action: "resend_tracking_email";
+          id: string;
         },
   ) => {
     setBusy(true);
@@ -1652,7 +1671,13 @@ function OrderRow(props: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const result = (await response.json()) as { error?: string };
+    const result = (await response.json()) as {
+      error?: string;
+      notification?: {
+        status: "sent" | "failed";
+        error?: string;
+      };
+    };
     if (!response.ok) {
       setMessage(result.error ?? "Order action could not be completed.");
       setBusy(false);
@@ -1660,8 +1685,12 @@ function OrderRow(props: {
     }
     await Promise.resolve(props.onUpdated());
     setMessage(
-      payload.action === "ship"
-        ? "Shipment saved and customer notified"
+      payload.action === "ship" || payload.action === "resend_tracking_email"
+        ? result.notification?.status === "sent"
+          ? payload.action === "ship"
+            ? "Shipment saved and tracking email accepted by the mail server"
+            : "Tracking email accepted by the mail server"
+          : result.notification?.error ?? "Tracking email failed. You can retry it here."
         : payload.action === "refund"
           ? "Mollie refund completed"
           : "Return request recorded",
@@ -1841,6 +1870,31 @@ function OrderRow(props: {
                   });
                 }}>
                   <h3>Shipping</h3>
+                  <div
+                    classList={{
+                      [styles.trackingEmailState]: true,
+                      [styles.trackingEmailSent]: props.order.trackingEmailStatus === "sent",
+                      [styles.trackingEmailFailed]: props.order.trackingEmailStatus === "failed",
+                    }}
+                  >
+                    <span>Tracking email</span>
+                    <strong>
+                      {props.order.trackingEmailStatus === "sent"
+                        ? "Sent"
+                        : props.order.trackingEmailStatus === "failed"
+                          ? "Failed"
+                          : "Not sent"}
+                    </strong>
+                    <Show when={props.order.trackingEmailSentAt}>
+                      {sentAt => <small>Accepted {formatDateTime(sentAt())}</small>}
+                    </Show>
+                    <Show when={props.order.trackingEmailStatus === "failed"}>
+                      <small>{props.order.trackingEmailError ?? "The last delivery attempt failed."}</small>
+                    </Show>
+                    <Show when={props.order.trackingEmailAttempts > 0}>
+                      <small>{props.order.trackingEmailAttempts} delivery {props.order.trackingEmailAttempts === 1 ? "attempt" : "attempts"}</small>
+                    </Show>
+                  </div>
                   <div class={styles.postnlLabelTools}>
                     <strong>PostNL label</strong>
                     <p>Create the barcode and printable PDF after payment is confirmed.</p>
@@ -1882,7 +1936,33 @@ function OrderRow(props: {
                     <span>HTTPS tracking link</span>
                     <input required type="url" placeholder="https://" value={trackingUrl()} onInput={event => setTrackingUrl(event.currentTarget.value)} />
                   </label>
-                  <button type="submit" disabled={busy()}>Mark shipped and notify</button>
+                  <button
+                    type="submit"
+                    disabled={busy() || props.order.status === "shipped"}
+                  >
+                    {props.order.status === "shipped"
+                      ? "Order marked as shipped"
+                      : "Mark shipped and notify"}
+                  </button>
+                  <Show
+                    when={
+                      props.order.status === "shipped" &&
+                      trackingNumber() &&
+                      trackingUrl()
+                    }
+                  >
+                    <button
+                      type="button"
+                      class={styles.secondaryAction}
+                      disabled={busy()}
+                      onClick={() => void runAction({
+                        action: "resend_tracking_email",
+                        id: props.order.id,
+                      })}
+                    >
+                      Resend tracking email
+                    </button>
+                  </Show>
                 </form>
 
                 <form onSubmit={event => {

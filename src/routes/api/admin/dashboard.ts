@@ -90,6 +90,11 @@ export async function GET(event: APIEvent) {
         trackingNumber: orders.trackingNumber,
         trackingUrl: orders.trackingUrl,
         shippedAt: orders.shippedAt,
+        trackingEmailStatus: orders.trackingEmailStatus,
+        trackingEmailSentAt: orders.trackingEmailSentAt,
+        trackingEmailLastAttemptAt: orders.trackingEmailLastAttemptAt,
+        trackingEmailAttempts: orders.trackingEmailAttempts,
+        trackingEmailError: orders.trackingEmailError,
         createdAt: orders.createdAt,
       })
       .from(orders)

@@ -164,7 +164,7 @@ export async function sendTransactionalEmail(message: AuthEmail) {
     .replace(/[^a-zA-Z0-9._-]/g, "")
     .slice(0, 160);
 
-  await transport.sendMail({
+  const delivery = await transport.sendMail({
     from: emailEnv.AUTH_EMAIL_FROM,
     to: message.to,
     replyTo: message.replyTo,
@@ -173,6 +173,18 @@ export async function sendTransactionalEmail(message: AuthEmail) {
     html: message.html,
     messageId: `<${safeMessageId}@tcghaven.com>`,
   });
+
+  const accepted = Array.isArray(delivery.accepted)
+    ? delivery.accepted.map(String)
+    : [];
+  const rejected = Array.isArray(delivery.rejected)
+    ? delivery.rejected.map(String)
+    : [];
+  if (accepted.length === 0 || rejected.length > 0) {
+    throw new Error("The SMTP server did not accept every recipient.");
+  }
+
+  return { messageId: String(delivery.messageId ?? "") };
 }
 
 const authEmailHtml = (input: {

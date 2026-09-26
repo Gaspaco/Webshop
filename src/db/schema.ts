@@ -183,6 +183,11 @@ export const contactMessageStatus = pgEnum("contact_message_status", [
   "read",
   "resolved",
 ]);
+export const trackingEmailStatus = pgEnum("tracking_email_status", [
+  "not_sent",
+  "sent",
+  "failed",
+]);
 
 export const categories = pgTable(
   "categories",
@@ -366,6 +371,17 @@ export const orders = pgTable(
     trackingNumber: text("tracking_number"),
     trackingUrl: text("tracking_url"),
     shippedAt: timestamp("shipped_at", { withTimezone: true }),
+    trackingEmailStatus: trackingEmailStatus("tracking_email_status")
+      .default("not_sent")
+      .notNull(),
+    trackingEmailSentAt: timestamp("tracking_email_sent_at", {
+      withTimezone: true,
+    }),
+    trackingEmailLastAttemptAt: timestamp("tracking_email_last_attempt_at", {
+      withTimezone: true,
+    }),
+    trackingEmailAttempts: integer("tracking_email_attempts").default(0).notNull(),
+    trackingEmailError: text("tracking_email_error"),
     totalCents: integer("total_cents").notNull(),
     billingAddress: jsonb("billing_address")
       .$type<Record<string, string>>()

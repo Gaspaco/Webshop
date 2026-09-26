@@ -99,9 +99,91 @@ const actionSchema = z.discriminatedUnion("action", [
     weightGrams: z.number().int().min(1).max(30_000),
     productCode: z.string().trim().regex(/^\d{4}$/),
   }),
+  z.object({
+    action: z.literal("resend_tracking_email"),
+    id: z.string().uuid(),
+  }),
 ]);
 
 const amountValue = (cents: number) => (cents / 100).toFixed(2);
+
+async function deliverTrackingEmail(input: {
+  event: APIEvent;
+  actorId: string;
+  order: typeof orders.$inferSelect;
+  trackingNumber: string;
+  trackingUrl: string;
+}) {
+  const attemptedAt = new Date();
+  try {
+    await sendTransactionalEmail({
+      to: input.order.email,
+      subject: `Your TCGHaven order ${input.order.orderNumber} has shipped`,
+      text: `Your order has shipped. Tracking number: ${input.trackingNumber}\nTrack it here: ${input.trackingUrl}`,
+      html: renderTransactionalEmail({
+        preheader: `${input.order.orderNumber} is on its way with PostNL.`,
+        label: "Dispatched",
+        heading: "Your cards are on the way",
+        intro: `Order ${input.order.orderNumber} has left TCGHaven. PostNL tracking may take a little while to show its first scan.`,
+        contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#101512" style="padding:18px;color:#ffffff;font-size:13px;line-height:20px"><span style="color:#91a098">PostNL tracking number</span><br><strong style="font-size:18px;letter-spacing:.4px">${escapeEmailHtml(input.trackingNumber)}</strong></td></tr></table>`,
+        action: {
+          label: "Track package",
+          url: input.trackingUrl,
+        },
+        notice: "Tracking updates are supplied by PostNL. The first scan can appear after your parcel reaches their sorting network.",
+      }),
+      idempotencyKey: `shipped-${input.order.id}-${crypto.randomUUID()}`,
+    });
+  } catch (error) {
+    console.error("Shipping email delivery failed", error);
+    await db
+      .update(orders)
+      .set({
+        trackingEmailStatus: "failed",
+        trackingEmailLastAttemptAt: attemptedAt,
+        trackingEmailAttempts: sql`${orders.trackingEmailAttempts} + 1`,
+        trackingEmailError: "The SMTP server did not accept the tracking email.",
+      })
+      .where(eq(orders.id, input.order.id));
+    await writeAuditLog({
+      event: input.event,
+      actorId: input.actorId,
+      action: "order.tracking_email_failed",
+      entityType: "order",
+      entityId: input.order.id,
+      summary: `Tracking email failed for ${input.order.orderNumber}.`,
+    }).catch(auditError =>
+      console.error("Tracking email failure audit could not be saved", auditError),
+    );
+    return {
+      status: "failed" as const,
+      attemptedAt: attemptedAt.toISOString(),
+      error: "The order is saved, but the tracking email failed. Retry it from this order.",
+    };
+  }
+
+  await db
+    .update(orders)
+    .set({
+      trackingEmailStatus: "sent",
+      trackingEmailSentAt: attemptedAt,
+      trackingEmailLastAttemptAt: attemptedAt,
+      trackingEmailAttempts: sql`${orders.trackingEmailAttempts} + 1`,
+      trackingEmailError: null,
+    })
+    .where(eq(orders.id, input.order.id));
+  await writeAuditLog({
+    event: input.event,
+    actorId: input.actorId,
+    action: "order.tracking_email_sent",
+    entityType: "order",
+    entityId: input.order.id,
+    summary: `Tracking email accepted by SMTP for ${input.order.orderNumber}.`,
+  }).catch(auditError =>
+    console.error("Tracking email success audit could not be saved", auditError),
+  );
+  return { status: "sent" as const, sentAt: attemptedAt.toISOString() };
+}
 
 export async function POST(event: APIEvent) {
   const guard = await requireAdmin(event);
@@ -220,7 +302,57 @@ export async function POST(event: APIEvent) {
       });
     }
 
+    if (input.action === "resend_tracking_email") {
+      if (order.status !== "shipped") {
+        return apiJson(
+          { error: "Mark the order as shipped before sending its tracking email." },
+          { status: 400 },
+        );
+      }
+      if (!order.trackingNumber || !order.trackingUrl) {
+        return apiJson(
+          { error: "Create or enter tracking details before sending the email." },
+          { status: 400 },
+        );
+      }
+      if (
+        await checkRateLimit({
+          event,
+          namespace: "admin-tracking-email",
+          identity: guard.session!.user.id,
+          limit: 10,
+          windowMs: 60 * 60 * 1000,
+        })
+      ) {
+        return apiJson(
+          { error: "Too many tracking email attempts. Try again later." },
+          { status: 429 },
+        );
+      }
+
+      const notification = await deliverTrackingEmail({
+        event,
+        actorId: guard.session!.user.id,
+        order,
+        trackingNumber: order.trackingNumber,
+        trackingUrl: order.trackingUrl,
+      });
+      return apiJson({ ok: true, notification });
+    }
+
     if (input.action === "ship") {
+      if (order.status === "shipped") {
+        return apiJson(
+          { error: "This order is already shipped. Use resend tracking email instead." },
+          { status: 409 },
+        );
+      }
+      if (!["paid", "processing"].includes(order.status)) {
+        return apiJson(
+          { error: "Only a paid or processing order can be marked as shipped." },
+          { status: 400 },
+        );
+      }
       await db
         .update(orders)
         .set({
@@ -231,24 +363,13 @@ export async function POST(event: APIEvent) {
         })
         .where(eq(orders.id, order.id));
 
-      void sendTransactionalEmail({
-        to: order.email,
-        subject: `Your TCGHaven order ${order.orderNumber} has shipped`,
-        text: `Your order has shipped. Tracking number: ${input.trackingNumber}\nTrack it here: ${input.trackingUrl}`,
-        html: renderTransactionalEmail({
-          preheader: `${order.orderNumber} is on its way with PostNL.`,
-          label: "Dispatched",
-          heading: "Your cards are on the way",
-          intro: `Order ${order.orderNumber} has left TCGHaven. PostNL tracking may take a little while to show its first scan.`,
-          contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 0"><tr><td bgcolor="#101512" style="padding:18px;color:#ffffff;font-size:13px;line-height:20px"><span style="color:#91a098">PostNL tracking number</span><br><strong style="font-size:18px;letter-spacing:.4px">${escapeEmailHtml(input.trackingNumber)}</strong></td></tr></table>`,
-          action: {
-            label: "Track package",
-            url: input.trackingUrl,
-          },
-          notice: "Tracking updates are supplied by PostNL. The first scan can appear after your parcel reaches their sorting network.",
-        }),
-        idempotencyKey: `shipped-${order.id}-${input.trackingNumber}`,
-      }).catch(() => console.error("Shipping email delivery failed."));
+      const notification = await deliverTrackingEmail({
+        event,
+        actorId: guard.session!.user.id,
+        order,
+        trackingNumber: input.trackingNumber,
+        trackingUrl: input.trackingUrl,
+      });
 
       await writeAuditLog({
         event,
@@ -259,7 +380,7 @@ export async function POST(event: APIEvent) {
         summary: `Tracking ${input.trackingNumber} added to ${order.orderNumber}.`,
       });
 
-      return apiJson({ ok: true });
+      return apiJson({ ok: true, notification });
     }
 
     if (input.action === "record_return") {

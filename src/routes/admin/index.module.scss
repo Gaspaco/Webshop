@@ -1976,6 +1976,56 @@
   color: #04110a !important;
 }
 
+.trackingEmailState {
+  display: grid !important;
+  margin-top: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 0.5rem;
+  background: rgba($white, 0.035);
+  gap: 0.2rem !important;
+
+  span {
+    color: $gray-500;
+    font-size: 0.56rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: $gray-300;
+    font-size: 0.72rem;
+  }
+
+  small {
+    color: $gray-500;
+    font-size: 0.58rem;
+    line-height: 1.45;
+  }
+}
+
+.trackingEmailSent {
+  background: rgba($primary, 0.07);
+
+  strong {
+    color: $primary-light;
+  }
+}
+
+.trackingEmailFailed {
+  background: rgba(#ef4444, 0.07);
+
+  strong,
+  small {
+    color: #fca5a5;
+  }
+}
+
+.secondaryAction {
+  background: transparent !important;
+  color: $gray-300 !important;
+}
+
 .dangerAction,
 .removeConfirm {
   border-color: rgba(#ef4444, 0.3) !important;
