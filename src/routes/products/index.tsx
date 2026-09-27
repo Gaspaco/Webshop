@@ -17,6 +17,7 @@ import ProductCard, {
 import { CATEGORY_LIST, type ShopProduct } from "~/lib/categories";
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { useCart } from "~/lib/cart";
+import { isActivePreorder } from "~/lib/game-storefront";
 import styles from "./index.module.scss";
 
 const GAME_OPTIONS = [
@@ -94,7 +95,7 @@ function searchableText(product: ShopProduct) {
     product.description,
     product.badge,
     product.releaseDate,
-    product.preorder ? "pre-order upcoming" : "",
+    isActivePreorder(product) ? "pre-order upcoming" : "",
     product.productType,
     product.condition,
     product.language,

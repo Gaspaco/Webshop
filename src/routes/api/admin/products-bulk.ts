@@ -1,5 +1,5 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -15,16 +15,18 @@ const bulkUpdateSchema = z
     status: z.enum(["draft", "active", "archived"]).optional(),
     stock: z.number().int().min(0).max(1_000_000).optional(),
     priceCents: z.number().int().min(1).max(100_000_000).optional(),
+    tag: z.string().trim().max(32).optional(),
   })
   .superRefine((input, context) => {
     if (
       input.status === undefined &&
       input.stock === undefined &&
-      input.priceCents === undefined
+      input.priceCents === undefined &&
+      input.tag === undefined
     ) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Choose a visibility, quantity, or price to change.",
+        message: "Choose a visibility, quantity, price, or tag to change.",
       });
     }
     if (new Set(input.variantIds).size !== input.variantIds.length) {
@@ -47,8 +49,10 @@ export async function PATCH(event: APIEvent) {
         id: productVariants.id,
         productId: productVariants.productId,
         stock: productVariants.stock,
+        metadata: products.metadata,
       })
       .from(productVariants)
+      .innerJoin(products, eq(products.id, productVariants.productId))
       .where(inArray(productVariants.id, input.variantIds));
 
     if (selectedVariants.length !== input.variantIds.length) {
@@ -59,12 +63,29 @@ export async function PATCH(event: APIEvent) {
     }
 
     const productIds = [...new Set(selectedVariants.map(variant => variant.productId))];
+    const metadataByProduct = new Map(
+      selectedVariants.map(variant => [variant.productId, variant.metadata ?? {}]),
+    );
     await db.transaction(async tx => {
       if (input.status !== undefined) {
         await tx
           .update(products)
           .set({ status: input.status })
           .where(inArray(products.id, productIds));
+      }
+
+      if (input.tag !== undefined) {
+        for (const productId of productIds) {
+          await tx
+            .update(products)
+            .set({
+              metadata: {
+                ...(metadataByProduct.get(productId) ?? {}),
+                badge: input.tag || null,
+              },
+            })
+            .where(eq(products.id, productId));
+        }
       }
 
       const variantChanges: Partial<typeof productVariants.$inferInsert> = {};
@@ -103,6 +124,7 @@ export async function PATCH(event: APIEvent) {
         status: input.status,
         stock: input.stock,
         priceCents: input.priceCents,
+        tag: input.tag,
       },
     });
 

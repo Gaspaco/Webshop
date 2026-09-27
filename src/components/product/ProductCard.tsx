@@ -1,7 +1,8 @@
 import { A } from "@solidjs/router";
-import { createEffect, createMemo, createSignal, For, onCleanup, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import { formatPrice } from "~/lib/cart";
+import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
 import styles from "./ProductSection.module.scss";
 
 export type BoxTheme =
@@ -43,6 +44,7 @@ export type SectionProduct = {
   finish?: string;
   game?: string;
   preorder?: boolean;
+  releaseDate?: string;
   productType?: string;
   variants?: ProductVariantOption[];
   variantId?: string;
@@ -99,6 +101,7 @@ export default function ProductCard(props: ProductCardProps) {
   const [selectedVariantId, setSelectedVariantId] = createSignal("");
   const [imageFailed, setImageFailed] = createSignal(false);
   const [imageLoaded, setImageLoaded] = createSignal(false);
+  const [now, setNow] = createSignal(Date.now());
   const selectedVariant = createMemo(() =>
     p.variants?.find(variant => variant.id === selectedVariantId()),
   );
@@ -110,6 +113,9 @@ export default function ProductCard(props: ProductCardProps) {
   const displayVariant = createMemo(() => selectedVariant() ?? mainVariant());
   const displayImage = createMemo(() => displayVariant()?.image ?? p.image);
   const orderedVariants = createMemo(() => variantsWithAvailableFirst(p.variants));
+  const activePreorder = createMemo(() => isActivePreorder(p, now()));
+  const preorderCountdown = createMemo(() => formatReleaseCountdown(p, now()));
+  const displayBadge = createMemo(() => activePreorder() ? "Pre-order" : p.badge);
   const hasCardTilt = createMemo(() =>
     p.productType === "single" || (
       p.game === "yugioh" && Boolean(p.rarity || p.finish || displayVariant()?.finish)
@@ -124,7 +130,13 @@ export default function ProductCard(props: ProductCardProps) {
   const hasChoices = () => (p.variants?.length ?? 0) > 1;
   const hasAvailableChoice = () => p.variants?.some(variant => variant.stock > 0) ?? false;
   const isUnavailable = () =>
-    !p.preorder && !hasChoices() && Boolean(mainVariant() && mainVariant()!.stock <= 0);
+    !activePreorder() && !hasChoices() && Boolean(mainVariant() && mainVariant()!.stock <= 0);
+
+  onMount(() => {
+    if (!p.preorder || !p.releaseDate) return;
+    const interval = window.setInterval(() => setNow(Date.now()), 60_000);
+    onCleanup(() => window.clearInterval(interval));
+  });
 
   const openQuickView = () => {
     setSelectedVariantId("");
@@ -208,8 +220,13 @@ export default function ProductCard(props: ProductCardProps) {
             />
           </span>
         </Show>
-        <Show when={p.badge}>
-          <span class={styles.badge}>{p.badge}</span>
+        <Show when={displayBadge()}>
+          {badge => <span class={styles.badge}>{badge()}</span>}
+        </Show>
+        <Show when={activePreorder() && preorderCountdown()}>
+          <span class={styles.preorderCountdown}>
+            Releases in <strong>{preorderCountdown()}</strong>
+          </span>
         </Show>
       </A>
 
@@ -266,7 +283,7 @@ export default function ProductCard(props: ProductCardProps) {
                   </svg>
                 }
               >
-                <span>{isUnavailable() ? "Sold out" : p.preorder ? "Pre-order" : "Add"}</span>
+                <span>{isUnavailable() ? "Sold out" : activePreorder() ? "Pre-order" : "Add"}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 5v14M5 12h14" />
                 </svg>

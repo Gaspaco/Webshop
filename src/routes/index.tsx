@@ -9,6 +9,7 @@ import ShopByGame from "~/components/home/ShopByGame";
 import CollectionPaths from "~/components/home/CollectionPaths";
 import ProductSection, { type SectionProduct } from "~/components/product/ProductSection";
 import type { ShopProduct } from "~/lib/categories";
+import { isUpcoming } from "~/lib/game-storefront";
 import { getHomeData, type HomeContent } from "~/lib/home-data.server";
 import styles from "./index.module.scss";
 
@@ -32,12 +33,7 @@ export default function Home() {
 
   const upcomingProducts = createMemo(() =>
     catalogProducts()
-      .filter(product => {
-        if (product.preorder) return true;
-        if (!product.releaseDate) return false;
-        const time = Date.parse(`${product.releaseDate}T12:00:00`);
-        return Number.isFinite(time) && time > Date.now();
-      })
+      .filter(isUpcoming)
       .sort((a, b) => {
         const aTime = a.releaseDate ? Date.parse(`${a.releaseDate}T12:00:00`) : Number.MAX_SAFE_INTEGER;
         const bTime = b.releaseDate ? Date.parse(`${b.releaseDate}T12:00:00`) : Number.MAX_SAFE_INTEGER;

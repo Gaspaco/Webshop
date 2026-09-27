@@ -142,6 +142,12 @@ export async function POST(event: APIEvent) {
 
   try {
     const input = createProductSchema.parse(await event.request.json());
+    if (input.preorder && !input.releaseDate) {
+      return apiJson(
+        { error: "Choose a release date before enabling pre-order." },
+        { status: 400 },
+      );
+    }
     const slug = toSlug(input.slug || input.name);
     if (!slug) {
       return apiJson({ error: "Enter a product name." }, { status: 400 });
@@ -246,6 +252,12 @@ export async function PATCH(event: APIEvent) {
       payload.id.startsWith("static:")
     ) {
       const input = starterOverrideSchema.parse(payload);
+      if (input.preorder && !input.releaseDate) {
+        return apiJson(
+          { error: "Choose a release date before enabling pre-order." },
+          { status: 400 },
+        );
+      }
       const starterSlug = input.id.slice("static:".length);
       const starter = findProduct(starterSlug);
       if (!starter || input.variantId !== `static:${starterSlug}`) {
@@ -336,6 +348,12 @@ export async function PATCH(event: APIEvent) {
     }
 
     const input = updateProductSchema.parse(payload);
+    if (input.preorder === true && input.releaseDate === "") {
+      return apiJson(
+        { error: "Choose a release date before enabling pre-order." },
+        { status: 400 },
+      );
+    }
     const [currentVariant] = await db
       .select({ stock: productVariants.stock })
       .from(productVariants)

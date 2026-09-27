@@ -6,6 +6,7 @@ import { createGameCatalog } from "~/lib/game-catalog";
 import {
   getGameIdentity,
   groupProductsBySet,
+  isActivePreorder,
   isUpcoming,
   releaseTime,
 } from "~/lib/game-storefront";
@@ -30,7 +31,9 @@ export default function GameLandingPage() {
   const featured = createMemo(() =>
     [...products()]
       .sort((a, b) => {
-        if (a.preorder !== b.preorder) return a.preorder ? -1 : 1;
+        const aPreorder = isActivePreorder(a);
+        const bPreorder = isActivePreorder(b);
+        if (aPreorder !== bPreorder) return aPreorder ? -1 : 1;
         return releaseTime(b) - releaseTime(a);
       })
       .find(product => product.image),

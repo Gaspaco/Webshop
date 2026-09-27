@@ -1223,13 +1223,26 @@ function ProductRow(props: {
                 </label>
                 <label>
                   <span>Release date</span>
-                  <input type="date" value={releaseDate()} onInput={event => setReleaseDate(event.currentTarget.value)} />
+                  <input
+                    type="date"
+                    value={releaseDate()}
+                    onInput={event => {
+                      const value = event.currentTarget.value;
+                      setReleaseDate(value);
+                      if (!value) setPreorder(false);
+                    }}
+                  />
                   <small>Future dates place this item under upcoming releases.</small>
                 </label>
                 <label class={styles.editorToggle}>
-                  <input type="checkbox" checked={preorder()} onChange={event => setPreorder(event.currentTarget.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={preorder()}
+                    disabled={!releaseDate()}
+                    onChange={event => setPreorder(event.currentTarget.checked)}
+                  />
                   <span>Accept as pre-order</span>
-                  <small>Shows this product in the upcoming release shelf.</small>
+                  <small>Select a release date first. The tag and countdown end automatically.</small>
                 </label>
                 <div class={styles.editorSectionHeading}>
                   <span>Pricing and inventory</span>
@@ -2944,6 +2957,7 @@ export default function Admin() {
   const [bulkVisibility, setBulkVisibility] = createSignal("");
   const [bulkStock, setBulkStock] = createSignal("");
   const [bulkPrice, setBulkPrice] = createSignal("");
+  const [bulkTag, setBulkTag] = createSignal("");
   const [bulkMessage, setBulkMessage] = createSignal("");
   const [bulkBusy, setBulkBusy] = createSignal(false);
   const [readinessBusy, setReadinessBusy] = createSignal<string | null>(null);
@@ -3033,6 +3047,7 @@ export default function Admin() {
       setBulkVisibility("");
       setBulkStock("");
       setBulkPrice("");
+      setBulkTag("");
       setBulkMessage(`${result.updatedProducts ?? targets.length} products updated.`);
     } catch {
       setBulkMessage("The bulk update could not reach the server. Try again.");
@@ -3062,6 +3077,15 @@ export default function Admin() {
     }
     void applyBulk({ priceCents: Math.round(value * 100) });
   };
+  const applyBulkTag = () => {
+    const tag = bulkTag().trim();
+    if (!tag) {
+      setBulkMessage("Enter a tag, or use Clear tag.");
+      return;
+    }
+    void applyBulk({ tag });
+  };
+  const clearBulkTag = () => void applyBulk({ tag: "" });
   const updateReadinessConfirmation = async (
     id: "backups" | "vat" | "legal-review",
     confirmed: boolean,
@@ -4235,12 +4259,26 @@ export default function Admin() {
                         </label>
                         <label>
                           <span>Release date</span>
-                          <input type="date" value={draft().releaseDate} onInput={event => patchDraft("releaseDate", event.currentTarget.value)} />
+                          <input
+                            type="date"
+                            value={draft().releaseDate}
+                            onInput={event => {
+                              const value = event.currentTarget.value;
+                              patchDraft("releaseDate", value);
+                              if (!value) patchDraft("preorder", false);
+                            }}
+                          />
                           <small>Future dates appear as upcoming releases.</small>
                         </label>
                         <label class={styles.editorToggle}>
-                          <input type="checkbox" checked={draft().preorder} onChange={event => patchDraft("preorder", event.currentTarget.checked)} />
+                          <input
+                            type="checkbox"
+                            checked={draft().preorder}
+                            disabled={!draft().releaseDate}
+                            onChange={event => patchDraft("preorder", event.currentTarget.checked)}
+                          />
                           <span>Accept as pre-order</span>
+                          <small>The storefront countdown ends on the release date.</small>
                         </label>
                         <label class={styles.spanTwo}>
                           <span>Description</span>
@@ -4419,6 +4457,31 @@ export default function Admin() {
                             onClick={applyBulkPrice}
                           >
                             Set
+                          </button>
+                        </label>
+                        <label class={`${styles.bulkField} ${styles.bulkTagField}`}>
+                          <span>Storefront tag</span>
+                          <input
+                            type="text"
+                            maxlength="32"
+                            placeholder="New arrival"
+                            disabled={bulkBusy()}
+                            value={bulkTag()}
+                            onInput={event => setBulkTag(event.currentTarget.value)}
+                          />
+                          <button
+                            type="button"
+                            disabled={bulkBusy() || !bulkTag().trim()}
+                            onClick={applyBulkTag}
+                          >
+                            Set
+                          </button>
+                          <button
+                            type="button"
+                            disabled={bulkBusy()}
+                            onClick={clearBulkTag}
+                          >
+                            Clear tag
                           </button>
                         </label>
                       </div>

@@ -81,16 +81,37 @@ export function getGameIdentity(slug: string) {
   return GAME_IDENTITIES[slug] ?? DEFAULT_GAME_IDENTITY;
 }
 
-export function releaseTime(product: ShopProduct) {
+export function releaseTime(product: Pick<ShopProduct, "releaseDate">) {
   if (!product.releaseDate) return 0;
-  const time = Date.parse(`${product.releaseDate}T12:00:00`);
+  const time = Date.parse(`${product.releaseDate}T00:00:00Z`);
   return Number.isFinite(time) ? time : 0;
 }
 
-export function isUpcoming(product: ShopProduct) {
-  if (product.preorder) return true;
+export function isActivePreorder(product: Pick<ShopProduct, "preorder" | "releaseDate">, now = Date.now()) {
+  if (!product.preorder) return false;
   const time = releaseTime(product);
-  return time > 0 && time > Date.now();
+  return time > now;
+}
+
+export function isUpcoming(product: ShopProduct, now = Date.now()) {
+  const time = releaseTime(product);
+  return time > 0 && time > now;
+}
+
+export function formatReleaseCountdown(
+  product: Pick<ShopProduct, "releaseDate">,
+  now = Date.now(),
+) {
+  const remaining = releaseTime(product) - now;
+  if (remaining <= 0) return "";
+
+  const totalMinutes = Math.ceil(remaining / 60_000);
+  const days = Math.floor(totalMinutes / 1_440);
+  const hours = Math.floor((totalMinutes % 1_440) / 60);
+  const minutes = totalMinutes % 60;
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${Math.max(1, minutes)}m`;
 }
 
 export function formatReleaseDate(value?: string) {

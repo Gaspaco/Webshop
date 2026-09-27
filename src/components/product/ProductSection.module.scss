@@ -299,6 +299,24 @@
   transform: translateY(-2px);
 }
 
+.preorderCountdown {
+  position: absolute;
+  z-index: 3;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 0.35rem;
+  background: rgba(#070a08, 0.9);
+  color: $gray-300;
+  font-size: 0.65rem;
+  font-weight: 650;
+
+  strong {
+    color: $primary-light;
+    font-weight: 800;
+  }
+}
+
 .cardBody {
   display: flex;
   flex-direction: column;

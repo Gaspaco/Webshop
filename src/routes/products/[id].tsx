@@ -16,6 +16,7 @@ import {
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import type { ShopProduct } from "~/lib/categories";
 import { formatPrice, useCart } from "~/lib/cart";
+import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
 import { variantRarity } from "~/lib/card-finish";
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import styles from "./[id].module.scss";
@@ -162,8 +163,22 @@ export default function ProductDetail() {
   const [bulkOpen, setBulkOpen] = createSignal(false);
   const [bulkPicks, setBulkPicks] = createSignal<Record<string, number>>({});
   const [bulkAdded, setBulkAdded] = createSignal(0);
+  const [now, setNow] = createSignal(Date.now());
 
-  onMount(() => setClientReady(true));
+  onMount(() => {
+    setClientReady(true);
+    const interval = window.setInterval(() => setNow(Date.now()), 60_000);
+    onCleanup(() => window.clearInterval(interval));
+  });
+
+  const activePreorder = () => {
+    const current = product();
+    return current ? isActivePreorder(current, now()) : false;
+  };
+  const preorderCountdown = () => {
+    const current = product();
+    return current ? formatReleaseCountdown(current, now()) : "";
+  };
 
   createEffect(() => {
     const slug = product()?.id;
@@ -526,6 +541,13 @@ export default function ProductDetail() {
                   </Show>
                 </header>
 
+                <Show when={activePreorder() && preorderCountdown()}>
+                  <div class={styles.preorderNotice}>
+                    <strong>Pre-order</strong>
+                    <span>Releases in {preorderCountdown()}</span>
+                  </div>
+                </Show>
+
                 <div class={styles.priceStockRow}>
                   <div class={styles.priceBlock}>
                     <Show when={activeProduct()?.compareAtPriceCents && activeProduct()!.compareAtPriceCents! > (activeProduct()?.priceCents ?? 0)}>
@@ -664,7 +686,9 @@ export default function ProductDetail() {
                           ? "Choose a variant"
                           : activeProduct()?.stock === 0
                             ? "Out of stock"
-                            : "Add to cart"}
+                            : activePreorder()
+                              ? "Pre-order"
+                              : "Add to cart"}
                       </Show>
                     </button>
                   </div>

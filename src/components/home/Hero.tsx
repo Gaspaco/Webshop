@@ -2,6 +2,7 @@ import { A } from "@solidjs/router";
 import { createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import { formatPrice, useCart } from "~/lib/cart";
 import type { ShopProduct } from "~/lib/categories";
+import { isActivePreorder } from "~/lib/game-storefront";
 import styles from "./Hero.module.scss";
 
 type Slide = {
@@ -76,6 +77,7 @@ export default function Hero(props: {
   const [active, setActive] = createSignal(0);
   const [paused, setPaused] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
+  const [now, setNow] = createSignal(Date.now());
 
   const slides = createMemo<Slide[]>(() => {
     const newestSealedByGame = HERO_GAME_ORDER
@@ -106,7 +108,9 @@ export default function Hero(props: {
           id: product.id,
           set: product.set ?? product.gameName,
           game: product.gameName,
-          tag: product.badge ?? (product.productType === "sealed" ? "Sealed" : "Single card"),
+          tag: isActivePreorder(product, now())
+            ? "Pre-order"
+            : product.badge ?? (product.productType === "sealed" ? "Sealed" : "Single card"),
           title: product.name,
           blurb: product.description ?? `Available now from our ${product.gameName} catalogue.`,
           priceCents: mainVariant?.priceCents ?? product.priceCents ?? 0,
@@ -158,6 +162,8 @@ export default function Hero(props: {
   });
 
   onMount(() => {
+    const clockId = window.setInterval(() => setNow(Date.now()), 60_000);
+    onCleanup(() => window.clearInterval(clockId));
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = setInterval(() => {
       const count = slides().length;
