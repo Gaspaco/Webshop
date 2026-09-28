@@ -148,10 +148,14 @@ function priceCents(value: string | null | undefined) {
 
 function finishPrice(card: ScryfallCard, finish: string) {
   if (finish === "foil") {
-    return priceCents(card.prices?.eur_foil);
+    return priceCents(card.prices?.eur_foil) || priceCents(card.prices?.eur);
   }
-  if (finish === "etched") return 0;
-  return priceCents(card.prices?.eur);
+  if (finish === "etched") {
+    // Scryfall has no EUR-specific etched field. Use the EUR foil reference
+    // for this exact printing when available, then its normal EUR reference.
+    return priceCents(card.prices?.eur_foil) || priceCents(card.prices?.eur);
+  }
+  return priceCents(card.prices?.eur) || priceCents(card.prices?.eur_foil);
 }
 
 function finishLabel(finish: string) {
@@ -332,6 +336,10 @@ export async function POST(event: APIEvent) {
     });
     const productArtwork = variants.find(variant => variant.image)?.image ?? null;
     const firstPrinting = variants[0]?.printing ?? card;
+    const variantPrices = variants.map(({ printing, finish }) =>
+      finishPrice(printing, finish),
+    );
+    const pricesNeedingReview = variantPrices.filter(price => price <= 0).length;
 
     const created = await db.transaction(async tx => {
       const [product] = await tx
@@ -359,6 +367,8 @@ export async function POST(event: APIEvent) {
             typeLine: card.type_line,
             colors: card.colors,
             artist: firstPrinting.artist,
+            priceNeedsReview: pricesNeedingReview > 0,
+            pricesNeedingReview,
           },
         })
         .returning({ id: products.id, name: products.name, slug: products.slug });
@@ -373,7 +383,7 @@ export async function POST(event: APIEvent) {
         finish: finishLabel(finish),
         imageUrl: cardImage(printing),
         isDefault: index === 0,
-        priceCents: finishPrice(printing, finish),
+        priceCents: variantPrices[index] ?? 0,
         stock: 0,
         trackInventory: true,
       }));
@@ -395,6 +405,7 @@ export async function POST(event: APIEvent) {
         printings: printings.length,
         variants: variants.length,
         variantImages: variants.filter(variant => variant.image).length,
+        pricesNeedingReview,
       },
     });
 

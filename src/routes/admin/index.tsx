@@ -221,6 +221,7 @@ type YugiohPrinting = {
   setCode: string;
   rarity: string;
   rarityCode: string | null;
+  sourcePriceCents: number | null;
 };
 
 type YugiohCard = {
@@ -478,6 +479,23 @@ function formatMoney(cents: number, currency = "EUR") {
   }).format(cents / 100);
 }
 
+function yugiohReferencePrice(card: YugiohCard) {
+  const prices = card.printings
+    .map(printing => printing.sourcePriceCents)
+    .filter((price): price is number => typeof price === "number" && price > 0)
+    .sort((left, right) => left - right);
+  if (!prices.length) {
+    return card.cardmarketPriceCents && card.cardmarketPriceCents > 0
+      ? formatMoney(card.cardmarketPriceCents)
+      : "Price unavailable";
+  }
+  const lowest = prices[0]!;
+  const highest = prices[prices.length - 1]!;
+  return lowest === highest
+    ? formatMoney(lowest)
+    : `${formatMoney(lowest)} – ${formatMoney(highest)}`;
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-NL", {
     day: "2-digit",
@@ -530,9 +548,11 @@ function matchesCatalogueFilters(
   product: AdminProduct,
   query: string,
   game: string,
+  productType: string,
   status: string,
 ) {
   if (game !== "all" && product.game !== game) return false;
+  if (productType !== "all" && product.productType !== productType) return false;
   if (status !== "all" && product.status !== status) return false;
 
   const terms = query
@@ -1073,11 +1093,14 @@ function ProductRow(props: {
               </Show>
               <div>
                 <strong>{name()}</strong>
-              <span>
-                {metadataText("source") === "starter"
-                  ? "Starter listing, save once to manage"
-                  : sku() || "No SKU"}
-              </span>
+                <span>
+                  {metadataText("source") === "starter"
+                    ? "Starter listing, save once to manage"
+                    : sku() || "No SKU"}
+                </span>
+                <Show when={(props.product.priceCents ?? 0) <= 0}>
+                  <span class={styles.priceReview}>Price needed before publishing</span>
+                </Show>
               </div>
             </div>
           </div>
@@ -2910,6 +2933,7 @@ export default function Admin() {
   const [composerOpen, setComposerOpen] = createSignal(false);
   const [catalogSearch, setCatalogSearch] = createSignal("");
   const [catalogGame, setCatalogGame] = createSignal("all");
+  const [catalogType, setCatalogType] = createSignal("all");
   const [catalogStatus, setCatalogStatus] = createSignal("all");
   const [catalogPage, setCatalogPage] = createSignal(1);
   const [catalogPageSize, setCatalogPageSize] = createSignal<number>(25);
@@ -2958,6 +2982,7 @@ export default function Admin() {
   const [bulkStock, setBulkStock] = createSignal("");
   const [bulkPrice, setBulkPrice] = createSignal("");
   const [bulkTag, setBulkTag] = createSignal("");
+  const [bulkPreorderDate, setBulkPreorderDate] = createSignal("");
   const [bulkMessage, setBulkMessage] = createSignal("");
   const [bulkBusy, setBulkBusy] = createSignal(false);
   const [readinessBusy, setReadinessBusy] = createSignal<string | null>(null);
@@ -2968,6 +2993,7 @@ export default function Admin() {
         product,
         catalogSearch(),
         catalogGame(),
+        catalogType(),
         catalogStatus(),
       ),
     );
@@ -3048,6 +3074,7 @@ export default function Admin() {
       setBulkStock("");
       setBulkPrice("");
       setBulkTag("");
+      setBulkPreorderDate("");
       setBulkMessage(`${result.updatedProducts ?? targets.length} products updated.`);
     } catch {
       setBulkMessage("The bulk update could not reach the server. Try again.");
@@ -3086,6 +3113,20 @@ export default function Admin() {
     void applyBulk({ tag });
   };
   const clearBulkTag = () => void applyBulk({ tag: "" });
+  const applyBulkPreorder = () => {
+    const releaseDate = bulkPreorderDate();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(releaseDate)) {
+      setBulkMessage("Choose a release date before starting a pre-order.");
+      return;
+    }
+    const releaseAt = Date.parse(`${releaseDate}T00:00:00Z`);
+    if (!Number.isFinite(releaseAt) || releaseAt <= Date.now()) {
+      setBulkMessage("The pre-order release date must be in the future.");
+      return;
+    }
+    void applyBulk({ preorder: true, releaseDate });
+  };
+  const endBulkPreorder = () => void applyBulk({ preorder: false });
   const updateReadinessConfirmation = async (
     id: "backups" | "vat" | "legal-review",
     confirmed: boolean,
@@ -4358,6 +4399,20 @@ export default function Admin() {
                       </select>
                     </label>
                     <label>
+                      <span>Product type</span>
+                      <select value={catalogType()} onChange={event => {
+                        setCatalogType(event.currentTarget.value);
+                        setCatalogPage(1);
+                        clearSelection();
+                      }}>
+                        <option value="all">Every type</option>
+                        <option value="sealed">Sealed</option>
+                        <option value="single">Singles</option>
+                        <option value="graded">Graded</option>
+                        <option value="accessory">Accessories</option>
+                      </select>
+                    </label>
+                    <label>
                       <span>Visibility</span>
                       <select value={catalogStatus()} onChange={event => {
                         setCatalogStatus(event.currentTarget.value);
@@ -4464,7 +4519,8 @@ export default function Admin() {
                           <input
                             type="text"
                             maxlength="32"
-                            placeholder="New arrival"
+                            list="bulk-tag-presets"
+                            placeholder="New"
                             disabled={bulkBusy()}
                             value={bulkTag()}
                             onInput={event => setBulkTag(event.currentTarget.value)}
@@ -4482,6 +4538,36 @@ export default function Admin() {
                             onClick={clearBulkTag}
                           >
                             Clear tag
+                          </button>
+                          <datalist id="bulk-tag-presets">
+                            <option value="New" />
+                            <option value="New arrival" />
+                            <option value="Restock" />
+                            <option value="Limited" />
+                            <option value="Sale" />
+                          </datalist>
+                        </label>
+                        <label class={`${styles.bulkField} ${styles.bulkPreorderField}`}>
+                          <span>Pre-order release</span>
+                          <input
+                            type="date"
+                            disabled={bulkBusy()}
+                            value={bulkPreorderDate()}
+                            onInput={event => setBulkPreorderDate(event.currentTarget.value)}
+                          />
+                          <button
+                            type="button"
+                            disabled={bulkBusy() || !bulkPreorderDate()}
+                            onClick={applyBulkPreorder}
+                          >
+                            Start pre-order
+                          </button>
+                          <button
+                            type="button"
+                            disabled={bulkBusy()}
+                            onClick={endBulkPreorder}
+                          >
+                            End
                           </button>
                         </label>
                       </div>
@@ -4548,6 +4634,7 @@ export default function Admin() {
                           <button type="button" onClick={() => {
                             setCatalogSearch("");
                             setCatalogGame("all");
+                            setCatalogType("all");
                             setCatalogStatus("all");
                             setCatalogPage(1);
                             clearSelection();
@@ -4935,11 +5022,7 @@ export default function Admin() {
                               </div>
                               <div class={styles.yugiohCardPrice}>
                                 <span>Reference</span>
-                                <strong>
-                                  {card.cardmarketPriceCents === null
-                                    ? "No price"
-                                    : formatMoney(card.cardmarketPriceCents)}
-                                </strong>
+                                <strong>{yugiohReferencePrice(card)}</strong>
                               </div>
                               <button
                                 type="button"

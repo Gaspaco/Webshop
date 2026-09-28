@@ -30,9 +30,25 @@ type SetDetail = SetBrief & { cards?: CardBrief[] };
 type CardmarketPrices = {
   unit?: string;
   avg?: number;
+  low?: number;
   trend?: number;
+  avg1?: number;
+  avg7?: number;
+  avg30?: number;
   "avg-holo"?: number;
+  "low-holo"?: number;
   "trend-holo"?: number;
+  "avg1-holo"?: number;
+  "avg7-holo"?: number;
+  "avg30-holo"?: number;
+};
+
+type DetailedVariant = {
+  type: string;
+  subtype?: string;
+  stamp?: string[];
+  variantId?: string;
+  pricing?: { cardmarket?: CardmarketPrices };
 };
 
 type CardDetail = CardBrief & {
@@ -53,6 +69,7 @@ type CardDetail = CardBrief & {
     firstEdition?: boolean;
     wPromo?: boolean;
   };
+  variants_detailed?: DetailedVariant[];
   pricing?: { cardmarket?: CardmarketPrices };
 };
 
@@ -126,6 +143,14 @@ function cents(value: number | undefined) {
     : 0;
 }
 
+function firstPrice(...values: Array<number | undefined>) {
+  for (const value of values) {
+    const amount = cents(value);
+    if (amount > 0) return amount;
+  }
+  return 0;
+}
+
 function finishes(card: CardDetail) {
   const values: string[] = [];
   if (card.variants.normal) values.push("Normal");
@@ -140,14 +165,64 @@ function finishes(card: CardDetail) {
   return [...new Set(values.length ? values : ["Standard"])];
 }
 
-function priceFor(card: CardDetail, finish: string) {
-  const prices = card.pricing?.cardmarket;
+function priceFor(prices: CardmarketPrices | undefined, finish: string) {
   if (prices?.unit && prices.unit !== "EUR") return 0;
-  if (finish.includes("First Edition") || finish === "W Promo") return 0;
-  if (finish.includes("Holo")) {
-    return cents(prices?.["trend-holo"] ?? prices?.["avg-holo"]);
+  if (/holo|reverse/i.test(finish)) {
+    return firstPrice(
+      prices?.["trend-holo"],
+      prices?.["avg7-holo"],
+      prices?.["avg30-holo"],
+      prices?.["avg-holo"],
+      prices?.["low-holo"],
+      prices?.trend,
+      prices?.avg7,
+      prices?.avg30,
+      prices?.avg,
+      prices?.low,
+    );
   }
-  return cents(prices?.trend ?? prices?.avg);
+  return firstPrice(
+    prices?.trend,
+    prices?.avg7,
+    prices?.avg30,
+    prices?.avg,
+    prices?.low,
+    prices?.["trend-holo"],
+    prices?.["avg-holo"],
+  );
+}
+
+function titleCase(value: string) {
+  return value
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+function cardVariants(card: CardDetail) {
+  const detailed = card.variants_detailed ?? [];
+  if (detailed.length) {
+    return detailed.map((variant, index) => {
+      const label = [
+        titleCase(variant.type || "Standard"),
+        variant.subtype ? titleCase(variant.subtype) : "",
+        ...(variant.stamp ?? []).map(titleCase),
+      ].filter(Boolean).join(" · ");
+      return {
+        key: variant.variantId ?? `${variant.type}-${index}`,
+        name: label,
+        priceCents: priceFor(
+          variant.pricing?.cardmarket ?? card.pricing?.cardmarket,
+          variant.type,
+        ),
+      };
+    });
+  }
+
+  return finishes(card).map((finish, index) => ({
+    key: `${finish}-${index}`,
+    name: finish,
+    priceCents: priceFor(card.pricing?.cardmarket, finish),
+  }));
 }
 
 function skuFor(card: CardDetail, finish: string) {
@@ -267,7 +342,8 @@ export async function POST(event: APIEvent) {
       return apiJson({ error: "This Pokémon card is already in the catalogue." }, { status: 409 });
     }
 
-    const cardFinishes = finishes(card);
+    const cardFinishes = cardVariants(card);
+    const pricesNeedingReview = cardFinishes.filter(variant => variant.priceCents <= 0).length;
     const artwork = imageUrl(card.image);
     const created = await db.transaction(async tx => {
       const [product] = await tx
@@ -295,22 +371,24 @@ export async function POST(event: APIEvent) {
             stage: card.stage,
             regulationMark: card.regulationMark,
             illustrator: card.illustrator,
+            priceNeedsReview: pricesNeedingReview > 0,
+            pricesNeedingReview,
           },
         })
         .returning({ id: products.id, name: products.name, slug: products.slug });
       if (!product) throw new Error("Product was not created.");
 
       await tx.insert(productVariants).values(
-        cardFinishes.map((finish, index) => ({
+        cardFinishes.map((variant, index) => ({
           productId: product.id,
-          sku: skuFor(card, finish),
-          name: `${card.set.name} · ${card.localId} · ${card.rarity ?? "Unspecified rarity"} · ${finish}`.slice(0, 120),
+          sku: skuFor(card, variant.key),
+          name: `${card.set.name} · ${card.localId} · ${card.rarity ?? "Unspecified rarity"} · ${variant.name}`.slice(0, 120),
           condition: "Near Mint",
           language: "English",
-          finish,
+          finish: variant.name,
           imageUrl: artwork,
           isDefault: index === 0,
-          priceCents: priceFor(card, finish),
+          priceCents: variant.priceCents,
           stock: 0,
           trackInventory: true,
         })),
@@ -330,6 +408,7 @@ export async function POST(event: APIEvent) {
         setId: card.set.id,
         variants: cardFinishes.length,
         hasImage: Boolean(artwork),
+        pricesNeedingReview,
       },
     });
 

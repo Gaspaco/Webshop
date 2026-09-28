@@ -543,7 +543,7 @@
   padding: 0.85rem;
   border: 1px solid rgba($white, 0.08);
   border-radius: 0.65rem;
-  grid-template-columns: minmax(15rem, 1fr) 10rem 10rem 8rem auto;
+  grid-template-columns: minmax(15rem, 1fr) repeat(3, 9rem) 8rem auto;
   align-items: end;
   gap: 0.75rem;
   background: #0e1210;
@@ -857,6 +857,11 @@
   margin-top: 0.15rem;
   color: $gray-600;
   font-size: 0.58rem;
+}
+
+.productIdentity div .priceReview {
+  color: #fbbf24;
+  font-weight: 750;
 }
 
 .gameTag {
@@ -3495,6 +3500,10 @@
 
 .bulkTagField input {
   width: 8.5rem;
+}
+
+.bulkPreorderField input {
+  width: 9.5rem;
 }
 
 .bulkField select {

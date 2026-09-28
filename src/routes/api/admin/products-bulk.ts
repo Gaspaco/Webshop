@@ -16,18 +16,43 @@ const bulkUpdateSchema = z
     stock: z.number().int().min(0).max(1_000_000).optional(),
     priceCents: z.number().int().min(1).max(100_000_000).optional(),
     tag: z.string().trim().max(32).optional(),
+    preorder: z.boolean().optional(),
+    releaseDate: z
+      .string()
+      .trim()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Choose a valid release date.")
+      .optional(),
   })
   .superRefine((input, context) => {
     if (
       input.status === undefined &&
       input.stock === undefined &&
       input.priceCents === undefined &&
-      input.tag === undefined
+      input.tag === undefined &&
+      input.preorder === undefined
     ) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Choose a visibility, quantity, price, or tag to change.",
+        message: "Choose a visibility, quantity, price, tag, or pre-order setting to change.",
       });
+    }
+    if (input.preorder === true) {
+      if (!input.releaseDate) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["releaseDate"],
+          message: "Choose a release date before starting a pre-order.",
+        });
+      } else {
+        const releaseAt = Date.parse(`${input.releaseDate}T00:00:00Z`);
+        if (!Number.isFinite(releaseAt) || releaseAt <= Date.now()) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["releaseDate"],
+            message: "The pre-order release date must be in the future.",
+          });
+        }
+      }
     }
     if (new Set(input.variantIds).size !== input.variantIds.length) {
       context.addIssue({
@@ -74,14 +99,19 @@ export async function PATCH(event: APIEvent) {
           .where(inArray(products.id, productIds));
       }
 
-      if (input.tag !== undefined) {
+      if (input.tag !== undefined || input.preorder !== undefined) {
         for (const productId of productIds) {
+          const currentMetadata = metadataByProduct.get(productId) ?? {};
           await tx
             .update(products)
             .set({
               metadata: {
-                ...(metadataByProduct.get(productId) ?? {}),
-                badge: input.tag || null,
+                ...currentMetadata,
+                ...(input.tag !== undefined ? { badge: input.tag || null } : {}),
+                ...(input.preorder !== undefined ? { preorder: input.preorder } : {}),
+                ...(input.preorder === true && input.releaseDate
+                  ? { releaseDate: input.releaseDate }
+                  : {}),
               },
             })
             .where(eq(products.id, productId));
@@ -125,6 +155,8 @@ export async function PATCH(event: APIEvent) {
         stock: input.stock,
         priceCents: input.priceCents,
         tag: input.tag,
+        preorder: input.preorder,
+        releaseDate: input.releaseDate,
       },
     });
 

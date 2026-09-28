@@ -230,6 +230,7 @@ export async function POST(event: APIEvent) {
           imageSourceUrl: null,
           imageStorageUrl: null,
           imageProvider: null,
+          sourcePriceCents: null,
         }];
     const genericArtwork = await downloadCardImage(card.imageSourceUrl);
     const exactVariantArtwork = variants.map(preferredPrintingImage);
@@ -242,6 +243,14 @@ export async function POST(event: APIEvent) {
         skuFor(card.id, printing.setCode, printing.rarity, index),
       ),
     );
+    const variantPrices = variants.map(printing =>
+      printing.sourcePriceCents && printing.sourcePriceCents > 0
+        ? printing.sourcePriceCents
+        : card.cardmarketPriceCents && card.cardmarketPriceCents > 0
+          ? card.cardmarketPriceCents
+          : 0,
+    );
+    const pricesNeedingReview = variantPrices.filter(price => price <= 0).length;
 
     const created = await db.transaction(async tx => {
       const [product] = await tx
@@ -274,6 +283,8 @@ export async function POST(event: APIEvent) {
               : genericArtwork
                 ? "ygoprodeck"
                 : null,
+            priceNeedsReview: pricesNeedingReview > 0,
+            pricesNeedingReview,
           },
         })
         .returning({ id: products.id, name: products.name, slug: products.slug });
@@ -291,7 +302,10 @@ export async function POST(event: APIEvent) {
           // retained generic card image, including variants with zero stock.
           imageUrl: variantArtwork[index] ?? null,
           isDefault: index === 0,
-          priceCents: card.cardmarketPriceCents ?? 0,
+          // YGOPRODeck publishes a separate market reference for each set
+          // printing. The former card-level value made every rarity share the
+          // same price (and was often null, producing an unexplained €0.00).
+          priceCents: variantPrices[index] ?? 0,
           stock: 0,
           trackInventory: true,
         })),
@@ -312,6 +326,7 @@ export async function POST(event: APIEvent) {
         hasImage: Boolean(productArtwork),
         printingImages: exactVariantArtwork.filter(Boolean).length,
         variantImages: variantArtwork.filter(Boolean).length,
+        pricesNeedingReview,
       },
     });
 
