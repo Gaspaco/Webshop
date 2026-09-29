@@ -21,6 +21,7 @@ import { getMollieClient } from "~/lib/mollie.server";
 import {
   findShippingDestination,
   getInternationalPostnlPrice,
+  isShippingMethodAllowed,
 } from "~/lib/shipping";
 import { getStoreProfile } from "~/lib/store-profile.server";
 
@@ -28,6 +29,7 @@ const shippingMethodSchema = z.enum([
   "postnl_letterbox",
   "postnl_parcel",
   "postnl_international",
+  "local_pickup",
 ]);
 const paymentMethodSchema = z.literal("mollie");
 
@@ -126,6 +128,7 @@ async function sendPaidOrderEmails(orderId: string) {
   const summaryText = `Subtotal: ${formatEuros(order.subtotalCents)}\nShipping: ${formatEuros(order.shippingCents)}\nDiscount: ${formatEuros(order.discountCents)}\nTotal: ${formatEuros(order.totalCents)}`;
   const summaryHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:18px;color:#929f98;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px"><tr><td style="padding:4px 0">Subtotal</td><td style="padding:4px 0;text-align:right">${escapeEmailHtml(formatEuros(order.subtotalCents))}</td></tr><tr><td style="padding:4px 0">Shipping</td><td style="padding:4px 0;text-align:right">${escapeEmailHtml(formatEuros(order.shippingCents))}</td></tr>${order.discountCents > 0 ? `<tr><td style="padding:4px 0;color:#5ce5b8">Discount</td><td style="padding:4px 0;text-align:right;color:#5ce5b8">−${escapeEmailHtml(formatEuros(order.discountCents))}</td></tr>` : ""}<tr><td style="padding:15px 0 0;border-top:2px solid #35433c;color:#ffffff;font-size:16px;font-weight:800">Total paid</td><td style="padding:15px 0 0;border-top:2px solid #35433c;text-align:right;color:#ffffff;font-size:18px;font-weight:800">${escapeEmailHtml(formatEuros(order.totalCents))}</td></tr></table>`;
   const customerName = [address.firstName, address.lastName].filter(Boolean).join(" ");
+  const isPickup = order.shippingMethod === "local_pickup";
   const deliveryText = [
     customerName,
     address.streetAndHouseNumber,
@@ -143,19 +146,19 @@ async function sendPaidOrderEmails(orderId: string) {
     .filter(Boolean)
     .map(value => escapeEmailHtml(value!))
     .join("<br>");
-  const orderDetailsHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#0b0e0c" style="padding:16px 18px;border-left:4px solid #19c892;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:19px"><span style="color:#7f8d85">Order reference</span><br><strong style="font-size:16px;letter-spacing:.3px">${escapeEmailHtml(order.orderNumber)}</strong></td></tr><tr><td style="padding:8px 0 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${itemHtml}</table>${summaryHtml}</td></tr></table><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#17201c" style="margin:30px 0 0;background:#17201c"><tr><td style="padding:18px"><strong style="display:block;margin-bottom:7px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px">Delivery address</strong><span style="color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px">${deliveryHtml}</span></td></tr></table>`;
+  const orderDetailsHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#0b0e0c" style="padding:16px 18px;border-left:4px solid #19c892;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:19px"><span style="color:#7f8d85">Order reference</span><br><strong style="font-size:16px;letter-spacing:.3px">${escapeEmailHtml(order.orderNumber)}</strong></td></tr><tr><td style="padding:8px 0 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${itemHtml}</table>${summaryHtml}</td></tr></table><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#17201c" style="margin:30px 0 0;background:#17201c"><tr><td style="padding:18px"><strong style="display:block;margin-bottom:7px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px">${isPickup ? "Pickup contact details" : "Delivery address"}</strong><span style="color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px">${deliveryHtml}</span></td></tr></table>`;
 
   await Promise.all([
     sendTransactionalEmail({
       to: order.email,
       replyTo: profile.businessEmail,
       subject: `Order confirmed: ${order.orderNumber}`,
-      text: `Thanks for your order${customerName ? `, ${customerName}` : ""}.\n\nOrder ${order.orderNumber}\n\n${itemText}\n\n${summaryText}\n\nDelivery address\n${deliveryText}`,
+      text: `Thanks for your order${customerName ? `, ${customerName}` : ""}.\n\nOrder ${order.orderNumber}\n\n${itemText}\n\n${summaryText}\n\n${isPickup ? "Pickup contact details" : "Delivery address"}\n${deliveryText}`,
       html: renderTransactionalEmail({
         preheader: `Payment received for ${order.orderNumber}. Your order is being prepared.`,
         label: "Payment received",
         heading: "Your order is confirmed",
-        intro: `Thanks for your order${customerName ? `, ${customerName}` : ""}. We received your payment and will prepare your items for PostNL delivery.`,
+        intro: `Thanks for your order${customerName ? `, ${customerName}` : ""}. We received your payment and will prepare your items ${isPickup ? "for collection" : "for PostNL delivery"}.`,
         contentHtml: orderDetailsHtml,
         ...(order.userId
           ? {
@@ -165,7 +168,9 @@ async function sendPaidOrderEmails(orderId: string) {
               },
             }
           : {}),
-        notice: "We will send another email with tracking information as soon as your parcel is ready.",
+        notice: isPickup
+          ? `We will contact you when the order is ready to collect from ${profile.businessAddress || "TCGHaven"}.`
+          : "We will send another email with tracking information as soon as your parcel is ready.",
       }),
       idempotencyKey: `paid-customer-${order.id}`,
     }),
@@ -173,12 +178,12 @@ async function sendPaidOrderEmails(orderId: string) {
       to: ownerNotificationEmail,
       replyTo: order.email,
       subject: `New paid order: ${order.orderNumber}`,
-      text: `A paid order was received from ${order.email}.\n\n${itemText}\n\n${summaryText}\n\nDelivery address\n${deliveryText}`,
+      text: `A paid ${isPickup ? "pickup " : ""}order was received from ${order.email}.\n\n${itemText}\n\n${summaryText}\n\n${isPickup ? "Pickup contact details" : "Delivery address"}\n${deliveryText}`,
       html: renderTransactionalEmail({
         preheader: `${order.orderNumber} has been paid and is ready for fulfilment.`,
         label: "Owner notification",
         heading: "A paid order is ready",
-        intro: `Payment was received from ${order.email}. Review the order and prepare it for dispatch.`,
+        intro: `Payment was received from ${order.email}. Review the order and prepare it for ${isPickup ? "collection" : "dispatch"}.`,
         contentHtml: orderDetailsHtml,
         action: {
           label: "Open order dashboard",
@@ -312,15 +317,13 @@ export async function calculateTrustedCheckout(input: unknown) {
     discountCents = Math.min(discountCents, subtotalCents);
   }
   const isDutchOrder = destination.code === "NL";
-  const validMethod = isDutchOrder
-    ? parsed.shippingMethod === "postnl_letterbox" ||
-      parsed.shippingMethod === "postnl_parcel"
-    : parsed.shippingMethod === "postnl_international";
-  if (!validMethod) {
+  if (!isShippingMethodAllowed(destination.code, parsed.shippingMethod)) {
     throw new Error("The selected shipping method is not valid for this destination.");
   }
 
-  const selectedShippingCents = isDutchOrder
+  const selectedShippingCents = parsed.shippingMethod === "local_pickup"
+    ? 0
+    : isDutchOrder
     ? parsed.shippingMethod === "postnl_letterbox"
       ? storeProfile.postnlLetterboxCents
       : storeProfile.postnlParcelCents
@@ -332,6 +335,7 @@ export async function calculateTrustedCheckout(input: unknown) {
     throw new Error("Shipping is not configured for this destination yet.");
   }
   const shippingCents =
+    parsed.shippingMethod === "local_pickup" ||
     subtotalCents >= storeProfile.freeShippingThresholdCents
       ? 0
       : selectedShippingCents;

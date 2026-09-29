@@ -12,13 +12,14 @@ type Slide = {
   tag: string;
   title: string;
   blurb: string;
-  priceCents: number;
+  priceCents?: number;
   href: string;
-  image: string;
-  fallbackImage: string;
+  image?: string;
+  fallbackImage?: string;
   alt: string;
   theme: string; // accent used for the slide wash
   variantId?: string;
+  purchasable: boolean;
 };
 
 const GAME_ACCENTS: Record<string, string> = {
@@ -31,7 +32,43 @@ const GAME_ACCENTS: Record<string, string> = {
   cyberpunk: "#9b7a13",
 };
 
-const HERO_GAME_ORDER = ["pokemon", "magic", "yugioh"] as const;
+const HERO_GAME_ORDER = ["yugioh", "pokemon", "pokemon", "magic", "magic"] as const;
+
+const HERO_FALLBACKS: Record<"yugioh" | "pokemon" | "magic", Array<{
+  set: string;
+  title: string;
+  blurb: string;
+}>> = {
+  yugioh: [{
+    set: "Yu-Gi-Oh! sealed",
+    title: "Fresh duels start sealed",
+    blurb: "Browse booster displays, structure decks, and the latest Yu-Gi-Oh! releases.",
+  }],
+  pokemon: [
+    {
+      set: "Pokémon sealed",
+      title: "Open your next Pokémon set",
+      blurb: "Booster boxes, collection products, and sealed releases for collectors and players.",
+    },
+    {
+      set: "Pokémon releases",
+      title: "Keep the chase unopened",
+      blurb: "Discover current Pokémon stock and upcoming sealed products in one place.",
+    },
+  ],
+  magic: [
+    {
+      set: "Magic sealed",
+      title: "Build from a fresh box",
+      blurb: "Play boosters, collector displays, and Commander releases from Magic: The Gathering.",
+    },
+    {
+      set: "Magic releases",
+      title: "Your next table starts here",
+      blurb: "Shop sealed Magic releases for drafting, collecting, and Commander night.",
+    },
+  ],
+};
 
 type Product = {
   id: string;
@@ -80,26 +117,28 @@ export default function Hero(props: {
   const [now, setNow] = createSignal(Date.now());
 
   const slides = createMemo<Slide[]>(() => {
-    const newestSealedByGame = HERO_GAME_ORDER
-      .map(game =>
-        (props.products ?? []).find(
+    const pools = new Map(
+      (["yugioh", "pokemon", "magic"] as const).map(game => [
+        game,
+        (props.products ?? []).filter(
           product =>
             product.game === game &&
             product.productType === "sealed" &&
             (product.stock ?? 0) > 0,
         ),
-      )
-      .filter((product): product is ShopProduct => Boolean(product));
+      ]),
+    );
+    const fallbackIndexes = new Map<string, number>();
 
-    return newestSealedByGame
-      .map((product): Slide | undefined => {
+    return HERO_GAME_ORDER.map((game, slideIndex): Slide => {
+      const product = pools.get(game)?.shift();
+      if (product) {
         const mainVariant =
           product.variants?.find(variant => variant.isDefault && variant.stock > 0) ??
           product.variants?.find(variant => variant.stock > 0) ??
           product.variants?.find(variant => variant.isDefault) ??
           product.variants?.[0];
         const image = mainVariant?.image || product.image;
-        if (!image) return undefined;
         const fallbackImage =
           mainVariant?.image && product.image && mainVariant.image !== product.image
             ? product.image
@@ -120,9 +159,31 @@ export default function Hero(props: {
           alt: product.name,
           theme: GAME_ACCENTS[product.game] ?? "#216b4d",
           variantId: mainVariant?.id,
+          purchasable: Boolean(mainVariant && mainVariant.stock > 0),
         };
-      })
-      .filter((slide): slide is Slide => Boolean(slide));
+      }
+
+      const fallbackIndex = fallbackIndexes.get(game) ?? 0;
+      fallbackIndexes.set(game, fallbackIndex + 1);
+      const fallback = HERO_FALLBACKS[game][fallbackIndex % HERO_FALLBACKS[game].length]!;
+      const gameName = game === "yugioh"
+        ? "Yu-Gi-Oh!"
+        : game === "pokemon"
+          ? "Pokémon"
+          : "Magic: The Gathering";
+      return {
+        id: `sealed-placeholder-${game}-${slideIndex}`,
+        set: fallback.set,
+        game: gameName,
+        tag: "Sealed",
+        title: fallback.title,
+        blurb: fallback.blurb,
+        href: `/categories/${game}/products?type=sealed`,
+        alt: "",
+        theme: GAME_ACCENTS[game],
+        purchasable: false,
+      };
+    });
   });
 
   const bestsellers = createMemo<Product[]>(() => {
@@ -184,11 +245,12 @@ export default function Hero(props: {
   };
 
   const addSlideToCart = (slide: Slide) => {
+    if (!slide.purchasable || slide.priceCents === undefined) return;
     cart.addItem({
       id: slide.id,
       variantId: slide.variantId,
       name: slide.title,
-      image: slide.image,
+      image: slide.image ?? "/images/logo-mark.png",
       priceCents: slide.priceCents,
     });
     flashAdded(slide.id);
@@ -255,16 +317,29 @@ export default function Hero(props: {
               >
                 <div class={styles.slideWash} />
                 <div class={styles.slideArtGlow} />
-                <img
-                  class={styles.slideArt}
-                  src={slide.image}
-                  data-fallback={slide.fallbackImage}
-                  alt={slide.alt}
-                  draggable={false}
-                  loading="eager"
-                  decoding="async"
-                  onError={useFallbackImage}
-                />
+                <Show
+                  when={slide.image}
+                  fallback={
+                    <div class={styles.sealedPlaceholder} aria-hidden="true">
+                      <span>{slide.game}</span>
+                      <strong>{slide.set}</strong>
+                      <i>Sealed release</i>
+                    </div>
+                  }
+                >
+                  {image => (
+                    <img
+                      class={styles.slideArt}
+                      src={image()}
+                      data-fallback={slide.fallbackImage}
+                      alt={slide.alt}
+                      draggable={false}
+                      loading="eager"
+                      decoding="async"
+                      onError={useFallbackImage}
+                    />
+                  )}
+                </Show>
                 <div class={styles.slideScrim} />
 
                 <div class={styles.slideBody}>
@@ -289,29 +364,33 @@ export default function Hero(props: {
                         <path d="M5 12h14M13 6l6 6-6 6" />
                       </svg>
                     </A>
-                    <button
-                      type="button"
-                      class={styles.slideAddBtn}
-                      classList={{ [styles.addBtnDone]: justAdded().has(slide.id) }}
-                      onClick={() => addSlideToCart(slide)}
-                      aria-label={`Add ${slide.title} to cart`}
-                    >
-                      <Show
-                        when={!justAdded().has(slide.id)}
-                        fallback={
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 6 9 17l-5-5" />
-                          </svg>
-                        }
+                    <Show when={slide.purchasable}>
+                      <button
+                        type="button"
+                        class={styles.slideAddBtn}
+                        classList={{ [styles.addBtnDone]: justAdded().has(slide.id) }}
+                        onClick={() => addSlideToCart(slide)}
+                        aria-label={`Add ${slide.title} to cart`}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <circle cx="9" cy="20" r="1.4" />
-                          <circle cx="18" cy="20" r="1.4" />
-                          <path d="M2 3h2.2l2.3 11.4a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 7H6" />
-                        </svg>
-                      </Show>
-                    </button>
-                    <span class={styles.slidePrice}>From {formatPrice(slide.priceCents)}</span>
+                        <Show
+                          when={!justAdded().has(slide.id)}
+                          fallback={
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                          }
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="20" r="1.4" />
+                            <circle cx="18" cy="20" r="1.4" />
+                            <path d="M2 3h2.2l2.3 11.4a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 7H6" />
+                          </svg>
+                        </Show>
+                      </button>
+                    </Show>
+                    <Show when={slide.priceCents !== undefined}>
+                      <span class={styles.slidePrice}>From {formatPrice(slide.priceCents!)}</span>
+                    </Show>
                   </div>
                 </div>
               </article>

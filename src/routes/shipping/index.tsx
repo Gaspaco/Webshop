@@ -41,7 +41,7 @@ export default function Shipping() {
           <div class={styles.sectionIntro}>
             <span>PostNL</span>
             <h2>Current Netherlands rates</h2>
-            <p>The final method depends on the size, value, and protection needed for the order. Checkout offers the suitable everyday options.</p>
+            <p>Choose PostNL delivery or free collection in Rotterdam. The final delivery method depends on the size, value, and protection needed for the order.</p>
           </div>
           <div class={styles.rateList}>
             <For each={postnlRates()}>
@@ -58,14 +58,14 @@ export default function Shipping() {
 
         <section class={styles.carrierSection}>
           <article>
-            <span>PostNL</span>
-            <h2>One trusted carrier</h2>
-            <p>Every order ships with PostNL. Dutch checkout offers letterbox and parcel delivery, depending on the order.</p>
+            <span>Collection</span>
+            <h2>Pick up in Rotterdam</h2>
+            <p>Collection is free. Wait for the ready-for-pickup confirmation before travelling to {profile().businessAddress || "the TCGHaven pickup location"}.</p>
           </article>
           <article>
-            <span>International</span>
-            <h2>{INTERNATIONAL_POSTNL_DESTINATIONS.length} destinations</h2>
-            <p>The checkout calculates the owner-approved rate from the delivery country and verifies it again on the server.</p>
+            <span>PostNL</span>
+            <h2>Domestic and international</h2>
+            <p>Delivered orders use PostNL. Checkout calculates the owner-approved rate from the destination and verifies it again on the server.</p>
           </article>
         </section>
 

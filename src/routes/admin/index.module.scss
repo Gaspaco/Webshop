@@ -1772,11 +1772,20 @@
 
 .orderSummaryGrid > section,
 .orderActionGrid > form,
+.orderActionGrid > .pickupFulfilment,
 .contentForm > section {
   padding: 1rem;
   border: 1px solid rgba($white, 0.08);
   border-radius: 0.55rem;
   background: #0d120f;
+}
+
+.pickupFulfilment p {
+  margin-top: 0.65rem;
+  max-width: 46ch;
+  color: $gray-400;
+  font-size: 0.66rem;
+  line-height: 1.6;
 }
 
 .orderEditor h3,
@@ -3577,6 +3586,23 @@
   font-size: 0.68rem;
   font-weight: 800;
   transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.bulkRefresh {
+  min-height: 2.2rem;
+  padding: 0 0.8rem;
+  border: 1px solid rgba($primary, 0.42);
+  border-radius: 0.4rem;
+  background: rgba($primary, 0.08);
+  color: $primary-light;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.bulkRefresh:hover:not(:disabled) {
+  border-color: $primary;
+  background: rgba($primary, 0.14);
+  color: $white;
 }
 
 .bulkDelete:hover:not(:disabled) {

@@ -1869,7 +1869,7 @@ function OrderRow(props: {
                   </For>
                 </section>
                 <section>
-                  <h3>Ship to</h3>
+                  <h3>{props.order.shippingMethod === "local_pickup" ? "Pickup customer" : "Ship to"}</h3>
                   <address>
                     <For each={addressLines()}>{line => <span>{line}</span>}</For>
                   </address>
@@ -1896,6 +1896,22 @@ function OrderRow(props: {
               </div>
 
               <div class={styles.orderActionGrid}>
+                <Show
+                  when={props.order.shippingMethod !== "local_pickup"}
+                  fallback={
+                    <section class={styles.pickupFulfilment}>
+                      <h3>Pickup in person</h3>
+                      <p>No PostNL label or tracking email is needed. Contact the customer when the order is ready, then mark it completed after collection.</p>
+                      <button
+                        type="button"
+                        disabled={busy() || props.order.status === "completed"}
+                        onClick={() => void updateStatus("completed")}
+                      >
+                        {props.order.status === "completed" ? "Order collected" : "Mark as collected"}
+                      </button>
+                    </section>
+                  }
+                >
                 <form onSubmit={event => {
                   event.preventDefault();
                   void runAction({
@@ -2000,6 +2016,7 @@ function OrderRow(props: {
                     </button>
                   </Show>
                 </form>
+                </Show>
 
                 <form onSubmit={event => {
                   event.preventDefault();
@@ -3127,6 +3144,53 @@ export default function Admin() {
     void applyBulk({ preorder: true, releaseDate });
   };
   const endBulkPreorder = () => void applyBulk({ preorder: false });
+  const refreshBulkPrices = async () => {
+    const targets = bulkTargets();
+    if (!targets.length) return;
+    if (targets.length > 20) {
+      setBulkMessage("Refresh API prices for no more than 20 products at a time.");
+      return;
+    }
+    if (!window.confirm(
+      `Replace current prices for ${targets.length} selected imported ${targets.length === 1 ? "product" : "products"} with the latest available API references? Prices missing from an API will not be changed.`,
+    )) return;
+
+    setBulkBusy(true);
+    setBulkMessage("Checking current API prices…");
+    try {
+      const response = await fetch("/api/admin/products-refresh-prices", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          variantIds: targets.map(product => product.variantId),
+        }),
+      });
+      const result = await response.json().catch(() => ({})) as {
+        error?: string;
+        matchedVariants?: number;
+        changedVariants?: number;
+        checkedProducts?: number;
+        unsupportedProducts?: number;
+        failedProducts?: number;
+      };
+      if (!response.ok) {
+        setBulkMessage(result.error ?? "API prices could not be refreshed.");
+        return;
+      }
+      await refetch();
+      const notes = [
+        `${result.changedVariants ?? 0} prices changed from ${result.matchedVariants ?? 0} matched API prices across ${result.checkedProducts ?? targets.length} products.`,
+      ];
+      if (result.unsupportedProducts) notes.push(`${result.unsupportedProducts} products have no supported import source.`);
+      if (result.failedProducts) notes.push(`${result.failedProducts} API lookups failed; their prices were left unchanged.`);
+      setBulkMessage(notes.join(" "));
+    } catch {
+      setBulkMessage("The price refresh could not reach the server. Try again.");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
   const updateReadinessConfirmation = async (
     id: "backups" | "vat" | "legal-review",
     confirmed: boolean,
@@ -4571,6 +4635,14 @@ export default function Admin() {
                           </button>
                         </label>
                       </div>
+                      <button
+                        type="button"
+                        class={styles.bulkRefresh}
+                        disabled={bulkBusy()}
+                        onClick={() => void refreshBulkPrices()}
+                      >
+                        Refresh API prices
+                      </button>
                       <button
                         type="button"
                         class={styles.bulkClear}

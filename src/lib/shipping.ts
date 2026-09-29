@@ -3,6 +3,12 @@ export const NETHERLANDS = {
   name: "Netherlands",
 } as const;
 
+export type ShippingMethod =
+  | "postnl_letterbox"
+  | "postnl_parcel"
+  | "postnl_international"
+  | "local_pickup";
+
 export const INTERNATIONAL_POSTNL_DESTINATIONS = [
   { code: "BE", name: "Belgium", zone: "EUR 1", priceCents: 995 },
   { code: "DE", name: "Germany", zone: "EUR 1", priceCents: 995 },
@@ -72,4 +78,22 @@ export function getInternationalPostnlPrice(
   const destination = findShippingDestination(country);
   if (!destination || destination.code === "NL") return null;
   return rates[destination.code] ?? destination.priceCents;
+}
+
+export function isShippingMethodAllowed(
+  country: string,
+  method: ShippingMethod,
+) {
+  const destination = findShippingDestination(country);
+  if (!destination) return false;
+  if (destination.code === NETHERLANDS.code) {
+    return method === "local_pickup" ||
+      method === "postnl_letterbox" ||
+      method === "postnl_parcel";
+  }
+  return method === "postnl_international";
+}
+
+export function usesPostnlFulfilment(method: string) {
+  return method !== "local_pickup";
 }

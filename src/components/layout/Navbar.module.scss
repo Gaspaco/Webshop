@@ -42,12 +42,11 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: $radius-md;
-  background: $primary;
   transition: transform $transition-base;
 
   img {
-    width: 24px;
+    width: 36px;
+    max-height: 36px;
     height: auto;
     object-fit: contain;
   }

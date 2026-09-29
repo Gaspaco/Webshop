@@ -110,6 +110,56 @@
   pointer-events: none;
 }
 
+.sealedPlaceholder {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  right: clamp(2rem, 6vw, 5rem);
+  display: flex;
+  width: clamp(12rem, 30%, 18rem);
+  aspect-ratio: 0.78;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.4rem;
+  border: 1px solid color-mix(in oklab, var(--theme) 62%, white 12%);
+  border-radius: 0.8rem;
+  transform: translateY(-50%) rotate(4deg);
+  background:
+    linear-gradient(145deg, rgba(#fff, 0.09), transparent 35%),
+    repeating-linear-gradient(125deg, transparent 0 1.25rem, rgba(#fff, 0.035) 1.25rem 1.32rem),
+    color-mix(in oklab, var(--theme) 34%, #090c0a);
+  box-shadow: 0 2rem 4rem rgba(#000, 0.5), inset 0 0 0 0.4rem rgba(#000, 0.12);
+  color: $white;
+  user-select: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0.8rem 0.8rem auto;
+    height: 0.3rem;
+    border-radius: 99rem;
+    background: var(--theme);
+    box-shadow: 0 0 1.5rem var(--theme);
+  }
+
+  span,
+  i {
+    color: rgba($white, 0.68);
+    font-size: 0.64rem;
+    font-style: normal;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    margin: 0.35rem 0 0.8rem;
+    font-family: $font-display;
+    font-size: clamp(1.2rem, 2vw, 1.75rem);
+    line-height: 1.05;
+  }
+}
+
 .loadingCards {
   position: absolute;
   z-index: 1;
@@ -594,6 +644,14 @@
     height: 42%;
     opacity: 1;
     transform: rotate(4deg);
+  }
+
+  .sealedPlaceholder {
+    top: 1rem;
+    right: 1.5rem;
+    width: 11rem;
+    transform: rotate(4deg);
+    opacity: 0.68;
   }
 
   .slideActive .slideArt {

@@ -23,7 +23,7 @@ import {
   createPostnlLabel,
   PostnlError,
 } from "~/lib/postnl.server";
-import { findShippingDestination } from "~/lib/shipping";
+import { findShippingDestination, usesPostnlFulfilment } from "~/lib/shipping";
 import { getStoreProfile } from "~/lib/store-profile.server";
 
 const updateOrderSchema = z.object({
@@ -199,6 +199,18 @@ export async function POST(event: APIEvent) {
 
     if (!order) {
       return apiJson({ error: "Order not found." }, { status: 404 });
+    }
+
+    if (
+      !usesPostnlFulfilment(order.shippingMethod) &&
+      (input.action === "postnl_label" ||
+        input.action === "ship" ||
+        input.action === "resend_tracking_email")
+    ) {
+      return apiJson(
+        { error: "Pickup orders do not use PostNL labels or tracking emails." },
+        { status: 400 },
+      );
     }
 
     if (input.action === "postnl_label") {

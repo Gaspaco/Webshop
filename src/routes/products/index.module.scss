@@ -37,8 +37,9 @@
 .searchField {
   position: relative;
   display: flex;
+  width: min(100%, 42rem);
   min-width: 0;
-  flex: 1;
+  flex: 0 1 42rem;
   align-items: center;
 
   > svg {
@@ -482,6 +483,11 @@
 /* ---------- responsive ---------- */
 
 @media (max-width: 64rem) {
+  .searchField {
+    width: auto;
+    flex: 1;
+  }
+
   .filterToggle { display: flex; }
 
   .shell { grid-template-columns: minmax(0, 1fr); }

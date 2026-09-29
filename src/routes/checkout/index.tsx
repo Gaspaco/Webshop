@@ -18,6 +18,7 @@ import {
   getInternationalPostnlPrice,
   INTERNATIONAL_POSTNL_DESTINATIONS,
   NETHERLANDS,
+  type ShippingMethod,
 } from "~/lib/shipping";
 import {
   DEFAULT_STORE_PROFILE,
@@ -25,11 +26,6 @@ import {
   type StoreProfile,
 } from "~/lib/store-profile";
 import styles from "./index.module.scss";
-
-type ShippingMethod =
-  | "postnl_letterbox"
-  | "postnl_parcel"
-  | "postnl_international";
 
 const checkoutSchema = z.object({
   email: z.string().trim().email().max(254),
@@ -44,6 +40,7 @@ const checkoutSchema = z.object({
     "postnl_letterbox",
     "postnl_parcel",
     "postnl_international",
+    "local_pickup",
   ]),
   paymentMethod: z.literal("mollie"),
 });
@@ -107,6 +104,14 @@ export default function Checkout() {
       priceCents: number;
     }> = [
       {
+        value: "local_pickup",
+        label: "Pick up in person",
+        detail: profile.businessAddress
+          ? `Collect after confirmation from ${profile.businessAddress}`
+          : "Collect from TCGHaven after we confirm your order is ready",
+        priceCents: 0,
+      },
+      {
         value: "postnl_letterbox",
         label: "PostNL letterbox parcel",
         detail: "Maximum 38 × 26.5 × 3 cm and 2 kg",
@@ -133,6 +138,7 @@ export default function Checkout() {
     }
   });
   const shippingCents = createMemo(() =>
+    shippingMethod() === "local_pickup" ||
     subtotalCents() >= storeProfile().freeShippingThresholdCents
       ? 0
       : shippingOptions().find(option => option.value === shippingMethod())?.priceCents ?? 0,
@@ -314,7 +320,7 @@ export default function Checkout() {
                 </span>
                 <div>
                   <h1>Checkout</h1>
-                  <p>Secure payment through Mollie and tracked PostNL delivery.</p>
+                  <p>Secure payment through Mollie, with PostNL delivery or local pickup.</p>
                 </div>
               </div>
               <A href="/cart" class={styles.backLink}>
@@ -450,7 +456,7 @@ export default function Checkout() {
 
                 <CheckoutSection
                   title="Delivery method"
-                  description="PostNL options are based on the destination above."
+                  description="Choose tracked PostNL delivery or collect from TCGHaven."
                 >
                   <div class={styles.optionStack}>
                     <For each={shippingOptions()}>
@@ -468,7 +474,8 @@ export default function Checkout() {
                             <small>{option.detail}</small>
                           </span>
                           <em>
-                            {subtotalCents() >= storeProfile().freeShippingThresholdCents
+                            {option.value === "local_pickup" ||
+                            subtotalCents() >= storeProfile().freeShippingThresholdCents
                               ? "Free"
                               : formatPrice(option.priceCents)}
                           </em>
@@ -548,6 +555,7 @@ export default function Checkout() {
                   </For>
                 </div>
 
+                <Show when={shippingMethod() !== "local_pickup"}>
                 <div class={styles.shippingStatus}>
                   <div>
                     <span>
@@ -570,6 +578,7 @@ export default function Checkout() {
                     />
                   </span>
                 </div>
+                </Show>
 
                 <div class={styles.discount}>
                   <label>
