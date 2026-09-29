@@ -5,6 +5,13 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { and, asc, eq, ilike, inArray, sql } from "drizzle-orm";
 import sharp from "sharp";
 import { yugipediaPrintingImagePath } from "../src/lib/yugipedia-image";
+import {
+  isExactCardImageFile,
+  matchYugipediaPrintingFile,
+  parseInfoboxImageFileNames,
+  yugipediaCardFilePrefix,
+  yugipediaFileCardPrefix,
+} from "../src/lib/yugipedia-match";
 
 const API_URL = "https://yugipedia.com/api.php";
 const CACHE_ROOT = resolve(".cache/yugipedia");
@@ -13,7 +20,7 @@ const REQUEST_INTERVAL_MS = 1_100;
 
 for (const envPath of [".env.development.local", ".env.local"]) {
   try {
-    process.loadEnvFile(envPath);
+    process.loadEnvFile?.(envPath);
   } catch {
     // Local environment files are optional.
   }
@@ -38,6 +45,7 @@ type Printing = {
   setName: string;
   setCode: string;
   rarity: string;
+  rarityCode: string | null;
 };
 
 const args = new Map(
@@ -172,16 +180,41 @@ async function cardImageFileNames(cardName: string) {
     return [];
   }
 
-  const imageBlock = payload.parse.wikitext.match(
-    /\|\s*image\s*=([\s\S]*?)(?=\n\s*\|\s*[a-z_]+\s*=)/i,
-  )?.[1] ?? "";
-  const numberedImages = [...imageBlock.matchAll(/(?:^|\n)\s*\d+\s*;\s*([^;\n]+\.(?:png|jpe?g|webp))/gi)]
-    .map(match => match[1]?.trim())
-    .filter((value): value is string => Boolean(value));
-  if (numberedImages.length) return [...new Set(numberedImages)];
+  const infoboxImages = parseInfoboxImageFileNames(payload.parse.wikitext);
+  const prefix = infoboxImages[0]
+    ? yugipediaFileCardPrefix(infoboxImages[0])
+    : yugipediaCardFilePrefix(cardName);
+  if (!prefix) return infoboxImages;
 
-  const singleImage = imageBlock.trim().match(/^([^;\n]+\.(?:png|jpe?g|webp))$/i)?.[1]?.trim();
-  return singleImage ? [singleImage] : [];
+  const galleryImages = await cachedJson<string[]>("galleries", cardName, async () => {
+    const images: string[] = [];
+    let continuation = "";
+    // Exact card prefixes are normally small. The cap prevents a malformed
+    // or unusually broad prefix from walking the complete image library.
+    for (let page = 0; page < 5; page += 1) {
+      const response = await apiRequest<{
+        continue?: { aicontinue?: string };
+        query?: { allimages?: Array<{ name?: string }> };
+      }>({
+        action: "query",
+        list: "allimages",
+        aiprefix: prefix,
+        ailimit: "max",
+        ...(continuation ? { aicontinue: continuation } : {}),
+      });
+      images.push(...(response.query?.allimages ?? [])
+        .map(image => image.name?.trim())
+        .filter((value): value is string => Boolean(value)));
+      continuation = response.continue?.aicontinue ?? "";
+      if (!continuation) break;
+    }
+    return [...new Set(images)].filter(fileName =>
+      isExactCardImageFile(cardName, fileName),
+    );
+  });
+
+  return [...new Set([...galleryImages, ...infoboxImages])]
+    .filter(fileName => isExactCardImageFile(cardName, fileName));
 }
 
 function chunks<T>(values: T[], size: number) {
@@ -259,59 +292,6 @@ async function imageInfoBatch(fileNames: string[]) {
   }
 
   return result;
-}
-
-function setToken(setCode: string) {
-  return setCode.split("-")[0]?.replace(/[^a-z0-9]/gi, "").toUpperCase() ?? "";
-}
-
-function rarityTokens(rarity: string) {
-  const value = rarity.toLowerCase();
-  if (value.includes("quarter century")) return ["QCSCR", "QCSR"];
-  if (value.includes("platinum secret")) return ["PLSCR"];
-  if (value.includes("prismatic secret")) return ["PSCR"];
-  if (value.includes("starlight")) return ["STR"];
-  if (value.includes("gold secret")) return ["GSCR"];
-  if (value.includes("premium gold")) return ["PGR"];
-  if (value.includes("ghost")) return ["GHR", "GR"];
-  if (value.includes("ultimate")) return ["UTR"];
-  if (value.includes("secret")) return ["SCR"];
-  if (value.includes("ultra")) return ["UR"];
-  if (value.includes("super")) return ["SR"];
-  if (value.includes("rare")) return ["R"];
-  if (value.includes("common")) return ["C"];
-  return [];
-}
-
-function fileSegments(fileName: string) {
-  return fileName
-    .replace(/\.(?:png|jpe?g|webp)$/i, "")
-    .split("-")
-    .map(segment => segment.replace(/[^a-z0-9]/gi, "").toUpperCase())
-    .filter(Boolean);
-}
-
-function matchFile(printing: Printing, fileNames: string[]) {
-  const set = setToken(printing.setCode);
-  const rarity = rarityTokens(printing.rarity);
-  const setMatches = fileNames.filter(fileName => fileSegments(fileName).includes(set));
-  if (!setMatches.length) return null;
-
-  const language = printing.setCode
-    .split("-")[1]
-    ?.match(/^[a-z]{2}/i)?.[0]
-    ?.toUpperCase();
-  const sameLanguage = language
-    ? setMatches.filter(fileName => fileSegments(fileName).includes(language))
-    : [];
-  const candidates = sameLanguage.length ? sameLanguage : setMatches;
-  const exact = candidates.find(fileName => {
-    const segments = fileSegments(fileName);
-    return rarity.some(token => segments.includes(token));
-  });
-  // A set-only match is safe only if the page exposes a single scan for that
-  // set. Never guess between alternate arts or rarities.
-  return exact ?? (candidates.length === 1 ? candidates[0]! : null);
 }
 
 function r2Client() {
@@ -399,6 +379,7 @@ const rows = await db
     setName: yugiohPrintings.setName,
     setCode: yugiohPrintings.setCode,
     rarity: yugiohPrintings.rarity,
+    rarityCode: yugiohPrintings.rarityCode,
   })
   .from(yugiohPrintings)
   .innerJoin(yugiohCards, eq(yugiohPrintings.cardId, yugiohCards.id))
@@ -439,24 +420,32 @@ type MatchedPrinting = Printing & { storefrontUrl: string };
 
 async function updateCatalogueProduct(
   cardId: number,
+  printings: Printing[],
   matchedPrintings: MatchedPrinting[],
 ) {
-  if (!matchedPrintings.length) return false;
-
   const [product] = await db
     .select({
       id: products.id,
+      imageUrls: products.imageUrls,
       metadata: products.metadata,
     })
     .from(products)
-    .where(sql`${products.metadata}->>'sourceCardId' = ${String(cardId)}`)
+    .where(and(
+      eq(products.game, "yugioh"),
+      sql`${products.metadata}->>'source' = 'ygoprodeck'`,
+      sql`${products.metadata}->>'sourceCardId' = ${String(cardId)}`,
+    ))
     .limit(1);
   if (!product) return false;
 
-  for (const printing of matchedPrintings) {
+  const matchedById = new Map(
+    matchedPrintings.map(printing => [printing.id, printing.storefrontUrl]),
+  );
+  const fallbackArtwork = matchedPrintings[0]?.storefrontUrl ?? product.imageUrls[0] ?? null;
+  for (const printing of printings) {
     await db
       .update(productVariants)
-      .set({ imageUrl: printing.storefrontUrl })
+      .set({ imageUrl: matchedById.get(printing.id) ?? fallbackArtwork })
       .where(and(
         eq(productVariants.productId, product.id),
         eq(
@@ -466,17 +455,21 @@ async function updateCatalogueProduct(
       ));
   }
 
-  await db
-    .update(products)
-    .set({
-      imageUrls: [matchedPrintings[0]!.storefrontUrl],
-      metadata: {
-        ...product.metadata,
-        imageProvider: "yugipedia",
-        printingImageProvider: "yugipedia",
-      },
-    })
-    .where(eq(products.id, product.id));
+  if (fallbackArtwork) {
+    await db
+      .update(products)
+      .set({
+        imageUrls: [fallbackArtwork],
+        metadata: {
+          ...product.metadata,
+          imageProvider: matchedPrintings.length ? "yugipedia" : product.metadata.imageProvider,
+          printingImageProvider: matchedPrintings.length
+            ? "yugipedia"
+            : product.metadata.printingImageProvider,
+        },
+      })
+      .where(eq(products.id, product.id));
+  }
   return true;
 }
 
@@ -485,7 +478,7 @@ for (const printings of byCard.values()) {
   const fileNames = await cardImageFileNames(cardName);
   const matchedFiles = printings.map(printing => ({
     printing,
-    fileName: matchFile(printing, fileNames),
+    fileName: matchYugipediaPrintingFile(printing, fileNames),
   }));
   const infoByFile = await imageInfoBatch(
     matchedFiles
@@ -496,6 +489,19 @@ for (const printings of byCard.values()) {
 
   for (const { printing, fileName } of matchedFiles) {
     if (!fileName) {
+      if (refresh && fileNames.length) {
+        await db
+          .update(yugiohPrintings)
+          .set({
+            imageSourceUrl: null,
+            imageSourcePageUrl: null,
+            imageStorageUrl: null,
+            imageFileName: null,
+            imageProvider: null,
+            imageSyncedAt: new Date(),
+          })
+          .where(eq(yugiohPrintings.id, printing.id));
+      }
       unmatched += 1;
       continue;
     }
@@ -526,7 +532,11 @@ for (const printings of byCard.values()) {
     });
   }
 
-  if (await updateCatalogueProduct(printings[0]!.cardId, catalogueMatches)) {
+  if (await updateCatalogueProduct(
+    printings[0]!.cardId,
+    printings,
+    catalogueMatches,
+  )) {
     updatedProducts += 1;
   }
 

@@ -34,7 +34,7 @@ export default function GameSubpageShell(props: GameSubpageShellProps) {
 
         <header class={styles.head} classList={{ [styles.headWithArtwork]: Boolean(props.artwork) }}>
           <div class={styles.headCopy}>
-            <span class={styles.code}>{props.category.name} collection</span>
+            <span class={styles.code}>{identity().code}</span>
             <h1>{props.title}</h1>
             <Show when={props.description}>
               <p>{props.description}</p>

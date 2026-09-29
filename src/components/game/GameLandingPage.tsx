@@ -1,6 +1,6 @@
 import { Title } from "@solidjs/meta";
 import { A, useParams } from "@solidjs/router";
-import { createMemo, For, Show } from "solid-js";
+import { createMemo, Show } from "solid-js";
 import { CATEGORIES } from "~/lib/categories";
 import { createGameCatalog } from "~/lib/game-catalog";
 import {
@@ -28,7 +28,7 @@ export default function GameLandingPage() {
   const { products } = createGameCatalog(game);
   const upcoming = createMemo(() => products().filter(isUpcoming));
   const sets = createMemo(() => groupProductsBySet(products()));
-  const spotlight = createMemo(() =>
+  const featured = createMemo(() =>
     [...products()]
       .sort((a, b) => {
         const aPreorder = isActivePreorder(a);
@@ -36,10 +36,8 @@ export default function GameLandingPage() {
         if (aPreorder !== bPreorder) return aPreorder ? -1 : 1;
         return releaseTime(b) - releaseTime(a);
       })
-      .filter(product => product.image)
-      .slice(0, 3),
+      .find(product => product.image),
   );
-  const featured = () => spotlight()[0];
 
   return (
     <Show
@@ -112,32 +110,16 @@ export default function GameLandingPage() {
                   }
                 >
                   {product => (
-                    <div class={styles.showcase}>
+                    <A href={product().href} class={styles.showcase}>
                       <div class={styles.productStage}>
-                        <For each={spotlight().slice(1)}>
-                          {(supporting, index) => (
-                            <A
-                              href={supporting.href}
-                              class={styles.supportingProduct}
-                              classList={{ [styles.supportingProductLast]: index() === 1 }}
-                              aria-label={supporting.name}
-                            >
-                              <img src={supporting.image} alt="" draggable={false} />
-                            </A>
-                          )}
-                        </For>
-
-                        <A href={product().href} class={styles.featuredProduct}>
-                          <img src={product().image} alt={product().name} draggable={false} />
-                        </A>
+                        <img src={product().image} alt={product().name} draggable={false} />
                       </div>
-
                       <div class={styles.showcaseCaption}>
                         <span>{isUpcoming(product()) ? "Next release" : "On the shelf"}</span>
-                        <A href={product().href}>{product().name}</A>
+                        <strong>{product().name}</strong>
                         <small>{product().setCode ?? product().set ?? cat().name}</small>
                       </div>
-                    </div>
+                    </A>
                   )}
                 </Show>
               </div>

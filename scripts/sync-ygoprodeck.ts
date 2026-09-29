@@ -36,7 +36,7 @@ type ApiResponse = { data: ApiCard[] };
 
 for (const envPath of [".env.development.local", ".env.local"]) {
   try {
-    process.loadEnvFile(envPath);
+    process.loadEnvFile?.(envPath);
   } catch {
     // Local environment files are optional.
   }

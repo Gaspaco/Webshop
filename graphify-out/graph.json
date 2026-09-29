@@ -1282,41 +1282,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/products.ts:489"
     },
     {
-      "id": "file::sync_ygoprodeck",
-      "label": "sync-ygoprodeck.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:1"
-    },
-    {
-      "id": "sync_ygoprodeck::fileexists",
-      "label": "fileExists",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:45"
-    },
-    {
-      "id": "sync_ygoprodeck::loadsnapshot",
-      "label": "loadSnapshot",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:54"
-    },
-    {
-      "id": "sync_ygoprodeck::pricetocents",
-      "label": "priceToCents",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:84"
-    },
-    {
-      "id": "sync_ygoprodeck::chunks",
-      "label": "chunks",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:89"
-    },
-    {
       "id": "file::productgrid",
       "label": "ProductGrid.tsx",
       "fileType": "code",
@@ -4005,69 +3970,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/products-refresh-prices.ts:276"
     },
     {
-      "id": "file::gamelandingpage",
-      "label": "GameLandingPage.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:1"
-    },
-    {
-      "id": "gamelandingpage::arrow",
-      "label": "Arrow",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:15"
-    },
-    {
-      "id": "GameLandingPage::game",
-      "label": "game",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25"
-    },
-    {
-      "id": "GameLandingPage::category",
-      "label": "category",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:26"
-    },
-    {
-      "id": "GameLandingPage::identity",
-      "label": "identity",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:27"
-    },
-    {
-      "id": "GameLandingPage::featured",
-      "label": "featured",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:42"
-    },
-    {
-      "id": "file::gamesubpageshell",
-      "label": "GameSubpageShell.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:1"
-    },
-    {
-      "id": "GameSubpageShell::identity",
-      "label": "identity",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:18"
-    },
-    {
-      "id": "GameSubpageShell::root",
-      "label": "root",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:19"
-    },
-    {
       "id": "file::havenband",
       "label": "HavenBand.tsx",
       "fileType": "code",
@@ -4262,6 +4164,272 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx:278"
+    },
+    {
+      "id": "file::sync_ygoprodeck",
+      "label": "sync-ygoprodeck.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:1"
+    },
+    {
+      "id": "sync_ygoprodeck::fileexists",
+      "label": "fileExists",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:45"
+    },
+    {
+      "id": "sync_ygoprodeck::loadsnapshot",
+      "label": "loadSnapshot",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:54"
+    },
+    {
+      "id": "sync_ygoprodeck::pricetocents",
+      "label": "priceToCents",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:84"
+    },
+    {
+      "id": "sync_ygoprodeck::chunks",
+      "label": "chunks",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:89"
+    },
+    {
+      "id": "file::sync_yugipedia_images",
+      "label": "sync-yugipedia-images.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:1"
+    },
+    {
+      "id": "sync_yugipedia_images::waitforrequestslot",
+      "label": "waitForRequestSlot",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:85"
+    },
+    {
+      "id": "sync_yugipedia_images::safecachename",
+      "label": "safeCacheName",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:91"
+    },
+    {
+      "id": "sync_yugipedia_images::cachepath",
+      "label": "cachePath",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:95"
+    },
+    {
+      "id": "sync_yugipedia_images::fileisfresh",
+      "label": "fileIsFresh",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:99"
+    },
+    {
+      "id": "sync_yugipedia_images::cachedjson",
+      "label": "cachedJson",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:108"
+    },
+    {
+      "id": "sync_yugipedia_images::apirequest",
+      "label": "apiRequest",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:120"
+    },
+    {
+      "id": "sync_yugipedia_images::cardimagefilenames",
+      "label": "cardImageFileNames",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:168"
+    },
+    {
+      "id": "sync_yugipedia_images::chunks",
+      "label": "chunks",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:220"
+    },
+    {
+      "id": "sync_yugipedia_images::normalizedfilename",
+      "label": "normalizedFileName",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:228"
+    },
+    {
+      "id": "sync_yugipedia_images::imageinfobatch",
+      "label": "imageInfoBatch",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:236"
+    },
+    {
+      "id": "sync_yugipedia_images::r2client",
+      "label": "r2Client",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:297"
+    },
+    {
+      "id": "sync_yugipedia_images::storeimage",
+      "label": "storeImage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:319"
+    },
+    {
+      "id": "sync_yugipedia_images::updatecatalogueproduct",
+      "label": "updateCatalogueProduct",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:421"
+    },
+    {
+      "id": "file::gamelandingpage",
+      "label": "GameLandingPage.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:1"
+    },
+    {
+      "id": "gamelandingpage::arrow",
+      "label": "Arrow",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:15"
+    },
+    {
+      "id": "GameLandingPage::game",
+      "label": "game",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25"
+    },
+    {
+      "id": "GameLandingPage::category",
+      "label": "category",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:26"
+    },
+    {
+      "id": "GameLandingPage::identity",
+      "label": "identity",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:27"
+    },
+    {
+      "id": "file::gamesubpageshell",
+      "label": "GameSubpageShell.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:1"
+    },
+    {
+      "id": "GameSubpageShell::identity",
+      "label": "identity",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:18"
+    },
+    {
+      "id": "GameSubpageShell::root",
+      "label": "root",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:19"
+    },
+    {
+      "id": "file::yugipedia_match_test",
+      "label": "yugipedia-match.test.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.test.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.test.ts:1"
+    },
+    {
+      "id": "file::yugipedia_match",
+      "label": "yugipedia-match.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:1"
+    },
+    {
+      "id": "yugipedia_match::normalizedyugipediatoken",
+      "label": "normalizedYugipediaToken",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:40"
+    },
+    {
+      "id": "yugipedia_match::yugipediacardfileprefix",
+      "label": "yugipediaCardFilePrefix",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:44"
+    },
+    {
+      "id": "yugipedia_match::yugipediafilecardprefix",
+      "label": "yugipediaFileCardPrefix",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:50"
+    },
+    {
+      "id": "yugipedia_match::parseinfoboximagefilenames",
+      "label": "parseInfoboxImageFileNames",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:54"
+    },
+    {
+      "id": "yugipedia_match::settoken",
+      "label": "setToken",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:72"
+    },
+    {
+      "id": "yugipedia_match::raritytokens",
+      "label": "rarityTokens",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:76"
+    },
+    {
+      "id": "yugipedia_match::filesegments",
+      "label": "fileSegments",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:82"
+    },
+    {
+      "id": "yugipedia_match::isexactcardimagefile",
+      "label": "isExactCardImageFile",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:91"
+    },
+    {
+      "id": "yugipedia_match::matchyugipediaprintingfile",
+      "label": "matchYugipediaPrintingFile",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:97"
     }
   ],
   "edges": [
@@ -5379,42 +5547,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/products.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/products.ts:489",
-      "weight": 1
-    },
-    {
-      "source": "file::sync_ygoprodeck",
-      "target": "sync_ygoprodeck::fileexists",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:45",
-      "weight": 1
-    },
-    {
-      "source": "file::sync_ygoprodeck",
-      "target": "sync_ygoprodeck::loadsnapshot",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:54",
-      "weight": 1
-    },
-    {
-      "source": "file::sync_ygoprodeck",
-      "target": "sync_ygoprodeck::pricetocents",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:84",
-      "weight": 1
-    },
-    {
-      "source": "file::sync_ygoprodeck",
-      "target": "sync_ygoprodeck::chunks",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:89",
       "weight": 1
     },
     {
@@ -8469,69 +8601,6 @@
       "weight": 1
     },
     {
-      "source": "file::gamelandingpage",
-      "target": "gamelandingpage::arrow",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:15",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "GameLandingPage::game",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "GameLandingPage::category",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:26",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "GameLandingPage::identity",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:27",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "GameLandingPage::featured",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:42",
-      "weight": 1
-    },
-    {
-      "source": "file::gamesubpageshell",
-      "target": "GameSubpageShell::identity",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:18",
-      "weight": 1
-    },
-    {
-      "source": "file::gamesubpageshell",
-      "target": "GameSubpageShell::root",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:19",
-      "weight": 1
-    },
-    {
       "source": "file::havenband",
       "target": "HavenBand::arrowicon",
       "relation": "contains",
@@ -8737,12 +8806,300 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/products/index.tsx:278",
       "weight": 1
+    },
+    {
+      "source": "file::sync_ygoprodeck",
+      "target": "sync_ygoprodeck::fileexists",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:45",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_ygoprodeck",
+      "target": "sync_ygoprodeck::loadsnapshot",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:54",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_ygoprodeck",
+      "target": "sync_ygoprodeck::pricetocents",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:84",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_ygoprodeck",
+      "target": "sync_ygoprodeck::chunks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-ygoprodeck.ts:89",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::waitforrequestslot",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:85",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::safecachename",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:91",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::cachepath",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:95",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::fileisfresh",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:99",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::cachedjson",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:108",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::apirequest",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:120",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::cardimagefilenames",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:168",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::chunks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:220",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::normalizedfilename",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:228",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::imageinfobatch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:236",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::r2client",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:297",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::storeimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:319",
+      "weight": 1
+    },
+    {
+      "source": "file::sync_yugipedia_images",
+      "target": "sync_yugipedia_images::updatecatalogueproduct",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:421",
+      "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "gamelandingpage::arrow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:15",
+      "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "GameLandingPage::game",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25",
+      "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "GameLandingPage::category",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:26",
+      "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "GameLandingPage::identity",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:27",
+      "weight": 1
+    },
+    {
+      "source": "file::gamesubpageshell",
+      "target": "GameSubpageShell::identity",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:18",
+      "weight": 1
+    },
+    {
+      "source": "file::gamesubpageshell",
+      "target": "GameSubpageShell::root",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameSubpageShell.tsx:19",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::normalizedyugipediatoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:40",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::yugipediacardfileprefix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:44",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::yugipediafilecardprefix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:50",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::parseinfoboximagefilenames",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:54",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::settoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:72",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::raritytokens",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:76",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::filesegments",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:82",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::isexactcardimagefile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:91",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::matchyugipediaprintingfile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:97",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 131,
-    "nodes": 609,
-    "edges": 497,
-    "builtAt": "2026-09-29T00:17:14.757Z"
+    "files": 134,
+    "nodes": 633,
+    "edges": 518,
+    "builtAt": "2026-09-29T16:50:23.714Z"
   }
 }
