@@ -910,6 +910,35 @@
   max-width: 9rem;
 }
 
+.visibilityEditor {
+  display: flex;
+  min-width: 10.5rem;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.visibilitySave {
+  min-height: 2.2rem;
+  padding: 0 0.65rem;
+  border: 1px solid rgba($primary, 0.34);
+  border-radius: 0.4rem;
+  background: rgba($primary, 0.08);
+  color: $primary-light;
+  font-size: 0.62rem;
+  font-weight: 780;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    border-color: rgba($primary, 0.62);
+    background: rgba($primary, 0.14);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.55;
+  }
+}
+
 .orderSelect {
   min-width: 9rem;
 }

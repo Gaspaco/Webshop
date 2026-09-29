@@ -47,7 +47,6 @@ export default function GameProductsPage() {
           active="products"
           title={`Shop ${cat().name}`}
           description={`Singles, sealed products and collector pieces from the ${cat().name} catalogue.`}
-          artwork={products().find(product => product.image)?.image}
         >
           <Title>Shop {cat().name} | TCGHaven</Title>
 

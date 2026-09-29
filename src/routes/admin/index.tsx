@@ -1129,18 +1129,29 @@ function ProductRow(props: {
           />
         </td>
         <td>
-          <select
-            class={styles.tableSelect}
-            aria-label={`Status for ${name()}`}
-            value={status()}
-            onChange={event =>
-              setStatus(event.currentTarget.value as AdminProduct["status"])
-            }
-          >
-            <option value="draft">Draft</option>
-            <option value="active">Live</option>
-            <option value="archived">Archived</option>
-          </select>
+          <div class={styles.visibilityEditor}>
+            <select
+              class={styles.tableSelect}
+              aria-label={`Status for ${name()}`}
+              value={status()}
+              onChange={event =>
+                setStatus(event.currentTarget.value as AdminProduct["status"])
+              }
+            >
+              <option value="draft">Draft</option>
+              <option value="active">Live</option>
+              <option value="archived">Archived</option>
+            </select>
+            <button
+              type="button"
+              class={styles.visibilitySave}
+              onClick={save}
+              disabled={saving()}
+              aria-label={`Save visibility for ${name()}`}
+            >
+              {saving() ? "Saving" : "Save"}
+            </button>
+          </div>
         </td>
         <td>
           <div class={styles.rowActions}>
@@ -4477,7 +4488,7 @@ export default function Admin() {
                       </select>
                     </label>
                     <label>
-                      <span>Visibility</span>
+                      <span>Show status</span>
                       <select value={catalogStatus()} onChange={event => {
                         setCatalogStatus(event.currentTarget.value);
                         setCatalogPage(1);
