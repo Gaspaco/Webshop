@@ -1,6 +1,6 @@
 import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
-import { createSignal, For, Show } from "solid-js";
+import { createSignal, For, onCleanup, Show } from "solid-js";
 import { authClient } from "~/lib/auth-client";
 import styles from "./index.module.scss";
 
@@ -35,8 +35,60 @@ export default function TwoFactorChallenge() {
   const [loading, setLoading] = createSignal(false);
   const [sendingEmail, setSendingEmail] = createSignal(false);
   const [emailSent, setEmailSent] = createSignal(false);
+  const [resendLocked, setResendLocked] = createSignal(false);
   const [notice, setNotice] = createSignal("");
   const [error, setError] = createSignal("");
+  let resendTimer: number | undefined;
+
+  onCleanup(() => {
+    if (resendTimer !== undefined) window.clearTimeout(resendTimer);
+  });
+
+  const lockResend = () => {
+    setResendLocked(true);
+    if (resendTimer !== undefined) window.clearTimeout(resendTimer);
+    resendTimer = window.setTimeout(() => setResendLocked(false), 30_000);
+  };
+
+  const sendEmailCode = async (resend = false) => {
+    if (sendingEmail() || (resend && resendLocked())) return;
+
+    setSendingEmail(true);
+    setError("");
+    setNotice(resend ? "Sending a new code…" : "Sending a code to your verified email…");
+
+    try {
+      const result = await authClient.twoFactor.sendOtp();
+      if (result.error) {
+        setNotice("");
+        setError(
+          result.error.status === 429
+            ? "Too many email-code requests. Wait a few minutes and try again."
+            : resend
+              ? "A new code could not be sent. Try again or use your authenticator."
+              : "We could not send an email code. Use your authenticator or recovery code.",
+        );
+        return;
+      }
+
+      setEmailSent(true);
+      lockResend();
+      setNotice(
+        resend
+          ? "A new code was sent. Only this newest code will work."
+          : "Code sent to your verified email. It expires in 5 minutes.",
+      );
+    } catch {
+      setNotice("");
+      setError(
+        resend
+          ? "We could not send a new code. Try again or use your authenticator."
+          : "We could not reach the email service. Use your authenticator or recovery code.",
+      );
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   const submit = async (event: SubmitEvent) => {
     event.preventDefault();
@@ -96,56 +148,17 @@ export default function TwoFactorChallenge() {
     setError("");
     setNotice("");
 
-    if (nextMethod !== "email" || emailSent()) return;
-
-    setSendingEmail(true);
-    try {
-      const result = await authClient.twoFactor.sendOtp();
-      if (result.error) {
-        setError(
-          result.error.status === 429
-            ? "Too many email-code requests. Wait a few minutes and try again."
-            : "We could not send an email code. Use your authenticator or recovery code.",
-        );
-        return;
-      }
-
-      setEmailSent(true);
-      setNotice("A six-digit code was sent to your verified email. It expires in 5 minutes.");
-    } catch {
-      setError(
-        "We could not reach the email service. Use your authenticator or recovery code.",
-      );
-    } finally {
-      setSendingEmail(false);
+    if (nextMethod !== "email") return;
+    if (emailSent()) {
+      setNotice("Use the most recent code sent to your verified email. It expires in 5 minutes.");
+      return;
     }
+
+    await sendEmailCode(false);
   };
 
   const resendEmailCode = async () => {
-    if (sendingEmail()) return;
-    setSendingEmail(true);
-    setError("");
-    setNotice("");
-
-    try {
-      const result = await authClient.twoFactor.sendOtp();
-      if (result.error) {
-        setError(
-          result.error.status === 429
-            ? "Too many email-code requests. Wait a few minutes and try again."
-            : "A new code could not be sent. Try again or use your authenticator.",
-        );
-        return;
-      }
-
-      setNotice("A new six-digit code was sent. Only the newest code will work.");
-    } catch {
-      setError(
-        "We could not reach the email service. Try again or use your authenticator.",
-      );
-    } finally {
-      setSendingEmail(false);
-    }
+    await sendEmailCode(true);
   };
 
   return (
@@ -153,26 +166,39 @@ export default function TwoFactorChallenge() {
       <Title>Verify your sign in | TCGHaven</Title>
 
       <section class={styles.shell}>
-        <A href="/" class={styles.logo} aria-label="TCGHaven home">
-          TCG<span>Haven</span>
-        </A>
-
-        <div class={styles.securityMark} aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M12 3 5.5 5.7v5.6c0 4.1 2.6 7.8 6.5 9.7 3.9-1.9 6.5-5.6 6.5-9.7V5.7L12 3Z" />
-            <path d="m9.2 12.1 1.8 1.8 3.9-4" />
-          </svg>
+        <div class={styles.topbar}>
+          <A href="/" class={styles.logo} aria-label="TCGHaven home">
+            TCG<span>Haven</span>
+          </A>
+          <span class={styles.secureLabel}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="10" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            Secure sign-in
+          </span>
         </div>
 
-        <h1>Confirm it is you</h1>
-        <p>
-          {method() === "authenticator"
-            ? "Open your authenticator app and enter the current code."
-            : method() === "email"
-              ? "Enter the one-time code sent to your verified email address."
-            : "Use one unused recovery code from the set you saved."}
-        </p>
+        <div class={styles.intro}>
+          <div class={styles.securityMark} aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 3 5.5 5.7v5.6c0 4.1 2.6 7.8 6.5 9.7 3.9-1.9 6.5-5.6 6.5-9.7V5.7L12 3Z" />
+              <path d="m9.2 12.1 1.8 1.8 3.9-4" />
+            </svg>
+          </div>
+          <div>
+            <h1>Verify your sign in</h1>
+            <p>
+              {method() === "authenticator"
+                ? "Enter the current code from your authenticator app."
+                : method() === "email"
+                  ? "Enter the code sent to your verified email address."
+                : "Enter one unused recovery code from your saved set."}
+            </p>
+          </div>
+        </div>
 
+        <span class={styles.methodLabel}>Choose verification method</span>
         <div class={styles.methodPicker} aria-label="Verification method">
           <For each={METHODS}>
             {option => (
@@ -181,11 +207,11 @@ export default function TwoFactorChallenge() {
                 class={styles.methodOption}
                 classList={{ [styles.methodOptionActive]: method() === option.id }}
                 aria-pressed={method() === option.id}
+                aria-label={`${option.label}. ${option.description}`}
                 disabled={sendingEmail() || loading()}
                 onClick={() => void selectMethod(option.id)}
               >
                 <strong>{option.label}</strong>
-                <span>{option.description}</span>
               </button>
             )}
           </For>
@@ -197,12 +223,15 @@ export default function TwoFactorChallenge() {
 
         <form onSubmit={submit}>
           <label>
-            <span>
-              {method() === "authenticator"
-                ? "Authenticator code"
-                : method() === "email"
-                  ? "Email security code"
-                : "Recovery code"}
+            <span class={styles.fieldHeading}>
+              <span>
+                {method() === "authenticator"
+                  ? "Authenticator code"
+                  : method() === "email"
+                    ? "Email security code"
+                  : "Recovery code"}
+              </span>
+              <small>{method() === "recovery" ? "Single use" : "6 digits"}</small>
             </span>
             <input
               type="text"
@@ -238,7 +267,7 @@ export default function TwoFactorChallenge() {
             class={styles.primary}
             disabled={loading() || sendingEmail() || (method() === "email" && !emailSent())}
           >
-            {loading() ? "Checking code" : "Verify sign in"}
+            {loading() ? "Checking code" : "Verify and continue"}
           </button>
         </form>
 
@@ -246,16 +275,21 @@ export default function TwoFactorChallenge() {
           <button
             type="button"
             class={styles.methodSwitch}
-            disabled={sendingEmail()}
+            disabled={sendingEmail() || resendLocked()}
             onClick={() => void resendEmailCode()}
           >
-            {sendingEmail() ? "Sending a new code" : "Send a new email code"}
+            {sendingEmail()
+              ? "Sending a new code"
+              : resendLocked()
+                ? "Code sent — resend available shortly"
+                : "Did not receive it? Send another code"}
           </button>
         </Show>
 
-        <A href="/login" class={styles.cancel}>
-          Return to sign in
-        </A>
+        <footer class={styles.footer}>
+          <A href="/login" class={styles.cancel}>Return to sign in</A>
+          <span>Protected by two-step verification</span>
+        </footer>
       </section>
     </main>
   );

@@ -25,6 +25,7 @@ export const escapeEmailHtml = (value: string) =>
 type EmailAction = {
   label: string;
   url: string;
+  showArrow?: boolean;
 };
 
 type TransactionalEmailTemplate = {
@@ -44,8 +45,9 @@ type TransactionalEmailTemplate = {
  * in contentHtml before passing it to this renderer.
  */
 export function renderTransactionalEmail(input: TransactionalEmailTemplate) {
+  const actionArrow = input.action?.showArrow === false ? "" : "&nbsp;&nbsp;→";
   const action = input.action
-    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#19c892" style="border-radius:6px"><a href="${escapeEmailHtml(input.action.url)}" style="display:inline-block;padding:15px 24px;color:#07110d;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:20px;font-weight:800;text-decoration:none;border-radius:6px">${escapeEmailHtml(input.action.label)}&nbsp;&nbsp;→</a></td></tr></table>`
+    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#19c892" style="border-radius:6px"><a href="${escapeEmailHtml(input.action.url)}" style="display:inline-block;padding:15px 24px;color:#07110d;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:20px;font-weight:800;text-decoration:none;border-radius:6px">${escapeEmailHtml(input.action.label)}${actionArrow}</a></td></tr></table>`
     : "";
   const notice = input.notice
     ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:32px 0 0"><tr><td width="4" bgcolor="#19c892" style="width:4px;font-size:0;line-height:0">&nbsp;</td><td bgcolor="#17201c" style="padding:16px 18px;color:#bac5bf;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:21px"><strong style="display:block;margin-bottom:3px;color:#ffffff;font-size:13px">Good to know</strong>${escapeEmailHtml(input.notice)}</td></tr></table>`
@@ -345,6 +347,7 @@ export const sendNewSignInEmail = async (input: {
       action: {
         label: "This wasn't me: reset password",
         url: input.recoveryUrl,
+        showArrow: false,
       },
       notice:
         "If this was you, no action is needed. If not, reset your password immediately; completing the reset signs out every existing session.",

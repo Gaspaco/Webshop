@@ -7,6 +7,7 @@ import Footer from "~/components/layout/Footer";
 import LoadingScreen from "~/components/layout/LoadingScreen";
 import Navbar from "~/components/layout/Navbar";
 import RouteSkeleton, { type SkeletonVariant } from "~/components/layout/RouteSkeleton";
+import RouteMotion from "~/components/layout/RouteMotion";
 import { CartProvider } from "~/lib/cart";
 import "./app.scss";
 
@@ -84,10 +85,9 @@ function AppShell(props: ParentProps) {
             : <RouteSkeleton variant={skeletonVariant()} rail={skeletonHasRail()} />
         }
       >
-        {/* Keyed on pathname so the wrapper remounts per navigation,
-            replaying the enter animation on every page change. */}
+        {/* Keyed on pathname so the motion wrapper remounts once per route. */}
         <Show when={location.pathname} keyed>
-          {_ => <div class="route-enter">{props.children}</div>}
+          {_ => <RouteMotion enabled={!chromeless()}>{props.children}</RouteMotion>}
         </Show>
       </Suspense>
       {!chromeless() && <Footer />}

@@ -105,3 +105,132 @@ export function dealCard(element: HTMLElement, options: { delay?: number } = {})
 
   return () => trigger.kill();
 }
+
+const MOTION_CONTROL_SELECTOR = [
+  "button:not([role='tab'])",
+  "a[data-motion-control]",
+  "a[class*='Action']",
+  "a[class*='action']",
+  "a[class*='Cta']",
+  "a[class*='cta']",
+  "a[class*='Button']",
+  "a[class*='button']",
+].join(",");
+
+function motionControl(root: HTMLElement, target: EventTarget | null) {
+  if (!(target instanceof Element)) return null;
+  const control = target.closest<HTMLElement>(MOTION_CONTROL_SELECTOR);
+  return control && root.contains(control) ? control : null;
+}
+
+/**
+ * One restrained interaction language for public-page controls. The movement
+ * is intentionally tiny: it should communicate response, not call attention
+ * to the animation itself.
+ */
+function enhanceControls(root: HTMLElement) {
+  if (prefersReducedMotion()) return () => {};
+  setup();
+
+  const hoverCapable = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const animated = new Set<HTMLElement>();
+
+  const enter = (event: PointerEvent) => {
+    if (!hoverCapable) return;
+    const control = motionControl(root, event.target);
+    if (!control || control.matches(":disabled, [aria-disabled='true']")) return;
+    if (event.relatedTarget instanceof Node && control.contains(event.relatedTarget)) return;
+    animated.add(control);
+    gsap.to(control, {
+      y: -1,
+      scale: 1.01,
+      duration: 0.22,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+  };
+
+  const leave = (event: PointerEvent) => {
+    const control = motionControl(root, event.target);
+    if (!control) return;
+    if (event.relatedTarget instanceof Node && control.contains(event.relatedTarget)) return;
+    gsap.to(control, {
+      y: 0,
+      scale: 1,
+      duration: 0.28,
+      ease: "power3.out",
+      overwrite: "auto",
+      clearProps: "transform",
+    });
+  };
+
+  const press = (event: PointerEvent) => {
+    const control = motionControl(root, event.target);
+    if (!control || control.matches(":disabled, [aria-disabled='true']")) return;
+    animated.add(control);
+    gsap.to(control, {
+      y: 0,
+      scale: 0.975,
+      duration: 0.1,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+  };
+
+  const release = (event: PointerEvent) => {
+    const control = motionControl(root, event.target);
+    if (!control) return;
+    gsap.to(control, {
+      y: hoverCapable ? -1 : 0,
+      scale: hoverCapable ? 1.01 : 1,
+      duration: 0.18,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+  };
+
+  root.addEventListener("pointerover", enter);
+  root.addEventListener("pointerout", leave);
+  root.addEventListener("pointerdown", press);
+  root.addEventListener("pointerup", release);
+  root.addEventListener("pointercancel", leave);
+
+  return () => {
+    root.removeEventListener("pointerover", enter);
+    root.removeEventListener("pointerout", leave);
+    root.removeEventListener("pointerdown", press);
+    root.removeEventListener("pointerup", release);
+    root.removeEventListener("pointercancel", leave);
+    gsap.killTweensOf([...animated]);
+    animated.forEach(control => gsap.set(control, { clearProps: "transform" }));
+  };
+}
+
+/**
+ * Shared public-route entrance and control feedback. Auth and dashboard routes
+ * keep their task-specific behavior and do not use this layer. Section reveals
+ * stay opt-in at component level so long pages never feel over-animated.
+ */
+export function animatePublicRoute(root: HTMLElement) {
+  if (prefersReducedMotion()) return () => {};
+  setup();
+
+  const routeTween = gsap.fromTo(
+    root,
+    { autoAlpha: 0, y: 10 },
+    {
+      autoAlpha: 1,
+      y: 0,
+      duration: 0.46,
+      ease: "power3.out",
+      clearProps: "opacity,visibility,transform",
+    },
+  );
+
+  const stopControls = enhanceControls(root);
+
+  return () => {
+    routeTween.kill();
+    stopControls();
+  };
+}

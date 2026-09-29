@@ -27,7 +27,7 @@ export const getHomeData = query(async () => {
         // Pull enough recent products to find a sealed release for each of the
         // three hero games. The previous five-product window could easily be
         // filled by one game, which made the hero order unpredictable.
-        limit: 60,
+        limit: 500,
         includeManagedSlugs: false,
       }),
       db
@@ -41,7 +41,7 @@ export const getHomeData = query(async () => {
     // remains available on catalogue and product pages. Replacing embedded data
     // images with public image endpoints keeps the first HTML response small.
     const seenProducts = new Set<string>();
-    const compactRows = catalogRows.products
+    const distinctRows = catalogRows.products
       .filter(row => row.stock > row.reservedStock)
       .filter(row => {
         if (seenProducts.has(row.id)) return false;
@@ -56,8 +56,25 @@ export const getHomeData = query(async () => {
         variantImageUrl: row.variantImageUrl
           ? `/api/catalog/image?variant=${encodeURIComponent(row.variantId)}`
           : null,
-      }))
-      .slice(0, 40);
+      }));
+
+    // Keep enough sealed stock for every homepage carousel slot before filling
+    // the rest of the compact payload with the newest available products.
+    const heroOrder = ["yugioh", "pokemon", "pokemon", "magic", "magic"];
+    const sealedPools = new Map(
+      ["yugioh", "pokemon", "magic"].map(game => [
+        game,
+        distinctRows.filter(row => row.game === game && row.productType === "sealed"),
+      ]),
+    );
+    const heroRows = heroOrder
+      .map(game => sealedPools.get(game)?.shift())
+      .filter((row): row is (typeof distinctRows)[number] => Boolean(row));
+    const heroIds = new Set(heroRows.map(row => row.id));
+    const compactRows = [
+      ...heroRows,
+      ...distinctRows.filter(row => !heroIds.has(row.id)),
+    ].slice(0, 40);
 
     return {
       catalog: databaseCatalogRowsToState(compactRows, []),

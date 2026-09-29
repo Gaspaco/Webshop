@@ -322,8 +322,9 @@ export default function Hero(props: {
                   fallback={
                     <div class={styles.sealedPlaceholder} aria-hidden="true">
                       <span>{slide.game}</span>
-                      <strong>{slide.set}</strong>
-                      <i>Sealed release</i>
+                      <img src="/images/logo-mark.png" alt="" />
+                      <strong>{slide.tag} collection</strong>
+                      <i>TCGHaven</i>
                     </div>
                   }
                 >

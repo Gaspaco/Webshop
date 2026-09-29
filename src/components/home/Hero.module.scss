@@ -24,7 +24,7 @@
   position: relative;
   border-radius: $radius-xl;
   overflow: hidden;
-  min-height: clamp(360px, 52vh, 520px);
+  min-height: clamp(340px, 48vh, 460px);
   background: $surface;
   isolation: isolate;
 }
@@ -114,29 +114,33 @@
   position: absolute;
   z-index: 3;
   top: 50%;
-  right: clamp(2rem, 6vw, 5rem);
+  right: clamp(3rem, 8vw, 7rem);
   display: flex;
-  width: clamp(12rem, 30%, 18rem);
-  aspect-ratio: 0.78;
+  width: clamp(10.5rem, 24%, 13.5rem);
+  aspect-ratio: 0.7;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 1.4rem;
-  border: 1px solid color-mix(in oklab, var(--theme) 62%, white 12%);
-  border-radius: 0.8rem;
-  transform: translateY(-50%) rotate(4deg);
+  padding: 1.2rem;
+  border: 1px solid color-mix(in oklab, var(--theme) 62%, white 14%);
+  border-radius: 0.5rem;
+  transform: translateY(-50%) rotate(2deg);
   background:
-    linear-gradient(145deg, rgba(#fff, 0.09), transparent 35%),
-    repeating-linear-gradient(125deg, transparent 0 1.25rem, rgba(#fff, 0.035) 1.25rem 1.32rem),
-    color-mix(in oklab, var(--theme) 34%, #090c0a);
-  box-shadow: 0 2rem 4rem rgba(#000, 0.5), inset 0 0 0 0.4rem rgba(#000, 0.12);
+    linear-gradient(155deg, rgba(#fff, 0.1), transparent 38%),
+    repeating-linear-gradient(135deg, transparent 0 1.4rem, rgba(#fff, 0.03) 1.4rem 1.46rem),
+    color-mix(in oklab, var(--theme) 38%, #090c0a);
+  box-shadow:
+    0.8rem 0.8rem 0 color-mix(in oklab, var(--theme) 18%, #0a0d0b),
+    1.55rem 1.55rem 0 rgba(#050605, 0.72),
+    0 2rem 4rem rgba(#000, 0.45),
+    inset 0 0 0 0.35rem rgba(#000, 0.1);
   color: $white;
   user-select: none;
 
   &::before {
     content: "";
     position: absolute;
-    inset: 0.8rem 0.8rem auto;
-    height: 0.3rem;
+    inset: 0.75rem 0.75rem auto;
+    height: 0.22rem;
     border-radius: 99rem;
     background: var(--theme);
     box-shadow: 0 0 1.5rem var(--theme);
@@ -152,8 +156,20 @@
     text-transform: uppercase;
   }
 
+  img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4rem;
+    height: 4rem;
+    object-fit: contain;
+    opacity: 0.82;
+    transform: translate(-50%, -62%);
+    filter: drop-shadow(0 0.8rem 1.2rem rgba(#000, 0.35));
+  }
+
   strong {
-    margin: 0.35rem 0 0.8rem;
+    margin: 0.35rem 0 0.65rem;
     font-family: $font-display;
     font-size: clamp(1.2rem, 2vw, 1.75rem);
     line-height: 1.05;
@@ -217,12 +233,16 @@
 .slideBody {
   position: absolute;
   z-index: 4;
+  top: 50%;
   left: 0;
-  bottom: 0;
+  transform: translateY(-50%);
   width: min(30rem, 78%);
   padding: clamp(1.5rem, 3vw, 2.75rem);
 
   @media (max-width: $bp-sm) {
+    top: auto;
+    bottom: 0;
+    transform: none;
     width: 100%;
   }
 }
@@ -649,8 +669,8 @@
   .sealedPlaceholder {
     top: 1rem;
     right: 1.5rem;
-    width: 11rem;
-    transform: rotate(4deg);
+    width: 10rem;
+    transform: rotate(2deg);
     opacity: 0.68;
   }
 

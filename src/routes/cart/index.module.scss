@@ -15,18 +15,6 @@
   letter-spacing: -0.03em;
   line-height: 1.05;
   margin-bottom: clamp(1.5rem, 3.5vh, 2.25rem);
-  animation: cartFadeUp 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes cartFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .layout {
@@ -53,7 +41,6 @@
   background: #0a0b0a;
   border-block: 1px solid rgba($white, 0.12);
   grid-column: 1 / -1;
-  animation: cartFadeUp 620ms cubic-bezier(0.22, 1, 0.36, 1) 70ms both;
 }
 
 .emptyIcon {
@@ -112,7 +99,6 @@
   border-radius: 0;
   background: #0a0b0a;
   overflow: hidden;
-  animation: cartFadeUp 620ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
 }
 
 .row {
@@ -120,22 +106,9 @@
   align-items: center;
   gap: 1.25rem;
   padding: 1.25rem;
-  animation: rowFadeIn 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(180ms + var(--row-index, 0) * 70ms);
 
   & + & {
     border-top: 1px solid rgba($white, 0.06);
-  }
-}
-
-@keyframes rowFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -260,7 +233,6 @@
   background: #111512;
   position: sticky;
   top: calc($header-height + 1.5rem);
-  animation: cartFadeUp 620ms cubic-bezier(0.22, 1, 0.36, 1) 170ms both;
 }
 
 .summaryTitle {
@@ -396,15 +368,5 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .heading,
-  .empty,
-  .list,
-  .summary,
-  .row {
-    animation: none;
   }
 }
