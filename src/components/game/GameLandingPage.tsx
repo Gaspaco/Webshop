@@ -6,9 +6,7 @@ import { createGameCatalog } from "~/lib/game-catalog";
 import {
   getGameIdentity,
   groupProductsBySet,
-  isActivePreorder,
   isUpcoming,
-  releaseTime,
 } from "~/lib/game-storefront";
 import styles from "./GameLandingPage.module.scss";
 
@@ -28,16 +26,6 @@ export default function GameLandingPage() {
   const { products } = createGameCatalog(game);
   const upcoming = createMemo(() => products().filter(isUpcoming));
   const sets = createMemo(() => groupProductsBySet(products()));
-  const featured = createMemo(() =>
-    [...products()]
-      .sort((a, b) => {
-        const aPreorder = isActivePreorder(a);
-        const bPreorder = isActivePreorder(b);
-        if (aPreorder !== bPreorder) return aPreorder ? -1 : 1;
-        return releaseTime(b) - releaseTime(a);
-      })
-      .find(product => product.image),
-  );
 
   return (
     <Show
@@ -100,28 +88,6 @@ export default function GameLandingPage() {
                   </p>
                 </div>
 
-                <Show
-                  when={featured()}
-                  fallback={
-                    <div class={styles.emptyArtwork}>
-                      <strong>Nothing on the shelf yet</strong>
-                      <p>The first published {cat().name} product will show up here.</p>
-                    </div>
-                  }
-                >
-                  {product => (
-                    <A href={product().href} class={styles.showcase}>
-                      <div class={styles.productStage}>
-                        <img src={product().image} alt={product().name} draggable={false} />
-                      </div>
-                      <div class={styles.showcaseCaption}>
-                        <span>{isUpcoming(product()) ? "Next release" : "On the shelf"}</span>
-                        <strong>{product().name}</strong>
-                        <small>{product().setCode ?? product().set ?? cat().name}</small>
-                      </div>
-                    </A>
-                  )}
-                </Show>
               </div>
 
               <nav class={styles.destinations} aria-label={`${cat().name} store pages`}>

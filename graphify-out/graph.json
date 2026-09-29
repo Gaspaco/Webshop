@@ -4299,41 +4299,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia-images.ts:421"
     },
     {
-      "id": "file::gamelandingpage",
-      "label": "GameLandingPage.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:1"
-    },
-    {
-      "id": "gamelandingpage::arrow",
-      "label": "Arrow",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:15"
-    },
-    {
-      "id": "GameLandingPage::game",
-      "label": "game",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25"
-    },
-    {
-      "id": "GameLandingPage::category",
-      "label": "category",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:26"
-    },
-    {
-      "id": "GameLandingPage::identity",
-      "label": "identity",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:27"
-    },
-    {
       "id": "file::gamesubpageshell",
       "label": "GameSubpageShell.tsx",
       "fileType": "code",
@@ -4430,6 +4395,41 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:97"
+    },
+    {
+      "id": "file::gamelandingpage",
+      "label": "GameLandingPage.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:1"
+    },
+    {
+      "id": "gamelandingpage::arrow",
+      "label": "Arrow",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:13"
+    },
+    {
+      "id": "GameLandingPage::game",
+      "label": "game",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:23"
+    },
+    {
+      "id": "GameLandingPage::category",
+      "label": "category",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:24"
+    },
+    {
+      "id": "GameLandingPage::identity",
+      "label": "identity",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25"
     }
   ],
   "edges": [
@@ -8961,42 +8961,6 @@
       "weight": 1
     },
     {
-      "source": "file::gamelandingpage",
-      "target": "gamelandingpage::arrow",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:15",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "GameLandingPage::game",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "GameLandingPage::category",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:26",
-      "weight": 1
-    },
-    {
-      "source": "file::gamelandingpage",
-      "target": "GameLandingPage::identity",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:27",
-      "weight": 1
-    },
-    {
       "source": "file::gamesubpageshell",
       "target": "GameSubpageShell::identity",
       "relation": "contains",
@@ -9094,12 +9058,48 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:97",
       "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "gamelandingpage::arrow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:13",
+      "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "GameLandingPage::game",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:23",
+      "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "GameLandingPage::category",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:24",
+      "weight": 1
+    },
+    {
+      "source": "file::gamelandingpage",
+      "target": "GameLandingPage::identity",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/game/GameLandingPage.tsx:25",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 134,
     "nodes": 633,
     "edges": 518,
-    "builtAt": "2026-09-29T16:50:23.714Z"
+    "builtAt": "2026-09-29T17:28:26.881Z"
   }
 }

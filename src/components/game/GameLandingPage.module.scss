@@ -52,15 +52,14 @@
 .masthead {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(20rem, 1fr) minmax(18rem, 0.75fr);
+  display: flex;
+  min-height: clamp(22rem, 32vw, 28rem);
   align-items: center;
-  gap: clamp(2.5rem, 6vw, 7rem);
-  min-height: clamp(27rem, 40vw, 34rem);
   padding-block: clamp(2.5rem, 4vw, 4rem);
 }
 
 .intro {
+  max-width: 46rem;
   min-width: 0;
 
   h1 {
@@ -160,89 +159,6 @@
   }
 }
 
-.showcase {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  min-width: 0;
-  color: inherit;
-
-  &:focus-visible {
-    outline: 2px solid var(--game-accent);
-    outline-offset: 6px;
-  }
-
-  &:hover .productStage img {
-    filter: drop-shadow(0 1.75rem 2rem rgba(#000, 0.55));
-    transform: translateY(-0.35rem);
-  }
-}
-
-.productStage {
-  display: grid;
-  width: 100%;
-  min-height: clamp(18rem, 25vw, 24rem);
-  place-items: center;
-
-  img {
-    display: block;
-    width: min(100%, 18rem);
-    height: clamp(17rem, 24vw, 23rem);
-    object-fit: contain;
-    filter: drop-shadow(0 1.5rem 1.8rem rgba(#000, 0.48));
-    transition: transform $transition-slow, filter $transition-slow;
-  }
-}
-
-.showcaseCaption {
-  display: flex;
-  max-width: 24rem;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.35rem 0.8rem;
-  margin-top: 0.75rem;
-  text-align: center;
-
-  span {
-    color: var(--game-accent);
-    font-size: 0.72rem;
-    font-weight: 750;
-  }
-
-  strong {
-    width: 100%;
-    overflow: hidden;
-    color: $gray-100;
-    font-family: $font-display;
-    font-size: 0.95rem;
-    font-weight: 720;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  small {
-    color: $gray-600;
-    font-size: 0.7rem;
-  }
-}
-
-.emptyArtwork {
-  display: grid;
-  min-height: 18rem;
-  place-content: center;
-  gap: 0.5rem;
-  color: $gray-500;
-  text-align: center;
-
-  strong {
-    color: $white;
-    font-family: $font-display;
-  }
-
-  p { max-width: 30ch; font-size: 0.85rem; line-height: 1.6; }
-}
-
 .destinations {
   position: relative;
   z-index: 2;
@@ -311,11 +227,6 @@
 }
 
 @media (max-width: $bp-lg) {
-  .masthead {
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
-
   .destinations {
     grid-template-columns: repeat(3, 1fr);
 
@@ -325,14 +236,11 @@
 
 @media (max-width: $bp-md) {
   .masthead {
-    grid-template-columns: 1fr;
     min-height: 0;
     padding-top: 3rem;
   }
 
   .intro { max-width: 40rem; }
-  .showcase { max-width: 26rem; margin-inline: auto; }
-  .productStage { min-height: 20rem; }
 
   .destinations {
     grid-template-columns: 1fr;
@@ -345,12 +253,9 @@
 
 @media (max-width: $bp-sm) {
   .intro h1 { font-size: clamp(2.8rem, 15vw, 4.5rem); }
-  .productStage { min-height: 18rem; }
-  .productStage img { height: 18rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .productStage img,
   .primaryAction,
   .primaryAction svg,
   .destinations svg {
