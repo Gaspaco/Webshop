@@ -22,6 +22,7 @@ export default function GameSetsPage() {
           active="sets"
           title={`${cat().name} sets`}
           description="Open a set to see only the products, formats, and variants released for it."
+          artwork={products().find(product => product.image)?.image}
         >
           <Title>{cat().name} sets | TCGHaven</Title>
           <Show when={sets().length}>
@@ -34,9 +35,20 @@ export default function GameSetsPage() {
             <div class={styles.setGrid}>
               <For each={sets()}>{set => (
                 <A href={`/categories/${game()}/sets/${set.path}`} class={styles.setLink}>
-                  <span>{set.code ?? "SET"}</span>
-                  <strong>{set.name}</strong>
-                  <small>{set.count} {set.count === 1 ? "product" : "products"}</small>
+                  <div class={styles.setArtwork}>
+                    <Show
+                      when={products().find(product => product.set === set.name && product.image)?.image}
+                      fallback={<span>{set.code ?? "SET"}</span>}
+                    >
+                      {image => <img src={image()} alt="" loading="lazy" />}
+                    </Show>
+                  </div>
+                  <div class={styles.setCopy}>
+                    <span>{set.code ?? "Set"}</span>
+                    <strong>{set.name}</strong>
+                    <small>{set.count} {set.count === 1 ? "product" : "products"}</small>
+                  </div>
+                  <span class={styles.setArrow} aria-hidden="true">↗</span>
                 </A>
               )}</For>
             </div>

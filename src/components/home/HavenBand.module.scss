@@ -1,215 +1,175 @@
 @use "../../styles/variables" as *;
 
 .section {
-  padding-block: clamp(1rem, 3vh, 2rem) clamp(3rem, 7vh, 5rem);
-  padding-inline: 0;
+  padding: clamp(2.25rem, 5vw, 5rem) clamp(1rem, 2vw, 1.5rem)
+    clamp(4rem, 8vw, 7rem);
 }
 
-.wide {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(2.5rem, 5vh, 3.5rem);
-  width: min($container-wide, calc(100% - clamp(2rem, 4vw, 3rem)));
+.layout {
+  display: grid;
+  grid-template-columns: minmax(24rem, 0.9fr) minmax(28rem, 1.1fr);
+  width: min($container-wide, 100%);
+  min-height: clamp(30rem, 38vw, 38rem);
   margin-inline: auto;
-}
-
-.serviceNote {
-  display: grid;
-  grid-template-columns: minmax(17rem, 0.75fr) minmax(30rem, 1.25fr);
-  gap: clamp(2.5rem, 6vw, 7rem);
-  align-items: start;
-  padding-block: clamp(2rem, 4vh, 3rem);
-  border-top: 1px solid rgba($white, 0.1);
-
-  @media (max-width: $bp-lg) {
-    grid-template-columns: minmax(15rem, 0.8fr) minmax(24rem, 1.2fr);
-    gap: 2rem;
-  }
-
-  @media (max-width: $bp-md) {
-    grid-template-columns: 1fr;
-    gap: 1.75rem;
-  }
-}
-
-.serviceLead {
-  p {
-    max-width: 19ch;
-    color: $white;
-    font-family: $font-display;
-    font-size: clamp(1.4rem, 2vw, 2rem);
-    font-weight: 780;
-    line-height: 1.15;
-    text-wrap: balance;
-  }
-
-  span {
-    display: block;
-    margin-top: 0.7rem;
-    color: $gray-400;
-    font-size: 0.85rem;
-    line-height: 1.5;
-  }
-}
-
-.serviceFacts {
-  display: grid;
-  margin: 0;
-
-  > div {
-    display: grid;
-    grid-template-columns: minmax(6.5rem, 0.35fr) minmax(0, 1fr);
-    gap: 1.5rem;
-    align-items: baseline;
-    padding-block: 0.85rem;
-    border-bottom: 1px solid rgba($white, 0.09);
-
-    &:first-child { padding-top: 0; }
-  }
-
-  dt {
-    color: $primary-light;
-    font-size: 0.75rem;
-    font-weight: 800;
-  }
-
-  dd {
-    min-width: 0;
-    margin: 0;
-    color: $gray-200;
-    font-size: 0.9rem;
-    line-height: 1.45;
-    overflow-wrap: anywhere;
-  }
-
-  @media (max-width: $bp-sm) {
-    > div {
-      grid-template-columns: 1fr;
-      gap: 0.3rem;
-      padding-block: 0.9rem;
-    }
-  }
-}
-
-.accountPanel {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(18rem, 1.05fr) minmax(16rem, 0.8fr) auto;
-  align-items: center;
-  gap: clamp(2rem, 5vw, 6rem);
-  margin-top: clamp(1rem, 2vh, 1.75rem);
-  padding: clamp(2rem, 4vw, 4rem);
   overflow: hidden;
-  background: #0a0d0b;
+  background: #0b0d0c;
+  border-radius: $radius-xl;
+}
 
-  &::before {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 0.28rem;
-    background: $primary;
-    content: "";
-  }
+.cardStage {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 72% 34%, rgba($primary-light, 0.2), transparent 31%),
+    radial-gradient(circle at 22% 86%, rgba($accent-gold, 0.11), transparent 27%),
+    #0b1b15;
 
   &::after {
     position: absolute;
-    right: clamp(1rem, 4vw, 4rem);
-    bottom: -0.24em;
-    color: rgba($primary, 0.07);
-    content: "01";
-    font-family: $font-display;
-    font-size: clamp(7rem, 12vw, 13rem);
-    font-weight: 900;
-    letter-spacing: -0.1em;
-    line-height: 0.8;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 76%, rgba(#0b0d0c, 0.72));
+    content: "";
     pointer-events: none;
   }
 }
 
-.accountHeading,
-.accountInfo,
-.accountActions {
-  position: relative;
-  z-index: 1;
+.card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(10.5rem, 15vw, 15rem);
+  filter: drop-shadow(0 1.5rem 2rem rgba(#000, 0.5));
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
 }
 
-.accountHeading {
-  > span {
-    display: block;
-    margin-bottom: 1rem;
+.cardBack {
+  z-index: 1;
+  transform: translate(-108%, -56%) rotate(-9deg) scale(0.88);
+  opacity: 0.78;
+}
+
+.cardMiddle {
+  z-index: 2;
+  transform: translate(2%, -51%) rotate(8deg) scale(0.9);
+  opacity: 0.86;
+}
+
+.cardFront {
+  z-index: 3;
+  transform: translate(-50%, -55%) rotate(-1deg);
+}
+
+.cardNote {
+  position: absolute;
+  z-index: 5;
+  right: clamp(1.25rem, 3vw, 2.5rem);
+  bottom: clamp(1.25rem, 3vw, 2.5rem);
+  left: clamp(1.25rem, 3vw, 2.5rem);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 1.1rem;
+  background: rgba(#07100c, 0.9);
+  box-shadow: 0 1rem 2.5rem rgba(#000, 0.22);
+
+  span {
+    flex: 0 0 auto;
     color: $primary-light;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 750;
   }
 
+  strong {
+    color: $gray-200;
+    font-size: 0.8rem;
+    font-weight: 550;
+    line-height: 1.45;
+    text-align: right;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(2.5rem, 5vw, 5.75rem);
+}
+
+.intro {
+  max-width: 39rem;
+
   h2 {
-    max-width: 12ch;
+    max-width: 13ch;
     color: $white;
     font-family: $font-display;
-    font-size: clamp(2rem, 3.5vw, 4rem);
+    font-size: clamp(2.25rem, 3.7vw, 4.4rem);
     font-weight: 850;
-    letter-spacing: -0.045em;
+    letter-spacing: -0.05em;
     line-height: 0.98;
     text-wrap: balance;
   }
+
+  p {
+    max-width: 38rem;
+    margin-top: 1.25rem;
+    color: $gray-400;
+    font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+    line-height: 1.65;
+  }
 }
 
-.accountInfo {
-  > p {
-    max-width: 32ch;
-    color: $gray-400;
-    font-size: 0.86rem;
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.25rem, 2.5vw, 2.5rem);
+  margin: clamp(2.5rem, 5vw, 4.5rem) 0 0;
+
+  div {
+    min-width: 0;
+  }
+
+  dt {
+    color: $gray-100;
+    font-size: 0.82rem;
+    font-weight: 750;
+  }
+
+  dd {
+    margin: 0.6rem 0 0;
+    color: $gray-500;
+    font-size: 0.78rem;
     line-height: 1.55;
   }
-
-  ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem 1rem;
-    padding: 0;
-    margin: 1.25rem 0 0;
-    list-style: none;
-  }
-
-  li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    color: $gray-200;
-    font-size: 0.73rem;
-    font-weight: 700;
-
-    &::before {
-      width: 0.28rem;
-      height: 0.28rem;
-      background: $primary;
-      content: "";
-    }
-  }
 }
 
-.accountActions {
-  display: grid;
-  justify-items: stretch;
-  gap: 0.8rem;
-  width: min(100%, 15.5rem);
-}
-
-.accountPrimary {
+.actions {
   display: flex;
-  min-height: 3.4rem;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding-inline: 1rem;
+  gap: 1rem 1.5rem;
+  margin-top: clamp(2rem, 4vw, 3.5rem);
+}
+
+.primaryAction {
+  display: inline-flex;
+  min-height: 3.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding-inline: 1.25rem;
   background: $primary;
   color: #06120d;
   font-family: $font-display;
-  font-size: 0.84rem;
+  font-size: 0.86rem;
   font-weight: 800;
+  border-radius: $radius-sm;
   transition: background $transition-fast, transform $transition-fast;
 
   svg {
@@ -222,37 +182,106 @@
     background: $primary-light;
     transform: translateY(-2px);
 
-    svg { transform: translateX(0.2rem); }
+    svg {
+      transform: translateX(0.2rem);
+    }
   }
 
-  &:focus-visible { outline: 3px solid $white; outline-offset: 3px; }
+  &:focus-visible {
+    outline: 3px solid $white;
+    outline-offset: 3px;
+  }
 }
 
-.accountSecondary {
+.accountAction {
   color: $gray-300;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  text-align: center;
+  text-decoration: underline;
+  text-decoration-color: rgba($gray-300, 0.35);
+  text-underline-offset: 0.3rem;
+  transition: color $transition-fast, text-decoration-color $transition-fast;
 
-  &:hover { color: $white; }
-  &:focus-visible { outline: 2px solid $primary-light; outline-offset: 4px; }
+  &:hover {
+    color: $white;
+    text-decoration-color: $primary;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 4px;
+  }
 }
 
 @media (max-width: $bp-lg) {
-  .accountPanel {
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.8fr);
+  .layout {
+    grid-template-columns: minmax(19rem, 0.8fr) minmax(26rem, 1.2fr);
   }
 
-  .accountInfo { display: none; }
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+
+    dd {
+      max-width: 34rem;
+      margin-top: 0.3rem;
+    }
+  }
+}
+
+@media (max-width: $bp-md) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cardStage {
+    min-height: 28rem;
+
+    &::after {
+      display: none;
+    }
+  }
+
+  .content {
+    padding: 2.75rem clamp(1.5rem, 7vw, 3rem) 3rem;
+  }
 }
 
 @media (max-width: $bp-sm) {
-  .accountPanel {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    padding: 2rem 1.5rem 2.25rem;
+  .section {
+    padding-inline: 0.75rem;
   }
 
-  .accountHeading h2 { font-size: clamp(2rem, 11vw, 3rem); }
-  .accountActions { width: 100%; }
+  .cardStage {
+    min-height: 24rem;
+  }
+
+  .card {
+    width: clamp(9rem, 37vw, 11.5rem);
+  }
+
+  .cardNote {
+    display: block;
+
+    strong {
+      display: block;
+      margin-top: 0.25rem;
+      text-align: left;
+    }
+  }
+
+  .intro h2 {
+    font-size: clamp(2.15rem, 11vw, 3.25rem);
+  }
+
+  .primaryAction {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryAction,
+  .primaryAction svg {
+    transition: none;
+  }
 }

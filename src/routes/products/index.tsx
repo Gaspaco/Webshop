@@ -141,6 +141,8 @@ export default function Products() {
     clientReady,
     () => fetchDatabaseCatalogState(),
   );
+  const catalogPending = () =>
+    !clientReady() || databaseCatalog.loading || databaseCatalog() === undefined;
   const allProducts = createMemo(() => {
     return databaseCatalog()?.products ?? [];
   });
@@ -459,10 +461,15 @@ export default function Products() {
 
           <section class={styles.results} aria-label="Products">
             <div class={styles.toolbar}>
-              <p class={styles.resultCount}>
-                <strong>{visible().length}</strong>
-                {visible().length === 1 ? " product" : " products"}
-              </p>
+              <Show
+                when={!catalogPending()}
+                fallback={<p class={styles.resultCount}>Loading products</p>}
+              >
+                <p class={styles.resultCount}>
+                  <strong>{visible().length}</strong>
+                  {visible().length === 1 ? " product" : " products"}
+                </p>
+              </Show>
 
               <label class={styles.sortField}>
                 <span>Sort</span>
@@ -494,31 +501,49 @@ export default function Products() {
             </Show>
 
             <Show
-              when={visible().length}
+              when={!catalogPending()}
               fallback={
-                <div class={styles.empty}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20 20-4-4" />
-                  </svg>
-                  <p class={styles.emptyTitle}>No products match</p>
-                  <p>Try a different search, or clear a filter or two.</p>
-                  <button type="button" onClick={clearFilters}>Clear all filters</button>
+                <div class={styles.loadingGrid} role="status" aria-label="Loading products">
+                  <span class={styles.srOnly}>Loading products</span>
+                  <For each={[0, 1, 2, 3, 4, 5, 6, 7]}>
+                    {() => (
+                      <div class={styles.loadingCard} aria-hidden="true">
+                        <span class={styles.loadingArt} />
+                        <span class={styles.loadingName} />
+                        <span class={styles.loadingMeta} />
+                      </div>
+                    )}
+                  </For>
                 </div>
               }
             >
-              <div class={styles.grid}>
-                <For each={visible()}>
-                  {product => (
-                    <ProductCard
-                      product={product}
-                      isJustAdded={() => justAdded().has(product.id)}
-                      onAdd={addToCart}
-                      fill
-                    />
-                  )}
-                </For>
-              </div>
+              <Show
+                when={visible().length}
+                fallback={
+                  <div class={styles.empty}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <circle cx="11" cy="11" r="7" />
+                      <path d="m20 20-4-4" />
+                    </svg>
+                    <p class={styles.emptyTitle}>No products match</p>
+                    <p>Try a different search, or clear a filter or two.</p>
+                    <button type="button" onClick={clearFilters}>Clear all filters</button>
+                  </div>
+                }
+              >
+                <div class={styles.grid}>
+                  <For each={visible()}>
+                    {product => (
+                      <ProductCard
+                        product={product}
+                        isJustAdded={() => justAdded().has(product.id)}
+                        onAdd={addToCart}
+                        fill
+                      />
+                    )}
+                  </For>
+                </div>
+              </Show>
             </Show>
           </section>
         </div>

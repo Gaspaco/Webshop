@@ -34,6 +34,7 @@ export default function GameSetPage() {
               active="sets"
               title={set().name}
               description={`${set().code ? `${set().code}. ` : ""}${set().count} ${set().count === 1 ? "product" : "products"} published in this set.`}
+              artwork={setProducts().find(product => product.image)?.image}
             >
               <Title>{set().name} | {cat().name} | TCGHaven</Title>
               <ProductGrid products={setProducts()} />

@@ -42,7 +42,13 @@ export default function GameProductsPage() {
   return (
     <Show when={category()} fallback={<main class={styles.missing}><h1>Game not found</h1><A href="/categories">Browse all games</A></main>}>
       {cat => (
-        <GameSubpageShell category={cat()} active="products" title={`Shop ${cat().name}`}>
+        <GameSubpageShell
+          category={cat()}
+          active="products"
+          title={`Shop ${cat().name}`}
+          description={`Singles, sealed products and collector pieces from the ${cat().name} catalogue.`}
+          artwork={products().find(product => product.image)?.image}
+        >
           <Title>Shop {cat().name} | TCGHaven</Title>
 
           <div class={styles.filters} role="group" aria-label="Filter products by type">

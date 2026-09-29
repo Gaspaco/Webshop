@@ -1,7 +1,7 @@
 @use "../../../styles/variables" as *;
 
 .section + .section {
-  margin-top: clamp(4rem, 8vh, 6rem);
+  margin-top: clamp(4.5rem, 9vw, 7rem);
 }
 
 .sectionHead {
@@ -9,180 +9,268 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 
-  // Section headings sit below the page h1, so they have to read smaller than
-  // it. At the old clamp they were nearly twice its size.
   h2 {
     color: $white;
     font-family: $font-display;
-    font-size: 1.125rem;
-    font-weight: 750;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    font-weight: 760;
+    letter-spacing: -0.035em;
+    line-height: 1.15;
   }
 
   p {
     max-width: 52ch;
-    margin-top: 0.25rem;
+    margin-top: 0.45rem;
     color: $gray-500;
-    font-size: 0.8125rem;
-    line-height: 1.5;
+    font-size: 0.82rem;
+    line-height: 1.55;
   }
 
   > span {
     flex: 0 0 auto;
     color: var(--game-accent);
-    font-size: 0.72rem;
-    font-weight: 800;
+    font-size: 0.75rem;
+    font-weight: 750;
   }
 }
 
 .releaseList {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
 .releaseItem {
   display: grid;
+  grid-template-columns: minmax(8rem, 0.22fr) minmax(0, 1fr) auto;
   align-items: center;
-  min-height: 4.5rem;
-  padding: 1rem 1.25rem;
-  border-radius: $radius-lg;
-  background: $surface;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  min-height: 5.25rem;
+  padding: 1rem 1.35rem;
+  background: #161817;
   color: $white;
-  gap: clamp(0.75rem, 3vw, 2.5rem);
-  grid-template-columns: minmax(8rem, 0.24fr) minmax(0, 1fr) auto;
-  transition: background $transition-fast, transform $transition-base;
+  border-radius: $radius-md;
+  transition: background $transition-fast, transform $transition-fast;
 
   &:hover {
-    background: $surface-raised;
+    background: #1c1f1d;
     transform: translateY(-2px);
   }
 
-  time { color: var(--game-accent); font-size: 0.72rem; font-weight: 800; }
+  time {
+    color: var(--game-accent);
+    font-size: 0.75rem;
+    font-weight: 750;
+  }
 
   div {
     display: grid;
     gap: 0.3rem;
-    strong { font-family: $font-display; font-size: 1.05rem; }
-    span { color: $gray-500; font-size: 0.7rem; }
+
+    strong {
+      font-family: $font-display;
+      font-size: 1rem;
+      font-weight: 720;
+    }
+
+    span { color: $gray-500; font-size: 0.72rem; }
   }
 
-  > span { color: $gray-500; font-size: 1rem; }
+  > span { color: $gray-600; font-size: 1rem; }
 }
 
 .empty {
-  display: flex;
-  min-height: 16rem;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  min-height: 17rem;
+  place-content: center;
+  gap: 0.5rem;
   padding: clamp(2rem, 5vw, 3rem);
-  border-radius: $radius-lg;
-  background: $surface;
-  gap: 0.375rem;
+  background: #151715;
+  border-radius: $radius-md;
   text-align: center;
 
   strong {
     color: $white;
     font-family: $font-display;
-    font-size: 1.0625rem;
+    font-size: 1.1rem;
     font-weight: 750;
   }
 
-  p { max-width: 44ch; color: $gray-400; font-size: 0.84375rem; line-height: 1.5; }
+  p {
+    max-width: 44ch;
+    color: $gray-500;
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
 
   button {
-    min-height: 2.375rem;
-    margin-top: 0.875rem;
+    min-height: 2.5rem;
+    margin: 0.75rem auto 0;
     padding-inline: 1rem;
-    border-radius: $radius-md;
-    background: $primary;
-    color: #06120d;
-    font-size: 0.78125rem;
+    background: var(--game-accent-strong);
+    color: var(--game-ink);
+    border-radius: $radius-sm;
+    font-size: 0.78rem;
     font-weight: 800;
 
-    &:hover { background: $primary-light; }
+    &:hover { background: var(--game-accent); }
     &:focus-visible { outline: 2px solid $white; outline-offset: 3px; }
   }
 
-  a { color: var(--game-accent); font-size: 0.78125rem; font-weight: 750; }
+  a {
+    margin-top: 0.5rem;
+    color: var(--game-accent);
+    font-size: 0.8rem;
+    font-weight: 750;
+  }
+}
+
+.resultCount {
+  margin-bottom: 1.4rem;
+  color: $gray-500;
+  font-size: 0.82rem;
+
+  strong {
+    color: $gray-200;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .setGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
 }
 
 .setLink {
   position: relative;
   display: grid;
-  min-height: 7.5rem;
-  align-content: space-between;
-  gap: 0.5rem;
-  padding: 1.125rem;
-  border-radius: $radius-lg;
-  background: $surface;
+  grid-template-rows: minmax(14rem, 1fr) auto;
+  min-height: 22rem;
+  overflow: hidden;
+  background: #151715;
   color: $white;
+  border-radius: $radius-md;
   transition: background $transition-fast, transform $transition-base;
 
-  &:hover { background: $surface-raised; transform: translateY(-2px); }
-  &:focus-visible { outline: 2px solid var(--game-accent); outline-offset: 2px; }
+  &:hover {
+    background: #1a1d1b;
+    transform: translateY(-0.3rem);
 
-  > span:first-child {
+    .setArtwork img {
+      transform: translateY(-0.35rem) scale(1.025);
+    }
+
+    .setArrow { color: var(--game-accent); transform: translate(0.15rem, -0.15rem); }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--game-accent);
+    outline-offset: 3px;
+  }
+}
+
+.setArtwork {
+  display: grid;
+  min-height: 14rem;
+  place-items: center;
+  overflow: hidden;
+  padding: 1.75rem;
+  background:
+    radial-gradient(circle at center, color-mix(in srgb, var(--game-accent) 19%, transparent), transparent 64%),
+    #111411;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 11rem;
+    object-fit: contain;
+    filter: drop-shadow(0 1.25rem 1.5rem rgba(#000, 0.5));
+    transition: transform $transition-base;
+  }
+
+  > span {
+    color: color-mix(in srgb, var(--game-accent) 25%, transparent);
+    font-family: $font-display;
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: -0.08em;
+  }
+}
+
+.setCopy {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.3rem 3rem 1.35rem 1.35rem;
+
+  > span {
     color: var(--game-accent);
     font-size: 0.68rem;
-    font-weight: 850;
+    font-weight: 780;
   }
 
   strong {
-    max-width: 18ch;
-    align-self: end;
+    overflow: hidden;
+    color: $white;
     font-family: $font-display;
-    font-size: 1.0625rem;
-    font-weight: 750;
-    letter-spacing: -0.015em;
+    font-size: 1.05rem;
+    font-weight: 740;
+    letter-spacing: -0.02em;
     line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  small { color: $gray-500; font-size: 0.7rem; }
+  small { color: $gray-600; font-size: 0.72rem; }
+}
+
+.setArrow {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.55rem;
+  color: $gray-700;
+  font-size: 1rem;
+  transition: color $transition-fast, transform $transition-fast;
 }
 
 .filters {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 1.25rem;
-  gap: 0.375rem;
+  gap: 0.45rem;
+  margin-bottom: 1.5rem;
 
   button {
     display: inline-flex;
-    min-height: 2.125rem;
+    min-height: 2.4rem;
     align-items: center;
-    padding-inline: 0.75rem;
-    border: 1px solid rgba($white, 0.11);
-    border-radius: $radius-full;
+    gap: 0.5rem;
+    padding-inline: 0.9rem;
+    background: #161817;
     color: $gray-400;
-    font-size: 0.78125rem;
-    font-weight: 650;
-    gap: 0.4375rem;
-    transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+    border-radius: $radius-full;
+    font-size: 0.78rem;
+    font-weight: 680;
+    transition: background $transition-fast, color $transition-fast;
 
     span {
       color: $gray-600;
-      font-size: 0.71875rem;
+      font-size: 0.7rem;
       font-variant-numeric: tabular-nums;
     }
 
-    &:hover { border-color: rgba($white, 0.26); color: $white; }
-    &:focus-visible { outline: 2px solid $primary-light; outline-offset: 2px; }
+    &:hover {
+      background: #1e211f;
+      color: $white;
+    }
+
+    &:focus-visible { outline: 2px solid var(--game-accent); outline-offset: 2px; }
   }
 
   .filterActive {
-    border-color: color-mix(in srgb, var(--game-accent) 45%, transparent);
-    background: color-mix(in srgb, var(--game-accent) 14%, transparent);
-    color: $white;
+    background: color-mix(in srgb, var(--game-accent) 16%, #161817);
+    color: var(--game-accent);
 
     span { color: var(--game-accent); }
   }
@@ -201,28 +289,26 @@
 
 @media (max-width: $bp-md) {
   .sectionHead,
-  .empty { align-items: flex-start; flex-direction: column; }
+  .empty {
+    align-items: flex-start;
+  }
+
+  .sectionHead { flex-direction: column; }
   .releaseItem { grid-template-columns: 1fr auto; gap: 0.5rem 1rem; padding-block: 1.2rem; }
   .releaseItem time { grid-column: 1 / -1; }
 }
 
 @media (max-width: $bp-sm) {
   .setGrid { grid-template-columns: 1fr; }
+  .setLink { grid-template-rows: 13rem auto; min-height: 20rem; }
+  .setArtwork { min-height: 13rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .releaseItem,
-  .setLink { transition: none; }
-}
-
-.resultCount {
-  margin-bottom: 1rem;
-  color: $gray-400;
-  font-size: 0.875rem;
-
-  strong {
-    color: $white;
-    font-weight: 750;
-    font-variant-numeric: tabular-nums;
+  .setLink,
+  .setArtwork img,
+  .setArrow {
+    transition: none;
   }
 }

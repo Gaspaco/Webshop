@@ -10,6 +10,7 @@ type GameSubpageShellProps = {
   active: "releases" | "sets" | "products";
   title: string;
   description?: string;
+  artwork?: string;
   children: JSX.Element;
 };
 
@@ -31,19 +32,30 @@ export default function GameSubpageShell(props: GameSubpageShellProps) {
           <A href={root()}>{props.category.name}</A>
         </nav>
 
-        <header class={styles.head}>
-          <span class={styles.code} aria-hidden="true">{identity().code}</span>
-          <h1>{props.title}</h1>
-          <Show when={props.description}>
-            <p>{props.description}</p>
+        <header class={styles.head} classList={{ [styles.headWithArtwork]: Boolean(props.artwork) }}>
+          <div class={styles.headCopy}>
+            <span class={styles.code}>{props.category.name} collection</span>
+            <h1>{props.title}</h1>
+            <Show when={props.description}>
+              <p>{props.description}</p>
+            </Show>
+          </div>
+
+          <Show when={props.artwork}>
+            {artwork => (
+              <div class={styles.artwork} aria-hidden="true">
+                <span>{identity().code}</span>
+                <img src={artwork()} alt="" draggable={false} />
+              </div>
+            )}
           </Show>
         </header>
 
         <nav class={styles.tabs} aria-label={`${props.category.name} pages`}>
           <A href={root()} end>Overview</A>
-          <A href={`${root()}/releases`} classList={{ [styles.active]: props.active === "releases" }}>Releases</A>
-          <A href={`${root()}/sets`} classList={{ [styles.active]: props.active === "sets" }}>Sets</A>
-          <A href={`${root()}/products`} classList={{ [styles.active]: props.active === "products" }}>Shop</A>
+          <A href={`${root()}/products`} classList={{ [styles.active]: props.active === "products" }} aria-current={props.active === "products" ? "page" : undefined}>Shop</A>
+          <A href={`${root()}/sets`} classList={{ [styles.active]: props.active === "sets" }} aria-current={props.active === "sets" ? "page" : undefined}>Sets</A>
+          <A href={`${root()}/releases`} classList={{ [styles.active]: props.active === "releases" }} aria-current={props.active === "releases" ? "page" : undefined}>Releases</A>
         </nav>
 
         <div class={styles.content}>{props.children}</div>

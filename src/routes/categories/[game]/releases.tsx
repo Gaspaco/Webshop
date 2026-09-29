@@ -34,6 +34,7 @@ export default function GameReleasesPage() {
           active="releases"
           title={`${cat().name} releases`}
           description={identity().releaseCopy}
+          artwork={(upcoming()[0] ?? latest()[0])?.image}
         >
           <Title>{cat().name} releases | TCGHaven</Title>
           <section class={styles.section}>

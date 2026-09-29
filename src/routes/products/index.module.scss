@@ -421,6 +421,57 @@
   gap: 1rem;
 }
 
+.loadingGrid {
+  display: grid;
+  padding-top: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14.5rem), 1fr));
+  gap: 1rem;
+}
+
+.loadingCard {
+  display: grid;
+  padding-bottom: 1rem;
+  border-radius: $radius-lg;
+  background: $surface;
+  gap: 0.625rem;
+  overflow: hidden;
+}
+
+.loadingArt,
+.loadingName,
+.loadingMeta {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    rgba($white, 0.035),
+    rgba($white, 0.075),
+    rgba($white, 0.035)
+  ) 0 0 / 250% 100%;
+  animation: catalogue-loading 1.5s ease-in-out infinite;
+}
+
+.loadingArt {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+}
+
+.loadingName {
+  width: calc(100% - 2rem);
+  height: 0.9375rem;
+  margin-inline: 1rem;
+}
+
+.loadingMeta {
+  width: 42%;
+  height: 0.75rem;
+  margin-inline: 1rem;
+}
+
+@keyframes catalogue-loading {
+  from { background-position: 130% 0; }
+  to { background-position: -130% 0; }
+}
+
 .empty {
   display: flex;
   min-height: 22rem;
@@ -567,7 +618,8 @@
 
   .head { padding-top: 1.5rem; }
 
-  .grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr)); gap: 0.75rem; }
+  .grid,
+  .loadingGrid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr)); gap: 0.75rem; }
 }
 
 @media (max-width: 26rem) {
@@ -590,4 +642,7 @@
 @media (prefers-reduced-motion: reduce) {
   .rail { animation: none; }
   .switchTrack span { transition-duration: 0.01ms; }
+  .loadingArt,
+  .loadingName,
+  .loadingMeta { animation: none; }
 }
