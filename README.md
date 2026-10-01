@@ -79,6 +79,28 @@ When R2 is configured, the importer prefers the owner-controlled R2 URL. When
 it is not, it uses the same-origin cached route. Products for which Yugipedia
 has no exact scan keep their existing manually managed image.
 
+### Digimon and Riftbound catalogue imports
+
+The owner dashboard can search DigimonCard and Scrydex, then save selected
+cards to PostgreSQL as private, zero-stock drafts. Customer-facing pages never
+call either provider. DigimonCard requests are throttled below the provider's
+published limit, while Scrydex responses are cached in the server process for
+six hours.
+
+DigimonCard does not allow its images to be hotlinked, so Digimon drafts need
+an owner-hosted image before publication. Riftbound uses the image URL returned
+by Scrydex and keeps variant-specific artwork where available. Configure these
+server-only variables locally and in Railway to enable Riftbound search:
+
+```bash
+SCRYDEX_API_KEY=replace-with-scrydex-api-key
+SCRYDEX_TEAM_ID=replace-with-scrydex-team-id
+```
+
+Scrydex prices that are not explicitly denominated in EUR are kept as reference
+metadata; the shop price remains zero for manual review rather than treating a
+USD value as euros.
+
 ## Railway
 
 1. Create a Railway project and add a PostgreSQL service.

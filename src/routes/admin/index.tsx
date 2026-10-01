@@ -13,6 +13,7 @@ import {
   onMount,
   Show,
 } from "solid-js";
+import RemoteCardLibrary from "~/components/admin/RemoteCardLibrary";
 import { authClient } from "~/lib/auth-client";
 import { INTERNATIONAL_POSTNL_DESTINATIONS } from "~/lib/shipping";
 import {
@@ -5406,6 +5407,30 @@ export default function Admin() {
                       </div>
                     </Show>
                   </section>
+
+                  <RemoteCardLibrary
+                    title="Digimon card library"
+                    description="Search DigimonCard by card or set. Imports are saved locally as private, zero-stock drafts so the storefront never depends on the external API."
+                    badge="Live DigimonCard data"
+                    endpoint="/api/admin/digimoncard"
+                    gameName="Digimon"
+                    cardPlaceholder="Agumon, Omnimon, BT4-016"
+                    setPlaceholder="Booster Great Legend, BT-04"
+                    artworkNote="DigimonCard forbids image hotlinking. Upload artwork to your own storage before publishing these drafts."
+                    onImported={refetch}
+                  />
+
+                  <RemoteCardLibrary
+                    title="Riftbound card library"
+                    description="Search Scrydex by Riftbound card or expansion. Collectible variants and their matching images are saved as private, zero-stock drafts."
+                    badge="Cached Scrydex data"
+                    endpoint="/api/admin/scrydex"
+                    gameName="Riftbound"
+                    cardPlaceholder="Void Gate, Jinx, OGN-296"
+                    setPlaceholder="Origins, OGN"
+                    artworkNote="Scrydex market references may be USD. Non-EUR prices stay at €0 for manual review instead of being silently converted."
+                    onImported={refetch}
+                  />
 
                   <section class={styles.importGuide}>
                     <div>

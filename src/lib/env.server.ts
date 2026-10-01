@@ -73,6 +73,11 @@ const postnlSchema = z.object({
   POSTNL_MODE: z.enum(["sandbox", "production"]).default("sandbox"),
 });
 
+const scrydexSchema = z.object({
+  SCRYDEX_API_KEY: z.string().trim().min(16).max(512),
+  SCRYDEX_TEAM_ID: z.string().trim().min(2).max(128),
+});
+
 export const getDatabaseEnv = () =>
   databaseSchema.parse({
     DATABASE_URL:
@@ -98,3 +103,4 @@ export const getEmailEnv = () => {
 };
 export const getMollieEnv = () => mollieSchema.parse(process.env);
 export const getPostnlEnv = () => postnlSchema.parse(process.env);
+export const getScrydexEnv = () => scrydexSchema.parse(process.env);
