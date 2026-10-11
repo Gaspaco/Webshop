@@ -101,6 +101,17 @@ Scrydex prices that are not explicitly denominated in EUR are kept as reference
 metadata; the shop price remains zero for manual review rather than treating a
 USD value as euros.
 
+### Cardmarket price files
+
+The owner dashboard accepts Cardmarket product-catalogue and price-guide JSON
+files. Variants store the exact Cardmarket `idProduct` and whether they use the
+normal or foil price column. The importer previews every change and updates only
+the selling price for exact ID matches; images, inventory, visibility, and
+variant details are left unchanged. Automatic ID linking is deliberately
+limited to globally unique Cardmarket names that match exactly one local
+single-variant product. Ambiguous printings must be linked in the variant
+editor instead of being guessed.
+
 ## Railway
 
 1. Create a Railway project and add a PostgreSQL service.

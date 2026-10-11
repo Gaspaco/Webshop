@@ -61,6 +61,8 @@ export async function GET(event: APIEvent) {
         isDefault: productVariants.isDefault,
         priceCents: productVariants.priceCents,
         compareAtPriceCents: productVariants.compareAtPriceCents,
+        cardmarketProductId: productVariants.cardmarketProductId,
+        cardmarketPriceType: productVariants.cardmarketPriceType,
         stock: productVariants.stock,
         reservedStock: productVariants.reservedStock,
         trackInventory: productVariants.trackInventory,
@@ -220,6 +222,8 @@ export async function GET(event: APIEvent) {
       isDefault: boolean;
       priceCents: number;
       compareAtPriceCents: number | null;
+      cardmarketProductId: number | null;
+      cardmarketPriceType: string;
       stock: number;
       reservedStock: number;
       trackInventory: boolean;
@@ -241,6 +245,8 @@ export async function GET(event: APIEvent) {
         isDefault: product.isDefault ?? false,
         priceCents: product.priceCents,
         compareAtPriceCents: product.compareAtPriceCents,
+        cardmarketProductId: product.cardmarketProductId,
+        cardmarketPriceType: product.cardmarketPriceType ?? "normal",
         stock: product.stock ?? 0,
         reservedStock: product.reservedStock ?? 0,
         trackInventory: product.trackInventory ?? true,

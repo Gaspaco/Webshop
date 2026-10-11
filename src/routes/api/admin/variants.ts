@@ -38,6 +38,8 @@ const variantSchema = z.object({
   isDefault: z.boolean().optional().default(false),
   priceCents: z.number().int().min(0).max(100_000_000),
   compareAtPriceCents: z.number().int().min(0).max(100_000_000).nullable().optional(),
+  cardmarketProductId: z.number().int().positive().max(2_147_483_647).nullable().optional(),
+  cardmarketPriceType: z.enum(["normal", "foil"]).optional().default("normal"),
   stock: z.number().int().min(0).max(1_000_000),
   trackInventory: z.boolean().optional().default(true),
 });
@@ -75,6 +77,8 @@ export async function POST(event: APIEvent) {
           ...input,
           barcode: input.barcode || null,
           imageUrl: input.imageUrl || null,
+          cardmarketProductId: input.cardmarketProductId ?? null,
+          cardmarketPriceType: input.cardmarketPriceType,
           condition:
             product.productType === "sealed" ? "Sealed" : input.condition || null,
         })
@@ -162,6 +166,8 @@ export async function PATCH(event: APIEvent) {
           isDefault: input.isDefault,
           priceCents: input.priceCents,
           compareAtPriceCents: input.compareAtPriceCents ?? null,
+          cardmarketProductId: input.cardmarketProductId ?? null,
+          cardmarketPriceType: input.cardmarketPriceType,
           stock: input.stock,
           trackInventory: input.trackInventory,
         })
@@ -191,7 +197,12 @@ export async function PATCH(event: APIEvent) {
       entityType: "product",
       entityId: input.productId,
       summary: `Variant ${input.sku} updated.`,
-      metadata: { stock: input.stock, priceCents: input.priceCents },
+      metadata: {
+        stock: input.stock,
+        priceCents: input.priceCents,
+        cardmarketProductId: input.cardmarketProductId ?? null,
+        cardmarketPriceType: input.cardmarketPriceType,
+      },
     });
     return apiJson({ variant });
   } catch (error) {

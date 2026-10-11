@@ -247,6 +247,10 @@ export const productVariants = pgTable(
     isDefault: boolean("is_default").default(false).notNull(),
     priceCents: integer("price_cents").notNull(),
     compareAtPriceCents: integer("compare_at_price_cents"),
+    cardmarketProductId: integer("cardmarket_product_id"),
+    cardmarketPriceType: text("cardmarket_price_type")
+      .default("normal")
+      .notNull(),
     stock: integer("stock").default(0).notNull(),
     reservedStock: integer("reserved_stock").default(0).notNull(),
     trackInventory: boolean("track_inventory").default(true).notNull(),
@@ -255,6 +259,7 @@ export const productVariants = pgTable(
   table => [
     uniqueIndex("product_variant_sku_idx").on(table.sku),
     index("product_variant_product_idx").on(table.productId),
+    index("product_variant_cardmarket_idx").on(table.cardmarketProductId),
   ],
 );
 

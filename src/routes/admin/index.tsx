@@ -14,6 +14,7 @@ import {
   Show,
 } from "solid-js";
 import RemoteCardLibrary from "~/components/admin/RemoteCardLibrary";
+import CardmarketPriceImport from "~/components/admin/CardmarketPriceImport";
 import { authClient } from "~/lib/auth-client";
 import { INTERNATIONAL_POSTNL_DESTINATIONS } from "~/lib/shipping";
 import {
@@ -49,6 +50,8 @@ type AdminVariant = {
   isDefault: boolean;
   priceCents: number;
   compareAtPriceCents: number | null;
+  cardmarketProductId: number | null;
+  cardmarketPriceType: "normal" | "foil";
   stock: number;
   reservedStock: number;
   trackInventory: boolean;
@@ -361,6 +364,8 @@ type VariantDraft = {
   isDefault: boolean;
   price: string;
   compareAtPrice: string;
+  cardmarketProductId: string;
+  cardmarketPriceType: "normal" | "foil";
   stock: string;
   trackInventory: boolean;
 };
@@ -411,6 +416,8 @@ function createEmptyVariantDraft(): VariantDraft {
     isDefault: false,
     price: "",
     compareAtPrice: "",
+    cardmarketProductId: "",
+    cardmarketPriceType: "normal",
     stock: "0",
     trackInventory: true,
   };
@@ -449,6 +456,19 @@ const ORDER_STATUSES = [
 ];
 
 const CATALOG_PAGE_SIZES = [25, 50, 100] as const;
+
+const CARD_LANGUAGES = [
+  "English",
+  "German",
+  "French",
+  "Spanish",
+  "Italian",
+  "Portuguese",
+  "Japanese",
+  "Korean",
+  "Chinese",
+  "Russian",
+] as const;
 
 const productColumns: ColumnDef<AdminProduct>[] = [
   { accessorKey: "name", header: "Product" },
@@ -540,9 +560,51 @@ function editableVariantFrom(variant: AdminVariant): EditableVariantDraft {
     isDefault: variant.isDefault,
     price: centsToEuros(variant.priceCents),
     compareAtPrice: centsToEuros(variant.compareAtPriceCents),
+    cardmarketProductId: variant.cardmarketProductId == null
+      ? ""
+      : String(variant.cardmarketProductId),
+    cardmarketPriceType: variant.cardmarketPriceType,
     stock: String(variant.stock),
     trackInventory: variant.trackInventory,
   };
+}
+
+function nextLanguageSku(sourceSku: string, variants: AdminVariant[]) {
+  const existing = new Set(variants.map(variant => variant.sku.toLocaleUpperCase("en-US")));
+  const base = sourceSku.replace(/-L\d+$/i, "").slice(0, 74);
+  let suffix = 2;
+  let candidate = `${base}-L${suffix}`;
+  while (existing.has(candidate.toLocaleUpperCase("en-US"))) {
+    suffix += 1;
+    candidate = `${base.slice(0, 77 - String(suffix).length)}-L${suffix}`;
+  }
+  return candidate;
+}
+
+function LanguageSelect(props: {
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+}) {
+  const isCustom = () => Boolean(
+    props.value && !CARD_LANGUAGES.some(language => language === props.value),
+  );
+
+  return (
+    <select
+      required={props.required}
+      value={props.value}
+      onChange={event => props.onChange(event.currentTarget.value)}
+    >
+      <option value="" disabled>Choose language</option>
+      <Show when={isCustom()}>
+        <option value={props.value}>{props.value}</option>
+      </Show>
+      <For each={CARD_LANGUAGES}>
+        {language => <option value={language}>{language}</option>}
+      </For>
+    </select>
+  );
 }
 
 function matchesCatalogueFilters(
@@ -964,6 +1026,10 @@ function ProductRow(props: {
         isDefault: current.isDefault,
         priceCents: eurosToCents(current.price),
         compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
+        cardmarketProductId: current.cardmarketProductId.trim()
+          ? Number(current.cardmarketProductId)
+          : null,
+        cardmarketPriceType: current.cardmarketPriceType,
         stock: Number(current.stock),
         trackInventory: current.trackInventory,
       }),
@@ -983,6 +1049,30 @@ function ProductRow(props: {
 
   const editVariant = (variant: AdminVariant) => {
     setVariantEditDraft(editableVariantFrom(variant));
+  };
+
+  const addLanguageVariant = (variant: AdminVariant) => {
+    setVariantDraft({
+      name: variant.name,
+      sku: nextLanguageSku(variant.sku, props.product.variants),
+      barcode: "",
+      condition: variant.condition ?? "Near Mint",
+      language: "",
+      finish: variant.finish ?? "",
+      imageUrl: variant.imageUrl ?? "",
+      isDefault: false,
+      price: centsToEuros(variant.priceCents),
+      compareAtPrice: centsToEuros(variant.compareAtPriceCents),
+      cardmarketProductId: variant.cardmarketProductId == null
+        ? ""
+        : String(variant.cardmarketProductId),
+      cardmarketPriceType: variant.cardmarketPriceType,
+      stock: "0",
+      trackInventory: variant.trackInventory,
+    });
+    setVariantEditDraft(null);
+    setVariantOpen(true);
+    setMessage("Choose the language and enter the physical stock for this copy.");
   };
 
   const saveVariant = async (event: SubmitEvent) => {
@@ -1008,6 +1098,10 @@ function ProductRow(props: {
         isDefault: current.isDefault,
         priceCents: eurosToCents(current.price),
         compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
+        cardmarketProductId: current.cardmarketProductId.trim()
+          ? Number(current.cardmarketProductId)
+          : null,
+        cardmarketPriceType: current.cardmarketPriceType,
         stock: Number(current.stock),
         trackInventory: current.trackInventory,
       }),
@@ -1320,7 +1414,7 @@ function ProductRow(props: {
                 </label>
                 <label>
                   <span>Language</span>
-                  <input value={language()} onInput={event => setLanguage(event.currentTarget.value)} />
+                  <LanguageSelect value={language()} onChange={setLanguage} required />
                 </label>
                 <label>
                   <span>Finish</span>
@@ -1443,9 +1537,15 @@ function ProductRow(props: {
                         <span>{variant.condition ?? "No condition"}</span>
                         <span>{variant.language ?? "No language"}</span>
                         <span>{variant.finish || "Standard"}</span>
+                        <span>
+                          {variant.cardmarketProductId
+                            ? `Cardmarket ${variant.cardmarketProductId}`
+                            : "No Cardmarket ID"}
+                        </span>
                         <span>{formatMoney(variant.priceCents)}</span>
                         <span>{variant.stock - variant.reservedStock} available</span>
                         <span class={styles.variantActions}>
+                          <button type="button" onClick={() => addLanguageVariant(variant)}>Add language</button>
                           <button type="button" onClick={() => editVariant(variant)}>Edit</button>
                           <button type="button" onClick={() => removeVariant(variant)}>Remove</button>
                         </span>
@@ -1478,11 +1578,41 @@ function ProductRow(props: {
                       </label>
                       <label>
                         <span>Language</span>
-                        <input value={current().language} onInput={event => setVariantEditDraft(value => value && ({ ...value, language: event.currentTarget.value }))} />
+                        <LanguageSelect
+                          value={current().language}
+                          required
+                          onChange={language => setVariantEditDraft(value => value && ({ ...value, language }))}
+                        />
                       </label>
                       <label>
                         <span>Finish</span>
                         <input value={current().finish} onInput={event => setVariantEditDraft(value => value && ({ ...value, finish: event.currentTarget.value }))} />
+                      </label>
+                      <label>
+                        <span>Cardmarket product ID</span>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          inputmode="numeric"
+                          placeholder="For example 101788"
+                          value={current().cardmarketProductId}
+                          onInput={event => setVariantEditDraft(value => value && ({ ...value, cardmarketProductId: event.currentTarget.value }))}
+                        />
+                        <small>Use the exact Cardmarket printing ID. Leave blank when uncertain.</small>
+                      </label>
+                      <label>
+                        <span>Cardmarket price column</span>
+                        <select
+                          value={current().cardmarketPriceType}
+                          onChange={event => setVariantEditDraft(value => value && ({
+                            ...value,
+                            cardmarketPriceType: event.currentTarget.value as "normal" | "foil",
+                          }))}
+                        >
+                          <option value="normal">Normal</option>
+                          <option value="foil">Foil</option>
+                        </select>
                       </label>
                       <label>
                         <span>Variant photo</span>
@@ -1572,11 +1702,41 @@ function ProductRow(props: {
                     </label>
                     <label>
                       <span>Language</span>
-                      <input value={variantDraft().language} onInput={event => setVariantDraft(current => ({ ...current, language: event.currentTarget.value }))} />
+                      <LanguageSelect
+                        value={variantDraft().language}
+                        required
+                        onChange={language => setVariantDraft(current => ({ ...current, language }))}
+                      />
+                      <small>Each language keeps its own stock. Card details and artwork stay linked to the printing.</small>
                     </label>
                     <label>
                       <span>Finish</span>
                       <input value={variantDraft().finish} onInput={event => setVariantDraft(current => ({ ...current, finish: event.currentTarget.value }))} />
+                    </label>
+                    <label>
+                      <span>Cardmarket product ID</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        inputmode="numeric"
+                        placeholder="Optional exact printing ID"
+                        value={variantDraft().cardmarketProductId}
+                        onInput={event => setVariantDraft(current => ({ ...current, cardmarketProductId: event.currentTarget.value }))}
+                      />
+                    </label>
+                    <label>
+                      <span>Cardmarket price column</span>
+                      <select
+                        value={variantDraft().cardmarketPriceType}
+                        onChange={event => setVariantDraft(current => ({
+                          ...current,
+                          cardmarketPriceType: event.currentTarget.value as "normal" | "foil",
+                        }))}
+                      >
+                        <option value="normal">Normal</option>
+                        <option value="foil">Foil</option>
+                      </select>
                     </label>
                     <label>
                       <span>Variant photo</span>
@@ -4979,6 +5139,8 @@ export default function Admin() {
                       </section>
                     )}
                   </Show>
+
+                  <CardmarketPriceImport onUpdated={refetch} />
 
                   <section class={styles.yugiohLibrary}>
                     <div class={styles.yugiohLibraryHead}>
