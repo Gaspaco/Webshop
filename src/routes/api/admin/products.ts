@@ -107,6 +107,10 @@ const createProductSchema = z.object({
 const updateProductSchema = createProductSchema.partial().extend({
   id: z.string().uuid(),
   variantId: z.string().uuid(),
+  variantImages: z.array(z.object({
+    id: z.string().uuid(),
+    imageUrl: imageSchema,
+  })).max(200).optional().default([]),
 });
 const starterOverrideSchema = createProductSchema.extend({
   id: z.string().startsWith("static:"),
@@ -473,6 +477,20 @@ export async function PATCH(event: APIEvent) {
           .where(eq(productVariants.id, input.variantId));
       }
 
+      for (const variantImage of input.variantImages) {
+        const [updated] = await tx
+          .update(productVariants)
+          .set({ imageUrl: variantImage.imageUrl || null })
+          .where(
+            and(
+              eq(productVariants.id, variantImage.id),
+              eq(productVariants.productId, input.id),
+            ),
+          )
+          .returning({ id: productVariants.id });
+        if (!updated) throw new Error("Variant image target not found.");
+      }
+
       if (input.stock !== undefined && input.stock !== currentVariant.stock) {
         await tx.insert(inventoryMovements).values({
           variantId: input.variantId,
@@ -495,6 +513,7 @@ export async function PATCH(event: APIEvent) {
         status: input.status,
         stock: input.stock,
         priceCents: input.priceCents,
+        variantImagesUpdated: input.variantImages.length,
       },
     });
 

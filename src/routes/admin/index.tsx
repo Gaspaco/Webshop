@@ -914,6 +914,7 @@ function ProductRow(props: {
   );
   const [variantEditDraft, setVariantEditDraft] =
     createSignal<EditableVariantDraft | null>(null);
+  const [quickImageDrafts, setQuickImageDrafts] = createSignal<Record<string, string>>({});
 
   const loadImage = (file?: File) => {
     readProductImage(file, setImage, setMessage);
@@ -991,6 +992,10 @@ function ProductRow(props: {
         stock: Number(stock()),
         trackInventory: trackInventory(),
         status: status(),
+        variantImages: Object.entries(quickImageDrafts()).map(([id, imageUrl]) => ({
+          id,
+          imageUrl: imageUrl.trim(),
+        })),
       }),
     });
     const result = (await response.json()) as { error?: string };
@@ -999,6 +1004,7 @@ function ProductRow(props: {
       setSaving(false);
       return;
     }
+    setQuickImageDrafts({});
     await Promise.resolve(props.onSaved());
     setMessage("Saved");
     setEditing(false);
@@ -1049,6 +1055,25 @@ function ProductRow(props: {
 
   const editVariant = (variant: AdminVariant) => {
     setVariantEditDraft(editableVariantFrom(variant));
+  };
+
+  const openQuickImage = (variant: AdminVariant) => {
+    setVariantEditDraft(null);
+    setQuickImageDrafts(current => ({
+      ...current,
+      [variant.id]: current[variant.id] ?? (
+        variant.imageUrl?.startsWith("https://") ? variant.imageUrl : ""
+      ),
+    }));
+    setMessage("");
+  };
+
+  const closeQuickImage = (variantId: string) => {
+    setQuickImageDrafts(current => {
+      const next = { ...current };
+      delete next[variantId];
+      return next;
+    });
   };
 
   const addLanguageVariant = (variant: AdminVariant) => {
@@ -1496,9 +1521,21 @@ function ProductRow(props: {
                     Archive product
                   </button>
                 </Show>
-                <button type="button" onClick={() => setEditing(false)}>Cancel</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuickImageDrafts({});
+                    setEditing(false);
+                  }}
+                >
+                  Cancel
+                </button>
                 <button type="button" class={styles.primaryAction} onClick={save} disabled={saving()}>
-                  {saving() ? "Saving changes" : "Save all changes"}
+                  {saving()
+                    ? "Saving changes"
+                    : Object.keys(quickImageDrafts()).length
+                      ? `Save all changes · ${Object.keys(quickImageDrafts()).length} images`
+                      : "Save all changes"}
                 </button>
               </div>
 
@@ -1545,10 +1582,36 @@ function ProductRow(props: {
                         <span>{formatMoney(variant.priceCents)}</span>
                         <span>{variant.stock - variant.reservedStock} available</span>
                         <span class={styles.variantActions}>
+                          <button type="button" onClick={() => openQuickImage(variant)}>Image URL</button>
                           <button type="button" onClick={() => addLanguageVariant(variant)}>Add language</button>
                           <button type="button" onClick={() => editVariant(variant)}>Edit</button>
                           <button type="button" onClick={() => removeVariant(variant)}>Remove</button>
                         </span>
+                        <Show when={quickImageDrafts()[variant.id] !== undefined}>
+                          <div class={styles.quickImageForm}>
+                            <label>
+                              <span>Variant image URL</span>
+                              <input
+                                type="url"
+                                autofocus
+                                placeholder="https://example.com/card-image.jpg"
+                                value={quickImageDrafts()[variant.id] ?? ""}
+                                onInput={event => setQuickImageDrafts(current => ({
+                                  ...current,
+                                  [variant.id]: event.currentTarget.value,
+                                }))}
+                              />
+                            </label>
+                            <span class={styles.quickImagePending}>Saved with all changes</span>
+                            <button
+                              type="button"
+                              disabled={saving()}
+                              onClick={() => closeQuickImage(variant.id)}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </Show>
                       </div>
                     )}
                   </For>

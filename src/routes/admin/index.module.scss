@@ -2193,6 +2193,58 @@
   color: #fca5a5;
 }
 
+.quickImageForm {
+  display: flex;
+  min-width: 0;
+  padding: 0.7rem 0 0.8rem;
+  align-items: end;
+  border-top: 1px solid rgba($white, 0.06);
+  grid-column: 1 / -1;
+  gap: 0.55rem;
+}
+
+.quickImageForm label {
+  min-width: min(28rem, 65vw);
+  flex: 1;
+}
+
+.quickImageForm label > span {
+  display: block;
+  margin-bottom: 0.32rem;
+  color: $gray-500;
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.quickImageForm input {
+  width: 100%;
+  height: 2.4rem;
+  padding: 0 0.7rem;
+  border: 1px solid rgba($white, 0.12);
+  border-radius: 0.4rem;
+  background: #070a08;
+  color: $white;
+  font-size: 0.66rem;
+  outline: none;
+}
+
+.quickImageForm input:focus {
+  border-color: rgba($primary, 0.72);
+}
+
+.quickImageForm button {
+  min-height: 2.4rem;
+  margin: 0;
+}
+
+.quickImagePending {
+  padding-bottom: 0.68rem;
+  color: $primary-light;
+  font-size: 0.58rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .variantForm {
   display: grid;
   padding: 1rem 0;
