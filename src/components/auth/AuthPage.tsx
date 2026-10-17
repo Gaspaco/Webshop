@@ -111,7 +111,9 @@ export default function AuthPage(props: AuthPageProps) {
       setError(
         authError.status === 429
           ? "Too many sign-in attempts. Wait a minute and try again."
-          : "Email or password is incorrect.",
+          : authError.status >= 500
+            ? "The account service is temporarily unavailable. Please try again shortly."
+            : "Email or password is incorrect.",
       );
       return;
     }

@@ -10,6 +10,10 @@ const SCRYDEX_API = "https://api.scrydex.com";
 const SCRYDEX_HOST = "api.scrydex.com";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1_000;
 const MAX_CACHE_ENTRIES = 100;
+const SCRYDEX_PAGE_SIZE = 250;
+const MAX_SCRYDEX_PAGES = 8;
+const MAX_SEARCH_RESULTS = SCRYDEX_PAGE_SIZE * MAX_SCRYDEX_PAGES;
+const MANUAL_REFRESH_COOLDOWN_MS = 60 * 1_000;
 
 const importCardSchema = z.object({
   cardId: z.string().trim().min(2).max(80).regex(/^[a-zA-Z0-9._-]+$/),
@@ -75,6 +79,11 @@ type ScrydexList<T> = {
   totalCount?: number;
 };
 
+type ScrydexErrorBody = {
+  error?: string | { message?: string; code?: string };
+  message?: string;
+};
+
 class ScrydexRequestError extends Error {
   constructor(
     message: string,
@@ -93,6 +102,7 @@ const wait = (milliseconds: number) =>
 let requestQueue = Promise.resolve();
 let lastRequestAt = 0;
 let blockedUntil = 0;
+let lastManualRefreshAt = 0;
 
 async function waitForRequestSlot() {
   const scheduled = requestQueue.then(async () => {
@@ -161,8 +171,10 @@ async function scrydexJson<T>(path: string): Promise<T> {
     if (!response.ok) {
       let detail = "Scrydex could not complete the request.";
       try {
-        const body = (await response.json()) as { error?: string; message?: string };
-        detail = body.error ?? body.message ?? detail;
+        const body = (await response.json()) as ScrydexErrorBody;
+        detail = typeof body.error === "string"
+          ? body.error
+          : body.error?.message ?? body.message ?? detail;
       } catch {
         // The status code still gives the dashboard a useful error state.
       }
@@ -286,7 +298,8 @@ async function importedStatuses(cards: RiftboundCard[]) {
 }
 
 async function searchResponse(cards: RiftboundCard[], matchedSets: string[] = []) {
-  const unique = [...new Map(cards.map(card => [card.id, card])).values()].slice(0, 300);
+  const unique = [...new Map(cards.map(card => [card.id, card])).values()]
+    .slice(0, MAX_SEARCH_RESULTS);
   const imported = await importedStatuses(unique);
   return apiJson({
     cards: unique.map(card => ({
@@ -305,6 +318,28 @@ async function searchResponse(cards: RiftboundCard[], matchedSets: string[] = []
   });
 }
 
+async function expansionCards(expansionId: string) {
+  const cards: RiftboundCard[] = [];
+
+  for (let page = 1; page <= MAX_SCRYDEX_PAGES; page += 1) {
+    const body = await scrydexJson<ScrydexList<RiftboundCard>>(
+      `riftbound/v1/expansions/${encodeURIComponent(expansionId)}/cards?page=${page}&page_size=${SCRYDEX_PAGE_SIZE}&include=prices`,
+    );
+    const pageCards = listData(body);
+    cards.push(...pageCards);
+
+    const totalCount = Array.isArray(body) ? undefined : body.totalCount;
+    if (
+      pageCards.length < SCRYDEX_PAGE_SIZE ||
+      (typeof totalCount === "number" && cards.length >= totalCount)
+    ) {
+      return cards;
+    }
+  }
+
+  return cards;
+}
+
 async function searchExpansions(query: string) {
   const response = await scrydexJson<ScrydexList<ScrydexExpansion>>(
     "riftbound/v1/expansions?page_size=100&select=id,name,code,type,release_date,language,language_code",
@@ -319,6 +354,26 @@ async function searchExpansions(query: string) {
     .slice(0, 3);
 }
 
+async function latestExpansions() {
+  const response = await scrydexJson<ScrydexList<ScrydexExpansion>>(
+    "riftbound/v1/expansions?page_size=100&select=id,name,code,type,release_date,language,language_code",
+  );
+
+  return listData(response)
+    .filter(expansion => expansion.id && expansion.name)
+    .sort((left, right) => {
+      const byDate = (right.release_date ?? "").localeCompare(left.release_date ?? "");
+      return byDate || left.name.localeCompare(right.name);
+    })
+    .slice(0, 6)
+    .map(expansion => ({
+      id: expansion.id,
+      name: expansion.name,
+      code: (expansion.code ?? expansion.id).toUpperCase(),
+      releaseDate: expansion.release_date ?? null,
+    }));
+}
+
 export async function GET(event: APIEvent) {
   const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
@@ -326,17 +381,43 @@ export async function GET(event: APIEvent) {
   const url = new URL(event.request.url);
   const query = cleanQuery(url.searchParams.get("q")?.slice(0, 100) ?? "");
   const by = url.searchParams.get("by") === "set" ? "set" : "card";
-  if (!query) return apiJson({ cards: [], matchedSets: [] });
+  const refresh = url.searchParams.get("refresh") === "1";
 
   try {
+    if (refresh) {
+      const now = Date.now();
+      const remaining = MANUAL_REFRESH_COOLDOWN_MS - (now - lastManualRefreshAt);
+      if (remaining > 0) {
+        const retryAfter = Math.max(1, Math.ceil(remaining / 1_000));
+        return apiJson(
+          {
+            error: `The Riftbound source was just refreshed. Try again in ${retryAfter} seconds.`,
+            retryAfter,
+          },
+          { status: 429, headers: { "Retry-After": String(retryAfter) } },
+        );
+      }
+
+      responseCache.clear();
+      lastManualRefreshAt = now;
+      const latestSets = await latestExpansions();
+      if (!query) {
+        return apiJson({
+          cards: [],
+          matchedSets: [],
+          latestSets,
+          refreshedAt: new Date(now).toISOString(),
+        });
+      }
+    }
+
+    if (!query) return apiJson({ cards: [], matchedSets: [] });
+
     if (by === "set") {
       const expansions = await searchExpansions(query);
       const cards: RiftboundCard[] = [];
       for (const expansion of expansions) {
-        const body = await scrydexJson<ScrydexList<RiftboundCard>>(
-          `riftbound/v1/expansions/${encodeURIComponent(expansion.id)}/cards?page_size=250&include=prices`,
-        );
-        cards.push(...listData(body));
+        cards.push(...await expansionCards(expansion.id));
       }
       return searchResponse(
         cards,
@@ -367,8 +448,8 @@ export async function GET(event: APIEvent) {
       });
       return rateLimitResponse(error);
     }
-    console.error("Scrydex search failed", error);
     const configurationMissing = error instanceof z.ZodError;
+    if (!configurationMissing) console.error("Scrydex search failed", error);
     return apiJson(
       {
         error: configurationMissing

@@ -35,6 +35,13 @@
     font-size: 0.61rem;
     line-height: 1.5;
   }
+}
+
+.headActions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.5rem;
 
   > span {
     flex: 0 0 auto;
@@ -43,6 +50,17 @@
     background: rgba($primary, 0.12);
     color: $primary-light;
     font-size: 0.6rem;
+    font-weight: 750;
+  }
+
+  button {
+    min-height: 2rem;
+    padding: 0 0.65rem;
+    border: 1px solid rgba($primary, 0.34);
+    border-radius: 0.4rem;
+    background: transparent;
+    color: $primary-light;
+    font-size: 0.61rem;
     font-weight: 750;
   }
 }
@@ -259,7 +277,7 @@ button:disabled {
     flex-direction: column;
   }
 
-  .head > span {
+  .headActions {
     align-self: flex-start;
   }
 

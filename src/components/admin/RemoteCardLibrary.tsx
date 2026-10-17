@@ -25,6 +25,7 @@ type RemoteCardLibraryProps = {
   cardPlaceholder: string;
   setPlaceholder: string;
   artworkNote?: string;
+  canRefreshSource?: boolean;
   onImported: () => unknown;
 };
 
@@ -36,6 +37,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
   const [selected, setSelected] = createSignal<Set<string>>(new Set());
   const [importing, setImporting] = createSignal<Set<string>>(new Set());
   const [searching, setSearching] = createSignal(false);
+  const [refreshing, setRefreshing] = createSignal(false);
   const [bulkRunning, setBulkRunning] = createSignal(false);
   const [message, setMessage] = createSignal("");
   const [cooldownSeconds, setCooldownSeconds] = createSignal(0);
@@ -124,6 +126,61 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
       }
     } finally {
       if (searchController === controller) setSearching(false);
+    }
+  };
+
+  const refreshSource = async () => {
+    if (!props.canRefreshSource || refreshing() || cooldownSeconds() > 0) return;
+
+    searchController?.abort();
+    const controller = new AbortController();
+    searchController = controller;
+    setRefreshing(true);
+    setMessage("");
+    try {
+      const params = new URLSearchParams({ refresh: "1" });
+      const value = query().trim();
+      if (value) {
+        params.set("by", searchBy());
+        params.set("q", value);
+      }
+      const response = await fetch(`${props.endpoint}?${params}`, {
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      });
+      const result = (await response.json().catch(() => ({}))) as {
+        cards?: RemoteCard[];
+        matchedSets?: string[];
+        latestSets?: Array<{ name: string; code: string; releaseDate: string | null }>;
+        error?: string;
+        retryAfter?: number;
+      };
+      if (!response.ok) {
+        if (response.status === 429) startCooldown(retryDelay(response, result.retryAfter));
+        setMessage(result.error ?? `${props.gameName} could not be refreshed.`);
+        return;
+      }
+
+      if (value) {
+        setCards(result.cards ?? []);
+        setMatchedSets(result.matchedSets ?? []);
+        setSelected(new Set<string>());
+      }
+      const newest = result.latestSets?.slice(0, 3)
+        .map(set => `${set.name} (${set.code})`)
+        .join(", ");
+      setMessage(
+        newest
+          ? `Riftbound is up to date. Newest sets: ${newest}.`
+          : `${props.gameName} is up to date${value ? " and the current search was refreshed" : ""}.`,
+      );
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        setMessage(`${props.gameName} could not be refreshed. Check the connection and try again.`);
+      }
+    } finally {
+      if (searchController === controller) setRefreshing(false);
     }
   };
 
@@ -264,7 +321,18 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
             <small>{props.artworkNote}</small>
           </Show>
         </div>
-        <span>{props.badge}</span>
+        <div class={styles.headActions}>
+          <span>{props.badge}</span>
+          <Show when={props.canRefreshSource}>
+            <button
+              type="button"
+              disabled={refreshing() || searching() || bulkRunning() || cooldownSeconds() > 0}
+              onClick={() => void refreshSource()}
+            >
+              {refreshing() ? "Checking source" : "Check for new sets"}
+            </button>
+          </Show>
+        </div>
       </div>
 
       <form class={styles.search} onSubmit={searchCards}>

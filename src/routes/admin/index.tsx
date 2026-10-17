@@ -5660,6 +5660,7 @@ export default function Admin() {
                     cardPlaceholder="Void Gate, Jinx, OGN-296"
                     setPlaceholder="Origins, OGN"
                     artworkNote="Scrydex market references may be USD. Non-EUR prices stay at €0 for manual review instead of being silently converted."
+                    canRefreshSource
                     onImported={refetch}
                   />
 
