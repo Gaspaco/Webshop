@@ -75,16 +75,22 @@ class ScryfallRequestError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly retryAfterSeconds = 0,
   ) {
     super(message);
   }
 }
 
+const CACHE_TTL_MS = 10 * 60 * 1_000;
+const MAX_CACHE_ENTRIES = 100;
+const responseCache = new Map<string, { expiresAt: number; value: unknown }>();
+const pendingRequests = new Map<string, Promise<unknown>>();
 const wait = (milliseconds: number) =>
   new Promise(resolve => setTimeout(resolve, milliseconds));
 
 let requestQueue = Promise.resolve();
 let lastRequestAt = 0;
+let blockedUntil = 0;
 
 async function waitForRequestSlot() {
   const scheduled = requestQueue.then(async () => {
@@ -102,22 +108,78 @@ async function scryfallJson<T>(url: string) {
     throw new Error("Unexpected Scryfall API address.");
   }
 
-  await waitForRequestSlot();
-  const response = await fetch(target, {
-    headers: SCRYFALL_HEADERS,
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!response.ok) {
-    let detail = "Scryfall could not complete the request.";
-    try {
-      const body = (await response.json()) as { details?: string };
-      if (body.details) detail = body.details;
-    } catch {
-      // The status code remains enough to return a useful admin error.
-    }
-    throw new ScryfallRequestError(detail, response.status);
+  const cacheKey = target.toString();
+  const cached = responseCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value as T;
+  if (cached) responseCache.delete(cacheKey);
+
+  const pending = pendingRequests.get(cacheKey);
+  if (pending) return await pending as T;
+
+  if (blockedUntil > Date.now()) {
+    throw new ScryfallRequestError(
+      "Scryfall is temporarily rate limiting requests.",
+      429,
+      Math.max(1, Math.ceil((blockedUntil - Date.now()) / 1_000)),
+    );
   }
-  return (await response.json()) as T;
+
+  const request = (async () => {
+    await waitForRequestSlot();
+    const response = await fetch(target, {
+      headers: SCRYFALL_HEADERS,
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!response.ok) {
+      let detail = "Scryfall could not complete the request.";
+      try {
+        const body = (await response.json()) as { details?: string };
+        if (body.details) detail = body.details;
+      } catch {
+        // The status code remains enough to return a useful admin error.
+      }
+      const retryAfter = response.status === 429
+        ? retryAfterSeconds(response, 60)
+        : 0;
+      if (retryAfter) blockedUntil = Date.now() + retryAfter * 1_000;
+      throw new ScryfallRequestError(detail, response.status, retryAfter);
+    }
+    const value = await response.json() as T;
+    if (responseCache.size >= MAX_CACHE_ENTRIES) {
+      const oldest = responseCache.keys().next().value;
+      if (oldest) responseCache.delete(oldest);
+    }
+    responseCache.set(cacheKey, { expiresAt: Date.now() + CACHE_TTL_MS, value });
+    return value;
+  })();
+  pendingRequests.set(cacheKey, request);
+  try {
+    return await request;
+  } finally {
+    pendingRequests.delete(cacheKey);
+  }
+}
+
+function retryAfterSeconds(response: Response, fallback: number) {
+  const raw = response.headers.get("retry-after");
+  if (!raw) return fallback;
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds) && seconds > 0) return Math.ceil(seconds);
+  const retryAt = Date.parse(raw);
+  return Number.isFinite(retryAt)
+    ? Math.max(1, Math.ceil((retryAt - Date.now()) / 1_000))
+    : fallback;
+}
+
+function rateLimitResponse(error: ScryfallRequestError) {
+  const retryAfter = Math.max(1, error.retryAfterSeconds || 60);
+  return apiJson(
+    {
+      error: "Scryfall is temporarily rate limiting requests. Please wait before trying again.",
+      retryAfter,
+    },
+    { status: 429, headers: { "Retry-After": String(retryAfter) } },
+  );
 }
 
 function quotedSearch(value: string) {
@@ -290,13 +352,15 @@ export async function GET(event: APIEvent) {
     if (error instanceof ScryfallRequestError && error.status === 404) {
       return apiJson({ cards: [], matchedSets: [] });
     }
+    if (error instanceof ScryfallRequestError && error.status === 429) {
+      console.warn("Scryfall search rate limited", {
+        retryAfter: error.retryAfterSeconds,
+      });
+      return rateLimitResponse(error);
+    }
     console.error("Scryfall search failed", error);
     return apiJson(
-      {
-        error: error instanceof ScryfallRequestError && error.status === 429
-          ? "Scryfall is rate limiting requests. Wait a moment and search again."
-          : "Scryfall could not be reached. Try again shortly.",
-      },
+      { error: "Scryfall could not be reached. Try again shortly." },
       { status: 503 },
     );
   }
@@ -423,10 +487,7 @@ export async function POST(event: APIEvent) {
       return apiJson({ error: "Choose a valid Magic card." }, { status: 400 });
     }
     if (error instanceof ScryfallRequestError && error.status === 429) {
-      return apiJson(
-        { error: "Scryfall is rate limiting requests. Wait a moment and try again." },
-        { status: 503 },
-      );
+      return rateLimitResponse(error);
     }
     console.error("Scryfall catalogue import failed", error);
     return apiJson(

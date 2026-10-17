@@ -45,23 +45,27 @@ class DigimonRequestError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly retryAfterSeconds = 0,
   ) {
     super(message);
   }
 }
 
 const responseCache = new Map<string, { expiresAt: number; value: DigimonCard[] }>();
+const cardCache = new Map<string, { expiresAt: number; value: DigimonCard }>();
+const pendingRequests = new Map<string, Promise<DigimonCard[]>>();
 const wait = (milliseconds: number) =>
   new Promise(resolve => setTimeout(resolve, milliseconds));
 
 let requestQueue = Promise.resolve();
 let lastRequestAt = 0;
+let blockedUntil = 0;
 
 async function waitForRequestSlot() {
   const scheduled = requestQueue.then(async () => {
-    // The provider allows 15 requests per 10 seconds. Staying at 700 ms leaves
-    // a little headroom for retries and parallel server instances.
-    const delay = Math.max(0, 700 - (Date.now() - lastRequestAt));
+    // The provider allows 15 requests per 10 seconds. Stay comfortably below
+    // that ceiling so small timing differences do not trigger its one-hour ban.
+    const delay = Math.max(0, 850 - (Date.now() - lastRequestAt));
     if (delay) await wait(delay);
     lastRequestAt = Date.now();
   });
@@ -74,8 +78,23 @@ function remember(key: string, value: DigimonCard[]) {
     const oldest = responseCache.keys().next().value;
     if (oldest) responseCache.delete(oldest);
   }
-  responseCache.set(key, { expiresAt: Date.now() + CACHE_TTL_MS, value });
+  const expiresAt = Date.now() + CACHE_TTL_MS;
+  responseCache.set(key, { expiresAt, value });
+  for (const card of value) {
+    cardCache.set(card.id.toUpperCase(), { expiresAt, value: card });
+  }
   return value;
+}
+
+function retryAfterSeconds(response: Response, fallback: number) {
+  const raw = response.headers.get("retry-after");
+  if (!raw) return fallback;
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds) && seconds > 0) return Math.ceil(seconds);
+  const retryAt = Date.parse(raw);
+  return Number.isFinite(retryAt)
+    ? Math.max(1, Math.ceil((retryAt - Date.now()) / 1_000))
+    : fallback;
 }
 
 async function digimonJson(params: URLSearchParams) {
@@ -92,28 +111,70 @@ async function digimonJson(params: URLSearchParams) {
   if (cached && cached.expiresAt > Date.now()) return cached.value;
   if (cached) responseCache.delete(cacheKey);
 
-  await waitForRequestSlot();
-  const response = await fetch(target, {
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "TCGHaven/1.0 (info@tcghaven.com)",
-    },
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!response.ok) {
-    let detail = "DigimonCard could not complete the request.";
-    try {
-      const body = (await response.json()) as { error?: string };
-      if (body.error) detail = body.error;
-    } catch {
-      // Status and default copy are enough for a safe admin response.
-    }
-    throw new DigimonRequestError(detail, response.status);
+  const pending = pendingRequests.get(cacheKey);
+  if (pending) return pending;
+
+  if (blockedUntil > Date.now()) {
+    throw new DigimonRequestError(
+      "DigimonCard is temporarily rate limiting requests.",
+      429,
+      Math.max(1, Math.ceil((blockedUntil - Date.now()) / 1_000)),
+    );
   }
 
-  const body = await response.json();
-  if (!Array.isArray(body)) throw new DigimonRequestError("Unexpected API response.", 502);
-  return remember(cacheKey, body as DigimonCard[]);
+  const request = (async () => {
+    await waitForRequestSlot();
+    const response = await fetch(target, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "TCGHaven/1.0 (info@tcghaven.com)",
+      },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!response.ok) {
+      let detail = "DigimonCard could not complete the request.";
+      try {
+        const body = (await response.json()) as { error?: string };
+        if (body.error) detail = body.error;
+      } catch {
+        // Status and default copy are enough for a safe admin response.
+      }
+      const retryAfter = response.status === 429
+        ? retryAfterSeconds(response, 60 * 60)
+        : 0;
+      if (retryAfter) blockedUntil = Date.now() + retryAfter * 1_000;
+      throw new DigimonRequestError(detail, response.status, retryAfter);
+    }
+
+    const body = await response.json();
+    if (!Array.isArray(body)) throw new DigimonRequestError("Unexpected API response.", 502);
+    return remember(cacheKey, body as DigimonCard[]);
+  })();
+  pendingRequests.set(cacheKey, request);
+  try {
+    return await request;
+  } finally {
+    pendingRequests.delete(cacheKey);
+  }
+}
+
+function cachedCard(cardId: string) {
+  const key = cardId.toUpperCase();
+  const cached = cardCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  if (cached) cardCache.delete(key);
+  return null;
+}
+
+function rateLimitResponse(error: DigimonRequestError) {
+  const retryAfter = Math.max(1, error.retryAfterSeconds || 60);
+  return apiJson(
+    {
+      error: "DigimonCard is temporarily rate limiting requests. Please wait before trying again.",
+      retryAfter,
+    },
+    { status: 429, headers: { "Retry-After": String(retryAfter) } },
+  );
 }
 
 function cleanQuery(value: string) {
@@ -222,13 +283,15 @@ export async function GET(event: APIEvent) {
     if (error instanceof DigimonRequestError && error.status === 400) {
       return apiJson({ cards: [], matchedSets: [] });
     }
+    if (error instanceof DigimonRequestError && error.status === 429) {
+      console.warn("DigimonCard search rate limited", {
+        retryAfter: error.retryAfterSeconds,
+      });
+      return rateLimitResponse(error);
+    }
     console.error("DigimonCard search failed", error);
     return apiJson(
-      {
-        error: error instanceof DigimonRequestError && error.status === 429
-          ? "DigimonCard is rate limiting requests. Wait a minute and search again."
-          : "The Digimon card library could not be reached. Try again shortly.",
-      },
+      { error: "The Digimon card library could not be reached. Try again shortly." },
       { status: 503 },
     );
   }
@@ -240,7 +303,10 @@ export async function POST(event: APIEvent) {
 
   try {
     const input = importCardSchema.parse(await event.request.json());
-    const matches = await digimonJson(new URLSearchParams({ card: input.cardId, limit: "20" }));
+    const fromCache = cachedCard(input.cardId);
+    const matches = fromCache
+      ? [fromCache]
+      : await digimonJson(new URLSearchParams({ card: input.cardId, limit: "20" }));
     const card = matches.find(item => item.id.toUpperCase() === input.cardId.toUpperCase());
     if (!card) return apiJson({ error: "That Digimon card was not found." }, { status: 404 });
 
@@ -331,7 +397,7 @@ export async function POST(event: APIEvent) {
       return apiJson({ error: "Choose a valid Digimon card." }, { status: 400 });
     }
     if (error instanceof DigimonRequestError && error.status === 429) {
-      return apiJson({ error: "DigimonCard is rate limiting requests. Try again later." }, { status: 503 });
+      return rateLimitResponse(error);
     }
     console.error("DigimonCard catalogue import failed", error);
     return apiJson(

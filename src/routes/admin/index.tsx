@@ -2951,8 +2951,14 @@ function StorefrontManager(props: {
           ] as const}>
             {([key, label]) => (
               <label>
-                <span>{label} URL</span>
-                <input type="url" placeholder="https://" value={settings()[key]} onInput={event => patch(key, event.currentTarget.value)} />
+                <span>{label}</span>
+                <input
+                  type="text"
+                  inputmode="url"
+                  placeholder={key === "socialInstagram" ? "@mylittletcghaven or full URL" : "Profile or invite URL"}
+                  value={settings()[key]}
+                  onInput={event => patch(key, event.currentTarget.value)}
+                />
               </label>
             )}
           </For>

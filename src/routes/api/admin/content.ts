@@ -7,24 +7,26 @@ import {
   requireAdmin,
   writeAuditLog,
 } from "~/lib/admin.server";
+import { normalizeSocialUrl, type SocialNetwork } from "~/lib/social-links";
 
-const optionalHttpsUrl = z
+const socialUrl = (network: SocialNetwork) => z
   .string()
   .trim()
   .max(2048)
-  .refine(value => value === "" || value.startsWith("https://"), {
-    message: "Social links must use HTTPS.",
-  });
+  .refine(value => value === "" || Boolean(normalizeSocialUrl(network, value)), {
+    message: `Enter a valid ${network} profile or invite.`,
+  })
+  .transform(value => normalizeSocialUrl(network, value));
 
 const contentSchema = z.object({
   announcement: z.string().trim().max(180),
   heroTitle: z.string().trim().min(3).max(100),
   heroCopy: z.string().trim().min(3).max(300),
   featuredProductSlugs: z.array(z.string().trim().min(1).max(110)).max(12),
-  socialInstagram: optionalHttpsUrl,
-  socialTiktok: optionalHttpsUrl,
-  socialYoutube: optionalHttpsUrl,
-  socialDiscord: optionalHttpsUrl,
+  socialInstagram: socialUrl("instagram"),
+  socialTiktok: socialUrl("tiktok"),
+  socialYoutube: socialUrl("youtube"),
+  socialDiscord: socialUrl("discord"),
 });
 
 export async function PUT(event: APIEvent) {

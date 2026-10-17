@@ -38,9 +38,36 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
   const [searching, setSearching] = createSignal(false);
   const [bulkRunning, setBulkRunning] = createSignal(false);
   const [message, setMessage] = createSignal("");
+  const [cooldownSeconds, setCooldownSeconds] = createSignal(0);
   let searchController: AbortController | undefined;
+  let cooldownTimer: ReturnType<typeof setInterval> | undefined;
 
-  onCleanup(() => searchController?.abort());
+  onCleanup(() => {
+    searchController?.abort();
+    if (cooldownTimer) clearInterval(cooldownTimer);
+  });
+
+  const startCooldown = (seconds: number) => {
+    const safeSeconds = Math.max(1, Math.min(Math.ceil(seconds), 60 * 60));
+    if (cooldownTimer) clearInterval(cooldownTimer);
+    setCooldownSeconds(safeSeconds);
+    cooldownTimer = setInterval(() => {
+      setCooldownSeconds(previous => {
+        if (previous <= 1) {
+          if (cooldownTimer) clearInterval(cooldownTimer);
+          cooldownTimer = undefined;
+          return 0;
+        }
+        return previous - 1;
+      });
+    }, 1_000);
+  };
+
+  const retryDelay = (response: Response, bodyDelay?: number) => {
+    if (Number.isFinite(bodyDelay) && (bodyDelay ?? 0) > 0) return bodyDelay!;
+    const header = Number(response.headers.get("retry-after"));
+    return Number.isFinite(header) && header > 0 ? header : 60;
+  };
 
   const selectableCards = () => cards().filter(card => !card.importedStatus);
 
@@ -79,8 +106,12 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
         cards?: RemoteCard[];
         matchedSets?: string[];
         error?: string;
+        retryAfter?: number;
       };
       if (!response.ok) {
+        if (response.status === 429) {
+          startCooldown(retryDelay(response, result.retryAfter));
+        }
         setMessage(result.error ?? `${props.gameName} could not be searched.`);
         return;
       }
@@ -107,13 +138,19 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
       error?: string;
       variants?: number;
       hasImage?: boolean;
+      retryAfter?: number;
     };
     if (response.ok) {
       setCards(previous => previous.map(item =>
         item.id === card.id ? { ...item, importedStatus: "draft" } : item,
       ));
     }
-    return { ok: response.ok, ...result };
+    return {
+      ok: response.ok,
+      status: response.status,
+      ...result,
+      retryAfter: retryDelay(response, result.retryAfter),
+    };
   };
 
   const addCard = async (card: RemoteCard) => {
@@ -122,6 +159,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
     try {
       const result = await importCard(card);
       if (!result.ok) {
+        if (result.status === 429) startCooldown(result.retryAfter);
         setMessage(result.error ?? `${card.name} could not be added.`);
         return;
       }
@@ -169,6 +207,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
     setBulkRunning(true);
     let added = 0;
     let withoutArt = 0;
+    let stoppedForLimit = 0;
     const failed: string[] = [];
 
     for (const [index, card] of chosen.entries()) {
@@ -181,6 +220,11 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
           if (result.hasImage === false) withoutArt += 1;
         } else {
           failed.push(`${card.name} (${result.error ?? "failed"})`);
+          if (result.status === 429) {
+            startCooldown(result.retryAfter);
+            stoppedForLimit = chosen.length - index - 1;
+            break;
+          }
         }
       } catch {
         failed.push(`${card.name} (network error)`);
@@ -201,6 +245,9 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
         withoutArt ? `${withoutArt} need artwork before publishing.` : "",
         failed.length
           ? `Skipped: ${failed.slice(0, 3).join("; ")}${failed.length > 3 ? ` and ${failed.length - 3} more` : ""}.`
+          : "",
+        stoppedForLimit
+          ? `${stoppedForLimit} remaining card${stoppedForLimit === 1 ? " was" : "s were"} not attempted to protect the provider limit.`
           : "",
       ].filter(Boolean).join(" "),
     );
@@ -243,8 +290,15 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
             placeholder={searchBy() === "set" ? props.setPlaceholder : props.cardPlaceholder}
           />
         </label>
-        <button type="submit" disabled={searching() || bulkRunning()}>
-          {searching() ? "Searching" : searchBy() === "set" ? "Find set" : "Find cards"}
+        <button
+          type="submit"
+          disabled={searching() || bulkRunning() || cooldownSeconds() > 0}
+        >
+          {cooldownSeconds() > 0
+            ? `Try again in ${cooldownSeconds()}s`
+            : searching()
+              ? "Searching"
+              : searchBy() === "set" ? "Find set" : "Find cards"}
         </button>
       </form>
 
@@ -270,7 +324,11 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
           </label>
           <button
             type="button"
-            disabled={bulkRunning() || (!selected().size && searchBy() !== "set")}
+            disabled={
+              bulkRunning() ||
+              cooldownSeconds() > 0 ||
+              (!selected().size && searchBy() !== "set")
+            }
             onClick={() => void runBulkImport()}
           >
             {bulkRunning()
@@ -316,7 +374,11 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
                 </div>
                 <button
                   type="button"
-                  disabled={Boolean(card.importedStatus) || importing().has(card.id)}
+                  disabled={
+                    Boolean(card.importedStatus) ||
+                    importing().has(card.id) ||
+                    cooldownSeconds() > 0
+                  }
                   onClick={() => void addCard(card)}
                 >
                   {card.importedStatus

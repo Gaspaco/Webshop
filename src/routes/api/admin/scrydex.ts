@@ -79,17 +79,20 @@ class ScrydexRequestError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly retryAfterSeconds = 0,
   ) {
     super(message);
   }
 }
 
 const responseCache = new Map<string, { expiresAt: number; value: unknown }>();
+const pendingRequests = new Map<string, Promise<unknown>>();
 const wait = (milliseconds: number) =>
   new Promise(resolve => setTimeout(resolve, milliseconds));
 
 let requestQueue = Promise.resolve();
 let lastRequestAt = 0;
+let blockedUntil = 0;
 
 async function waitForRequestSlot() {
   const scheduled = requestQueue.then(async () => {
@@ -110,6 +113,17 @@ function remember<T>(key: string, value: T) {
   return value;
 }
 
+function retryAfterSeconds(response: Response, fallback: number) {
+  const raw = response.headers.get("retry-after");
+  if (!raw) return fallback;
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds) && seconds > 0) return Math.ceil(seconds);
+  const retryAt = Date.parse(raw);
+  return Number.isFinite(retryAt)
+    ? Math.max(1, Math.ceil((retryAt - Date.now()) / 1_000))
+    : fallback;
+}
+
 async function scrydexJson<T>(path: string): Promise<T> {
   const env = getScrydexEnv();
   const target = new URL(path, `${SCRYDEX_API}/`);
@@ -122,27 +136,61 @@ async function scrydexJson<T>(path: string): Promise<T> {
   if (cached && cached.expiresAt > Date.now()) return cached.value as T;
   if (cached) responseCache.delete(cacheKey);
 
-  await waitForRequestSlot();
-  const response = await fetch(target, {
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "TCGHaven/1.0 (info@tcghaven.com)",
-      "X-Api-Key": env.SCRYDEX_API_KEY,
-      "X-Team-ID": env.SCRYDEX_TEAM_ID,
-    },
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!response.ok) {
-    let detail = "Scrydex could not complete the request.";
-    try {
-      const body = (await response.json()) as { error?: string; message?: string };
-      detail = body.error ?? body.message ?? detail;
-    } catch {
-      // The status code still gives the dashboard a useful error state.
-    }
-    throw new ScrydexRequestError(detail, response.status);
+  const pending = pendingRequests.get(cacheKey);
+  if (pending) return await pending as T;
+
+  if (blockedUntil > Date.now()) {
+    throw new ScrydexRequestError(
+      "Scrydex is temporarily rate limiting requests.",
+      429,
+      Math.max(1, Math.ceil((blockedUntil - Date.now()) / 1_000)),
+    );
   }
-  return remember(cacheKey, (await response.json()) as T);
+
+  const request = (async () => {
+    await waitForRequestSlot();
+    const response = await fetch(target, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "TCGHaven/1.0 (info@tcghaven.com)",
+        "X-Api-Key": env.SCRYDEX_API_KEY,
+        "X-Team-ID": env.SCRYDEX_TEAM_ID,
+      },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!response.ok) {
+      let detail = "Scrydex could not complete the request.";
+      try {
+        const body = (await response.json()) as { error?: string; message?: string };
+        detail = body.error ?? body.message ?? detail;
+      } catch {
+        // The status code still gives the dashboard a useful error state.
+      }
+      const retryAfter = response.status === 429
+        ? retryAfterSeconds(response, 60)
+        : 0;
+      if (retryAfter) blockedUntil = Date.now() + retryAfter * 1_000;
+      throw new ScrydexRequestError(detail, response.status, retryAfter);
+    }
+    return remember(cacheKey, (await response.json()) as T);
+  })();
+  pendingRequests.set(cacheKey, request);
+  try {
+    return await request;
+  } finally {
+    pendingRequests.delete(cacheKey);
+  }
+}
+
+function rateLimitResponse(error: ScrydexRequestError) {
+  const retryAfter = Math.max(1, error.retryAfterSeconds || 60);
+  return apiJson(
+    {
+      error: "Scrydex is temporarily rate limiting requests. Please wait before trying again.",
+      retryAfter,
+    },
+    { status: 429, headers: { "Retry-After": String(retryAfter) } },
+  );
 }
 
 function cleanQuery(value: string) {
@@ -313,15 +361,19 @@ export async function GET(event: APIEvent) {
     if (error instanceof ScrydexRequestError && error.status === 404) {
       return apiJson({ cards: [], matchedSets: [] });
     }
+    if (error instanceof ScrydexRequestError && error.status === 429) {
+      console.warn("Scrydex search rate limited", {
+        retryAfter: error.retryAfterSeconds,
+      });
+      return rateLimitResponse(error);
+    }
     console.error("Scrydex search failed", error);
     const configurationMissing = error instanceof z.ZodError;
     return apiJson(
       {
         error: configurationMissing
           ? "Riftbound needs SCRYDEX_API_KEY and SCRYDEX_TEAM_ID in the server environment."
-          : error instanceof ScrydexRequestError && error.status === 429
-            ? "Scrydex is rate limiting requests or the account is out of credits. Try again later."
-            : "The Riftbound card library could not be reached. Try again shortly.",
+          : "The Riftbound card library could not be reached. Try again shortly.",
       },
       { status: 503 },
     );
@@ -449,6 +501,9 @@ export async function POST(event: APIEvent) {
     }
     if (error instanceof ScrydexRequestError && error.status === 404) {
       return apiJson({ error: "That Riftbound card is no longer available in Scrydex." }, { status: 404 });
+    }
+    if (error instanceof ScrydexRequestError && error.status === 429) {
+      return rateLimitResponse(error);
     }
     console.error("Scrydex catalogue import failed", error);
     return apiJson(
