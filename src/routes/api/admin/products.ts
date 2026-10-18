@@ -15,6 +15,7 @@ import {
   writeAuditLog,
 } from "~/lib/admin.server";
 import { findProduct } from "~/lib/categories";
+import { resolveAdminImage } from "~/lib/admin-images.server";
 
 const statusSchema = z.enum(["draft", "active", "archived"]);
 const gameSchema = z.enum([
@@ -147,6 +148,7 @@ export async function POST(event: APIEvent) {
 
   try {
     const input = createProductSchema.parse(await event.request.json());
+    input.image = await resolveAdminImage(input.image);
     if (input.preorder && !input.releaseDate) {
       return apiJson(
         { error: "Choose a release date before enabling pre-order." },
@@ -257,6 +259,7 @@ export async function PATCH(event: APIEvent) {
       payload.id.startsWith("static:")
     ) {
       const input = starterOverrideSchema.parse(payload);
+      input.image = await resolveAdminImage(input.image);
       if (input.preorder && !input.releaseDate) {
         return apiJson(
           { error: "Choose a release date before enabling pre-order." },
@@ -353,6 +356,11 @@ export async function PATCH(event: APIEvent) {
     }
 
     const input = updateProductSchema.parse(payload);
+    // An unchanged display handle is not a replacement image. Keep the full
+    // gallery and the primary variant's independent artwork untouched.
+    if (input.image === `/api/admin/product-image?product=${input.id}&image=0`) delete input.image;
+    else if (input.image !== undefined) input.image = await resolveAdminImage(input.image);
+    for (const variant of input.variantImages) variant.imageUrl = await resolveAdminImage(variant.imageUrl);
     if (input.preorder === true && input.releaseDate === "") {
       return apiJson(
         { error: "Choose a release date before enabling pre-order." },

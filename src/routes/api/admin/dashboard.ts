@@ -1,5 +1,5 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { asc, desc, eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "~/db";
 import {
   adminAuditLog,
@@ -10,8 +10,6 @@ import {
   orderItems,
   orders,
   payments,
-  products,
-  productVariants,
   returnRequests,
   storefrontContent,
   user,
@@ -20,13 +18,23 @@ import { apiJson, requireAdmin } from "~/lib/admin.server";
 import { getLaunchReadiness } from "~/lib/readiness.server";
 import { parseReadinessConfirmations } from "~/lib/readiness-confirmations";
 import { parseStoreProfile } from "~/lib/store-profile";
+import { loadAdminCatalogue } from "~/lib/admin-catalogue.server";
+import { logServerError } from "~/lib/server-log";
 
 export async function GET(event: APIEvent) {
   const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
 
+  try {
+  const url = new URL(event.request.url);
+  if (url.searchParams.get("catalogueOnly") === "1") {
+    const offset = Number(url.searchParams.get("offset") ?? "0");
+    if (!Number.isSafeInteger(offset) || offset < 0) return apiJson({ error: "Invalid catalogue offset." }, { status: 400 });
+    return apiJson(await loadAdminCatalogue({ limit: 100, offset }));
+  }
+
   const [
-    productRows,
+    catalogueResult,
     orderRows,
     customerRows,
     imports,
@@ -36,44 +44,7 @@ export async function GET(event: APIEvent) {
     returnRows,
     contactRows,
   ] = await Promise.all([
-    db
-      .select({
-        id: products.id,
-        name: products.name,
-        slug: products.slug,
-        description: products.description,
-        brand: products.brand,
-        game: products.game,
-        productType: products.productType,
-        status: products.status,
-        imageUrls: products.imageUrls,
-        metadata: products.metadata,
-        createdAt: products.createdAt,
-        updatedAt: products.updatedAt,
-        variantId: productVariants.id,
-        sku: productVariants.sku,
-        barcode: productVariants.barcode,
-        variantName: productVariants.name,
-        condition: productVariants.condition,
-        language: productVariants.language,
-        finish: productVariants.finish,
-        variantImageUrl: productVariants.imageUrl,
-        isDefault: productVariants.isDefault,
-        priceCents: productVariants.priceCents,
-        compareAtPriceCents: productVariants.compareAtPriceCents,
-        cardmarketProductId: productVariants.cardmarketProductId,
-        cardmarketPriceType: productVariants.cardmarketPriceType,
-        stock: productVariants.stock,
-        reservedStock: productVariants.reservedStock,
-        trackInventory: productVariants.trackInventory,
-      })
-      .from(products)
-      .leftJoin(productVariants, eq(productVariants.productId, products.id))
-      .orderBy(
-        desc(products.updatedAt),
-        desc(productVariants.isDefault),
-        asc(productVariants.createdAt),
-      ),
+    loadAdminCatalogue(),
     db
       .select({
         id: orders.id,
@@ -207,70 +178,13 @@ export async function GET(event: APIEvent) {
     returnRows.map(returnRequest => [returnRequest.orderId, returnRequest]),
   );
 
-  const productMap = new Map<string, (typeof productRows)[number]>();
-  const variantsByProduct = new Map<
-    string,
-    Array<{
-      id: string;
-      sku: string;
-      barcode: string | null;
-      name: string;
-      condition: string | null;
-      language: string | null;
-      finish: string | null;
-      imageUrl: string | null;
-      isDefault: boolean;
-      priceCents: number;
-      compareAtPriceCents: number | null;
-      cardmarketProductId: number | null;
-      cardmarketPriceType: string;
-      stock: number;
-      reservedStock: number;
-      trackInventory: boolean;
-    }>
-  >();
-  for (const product of productRows) {
-    if (!productMap.has(product.id)) productMap.set(product.id, product);
-    if (product.variantId && product.sku && product.priceCents !== null) {
-      const variants = variantsByProduct.get(product.id) ?? [];
-      variants.push({
-        id: product.variantId,
-        sku: product.sku,
-        barcode: product.barcode,
-        name: product.variantName ?? product.condition ?? "Default",
-        condition: product.condition,
-        language: product.language,
-        finish: product.finish,
-        imageUrl: product.variantImageUrl,
-        isDefault: product.isDefault ?? false,
-        priceCents: product.priceCents,
-        compareAtPriceCents: product.compareAtPriceCents,
-        cardmarketProductId: product.cardmarketProductId,
-        cardmarketPriceType: product.cardmarketPriceType ?? "normal",
-        stock: product.stock ?? 0,
-        reservedStock: product.reservedStock ?? 0,
-        trackInventory: product.trackInventory ?? true,
-      });
-      variantsByProduct.set(product.id, variants);
-    }
-  }
-  const managedCatalog = [...productMap.values()].map(product => ({
-    ...product,
-    variants: variantsByProduct.get(product.id) ?? [],
-  }));
-  const catalog = managedCatalog;
+  const catalog = catalogueResult.products;
   const content = Object.fromEntries(
     contentRows.map(contentRow => [contentRow.key, contentRow.value]),
   );
   const storeProfile = parseStoreProfile(content.business);
   const activeProducts = catalog.filter(product => product.status === "active").length;
-  const embeddedImageCount = catalog.reduce(
-    (total, product) =>
-      total +
-      product.imageUrls.filter(image => image.startsWith("data:image/")).length +
-      product.variants.filter(variant => variant.imageUrl?.startsWith("data:image/")).length,
-    0,
-  );
+  const embeddedImageCount = catalogueResult.embeddedImageCount;
   const readiness = getLaunchReadiness({
     unconvertedStarterProducts: 0,
     storeProfile,
@@ -333,7 +247,8 @@ export async function GET(event: APIEvent) {
       customers: customers.length,
       unreadMessages: contactRows.filter(message => message.status === "unread").length,
     },
-    products: catalog,
+    products: catalog.slice(0, 100),
+    catalogue: { total: catalog.length, nextOffset: catalog.length > 100 ? 100 : null },
     orders: orderRows.map(order => ({
       ...order,
       items: itemsByOrder.get(order.id) ?? [],
@@ -369,4 +284,8 @@ export async function GET(event: APIEvent) {
     },
     readiness,
   });
+  } catch (error) {
+    logServerError("Owner dashboard could not be loaded.", error);
+    return apiJson({ error: "The dashboard could not be loaded. Please try again shortly." }, { status: 503 });
+  }
 }

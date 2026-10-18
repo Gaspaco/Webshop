@@ -12,6 +12,7 @@ import {
   requireAdmin,
   writeAuditLog,
 } from "~/lib/admin.server";
+import { resolveAdminImage } from "~/lib/admin-images.server";
 
 const variantImageSchema = z
   .string()
@@ -53,6 +54,7 @@ export async function POST(event: APIEvent) {
   if (guard.response) return guard.response;
   try {
     const input = variantSchema.parse(await event.request.json());
+    input.imageUrl = await resolveAdminImage(input.imageUrl);
     const [product] = await db
       .select({
         id: products.id,
@@ -120,6 +122,8 @@ export async function PATCH(event: APIEvent) {
 
   try {
     const input = updateVariantSchema.parse(await event.request.json());
+    const keepCurrentImage = input.imageUrl === `/api/admin/product-image?variant=${input.id}`;
+    if (!keepCurrentImage) input.imageUrl = await resolveAdminImage(input.imageUrl);
     const [current] = await db
       .select({
         stock: productVariants.stock,
@@ -162,7 +166,7 @@ export async function PATCH(event: APIEvent) {
             current.productType === "sealed" ? "Sealed" : input.condition || null,
           language: input.language || null,
           finish: input.finish || null,
-          imageUrl: input.imageUrl || null,
+          imageUrl: keepCurrentImage ? undefined : input.imageUrl || null,
           isDefault: input.isDefault,
           priceCents: input.priceCents,
           compareAtPriceCents: input.compareAtPriceCents ?? null,
