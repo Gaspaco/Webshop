@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -369,7 +370,7 @@ export async function POST(event: APIEvent) {
           await new Promise(resolve => setTimeout(resolve, 125));
         }
       } catch (error) {
-        console.error(`Price refresh failed for ${product.name}`, error);
+        logServerError("Catalogue price refresh failed.", error);
         failedProducts.push(product.name);
         failedProductIds.add(product.id);
       }
@@ -441,7 +442,7 @@ export async function POST(event: APIEvent) {
     if (error instanceof z.ZodError) {
       return apiJson({ error: "Select valid catalogue products to refresh." }, { status: 400 });
     }
-    console.error("Catalogue API price refresh failed", error);
+    logServerError("Catalogue API price refresh failed", error);
     return apiJson({ error: "API prices could not be refreshed." }, { status: 500 });
   }
 }

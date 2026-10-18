@@ -1,9 +1,15 @@
 @use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+
+$gutter: 0.75rem;
+
+// ---------- Shell ----------
 
 .page {
   min-height: 100dvh;
-  background: #0b0e0c;
+  background: $background;
   color: $gray-300;
+  font-size: 0.9375rem;
 }
 
 .loading {
@@ -13,8 +19,9 @@
   justify-content: center;
   gap: 0.75rem;
   color: $gray-400;
-  font-size: 0.78rem;
-  font-weight: 750;
+  font-family: $font-display;
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
 
 .loading span {
@@ -25,99 +32,136 @@
   animation: pulse 1s ease-in-out infinite alternate;
 }
 
+@keyframes pulse {
+  from { opacity: 0.35; scale: 0.8; }
+  to { opacity: 1; scale: 1; }
+}
+
 .shell {
   display: grid;
   min-height: 100dvh;
-  grid-template-columns: 16.5rem minmax(0, 1fr);
+  grid-template-columns: 16rem minmax(0, 1fr);
+  gap: $gutter;
+  padding: $gutter;
 }
+
+// ---------- Sidebar ----------
 
 .sidebar {
   position: sticky;
-  top: 0;
+  top: $gutter;
   display: flex;
-  height: 100dvh;
+  height: calc(100dvh - #{$gutter * 2});
   flex-direction: column;
-  border-right: 1px solid rgba($white, 0.08);
-  background: #080b09;
+  overflow-y: auto;
+  padding: 0.85rem 0.65rem 0.65rem;
+  border-radius: $radius-panel;
+  background: $surface;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .brand {
   display: flex;
-  min-height: 5.25rem;
   align-items: center;
-  gap: 0.8rem;
-  padding: 1.15rem 1.25rem;
-  border-bottom: 1px solid rgba($white, 0.08);
-}
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: $radius-inner;
 
-.brand img {
-  width: 2.4rem;
-  height: 2.4rem;
-  object-fit: contain;
-}
+  img {
+    width: 30px;
+    height: auto;
+  }
 
-.brand strong,
-.brand span {
-  display: block;
-}
+  strong {
+    color: $primary;
+    font-family: $font-display;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
 
-.brand strong {
-  color: $white;
-  font-size: 0.9rem;
-}
+    span {
+      margin-left: 0.15em;
+    }
+  }
 
-.brand span {
-  margin-top: 0.1rem;
-  color: $gray-500;
-  font-size: 0.66rem;
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
 }
 
 .sidebar nav {
   display: flex;
-  padding: 1rem 0.75rem;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.1rem;
 }
 
 .navItem {
   display: flex;
-  min-height: 3.5rem;
-  padding: 0.65rem 0.85rem;
-  border-radius: 0.5rem;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
+  min-height: 2.6rem;
+  align-items: center;
+  gap: 0.7rem;
+  padding-inline: 0.75rem;
+  border-radius: $radius-full;
+  color: $gray-400;
   text-align: left;
-  transition:
-    background 180ms ease,
-    color 180ms ease;
+  transition: color 160ms $ease-out, background-color 160ms $ease-out;
+
+  strong {
+    flex: 1;
+    font-family: $font-display;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  &:hover {
+    color: $white;
+    background: rgba($white, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: -2px;
+  }
 }
 
-.navItem strong {
-  color: $gray-300;
-  font-size: 0.78rem;
-}
-
-.navItem span {
-  margin-top: 0.15rem;
-  color: $gray-600;
-  font-size: 0.65rem;
-}
-
-.navItem:hover {
-  background: rgba($white, 0.045);
+.navIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
 }
 
 .navItemActive {
-  background: rgba($primary, 0.12);
+  color: $white;
+  background: rgba($white, 0.09);
+
+  .navIcon {
+    color: $primary-light;
+  }
+
+  &:hover {
+    background: rgba($white, 0.11);
+  }
 }
 
-.navItemActive strong {
-  color: $primary-light;
-}
-
-.navItemActive span {
-  color: rgba($primary-light, 0.62);
+// Counts that need the owner's attention.
+.navBadge {
+  display: grid;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding-inline: 0.35rem;
+  place-items: center;
+  border-radius: $radius-full;
+  background: $primary;
+  color: #03231a;
+  font-family: $font-display;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .owner {
@@ -125,204 +169,208 @@
   min-width: 0;
   margin-top: auto;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem 0.75rem;
-  border-top: 1px solid rgba($white, 0.08);
+  gap: 0.7rem;
+  padding: 0.75rem 0.6rem 0.5rem;
+
+  div {
+    min-width: 0;
+  }
+
+  strong,
+  div span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  div span {
+    color: $gray-500;
+    font-size: 0.78rem;
+  }
 }
 
 .ownerAvatar {
   display: grid;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.4rem;
+  height: 2.4rem;
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
-  border-radius: 0.5rem;
-  background: $primary;
-  color: #06120c;
-  font-size: 0.7rem;
-  font-weight: 850;
-}
+  border-radius: 50%;
+  background: rgba($primary, 0.18);
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: 0.8rem;
+  font-weight: 700;
 
-.ownerAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.owner div {
-  min-width: 0;
-}
-
-.owner strong,
-.owner div span {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.owner strong {
-  color: $white;
-  font-size: 0.74rem;
-}
-
-.owner div span {
-  margin-top: 0.1rem;
-  color: $gray-600;
-  font-size: 0.61rem;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .signOut {
   min-height: 2.5rem;
-  margin: 0 0.75rem 0.75rem;
   padding: 0 0.75rem;
-  border-radius: 0.45rem;
-  color: $gray-500;
-  font-size: 0.68rem;
-  font-weight: 700;
+  border-radius: $radius-full;
+  color: $gray-400;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 600;
   text-align: left;
-  transition:
-    color 180ms ease,
-    background 180ms ease;
+  transition: color 160ms $ease-out, background-color 160ms $ease-out;
+
+  &:hover {
+    background: rgba(#f87171, 0.1);
+    color: #fca5a5;
+  }
 }
 
-.signOut:hover {
-  background: rgba(#ef4444, 0.08);
-  color: #fca5a5;
-}
+// ---------- Workspace ----------
 
 .workspace {
   min-width: 0;
 }
 
 .topbar {
-  position: sticky;
-  z-index: 10;
-  top: 0;
   display: flex;
-  min-height: 5.25rem;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 2rem;
-  padding: 0 2rem;
-  border-bottom: 1px solid rgba($white, 0.08);
-  background: rgba(#0b0e0c, 0.96);
-  backdrop-filter: blur(12px);
-}
+  gap: 1.5rem;
+  padding: clamp(1.25rem, 2.5vw, 2rem) clamp(0.5rem, 2vw, 1.5rem) 1.5rem;
 
-.topbar p {
-  color: $gray-600;
-  font-size: 0.64rem;
-  font-weight: 750;
-}
+  h1 {
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+  }
 
-.topbar h1 {
-  margin-top: 0.08rem;
-  font-family: $font-body;
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
+  p {
+    margin-top: 0.4rem;
+    color: $gray-400;
+    font-size: 0.9375rem;
+  }
 }
 
 .topActions {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
+
+  a {
+    @include btn-secondary;
+  }
 }
 
 .liveStatus {
-  display: flex;
+  display: inline-flex;
+  min-height: 2.75rem;
   align-items: center;
-  gap: 0.45rem;
-  color: $gray-400;
-  font-size: 0.68rem;
-  font-weight: 700;
+  gap: 0.5rem;
+  padding-inline: 1rem;
+  border-radius: $radius-full;
+  background: rgba($primary, 0.12);
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 160ms $ease-out;
+
+  i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &:hover {
+    background: rgba($primary, 0.18);
+  }
 }
 
-.liveStatus i {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 50%;
-  background: $primary;
-  box-shadow: 0 0 0 0.22rem rgba($primary, 0.12);
-}
+.liveStatusWarn {
+  background: rgba($accent-gold, 0.12);
+  color: $accent-gold;
 
-.topActions a {
-  padding: 0.65rem 0.85rem;
-  border: 1px solid rgba($white, 0.12);
-  border-radius: 0.45rem;
-  color: $gray-300;
-  font-size: 0.7rem;
-  font-weight: 750;
-  transition:
-    border-color 180ms ease,
-    color 180ms ease;
-}
-
-.topActions a:hover {
-  border-color: rgba($white, 0.3);
-  color: $white;
+  &:hover {
+    background: rgba($accent-gold, 0.18);
+  }
 }
 
 .content {
-  padding: 2rem;
+  padding: 0 clamp(0.5rem, 2vw, 1.5rem) 3rem;
 }
+
+// ---------- Overview ----------
 
 .metrics {
   display: grid;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.75rem;
-  grid-template-columns: repeat(4, 1fr);
-  background: #0e1210;
-}
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: $radius-panel;
+  background: $surface;
 
-.metrics article {
-  min-width: 0;
-  padding: 1.35rem 1.5rem;
-}
+  article {
+    min-width: 0;
+    padding: 1.25rem 1.4rem;
+    border-radius: calc($radius-panel - 0.25rem);
+  }
 
-.metrics article + article {
-  border-left: 1px solid rgba($white, 0.08);
-}
+  span,
+  small,
+  strong {
+    display: block;
+  }
 
-.metrics span,
-.metrics small,
-.metrics strong {
-  display: block;
-}
+  span {
+    color: $gray-400;
+    font-size: 0.875rem;
+  }
 
-.metrics span {
-  color: $gray-500;
-  font-size: 0.68rem;
-  font-weight: 700;
-}
+  strong {
+    margin-top: 0.5rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+  }
 
-.metrics strong {
-  margin-top: 0.7rem;
-  color: $white;
-  font-size: 1.65rem;
-  letter-spacing: -0.035em;
-}
-
-.metrics small {
-  margin-top: 0.3rem;
-  color: $gray-600;
-  font-size: 0.62rem;
+  small {
+    margin-top: 0.3rem;
+    color: $gray-500;
+    font-size: 0.8125rem;
+  }
 }
 
 .overviewGrid {
   display: grid;
-  margin-top: 1.25rem;
-  grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 0.7fr);
-  gap: 1.25rem;
+  margin-top: 0.75rem;
+  grid-template-columns: minmax(0, 1.6fr) minmax(17rem, 0.7fr);
+  align-items: start;
+  gap: 0.75rem;
 }
 
 .queue,
 .attention,
 .importHistory {
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.75rem;
-  background: #0e1210;
+  border-radius: $radius-panel;
+  background: $surface;
 }
 
 .sectionHead,
@@ -334,8 +382,7 @@
 }
 
 .sectionHead {
-  padding: 1.25rem 1.35rem;
-  border-bottom: 1px solid rgba($white, 0.08);
+  padding: 1.4rem 1.5rem 0.75rem;
 }
 
 .sectionHead h2,
@@ -343,218 +390,193 @@
 .attention h2,
 .importHero h2,
 .importHistory h2 {
-  font-family: $font-body;
-  font-size: 0.95rem;
-  letter-spacing: -0.015em;
+  color: $white;
+  font-family: $font-display;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .sectionHead p,
 .sectionIntro p,
 .importHero p {
   margin-top: 0.3rem;
-  color: $gray-500;
-  font-size: 0.7rem;
+  color: $gray-400;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .sectionHead button {
-  color: $primary-light;
-  font-size: 0.68rem;
-  font-weight: 750;
+  @include btn-link;
+  font-size: 0.875rem;
 }
 
 .queueRow {
   display: grid;
-  min-height: 4.4rem;
   align-items: center;
   gap: 1rem;
-  padding: 0.8rem 1.35rem;
-  border-bottom: 1px solid rgba($white, 0.06);
+  margin: 0 0.5rem 0.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.03);
   grid-template-columns: minmax(0, 1fr) auto auto;
+
+  &:last-child {
+    margin-bottom: 0.5rem;
+  }
+
+  div {
+    min-width: 0;
+  }
+
+  div strong,
+  div span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  div strong,
+  > strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  div span {
+    margin-top: 0.1rem;
+    color: $gray-500;
+    font-size: 0.8125rem;
+  }
 }
 
-.queueRow:last-child {
-  border-bottom: 0;
-}
-
-.queueRow div {
-  min-width: 0;
-}
-
-.queueRow div strong,
-.queueRow div span {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.queueRow div strong,
-.queueRow > strong {
-  color: $white;
-  font-size: 0.72rem;
-}
-
-.queueRow div span {
-  margin-top: 0.15rem;
-  color: $gray-600;
-  font-size: 0.62rem;
-}
-
+// Order and payment states, coloured by meaning.
 .status {
   display: inline-flex;
   align-items: center;
-  padding: 0.28rem 0.52rem;
-  border-radius: 999px;
-  background: rgba($white, 0.06);
-  color: $gray-400;
-  font-size: 0.6rem;
-  font-weight: 750;
+  padding: 0.3rem 0.7rem;
+  border-radius: $radius-full;
+  background: rgba($white, 0.07);
+  color: $gray-300;
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 600;
   text-transform: capitalize;
 }
 
 .paid,
 .completed,
 .verified {
-  background: rgba($primary, 0.11);
+  background: rgba($primary, 0.14);
   color: $primary-light;
 }
 
 .pending,
 .processing,
 .queued {
-  background: rgba(#f59e0b, 0.1);
-  color: #fcd34d;
+  background: rgba($accent-gold, 0.14);
+  color: $accent-gold;
 }
 
 .cancelled,
 .refunded,
 .failed,
 .unverified {
-  background: rgba(#ef4444, 0.1);
+  background: rgba(#f87171, 0.12);
   color: #fca5a5;
 }
 
 .shipped {
-  background: rgba(#60a5fa, 0.1);
+  background: rgba(#60a5fa, 0.12);
   color: #93c5fd;
 }
 
 .attention {
-  padding: 1.25rem;
+  padding: 1.4rem 1.5rem 1rem;
+
+  h2 {
+    margin-bottom: 0.75rem;
+  }
+
+  button {
+    display: grid;
+    width: 100%;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 0.25rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: $radius-tile;
+    background: rgba($white, 0.03);
+    grid-template-columns: 2.6rem 1fr;
+    text-align: left;
+    transition: background-color 160ms $ease-out;
+
+    &:hover {
+      background: rgba($white, 0.07);
+    }
+  }
+
+  button strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  button span {
+    color: $gray-400;
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
 }
 
-.attention h2 {
-  margin-bottom: 0.8rem;
-}
-
-.attention button {
-  display: grid;
-  width: 100%;
-  min-height: 4.25rem;
-  align-items: center;
-  gap: 0.9rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid rgba($white, 0.07);
-  grid-template-columns: 2.4rem 1fr;
-  text-align: left;
-}
-
-.attention button:last-child {
-  border-bottom: 0;
-}
-
-.attention button strong {
-  color: $white;
-  font-size: 1.25rem;
-}
-
-.attention button span {
-  color: $gray-500;
-  font-size: 0.68rem;
-  line-height: 1.45;
-}
-
-.attention button:hover span {
-  color: $gray-300;
-}
-
+// The page title already names the section; the intro keeps its one-line
+// note and the section's actions.
 .sectionIntro {
-  margin-bottom: 1.25rem;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  > div:first-child > h2 {
+    display: none;
+  }
+
+  > div:first-child > p {
+    margin-top: 0;
+    font-size: 0.9375rem;
+  }
 }
 
 .primaryAction,
 .formActions button {
-  display: inline-flex;
-  min-height: 2.7rem;
-  align-items: center;
-  justify-content: center;
-  padding: 0 1rem;
-  border-radius: 0.45rem;
-  background: $primary;
-  color: #04130c;
-  font-size: 0.7rem;
-  font-weight: 850;
-  transition:
-    background 180ms ease,
-    transform 180ms ease;
-}
-
-.primaryAction:hover,
-.formActions button:hover:not(:disabled) {
-  background: $primary-light;
-  transform: translateY(-1px);
-}
-
-.primaryAction {
-  gap: 0.45rem;
+  @include btn-primary;
 }
 
 .primaryAction > span {
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1;
-}
-
-.productGuide {
-  display: grid;
-  margin-bottom: 1.25rem;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.75rem;
-  grid-template-columns: repeat(3, 1fr);
-  background: #0e1210;
-}
-
-.productGuide div {
-  min-width: 0;
-  padding: 1rem 1.15rem;
-}
-
-.productGuide div + div {
-  border-left: 1px solid rgba($white, 0.08);
-}
-
-.productGuide strong,
-.productGuide span {
-  display: block;
 }
 
 .catalogToolbar {
   display: grid;
   margin-bottom: 0.85rem;
   padding: 0.85rem;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.65rem;
+  border-radius: $radius-tile;
   grid-template-columns: minmax(15rem, 1fr) repeat(3, 9rem) 8rem auto;
   align-items: end;
   gap: 0.75rem;
-  background: #0e1210;
+  background: $surface;
 }
 
 .catalogToolbar label > span {
   display: block;
   margin-bottom: 0.3rem;
   color: $gray-500;
-  font-size: 0.56rem;
-  font-weight: 750;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .catalogToolbar input,
@@ -562,48 +584,40 @@
   width: 100%;
   min-height: 2.5rem;
   padding: 0 0.7rem;
-  border: 1px solid rgba($white, 0.1);
-  border-radius: 0.4rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-inner;
   outline: none;
-  background: #080b09;
+  background: rgba($white, 0.05);
   color: $white;
-  font-size: 0.65rem;
+  font-size: 0.8125rem;
 }
 
 .catalogToolbar input:focus,
 .catalogToolbar select:focus {
-  border-color: $primary;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
 }
 
 .catalogResultCount {
   min-width: max-content;
   padding-bottom: 0.62rem;
   color: $gray-500;
-  font-size: 0.6rem;
+  font-size: 0.78rem;
   text-align: right;
 }
 
-.productGuide strong {
-  color: $white;
-  font-size: 0.7rem;
-}
 
-.productGuide span {
-  margin-top: 0.3rem;
-  color: $gray-500;
-  font-size: 0.63rem;
-  line-height: 1.5;
-}
 
 .productForm {
   display: grid;
   margin-bottom: 1.25rem;
   padding: 1.5rem;
-  border: 1px solid rgba($primary, 0.24);
-  border-radius: 0.75rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.24);
+  border-radius: $radius-panel;
   grid-template-columns: 14rem minmax(0, 1fr);
   gap: 2rem;
-  background: #0e1310;
+  background: $surface;
 }
 
 .formLead h3 {
@@ -615,7 +629,7 @@
   max-width: 22ch;
   margin-top: 0.5rem;
   color: $gray-500;
-  font-size: 0.7rem;
+  font-size: 0.875rem;
   line-height: 1.55;
 }
 
@@ -629,7 +643,7 @@
   display: block;
   margin-bottom: 0.38rem;
   color: $gray-400;
-  font-size: 0.64rem;
+  font-size: 0.8125rem;
   font-weight: 700;
 }
 
@@ -644,10 +658,11 @@
 .tableSelect,
 .orderSelect {
   width: 100%;
-  border: 1px solid rgba($white, 0.12);
-  border-radius: 0.4rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-inner;
   outline: none;
-  background: #090c0a;
+  background: rgba($white, 0.05);
   color: $white;
   font: inherit;
   transition: border-color 180ms ease;
@@ -678,7 +693,7 @@
 .stockInput:focus,
 .tableSelect:focus,
 .orderSelect:focus {
-  border-color: $primary;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
 }
 
 .formGrid input::placeholder,
@@ -692,14 +707,14 @@
 
 .imageField input {
   padding: 0.62rem;
-  font-size: 0.65rem;
+  font-size: 0.8125rem;
 }
 
 .imageField small {
   display: block;
   margin-top: 0.35rem;
   color: $gray-600;
-  font-size: 0.58rem;
+  font-size: 0.75rem;
 }
 
 .formActions {
@@ -713,7 +728,7 @@
 .formActions p {
   margin-right: auto;
   color: $gray-400;
-  font-size: 0.68rem;
+  font-size: 0.84rem;
 }
 
 .formActions button:disabled {
@@ -724,16 +739,15 @@
 .imagePreview {
   width: 3rem;
   height: 3rem;
-  border-radius: 0.4rem;
+  border-radius: $radius-inner;
   object-fit: contain;
-  background: #070907;
+  background: $background;
 }
 
 .tableWrap {
   overflow-x: auto;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.75rem;
-  background: #0e1210;
+  border-radius: $radius-panel;
+  background: $surface;
 }
 
 .tableWrap table {
@@ -746,19 +760,19 @@
 .tableWrap th {
   height: 2.9rem;
   padding: 0 1rem;
-  border-bottom: 1px solid rgba($white, 0.08);
+  border-bottom: 1px solid rgba($white, 0.05);
   color: $gray-600;
-  font-size: 0.59rem;
-  font-weight: 750;
+  font-size: 0.76rem;
+  font-weight: 600;
   text-align: left;
 }
 
 .tableWrap td {
   height: 4.6rem;
   padding: 0.65rem 1rem;
-  border-bottom: 1px solid rgba($white, 0.06);
+  border-bottom: 1px solid rgba($white, 0.05);
   color: $gray-400;
-  font-size: 0.68rem;
+  font-size: 0.84rem;
 }
 
 .tableWrap tr:last-child td {
@@ -784,7 +798,7 @@
 .catalogPagination span {
   min-width: 7rem;
   color: $gray-500;
-  font-size: 0.66rem;
+  font-size: 0.82rem;
   text-align: center;
 }
 
@@ -795,17 +809,19 @@
 .catalogPagination button {
   min-height: 2.35rem;
   padding: 0 0.8rem;
-  border: 1px solid rgba($white, 0.12);
-  border-radius: 0.4rem;
+  border: 0;
+  background-color: rgba($white, 0.05);
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-full;
   color: $gray-300;
-  font-size: 0.66rem;
-  font-weight: 750;
+  font-size: 0.82rem;
+  font-weight: 600;
   transition: border-color 160ms ease, color 160ms ease;
 }
 
 .catalogPagination button:hover:not(:disabled),
 .catalogPagination button:focus-visible {
-  border-color: rgba($primary, 0.6);
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.6);
   color: $white;
 }
 
@@ -827,16 +843,16 @@
   width: 2.7rem;
   height: 2.7rem;
   flex: 0 0 auto;
-  border-radius: 0.35rem;
+  border-radius: $radius-inner;
   object-fit: contain;
-  background: #070907;
+  background: $background;
 }
 
 .productFallback {
   display: grid;
   place-items: center;
   color: $primary-light;
-  font-weight: 850;
+  font-weight: 800;
 }
 
 .productIdentity strong,
@@ -848,7 +864,7 @@
   max-width: 18rem;
   overflow: hidden;
   color: $white;
-  font-size: 0.7rem;
+  font-size: 0.875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -856,12 +872,12 @@
 .productIdentity div span {
   margin-top: 0.15rem;
   color: $gray-600;
-  font-size: 0.58rem;
+  font-size: 0.75rem;
 }
 
 .productIdentity div .priceReview {
   color: #fbbf24;
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .gameTag {
@@ -884,8 +900,10 @@
   }
 }
 
+// Wide enough for a full price such as 1.249,99.
 .tableInput {
-  max-width: 7rem;
+  min-width: 6.5rem;
+  max-width: 7.5rem;
 }
 
 .stockInput {
@@ -920,16 +938,17 @@
 .visibilitySave {
   min-height: 2.2rem;
   padding: 0 0.65rem;
-  border: 1px solid rgba($primary, 0.34);
-  border-radius: 0.4rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.255);
+  border-radius: $radius-inner;
   background: rgba($primary, 0.08);
   color: $primary-light;
-  font-size: 0.62rem;
-  font-weight: 780;
+  font-size: 0.8rem;
+  font-weight: 700;
 
   &:hover:not(:disabled),
   &:focus-visible {
-    border-color: rgba($primary, 0.62);
+    box-shadow: inset 0 0 0 1px rgba($primary, 0.62);
     background: rgba($primary, 0.14);
   }
 
@@ -956,26 +975,28 @@
 
 .rowActions button {
   color: $primary-light;
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .rowActions .editAction {
   min-height: 2rem;
   padding: 0 0.65rem;
-  border: 1px solid rgba($primary, 0.3);
-  border-radius: 0.4rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.3);
+  border-radius: $radius-full;
   background: rgba($primary, 0.07);
 }
 
 .rowActions .duplicateAction {
   min-height: 2rem;
   padding: 0 0.65rem;
-  border: 1px solid rgba($white, 0.13);
-  border-radius: 0.4rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.098);
+  border-radius: $radius-inner;
   color: $gray-300;
 
   &:hover:not(:disabled) {
-    border-color: rgba($primary, 0.45);
+    box-shadow: inset 0 0 0 1px rgba($primary, 0.45);
     color: $white;
   }
 }
@@ -987,7 +1008,7 @@
 
 .rowActions span {
   color: $gray-600;
-  font-size: 0.58rem;
+  font-size: 0.75rem;
 }
 
 .editorRow:hover {
@@ -1001,9 +1022,10 @@
 
 .productEditor {
   padding: 1.25rem;
-  border: 1px solid rgba($primary, 0.2);
-  border-radius: 0.65rem;
-  background: #0a0e0b;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.2);
+  border-radius: $radius-tile;
+  background: $background;
 }
 
 .editorHeading {
@@ -1016,21 +1038,21 @@
 
 .editorHeading h3 {
   font-family: $font-body;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
 }
 
 .editorHeading p {
   margin-top: 0.2rem;
   color: $gray-600;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
 }
 
 .editorHeading img {
   width: 3rem;
   height: 3rem;
-  border-radius: 0.35rem;
+  border-radius: $radius-inner;
   object-fit: contain;
-  background: #060806;
+  background: $background;
 }
 
 .editorGrid {
@@ -1043,7 +1065,7 @@
   display: block;
   margin-bottom: 0.35rem;
   color: $gray-400;
-  font-size: 0.61rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -1051,7 +1073,7 @@
   display: block;
   margin-top: 0.35rem;
   color: $gray-600;
-  font-size: 0.56rem;
+  font-size: 0.75rem;
   line-height: 1.45;
 }
 
@@ -1061,7 +1083,7 @@
   align-items: end;
   justify-content: space-between;
   padding: 0.85rem 0 0.55rem;
-  border-bottom: 1px solid rgba($white, 0.08);
+  border-bottom: 1px solid rgba($white, 0.05);
   grid-column: 1 / -1;
   gap: 1rem;
 }
@@ -1072,13 +1094,13 @@
 
 .editorSectionHeading span {
   color: $white;
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: 0.875rem;
+  font-weight: 700;
 }
 
 .editorSectionHeading p {
   color: $gray-600;
-  font-size: 0.56rem;
+  font-size: 0.75rem;
   text-align: right;
 }
 
@@ -1087,11 +1109,12 @@
   min-height: 2.7rem;
   align-content: center;
   padding: 0.55rem 0.7rem;
-  border: 1px solid rgba($white, 0.1);
-  border-radius: 0.4rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-full;
   grid-template-columns: 1rem minmax(0, 1fr);
   gap: 0 0.6rem;
-  background: #090c0a;
+  background: rgba($white, 0.05);
 }
 
 .editorToggle input[type="checkbox"] {
@@ -1113,7 +1136,7 @@
 
 .editorGrid input[type="file"] {
   padding: 0.58rem;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
 }
 
 .editorActions {
@@ -1127,14 +1150,15 @@
   min-height: 2.7rem;
   padding: 0 0.9rem;
   color: $gray-400;
-  font-size: 0.68rem;
+  font-size: 0.84rem;
   font-weight: 700;
 }
 
 .editorActions .archiveAction {
   margin-right: auto;
-  border: 1px solid rgba(#ef4444, 0.25);
-  border-radius: 0.42rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(#ef4444, 0.25);
+  border-radius: $radius-full;
   background: rgba(#ef4444, 0.06);
   color: #fca5a5;
 }
@@ -1157,14 +1181,14 @@
 .catalogEmpty p {
   margin-top: 0.35rem;
   color: $gray-500;
-  font-size: 0.68rem;
+  font-size: 0.84rem;
 }
 
 .catalogEmpty button {
   margin-top: 1rem;
   color: $primary-light;
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: 0.875rem;
+  font-weight: 700;
 }
 
 .inlineMessage {
@@ -1179,13 +1203,13 @@
   border-radius: 50%;
   background: rgba($white, 0.07);
   color: $gray-300;
-  font-size: 0.6rem;
-  font-weight: 800;
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .customerIdentity strong {
   color: $white;
-  font-size: 0.7rem;
+  font-size: 0.875rem;
 }
 
 .removeAccount {
@@ -1201,12 +1225,13 @@
   padding: 0 0.65rem;
   border-radius: 0.38rem;
   color: $gray-500;
-  font-size: 0.62rem;
-  font-weight: 750;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .removeAccount button:last-of-type {
-  border: 1px solid rgba(#ef4444, 0.25);
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(#ef4444, 0.25);
   color: #fca5a5;
 }
 
@@ -1218,7 +1243,7 @@
 .removeAccount span {
   flex-basis: 100%;
   color: #fca5a5;
-  font-size: 0.58rem;
+  font-size: 0.75rem;
 }
 
 .importHero {
@@ -1227,8 +1252,9 @@
   justify-content: space-between;
   gap: 2rem;
   padding: 1.75rem;
-  border: 1px solid rgba($primary, 0.22);
-  border-radius: 0.75rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.22);
+  border-radius: $radius-panel;
   background: rgba($primary, 0.045);
 }
 
@@ -1247,11 +1273,13 @@
 .importActions button {
   min-height: 2.7rem;
   padding: 0 0.9rem;
-  border: 1px solid rgba($white, 0.14);
-  border-radius: 0.45rem;
+  border: 0;
+  background-color: rgba($white, 0.05);
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-full;
   color: $gray-300;
-  font-size: 0.68rem;
-  font-weight: 750;
+  font-size: 0.84rem;
+  font-weight: 600;
 }
 
 .importActions input {
@@ -1265,15 +1293,14 @@
 .importMessage {
   margin-top: 1rem;
   color: $primary-light;
-  font-size: 0.72rem;
+  font-size: 0.875rem;
 }
 
 .csvReview {
   margin-top: 1rem;
   padding: 1.1rem 1.2rem;
-  border: 1px solid rgba($white, 0.1);
-  border-radius: 0.75rem;
-  background: #0e1210;
+  border-radius: $radius-panel;
+  background: $surface;
 }
 
 .csvReviewSummary {
@@ -1293,16 +1320,16 @@
 .csvIssues p {
   margin-top: 0.35rem;
   color: $gray-400;
-  font-size: 0.72rem;
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
 .csvReviewSummary > span {
   flex: 0 0 auto;
   padding: 0.35rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.65rem;
-  font-weight: 750;
+  border-radius: $radius-full;
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .csvReady {
@@ -1318,21 +1345,22 @@
 .csvIssues {
   margin-top: 1rem;
   padding: 0.85rem 1rem;
-  border: 1px solid rgba(#ef4444, 0.25);
-  border-radius: 0.6rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(#ef4444, 0.25);
+  border-radius: $radius-tile;
   background: rgba(#ef4444, 0.06);
 }
 
 .csvIssues strong {
   color: #fecaca;
-  font-size: 0.72rem;
+  font-size: 0.875rem;
 }
 
 .csvIssues ul {
   margin: 0.55rem 0 0;
   padding-left: 1.1rem;
   color: #fca5a5;
-  font-size: 0.7rem;
+  font-size: 0.875rem;
   line-height: 1.6;
 }
 
@@ -1352,35 +1380,34 @@
 
 .csvVisibility span {
   color: $gray-400;
-  font-size: 0.62rem;
-  font-weight: 750;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .csvVisibility select {
   min-height: 2.7rem;
   padding: 0 2.2rem 0 0.75rem;
-  border: 1px solid rgba($white, 0.14);
-  border-radius: 0.45rem;
+  border-radius: $radius-inner;
   color: $white;
-  background: #111614;
-  font-size: 0.72rem;
+  background: $surface;
+  font-size: 0.875rem;
 }
 
 .csvReviewActions button {
   min-height: 2.7rem;
   padding: 0 0.9rem;
-  border: 1px solid rgba($white, 0.14);
-  border-radius: 0.45rem;
+  border: 0;
+  background-color: rgba($white, 0.05);
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-full;
   color: $gray-300;
-  font-size: 0.68rem;
-  font-weight: 750;
+  font-size: 0.84rem;
+  font-weight: 600;
 }
 
 .csvReviewActions button:hover:not(:disabled),
 .csvReviewActions button:focus-visible {
-  border-color: rgba($white, 0.28);
+  box-shadow: inset 0 0 0 1px rgba($white, 0.28);
   color: $white;
 }
 
@@ -1390,16 +1417,15 @@
 }
 
 .csvReviewActions .primaryAction {
-  border-color: $primary;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
   color: #04100b;
 }
 
 .yugiohLibrary {
   margin-top: 1.25rem;
   padding: 1.35rem;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.75rem;
-  background: #0e1210;
+  border-radius: $radius-panel;
+  background: $surface;
 }
 
 .yugiohLibraryHead {
@@ -1418,18 +1444,18 @@
   max-width: 65ch;
   margin-top: 0.35rem;
   color: $gray-500;
-  font-size: 0.66rem;
+  font-size: 0.82rem;
   line-height: 1.55;
 }
 
 .yugiohLibraryHead > span {
   flex: 0 0 auto;
   padding: 0.35rem 0.55rem;
-  border-radius: 999px;
+  border-radius: $radius-full;
   background: rgba($primary, 0.12);
   color: $primary-light;
-  font-size: 0.6rem;
-  font-weight: 750;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .yugiohSearch {
@@ -1451,8 +1477,8 @@
 
 .yugiohSearch label span {
   color: $gray-400;
-  font-size: 0.62rem;
-  font-weight: 750;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .yugiohSearch input,
@@ -1460,9 +1486,10 @@
   width: 100%;
   min-height: 2.75rem;
   padding: 0 0.85rem;
-  border: 1px solid rgba($white, 0.12);
-  border-radius: 0.45rem;
-  background: #090c0a;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-inner;
+  background: rgba($white, 0.05);
   color: $white;
 }
 
@@ -1477,7 +1504,7 @@
 
 .yugiohSearch input:focus,
 .yugiohSearch select:focus {
-  border-color: $primary;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
   outline: 2px solid rgba($primary, 0.18);
   outline-offset: 1px;
 }
@@ -1485,7 +1512,7 @@
 .yugiohSetMatch {
   margin-top: 0.75rem;
   color: $gray-400;
-  font-size: 0.64rem;
+  font-size: 0.8125rem;
   line-height: 1.5;
 }
 
@@ -1493,11 +1520,11 @@
 .yugiohResults article > button {
   min-height: 2.75rem;
   padding: 0 0.9rem;
-  border-radius: 0.45rem;
+  border-radius: $radius-full;
   background: $primary;
   color: #06120c;
-  font-size: 0.67rem;
-  font-weight: 800;
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
 .yugiohSearch button:disabled,
@@ -1508,7 +1535,7 @@
 
 .yugiohResults {
   margin-top: 1rem;
-  border-top: 1px solid rgba($white, 0.07);
+  border-top: 1px solid rgba($white, 0.05);
 }
 
 .yugiohResults article {
@@ -1517,13 +1544,13 @@
   align-items: center;
   gap: 0.9rem;
   padding: 0.75rem 0;
-  border-bottom: 1px solid rgba($white, 0.06);
+  border-bottom: 1px solid rgba($white, 0.05);
   grid-template-columns: 5rem minmax(0, 1fr) 6rem auto;
 }
 
 .yugiohCardId {
   color: $gray-600;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1534,11 +1561,11 @@
   min-height: 4.4rem;
   place-items: center;
   overflow: hidden;
-  border-radius: 0.3rem;
-  background: #080b09;
+  border-radius: $radius-inner;
+  background: $background;
   color: $gray-500;
-  font-size: 0.6rem;
-  font-weight: 750;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .magicCardVisual img {
@@ -1555,7 +1582,7 @@
   width: 1.45rem;
   height: 1.45rem;
   place-items: center;
-  border-radius: 0.3rem;
+  border-radius: $radius-inner;
   background: rgba(#050806, 0.9);
   cursor: pointer;
 }
@@ -1578,36 +1605,35 @@
 
 .yugiohCardInfo strong {
   color: $white;
-  font-size: 0.72rem;
+  font-size: 0.875rem;
 }
 
 .yugiohCardInfo span,
 .yugiohCardInfo small {
   margin-top: 0.18rem;
   color: $gray-500;
-  font-size: 0.59rem;
+  font-size: 0.76rem;
 }
 
 .yugiohCardPrice span {
   color: $gray-600;
-  font-size: 0.56rem;
+  font-size: 0.75rem;
 }
 
 .yugiohCardPrice strong {
   margin-top: 0.15rem;
   color: $gray-300;
-  font-size: 0.66rem;
+  font-size: 0.82rem;
 }
 
 .importGuide {
   display: grid;
   margin-top: 1.25rem;
   padding: 1.25rem 1.35rem;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.75rem;
+  border-radius: $radius-panel;
   grid-template-columns: minmax(13rem, 0.65fr) minmax(0, 1.35fr);
   gap: 2rem;
-  background: #0e1210;
+  background: $surface;
 }
 
 .importGuide h3 {
@@ -1619,7 +1645,7 @@
   max-width: 42ch;
   margin-top: 0.4rem;
   color: $gray-500;
-  font-size: 0.66rem;
+  font-size: 0.82rem;
   line-height: 1.55;
 }
 
@@ -1633,20 +1659,20 @@
   display: grid;
   min-height: 2.4rem;
   align-items: center;
-  border-bottom: 1px solid rgba($white, 0.06);
+  border-bottom: 1px solid rgba($white, 0.05);
   grid-template-columns: 6rem 1fr;
   gap: 0.75rem;
 }
 
 .importGuide dt {
   color: $primary-light;
-  font-size: 0.62rem;
-  font-weight: 750;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .importGuide dd {
   color: $gray-500;
-  font-size: 0.61rem;
+  font-size: 0.78rem;
 }
 
 .importHistory {
@@ -1659,10 +1685,10 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1.35rem;
-  border-bottom: 1px solid rgba($white, 0.06);
+  border-bottom: 1px solid rgba($white, 0.05);
   grid-template-columns: minmax(12rem, 1fr) auto 7rem 7rem;
   color: $gray-400;
-  font-size: 0.67rem;
+  font-size: 0.84rem;
 }
 
 .importRow:last-child {
@@ -1681,13 +1707,13 @@
 .importRow div span {
   margin-top: 0.15rem;
   color: $gray-600;
-  font-size: 0.59rem;
+  font-size: 0.76rem;
 }
 
 .empty {
   padding: 2rem 1.35rem;
   color: $gray-600;
-  font-size: 0.7rem;
+  font-size: 0.875rem;
 }
 
 .active {
@@ -1703,24 +1729,15 @@
 
 .introActions > a,
 .sectionIntro > a {
-  display: inline-flex;
-  min-height: 2.7rem;
-  align-items: center;
-  padding: 0 0.9rem;
-  border: 1px solid rgba($white, 0.12);
-  border-radius: 0.45rem;
-  color: $gray-300;
-  font-size: 0.67rem;
-  font-weight: 750;
+  @include btn-secondary;
 }
 
 .lowStockCenter,
 .salesChart {
   margin-top: 1.25rem;
   overflow: hidden;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.75rem;
-  background: #0e1210;
+  border-radius: $radius-panel;
+  background: $surface;
 }
 
 .lowStockGrid {
@@ -1736,11 +1753,12 @@
   min-height: 4rem;
   align-items: center;
   padding: 0.6rem 0.75rem;
-  border: 1px solid rgba($white, 0.07);
-  border-radius: 0.55rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-tile;
   grid-template-columns: 2.6rem minmax(0, 1fr) auto;
   gap: 0.75rem;
-  background: #0a0e0b;
+  background: rgba($white, 0.05);
 }
 
 .lowStockGrid img {
@@ -1763,34 +1781,35 @@
 
 .lowStockGrid strong {
   color: $white;
-  font-size: 0.68rem;
+  font-size: 0.84rem;
 }
 
 .lowStockGrid span {
   margin-top: 0.15rem;
   color: $gray-600;
-  font-size: 0.58rem;
+  font-size: 0.75rem;
 }
 
 .lowStockGrid b {
   color: #fcd34d;
-  font-size: 0.64rem;
+  font-size: 0.8125rem;
 }
 
 .rowNote {
   display: block;
   margin-top: 0.25rem;
   color: #fcd34d;
-  font-size: 0.56rem;
+  font-size: 0.75rem;
   text-transform: capitalize;
 }
 
 .orderEditor,
 .customerEditor {
   padding: 1.25rem;
-  border: 1px solid rgba($primary, 0.2);
-  border-radius: 0.65rem;
-  background: #0a0e0b;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.2);
+  border-radius: $radius-tile;
+  background: $background;
 }
 
 .orderSummaryGrid {
@@ -1804,16 +1823,15 @@
 .orderActionGrid > .pickupFulfilment,
 .contentForm > section {
   padding: 1rem;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.55rem;
-  background: #0d120f;
+  border-radius: $radius-tile;
+  background: $surface;
 }
 
 .pickupFulfilment p {
   margin-top: 0.65rem;
   max-width: 46ch;
   color: $gray-400;
-  font-size: 0.66rem;
+  font-size: 0.82rem;
   line-height: 1.6;
 }
 
@@ -1824,17 +1842,17 @@
 .contentForm h3 {
   color: $white;
   font-family: $font-body;
-  font-size: 0.76rem;
+  font-size: 0.9rem;
 }
 
 .orderItem {
   display: grid;
   min-height: 3.2rem;
   align-items: center;
-  border-bottom: 1px solid rgba($white, 0.06);
+  border-bottom: 1px solid rgba($white, 0.05);
   grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 0.8rem;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
 }
 
 .orderItem strong,
@@ -1854,7 +1872,7 @@
 .orderSummaryGrid address {
   margin-top: 0.75rem;
   color: $gray-400;
-  font-size: 0.66rem;
+  font-size: 0.82rem;
   font-style: normal;
   line-height: 1.55;
 }
@@ -1866,7 +1884,7 @@
 .orderSummaryGrid p {
   margin-top: 0.75rem;
   color: $gray-500;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
   line-height: 1.5;
 }
 
@@ -1881,18 +1899,18 @@
   justify-content: space-between;
   gap: 1rem;
   border-bottom: 1px solid rgba($white, 0.05);
-  font-size: 0.62rem;
+  font-size: 0.8rem;
 }
 
 .orderSummaryGrid dd {
   color: $white;
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .orderSummaryGrid a {
   color: $primary-light;
-  font-size: 0.64rem;
-  font-weight: 750;
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .orderActionGrid {
@@ -1919,7 +1937,7 @@
   display: block;
   margin-bottom: 0.35rem;
   color: $gray-400;
-  font-size: 0.6rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -1935,11 +1953,12 @@
 .contentForm input,
 .contentForm textarea {
   width: 100%;
-  border: 1px solid rgba($white, 0.1);
-  border-radius: 0.4rem;
-  background: #070a08;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-inner;
+  background: rgba($white, 0.05);
   color: $white;
-  font-size: 0.68rem;
+  font-size: 0.84rem;
   outline: none;
 }
 
@@ -1969,11 +1988,13 @@
   min-height: 2.45rem;
   margin-top: 0.75rem;
   padding: 0 0.75rem;
-  border: 1px solid rgba($white, 0.12);
-  border-radius: 0.42rem;
+  border: 0;
+  background-color: rgba($white, 0.05);
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-full;
   color: $gray-300;
-  font-size: 0.63rem;
-  font-weight: 750;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .orderActionGrid form > div {
@@ -1986,8 +2007,9 @@
   display: grid !important;
   margin-top: 0.75rem;
   padding: 0.85rem;
-  border: 1px solid rgba($primary, 0.2);
-  border-radius: 0.5rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.2);
+  border-radius: $radius-tile;
   gap: 0 0.7rem !important;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   background: rgba($primary, 0.035);
@@ -2001,13 +2023,13 @@
 
 .postnlLabelTools > strong {
   color: $white;
-  font-size: 0.7rem;
+  font-size: 0.875rem;
 }
 
 .postnlLabelTools > p {
   margin: 0.25rem 0 0;
   color: $gray-500;
-  font-size: 0.59rem;
+  font-size: 0.76rem;
   line-height: 1.45;
 }
 
@@ -2016,7 +2038,7 @@
 }
 
 .postnlAction {
-  border-color: rgba($primary, 0.35) !important;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.35) !important;
   background: $primary !important;
   color: #04110a !important;
 }
@@ -2025,26 +2047,24 @@
   display: grid !important;
   margin-top: 0.75rem;
   padding: 0.8rem 0.9rem;
-  border-radius: 0.5rem;
+  border-radius: $radius-tile;
   background: rgba($white, 0.035);
   gap: 0.2rem !important;
 
   span {
     color: $gray-500;
-    font-size: 0.56rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
   }
 
   strong {
     color: $gray-300;
-    font-size: 0.72rem;
+    font-size: 0.875rem;
   }
 
   small {
     color: $gray-500;
-    font-size: 0.58rem;
+    font-size: 0.75rem;
     line-height: 1.45;
   }
 }
@@ -2073,7 +2093,7 @@
 
 .dangerAction,
 .removeConfirm {
-  border-color: rgba(#ef4444, 0.3) !important;
+  box-shadow: inset 0 0 0 1px rgba(#ef4444, 0.3) !important;
   background: rgba(#ef4444, 0.08) !important;
   color: #fca5a5 !important;
 }
@@ -2081,7 +2101,7 @@
 .customerEditor > div:first-child p {
   margin-top: 0.3rem;
   color: $gray-600;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
 }
 
 .customerControlGrid {
@@ -2095,7 +2115,7 @@
   display: block;
   margin-top: 0.3rem;
   color: $gray-600;
-  font-size: 0.56rem;
+  font-size: 0.75rem;
 }
 
 .customerControlGrid .toggleField {
@@ -2124,17 +2144,18 @@
 .variantManager {
   margin-top: 1rem;
   overflow: hidden;
-  border-top: 1px solid rgba($white, 0.08);
+  border-top: 1px solid rgba($white, 0.05);
 }
 
 .starterNotice {
   margin-top: 1rem;
   padding: 0.85rem 1rem;
-  border: 1px solid rgba(#f59e0b, 0.2);
-  border-radius: 0.45rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(#f59e0b, 0.15);
+  border-radius: $radius-inner;
   background: rgba(#f59e0b, 0.05);
   color: #fcd34d;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
   line-height: 1.5;
 }
 
@@ -2146,11 +2167,11 @@
   display: grid;
   min-height: 3.5rem;
   align-items: center;
-  border-bottom: 1px solid rgba($white, 0.06);
+  border-bottom: 1px solid rgba($white, 0.05);
   grid-template-columns: minmax(9rem, 1.4fr) repeat(6, minmax(5rem, 0.8fr)) auto;
   gap: 0.65rem;
   color: $gray-400;
-  font-size: 0.61rem;
+  font-size: 0.78rem;
 }
 
 .variantList strong,
@@ -2198,7 +2219,7 @@
   min-width: 0;
   padding: 0.7rem 0 0.8rem;
   align-items: end;
-  border-top: 1px solid rgba($white, 0.06);
+  border-top: 1px solid rgba($white, 0.05);
   grid-column: 1 / -1;
   gap: 0.55rem;
 }
@@ -2212,7 +2233,7 @@
   display: block;
   margin-bottom: 0.32rem;
   color: $gray-500;
-  font-size: 0.58rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -2220,16 +2241,17 @@
   width: 100%;
   height: 2.4rem;
   padding: 0 0.7rem;
-  border: 1px solid rgba($white, 0.12);
-  border-radius: 0.4rem;
-  background: #070a08;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-inner;
+  background: rgba($white, 0.05);
   color: $white;
-  font-size: 0.66rem;
+  font-size: 0.82rem;
   outline: none;
 }
 
 .quickImageForm input:focus {
-  border-color: rgba($primary, 0.72);
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.72);
 }
 
 .quickImageForm button {
@@ -2240,7 +2262,7 @@
 .quickImagePending {
   padding-bottom: 0.68rem;
   color: $primary-light;
-  font-size: 0.58rem;
+  font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -2263,11 +2285,12 @@
 
 .variantForm .variantDeleteAction {
   min-height: 2.55rem;
-  border: 1px solid rgba(#f87171, 0.42);
-  border-radius: 0.4rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(#f87171, 0.315);
+  border-radius: $radius-full;
   color: #fca5a5;
-  font-size: 0.66rem;
-  font-weight: 800;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .variantForm .variantDeleteAction:hover:not(:disabled) {
@@ -2280,16 +2303,17 @@
   width: 4.5rem;
   height: 4.5rem;
   align-self: end;
-  border-radius: 0.4rem;
+  border-radius: $radius-inner;
   object-fit: contain;
-  background: #070a08;
+  background: $background;
 }
 
 .variantEditForm {
   margin-top: 0.75rem;
   padding: 1rem;
-  border: 1px solid rgba($primary, 0.2);
-  border-radius: 0.55rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.2);
+  border-radius: $radius-tile;
   background: rgba($primary, 0.035);
 }
 
@@ -2302,7 +2326,7 @@
 
 .variantFormHeading strong {
   color: $white;
-  font-size: 0.7rem;
+  font-size: 0.875rem;
 }
 
 .variantFormHeading button {
@@ -2317,9 +2341,10 @@
   align-self: end;
   gap: 0.55rem;
   padding: 0 0.7rem;
-  border: 1px solid rgba($white, 0.1);
-  border-radius: 0.4rem;
-  background: #070a08;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-full;
+  background: rgba($white, 0.05);
 }
 
 .variantToggle input {
@@ -2342,9 +2367,8 @@
 .discountForm,
 .contentForm {
   padding: 1.25rem;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.75rem;
-  background: #0e1210;
+  border-radius: $radius-panel;
+  background: $surface;
 }
 
 .discountForm {
@@ -2370,9 +2394,8 @@
 
 .discountGrid article {
   padding: 1rem;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.65rem;
-  background: #0e1210;
+  border-radius: $radius-tile;
+  background: $surface;
 }
 
 .discountGrid header {
@@ -2384,8 +2407,8 @@
 
 .discountGrid header strong {
   color: $primary-light;
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+  letter-spacing: 0;
 }
 
 .discountGrid h3 {
@@ -2400,7 +2423,7 @@
   display: block;
   margin-top: 0.3rem;
   color: $gray-500;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
 }
 
 .contentForm {
@@ -2416,20 +2439,21 @@
 .publishNote {
   margin-top: 1rem;
   padding: 0.9rem;
-  border: 1px solid rgba($primary, 0.18);
-  border-radius: 0.45rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.18);
+  border-radius: $radius-inner;
   background: rgba($primary, 0.05);
 }
 
 .publishNote strong {
   color: $primary-light;
-  font-size: 0.65rem;
+  font-size: 0.8125rem;
 }
 
 .publishNote p {
   margin-top: 0.25rem;
   color: $gray-500;
-  font-size: 0.6rem;
+  font-size: 0.78rem;
   line-height: 1.5;
 }
 
@@ -2441,9 +2465,8 @@
 
 .analyticsMetrics article {
   padding: 1.1rem;
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.65rem;
-  background: #0e1210;
+  border-radius: $radius-tile;
+  background: $surface;
 }
 
 .analyticsMetrics span,
@@ -2454,7 +2477,7 @@
 
 .analyticsMetrics span {
   color: $gray-500;
-  font-size: 0.63rem;
+  font-size: 0.8rem;
 }
 
 .analyticsMetrics strong {
@@ -2466,7 +2489,7 @@
 .analyticsMetrics small {
   margin-top: 0.25rem;
   color: $gray-600;
-  font-size: 0.58rem;
+  font-size: 0.75rem;
 }
 
 .chartRows {
@@ -2480,13 +2503,13 @@
   grid-template-columns: 5.5rem minmax(8rem, 1fr) 6rem 4rem;
   gap: 0.8rem;
   color: $gray-500;
-  font-size: 0.59rem;
+  font-size: 0.76rem;
 }
 
 .chartRows i {
   height: 0.45rem;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: $radius-full;
   background: rgba($white, 0.06);
 }
 
@@ -2499,13 +2522,12 @@
 
 .chartRows strong {
   color: $white;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
 }
 
 .activityList {
-  border: 1px solid rgba($white, 0.08);
-  border-radius: 0.75rem;
-  background: #0e1210;
+  border-radius: $radius-panel;
+  background: $surface;
 }
 
 .activityList article {
@@ -2513,7 +2535,7 @@
   min-height: 4rem;
   align-items: center;
   padding: 0.75rem 1.2rem;
-  border-bottom: 1px solid rgba($white, 0.06);
+  border-bottom: 1px solid rgba($white, 0.05);
   grid-template-columns: 0.6rem minmax(0, 1fr) auto;
   gap: 0.85rem;
 }
@@ -2532,7 +2554,7 @@
 
 .activityList strong {
   color: $white;
-  font-size: 0.67rem;
+  font-size: 0.84rem;
 }
 
 .activityList p,
@@ -2542,12 +2564,6 @@
   font-size: 0.57rem;
 }
 
-@keyframes pulse {
-  to {
-    opacity: 0.35;
-    transform: scale(0.8);
-  }
-}
 
 @media (max-width: 1050px) {
   .shell {
@@ -2558,27 +2574,12 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .metrics article:nth-child(3) {
-    border-top: 1px solid rgba($white, 0.08);
-    border-left: 0;
-  }
-
-  .metrics article:nth-child(4) {
-    border-top: 1px solid rgba($white, 0.08);
-  }
 
   .overviewGrid {
     grid-template-columns: 1fr;
   }
 
-  .productGuide {
-    grid-template-columns: 1fr;
-  }
 
-  .productGuide div + div {
-    border-top: 1px solid rgba($white, 0.08);
-    border-left: 0;
-  }
 
   .productForm {
     grid-template-columns: 1fr;
@@ -2621,25 +2622,31 @@
     display: block;
   }
 
+  // The sidebar becomes a compact bar: logo, then sections as a scrolling row.
   .sidebar {
     position: static;
     height: auto;
-    border-right: 0;
+    padding: 0.6rem;
   }
 
   .brand {
-    min-height: 4.4rem;
+    margin-bottom: 0.4rem;
   }
 
   .sidebar nav {
-    overflow-x: auto;
-    padding: 0.65rem;
     flex-direction: row;
+    gap: 0.2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   .navItem {
-    min-width: 8rem;
-    min-height: 3rem;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .owner,
@@ -2648,17 +2655,22 @@
   }
 
   .topbar {
-    position: static;
-    min-height: 4.4rem;
-    padding: 0 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem 0.25rem 1.25rem;
   }
 
-  .liveStatus {
-    display: none;
+  .topActions {
+    flex-wrap: wrap;
   }
 
   .content {
-    padding: 1rem;
+    padding: 0 0 2rem;
+  }
+
+  .shell {
+    padding: 0.6rem;
   }
 
   .metrics {
@@ -2775,15 +2787,13 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 3rem;
   padding: clamp(1.5rem, 4vw, 3.5rem);
-  border: 1px solid rgba($white, 0.1);
-  background: #101512;
+  border-radius: $radius-panel;
+  background: $surface;
 
   > div:first-child > span {
     color: $primary-light;
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
+    font-weight: 700;
   }
 
   h2 {
@@ -2809,7 +2819,7 @@
   align-content: center;
   min-width: 11rem;
   padding-left: 2.5rem;
-  border-left: 1px solid rgba($white, 0.12);
+  border-left: 1px solid rgba($white, 0.05);
 
   strong {
     color: $primary;
@@ -2822,14 +2832,14 @@
   span {
     margin-top: 0.75rem;
     color: $gray-500;
-    font-size: 0.7rem;
+    font-size: 0.875rem;
     font-weight: 700;
   }
 
   small {
     margin-top: 0.4rem;
     color: $gray-600;
-    font-size: 0.62rem;
+    font-size: 0.8rem;
     font-weight: 700;
   }
 }
@@ -2843,14 +2853,13 @@
 
   article {
     padding: 1.5rem;
-    background: #0d110f;
+    background: $surface;
   }
 
   span {
     color: $gray-600;
-    font-size: 0.65rem;
-    font-weight: 800;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    font-weight: 700;
   }
 
   strong {
@@ -2864,7 +2873,7 @@
     max-width: 46rem;
     margin-top: 0.55rem;
     color: $gray-500;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     line-height: 1.6;
   }
 }
@@ -2878,12 +2887,12 @@
   padding: 0.85rem 1rem;
   background: rgba($primary, 0.08);
   color: $primary-light;
-  font-size: 0.72rem;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
 .readinessList {
-  border-top: 1px solid rgba($white, 0.11);
+  border-top: 1px solid rgba($white, 0.05);
 
   article {
     display: grid;
@@ -2892,25 +2901,24 @@
     gap: 1.25rem;
     min-height: 5.5rem;
     padding: 1rem 0;
-    border-bottom: 1px solid rgba($white, 0.09);
+    border-bottom: 1px solid rgba($white, 0.05);
 
     > div strong {
       color: $white;
-      font-size: 0.82rem;
+      font-size: 0.95rem;
     }
 
     > div p {
       margin-top: 0.3rem;
       color: $gray-500;
-      font-size: 0.72rem;
+      font-size: 0.875rem;
       line-height: 1.5;
     }
 
     > b {
       color: #ffb3a7;
-      font-size: 0.66rem;
+      font-size: 0.82rem;
       text-align: right;
-      text-transform: uppercase;
     }
   }
 }
@@ -2920,16 +2928,17 @@
   width: 2rem;
   height: 2rem;
   place-items: center;
-  border: 1px solid rgba(#ff8f7e, 0.35);
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(#ff8f7e, 0.262);
   border-radius: $radius-full;
   color: #ff9f90;
-  font-size: 0.75rem;
-  font-weight: 900;
+  font-size: 0.9rem;
+  font-weight: 800;
 }
 
 .readinessOwner {
   color: $gray-400;
-  font-size: 0.7rem;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
@@ -2939,8 +2948,8 @@
   border: 0;
   background: transparent;
   color: $primary-light;
-  font-size: 0.68rem;
-  font-weight: 800;
+  font-size: 0.84rem;
+  font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 0.24rem;
   cursor: pointer;
@@ -2953,7 +2962,7 @@
 
 .readinessDone {
   .readinessMark {
-    border-color: rgba($primary, 0.45);
+    box-shadow: inset 0 0 0 1px rgba($primary, 0.45);
     color: $primary-light;
   }
 
@@ -2968,17 +2977,18 @@
   gap: 1rem;
   padding: 1.1rem 1.25rem;
   margin-bottom: 1rem;
-  border: 1px solid rgba(#f6c85f, 0.24);
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(#f6c85f, 0.18);
   background: rgba(#f6c85f, 0.055);
 
   strong {
     color: #f6d477;
-    font-size: 0.76rem;
+    font-size: 0.9rem;
   }
 
   p {
     color: $gray-400;
-    font-size: 0.74rem;
+    font-size: 0.9rem;
     line-height: 1.55;
   }
 }
@@ -2986,14 +2996,14 @@
 .storeSetupForm {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(24rem, 0.9fr);
-  border: 1px solid rgba($white, 0.1);
-  background: #0d110f;
+  border-radius: $radius-panel;
+  background: $surface;
 
   > section {
     padding: clamp(1.25rem, 3vw, 2.25rem);
 
     & + section {
-      border-left: 1px solid rgba($white, 0.1);
+      border-left: 1px solid rgba($white, 0.05);
     }
   }
 }
@@ -3001,14 +3011,12 @@
 .storeFormHeading {
   padding-bottom: 1.25rem;
   margin-bottom: 1.25rem;
-  border-bottom: 1px solid rgba($white, 0.09);
+  border-bottom: 1px solid rgba($white, 0.05);
 
   span {
     color: $primary-light;
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    font-weight: 700;
   }
 
   h3 {
@@ -3031,21 +3039,22 @@
 
   label > span {
     color: $gray-400;
-    font-size: 0.68rem;
+    font-size: 0.84rem;
     font-weight: 700;
   }
 
   input,
   textarea {
     width: 100%;
-    border: 1px solid rgba($white, 0.12);
+    border: 0;
+    box-shadow: inset 0 0 0 1px rgba($white, 0.09);
     border-radius: $radius-md;
-    background: #080c0a;
+    background: $background;
     color: $white;
     font: inherit;
 
     &:focus {
-      border-color: $primary;
+      box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
       outline: 0;
     }
   }
@@ -3068,18 +3077,19 @@
 
   span {
     padding: 0.38rem 0.62rem;
-    border: 1px solid rgba($primary, 0.3);
+    border: 0;
+    box-shadow: inset 0 0 0 1px rgba($primary, 0.3);
     border-radius: $radius-full;
     color: $primary-light;
-    font-size: 0.66rem;
-    font-weight: 750;
+    font-size: 0.82rem;
+    font-weight: 600;
   }
 }
 
 .shippingRateGrid {
   display: grid;
   gap: 0;
-  border-top: 1px solid rgba($white, 0.09);
+  border-top: 1px solid rgba($white, 0.05);
 
   label {
     display: grid;
@@ -3087,17 +3097,17 @@
     align-items: center;
     gap: 0.35rem 1rem;
     min-height: 4.4rem;
-    border-bottom: 1px solid rgba($white, 0.08);
+    border-bottom: 1px solid rgba($white, 0.05);
 
     > span {
       color: $gray-200;
-      font-size: 0.74rem;
-      font-weight: 750;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
 
     > small {
       color: $gray-600;
-      font-size: 0.64rem;
+      font-size: 0.8125rem;
     }
 
     > div {
@@ -3107,16 +3117,17 @@
       grid-template-columns: auto 1fr;
       align-items: center;
       min-height: 2.7rem;
-      border: 1px solid rgba($white, 0.12);
+      border: 0;
+      box-shadow: inset 0 0 0 1px rgba($white, 0.08);
       border-radius: $radius-md;
-      background: #080c0a;
+      background: rgba($white, 0.05);
       overflow: hidden;
     }
 
     b {
       padding-left: 0.7rem;
       color: $gray-500;
-      font-size: 0.72rem;
+      font-size: 0.875rem;
     }
 
     input {
@@ -3136,7 +3147,7 @@
 .internationalRateEditor {
   margin-top: 2.5rem;
   padding-top: 2rem;
-  border-top: 1px solid rgba($white, 0.1);
+  border-top: 1px solid rgba($white, 0.05);
 
   h4 {
     color: $white;
@@ -3148,24 +3159,24 @@
     max-width: 58ch;
     margin: 0.45rem 0 1.25rem;
     color: $gray-500;
-    font-size: 0.72rem;
+    font-size: 0.875rem;
     line-height: 1.6;
   }
 }
 
 .inboxCount {
   color: $primary-light;
-  font-size: 0.75rem;
-  font-weight: 750;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .contactInbox {
-  border-top: 1px solid rgba($white, 0.12);
+  border-top: 1px solid rgba($white, 0.05);
 }
 
 .contactMessage {
   padding: 1.4rem 0;
-  border-bottom: 1px solid rgba($white, 0.1);
+  border-bottom: 1px solid rgba($white, 0.05);
 
   > header {
     display: flex;
@@ -3192,7 +3203,7 @@
     .contactEmailButton,
     time {
       color: $gray-500;
-      font-size: 0.72rem;
+      font-size: 0.875rem;
     }
 
     .contactEmailButton {
@@ -3218,8 +3229,8 @@
       border-radius: $radius-full;
       background: rgba($white, 0.07);
       color: $gray-300;
-      font-size: 0.65rem;
-      font-weight: 750;
+      font-size: 0.8125rem;
+      font-weight: 600;
       text-transform: capitalize;
     }
 
@@ -3239,11 +3250,13 @@
     button {
       min-height: 2.35rem;
       padding: 0 0.75rem;
-      border: 1px solid rgba($white, 0.12);
+      border: 0;
+      background-color: rgba($white, 0.05);
+      box-shadow: inset 0 0 0 1px rgba($white, 0.08);
       border-radius: $radius-md;
       background: transparent;
       color: $gray-200;
-      font-size: 0.7rem;
+      font-size: 0.875rem;
       font-weight: 700;
     }
 
@@ -3253,7 +3266,7 @@
     }
 
     .contactReplyButton {
-      border-color: rgba($primary, 0.38);
+      box-shadow: inset 0 0 0 1px rgba($primary, 0.38);
       background: rgba($primary, 0.08);
       color: $primary-light;
     }
@@ -3276,14 +3289,15 @@
   gap: 0.7rem;
   margin-top: 1rem;
   padding: 1rem;
-  border: 1px solid rgba($primary, 0.26);
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.195);
   border-radius: $radius-lg;
   background: rgba($primary, 0.035);
 
   label {
     color: $gray-300;
-    font-size: 0.7rem;
-    font-weight: 750;
+    font-size: 0.875rem;
+    font-weight: 600;
   }
 
   textarea {
@@ -3291,13 +3305,14 @@
     min-height: 10rem;
     resize: vertical;
     padding: 0.9rem 1rem;
-    border: 1px solid rgba($white, 0.14);
+    border: 0;
+    box-shadow: inset 0 0 0 1px rgba($white, 0.105);
     border-radius: $radius-md;
     outline: none;
     background: rgba(#050806, 0.58);
     color: $white;
     font: inherit;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     line-height: 1.65;
 
     &::placeholder {
@@ -3305,7 +3320,7 @@
     }
 
     &:focus {
-      border-color: rgba($primary, 0.62);
+      box-shadow: inset 0 0 0 1px rgba($primary, 0.62);
       box-shadow: 0 0 0 3px rgba($primary, 0.09);
     }
 
@@ -3330,12 +3345,12 @@
   strong {
     color: $white;
     font-family: $font-display;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
   }
 
   span {
     color: $gray-500;
-    font-size: 0.68rem;
+    font-size: 0.84rem;
   }
 
   > span {
@@ -3355,22 +3370,24 @@
   > span {
     margin-right: auto;
     color: $gray-600;
-    font-size: 0.65rem;
+    font-size: 0.8125rem;
   }
 
   button {
     min-height: 2.4rem;
     padding: 0 0.9rem;
-    border: 1px solid rgba($white, 0.13);
+    border: 0;
+    background-color: rgba($white, 0.05);
+    box-shadow: inset 0 0 0 1px rgba($white, 0.08);
     border-radius: $radius-md;
     background: transparent;
     color: $gray-200;
-    font-size: 0.7rem;
-    font-weight: 750;
+    font-size: 0.875rem;
+    font-weight: 600;
   }
 
   button[type="submit"] {
-    border-color: $primary;
+    box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
     background: $primary;
     color: #04110b;
   }
@@ -3400,7 +3417,7 @@
   p {
     max-width: 72ch;
     color: $gray-300;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     line-height: 1.7;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
@@ -3414,11 +3431,11 @@
   justify-content: flex-end;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  border-top: 1px solid rgba($white, 0.1);
+  border-top: 1px solid rgba($white, 0.05);
 
   p {
     color: $gray-400;
-    font-size: 0.72rem;
+    font-size: 0.875rem;
   }
 }
 
@@ -3430,7 +3447,7 @@
 
   .readinessScore {
     padding: 1.5rem 0 0;
-    border-top: 1px solid rgba($white, 0.12);
+    border-top: 1px solid rgba($white, 0.05);
     border-left: 0;
   }
 
@@ -3451,7 +3468,7 @@
     grid-template-columns: 1fr;
 
     > section + section {
-      border-top: 1px solid rgba($white, 0.1);
+      border-top: 1px solid rgba($white, 0.05);
       border-left: 0;
     }
   }
@@ -3521,8 +3538,8 @@
 
 .selectAllBtn {
   color: $primary-light;
-  font-size: 0.68rem;
-  font-weight: 750;
+  font-size: 0.84rem;
+  font-weight: 600;
   transition: color 180ms ease;
 }
 
@@ -3538,14 +3555,15 @@
   gap: 1rem;
   margin-bottom: 0.85rem;
   padding: 0.85rem 1.1rem;
-  border: 1px solid rgba($primary, 0.32);
-  border-radius: 0.6rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.32);
+  border-radius: $radius-tile;
   background: rgba($primary, 0.08);
 }
 
 .bulkCount {
   color: $gray-300;
-  font-size: 0.72rem;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
@@ -3556,7 +3574,7 @@
 .bulkMessage {
   margin: -0.25rem 0 0.85rem;
   color: $primary-light;
-  font-size: 0.72rem;
+  font-size: 0.875rem;
 }
 
 .bulkActions {
@@ -3574,20 +3592,21 @@
 
 .bulkField > span {
   color: $gray-500;
-  font-size: 0.66rem;
-  font-weight: 750;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .bulkField select,
 .bulkField input {
   min-height: 2.2rem;
-  border: 1px solid rgba($white, 0.14);
-  border-radius: 0.4rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  border-radius: $radius-inner;
   outline: none;
-  background: #090c0a;
+  background: rgba($white, 0.05);
   color: $white;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.875rem;
 }
 
 .bulkTagField input {
@@ -3624,17 +3643,17 @@
 
 .bulkField select:focus,
 .bulkField input:focus {
-  border-color: $primary;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
 }
 
 .bulkField button {
   min-height: 2.2rem;
   padding: 0 0.85rem;
-  border-radius: 0.4rem;
+  border-radius: $radius-full;
   background: $primary;
   color: #06120c;
-  font-size: 0.68rem;
-  font-weight: 800;
+  font-size: 0.84rem;
+  font-weight: 700;
   transition: background 180ms ease;
 }
 
@@ -3651,8 +3670,8 @@
 
 .bulkClear {
   color: $gray-400;
-  font-size: 0.68rem;
-  font-weight: 750;
+  font-size: 0.84rem;
+  font-weight: 600;
   transition: color 180ms ease;
 }
 
@@ -3663,27 +3682,29 @@
 .bulkDelete {
   min-height: 2.2rem;
   padding: 0 0.8rem;
-  border: 1px solid rgba(#f87171, 0.45);
-  border-radius: 0.4rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(#f87171, 0.338);
+  border-radius: $radius-inner;
   color: #fca5a5;
-  font-size: 0.68rem;
-  font-weight: 800;
+  font-size: 0.84rem;
+  font-weight: 700;
   transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
 }
 
 .bulkRefresh {
   min-height: 2.2rem;
   padding: 0 0.8rem;
-  border: 1px solid rgba($primary, 0.42);
-  border-radius: 0.4rem;
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.42);
+  border-radius: $radius-inner;
   background: rgba($primary, 0.08);
   color: $primary-light;
-  font-size: 0.68rem;
-  font-weight: 800;
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
 .bulkRefresh:hover:not(:disabled) {
-  border-color: $primary;
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
   background: rgba($primary, 0.14);
   color: $white;
 }
@@ -3774,7 +3795,7 @@
     color: $gray-300;
     cursor: pointer;
     font-size: 0.8125rem;
-    font-weight: 650;
+    font-weight: 600;
     gap: 0.5rem;
   }
 
@@ -3792,7 +3813,7 @@
     background: $primary;
     color: #06120d;
     font-size: 0.78125rem;
-    font-weight: 800;
+    font-weight: 700;
 
     &:hover:not(:disabled) { background: $primary-light; }
 

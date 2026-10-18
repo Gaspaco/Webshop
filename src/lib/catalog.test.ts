@@ -79,7 +79,7 @@ describe("fetchDatabaseCatalogState", () => {
         managedSlugs: ["card-0"],
         hasMore: true,
         nextOffset: 0,
-      })) as typeof fetch;
+      })) as unknown as typeof fetch;
 
     await assert.rejects(
       fetchDatabaseCatalogState(),

@@ -1,0 +1,192 @@
+@use "./variables" as *;
+
+// One button language for the storefront. Every call to action is a pill so it
+// never reads as another tile; the tiles and panels around it are the
+// rectangles.
+
+@mixin btn-base($size: md) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: $radius-full;
+  font-family: $font-display;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 180ms $ease-out,
+    color 180ms $ease-out,
+    box-shadow 180ms $ease-out,
+    scale 160ms $ease-out;
+
+  @if $size == sm {
+    height: 2.25rem;
+    padding-inline: 0.95rem;
+    font-size: 0.8125rem;
+  } @else if $size == lg {
+    height: 3.25rem;
+    padding-inline: 1.6rem;
+    font-size: 1rem;
+  } @else {
+    height: 2.75rem;
+    padding-inline: 1.25rem;
+    font-size: 0.9375rem;
+  }
+
+  svg {
+    width: 1.05em;
+    height: 1.05em;
+    flex-shrink: 0;
+  }
+
+  // A quick squeeze on press; the transition eases it back on release.
+  &:active:not(:disabled) {
+    scale: 0.95;
+    transition-duration: 80ms;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+@mixin btn-primary($size: md) {
+  @include btn-base($size);
+  background: $primary;
+  // Dark ink on emerald: white on #10b981 fails contrast.
+  color: #03231a;
+
+  &:hover:not(:disabled) {
+    background: $primary-light;
+  }
+}
+
+@mixin btn-secondary($size: md) {
+  @include btn-base($size);
+  background: rgba($white, 0.07);
+  color: $white;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.1);
+
+  &:hover:not(:disabled) {
+    background: rgba($white, 0.12);
+    box-shadow: inset 0 0 0 1px rgba($white, 0.16);
+  }
+}
+
+// Text-weight action for "view all" style links that should not compete with
+// the primary button. No underline: the colour change is the hover.
+@mixin btn-link {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding-block: 0.3rem;
+  color: $gray-400;
+  font-family: $font-display;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 180ms $ease-out;
+
+  &:hover {
+    color: $white;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+}
+
+@mixin btn-icon($size: 2.75rem) {
+  @include btn-base;
+  width: $size;
+  height: $size;
+  padding: 0;
+  background: rgba($white, 0.07);
+  color: $white;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.1);
+
+  &:hover:not(:disabled) {
+    background: rgba($white, 0.13);
+    box-shadow: inset 0 0 0 1px rgba($white, 0.16);
+  }
+}
+
+// The confirmed state after adding to the cart.
+@mixin btn-done {
+  background: $primary !important;
+  color: #03231a !important;
+  box-shadow: none !important;
+
+  svg {
+    animation: btn-check-in 320ms $ease-out;
+  }
+
+  // Declared here so each CSS module carries its own (module-scoped) copy.
+  @keyframes btn-check-in {
+    0% { opacity: 0; transform: scale(0.4) rotate(-20deg); }
+    60% { opacity: 1; transform: scale(1.15) rotate(4deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+}
+
+// The inset frame of a trading card, used on storefront tiles. Lights up in
+// the tile's own colour on hover.
+@mixin card-frame($inset: 0.4rem, $radius: $radius-tile) {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    position: absolute;
+    z-index: 2;
+    inset: $inset;
+    border: 1px solid rgba($white, 0.07);
+    border-radius: calc(#{$radius} - #{$inset} * 0.6);
+    content: "";
+    pointer-events: none;
+    transition: border-color 260ms $ease-out, inset 260ms $ease-out;
+  }
+
+  &:hover::before,
+  &:focus-visible::before {
+    border-color: color-mix(in srgb, var(--frame, #{$primary}) 60%, transparent);
+  }
+}
+
+@mixin section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+
+  h2 {
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.6rem, 2.6vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+  }
+
+  p {
+    max-width: 52ch;
+    margin-top: 0.6rem;
+    color: $gray-400;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+}

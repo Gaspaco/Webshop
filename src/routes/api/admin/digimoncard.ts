@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -289,7 +290,7 @@ export async function GET(event: APIEvent) {
       });
       return rateLimitResponse(error);
     }
-    console.error("DigimonCard search failed", error);
+    logServerError("DigimonCard search failed", error);
     return apiJson(
       { error: "The Digimon card library could not be reached. Try again shortly." },
       { status: 503 },
@@ -399,7 +400,7 @@ export async function POST(event: APIEvent) {
     if (error instanceof DigimonRequestError && error.status === 429) {
       return rateLimitResponse(error);
     }
-    console.error("DigimonCard catalogue import failed", error);
+    logServerError("DigimonCard catalogue import failed", error);
     return apiJson(
       { error: "The Digimon card could not be added. Check the server log for the reason." },
       { status: 500 },

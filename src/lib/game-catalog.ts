@@ -4,9 +4,11 @@ import { fetchDatabaseCatalogState } from "~/lib/catalog";
 
 export function createGameCatalog(game: Accessor<string>) {
   const [clientReady, setClientReady] = createSignal(false);
+  // Only this game's products: loading the whole catalogue made every game
+  // page wait for all of them.
   const [databaseCatalog] = createResource(
-    clientReady,
-    () => fetchDatabaseCatalogState(),
+    () => (clientReady() && CATEGORIES[game()] ? game() : undefined),
+    slug => fetchDatabaseCatalogState({ game: slug }),
   );
 
   const products = createMemo<ShopProduct[]>(() => {
@@ -21,6 +23,6 @@ export function createGameCatalog(game: Accessor<string>) {
 
   return {
     products,
-    loading: databaseCatalog.loading,
+    loading: () => !clientReady() || databaseCatalog.loading,
   };
 }

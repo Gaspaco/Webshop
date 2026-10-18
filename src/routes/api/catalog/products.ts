@@ -1,10 +1,15 @@
 import type { APIEvent } from "@solidjs/start/server";
+import { CATEGORIES } from "~/lib/categories";
 import { loadDatabaseCatalogRows } from "~/lib/catalog-query.server";
 
 export async function GET(event: APIEvent) {
   const url = new URL(event.request.url);
   const slug = url.searchParams.get("slug")?.trim();
   const availableOnly = url.searchParams.get("available") === "1";
+  // Only known game slugs are accepted, so the filter can never be used to
+  // probe arbitrary values.
+  const requestedGame = url.searchParams.get("game")?.trim() ?? "";
+  const game = requestedGame && CATEGORIES[requestedGame] ? requestedGame : undefined;
   const requestedLimit = Number.parseInt(url.searchParams.get("limit") ?? "200", 10);
   const limit = Number.isFinite(requestedLimit)
     ? Math.min(Math.max(requestedLimit, 1), 500)
@@ -15,6 +20,7 @@ export async function GET(event: APIEvent) {
     : 0;
   const catalog = await loadDatabaseCatalogRows({
     slug,
+    game,
     available: availableOnly,
     limit,
     offset,

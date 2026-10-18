@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -77,7 +78,7 @@ export async function PATCH(event: APIEvent) {
         { status: 400 },
       );
     }
-    console.error("Readiness confirmation update failed", error);
+    logServerError("Readiness confirmation update failed", error);
     return apiJson(
       { error: "The readiness confirmation could not be saved." },
       { status: 500 },

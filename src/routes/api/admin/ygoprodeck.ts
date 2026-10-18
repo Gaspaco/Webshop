@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { asc, eq, ilike, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -178,7 +179,7 @@ export async function GET(event: APIEvent) {
       : [];
     return searchResponse(cardRows, printingRows);
   } catch (error) {
-    console.error("Local YGOPRODeck search failed", error);
+    logServerError("Local YGOPRODeck search failed", error);
     return apiJson(
       { error: "The local Yu-Gi-Oh library is not ready. Run its database migration and sync first." },
       { status: 503 },
@@ -338,7 +339,7 @@ export async function POST(event: APIEvent) {
     if (error instanceof z.ZodError) {
       return apiJson({ error: "Choose a valid Yu-Gi-Oh card." }, { status: 400 });
     }
-    console.error("YGOPRODeck catalogue import failed", error);
+    logServerError("YGOPRODeck catalogue import failed", error);
     return apiJson(
       { error: "The card could not be added. Check the server log for the reason." },
       { status: 500 },

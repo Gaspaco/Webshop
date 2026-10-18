@@ -44,11 +44,12 @@ export default function GameSetsPage() {
                     </Show>
                   </div>
                   <div class={styles.setCopy}>
-                    <span>{set.code ?? "Set"}</span>
                     <strong>{set.name}</strong>
-                    <small>{set.count} {set.count === 1 ? "product" : "products"}</small>
+                    <small>
+                      <Show when={set.code}>{code => <span class={styles.setCode}>{code()}</span>}</Show>
+                      {set.count} {set.count === 1 ? "product" : "products"}
+                    </small>
                   </div>
-                  <span class={styles.setArrow} aria-hidden="true">↗</span>
                 </A>
               )}</For>
             </div>

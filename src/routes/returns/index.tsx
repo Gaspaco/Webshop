@@ -61,16 +61,15 @@ export default function Returns() {
       <Title>Withdraw from an order | TCGHaven</Title>
       <div class={styles.shell}>
         <section class={styles.intro}>
-          <p class={styles.eyebrow}>Statutory withdrawal and returns</p>
           <h1>Withdraw from an order</h1>
           <p class={styles.lead}>
-            Notify TCGHaven within 14 days after delivery. You do not have to give a reason. After notifying us, you have another 14 days to send the products back.
+            Let us know within 14 days after delivery. You don't have to give a reason. After that you have another 14 days to send the products back.
           </p>
-          <dl>
-            <div><dt>01</dt><dd>Enter the order number from your confirmation email.</dd></div>
-            <div><dt>02</dt><dd>Identify the items you want to withdraw or return.</dd></div>
-            <div><dt>03</dt><dd>The owner reviews the request and sends the return details.</dd></div>
-          </dl>
+          <ol class={styles.steps}>
+            <li><span>1</span>Enter the order number from your confirmation email.</li>
+            <li><span>2</span>List the items you want to withdraw or return.</li>
+            <li><span>3</span>We review the request and email you the return details.</li>
+          </ol>
           <p class={styles.help}>
             Need help first? <A href="/contact">Contact the shop</A> or read the <A href="/shipping">shipping and returns information</A>.
           </p>
@@ -81,8 +80,10 @@ export default function Returns() {
             when={status() !== "success"}
             fallback={
               <div class={styles.success} role="status">
-                <span>Request received</span>
-                <h2>We have saved your request.</h2>
+                <span class={styles.successIcon} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                </span>
+                <h2>Request received</h2>
                 <p>{message()}</p>
                 <Show when={reference()}>
                   <p class={styles.reference}>Reference: <strong>{reference()}</strong></p>
@@ -93,7 +94,6 @@ export default function Returns() {
           >
             <form onSubmit={submit}>
               <div class={styles.formHeading}>
-                <span>Secure request form</span>
                 <h2>Order details</h2>
               </div>
               <label>

@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -449,7 +450,7 @@ export async function GET(event: APIEvent) {
       return rateLimitResponse(error);
     }
     const configurationMissing = error instanceof z.ZodError;
-    if (!configurationMissing) console.error("Scrydex search failed", error);
+    if (!configurationMissing) logServerError("Scrydex search failed", error);
     return apiJson(
       {
         error: configurationMissing
@@ -586,7 +587,7 @@ export async function POST(event: APIEvent) {
     if (error instanceof ScrydexRequestError && error.status === 429) {
       return rateLimitResponse(error);
     }
-    console.error("Scrydex catalogue import failed", error);
+    logServerError("Scrydex catalogue import failed", error);
     return apiJson(
       { error: "The Riftbound card could not be added. Check the server log for the reason." },
       { status: 500 },

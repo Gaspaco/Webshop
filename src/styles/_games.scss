@@ -1,0 +1,16 @@
+@use "./variables" as *;
+
+// Each game's signature colour, set as --game on anything carrying
+// data-game="<slug>". The same values as the homepage tiles and the product
+// page, so a game reads the same everywhere.
+@mixin game-color($property: --game) {
+  #{$property}: #{$primary-light};
+
+  &[data-game="pokemon"] { #{$property}: #2ed39a; }
+  &[data-game="yugioh"] { #{$property}: #a78bfa; }
+  &[data-game="magic"] { #{$property}: #f28753; }
+  &[data-game="lorcana"] { #{$property}: #c084fc; }
+  &[data-game="riftbound"] { #{$property}: #7dd3fc; }
+  &[data-game="digimon"] { #{$property}: #60a5fa; }
+  &[data-game="cyberpunk"] { #{$property}: #facc15; }
+}

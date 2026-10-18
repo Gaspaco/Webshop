@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -174,7 +175,7 @@ export async function POST(event: APIEvent) {
         { status: 400 },
       );
     }
-    console.error("Cardmarket price import failed", error);
+    logServerError("Cardmarket price import failed", error);
     return apiJson(
       { error: "Cardmarket prices could not be checked. No prices were changed." },
       { status: 500 },

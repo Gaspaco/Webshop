@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { createSignal, onMount } from "solid-js";
+import { createSignal, onMount, Show } from "solid-js";
 import PaymentMethods from "~/components/layout/PaymentMethods";
 import SocialLinks from "~/components/layout/SocialLinks";
 import { authClient } from "~/lib/auth-client";
@@ -23,7 +23,8 @@ export default function Footer() {
 
   return (
     <footer class={styles.footer}>
-      <div class={`${styles.wide} ${styles.top}`}>
+      <div class={`${styles.wide} ${styles.panel}`}>
+      <div class={styles.top}>
         <div class={styles.brandCol}>
           <A href="/" class={styles.logo}>
             <span class={styles.logoMark}>
@@ -52,7 +53,13 @@ export default function Footer() {
           <A href={accountHref()}>{accountHref() === "/admin" ? "Owner dashboard" : "My account"}</A>
           <A href="/account?section=wishlist">Wishlist</A>
           <A href="/cart">Cart</A>
-          <A href="/login">Sign in</A>
+          <Show
+            when={!session().data}
+            fallback={<A href="/account?section=orders">Order history</A>}
+          >
+            <A href="/signup">Create an account</A>
+            <A href="/login">Sign in</A>
+          </Show>
         </div>
 
         <div class={styles.linkCol}>
@@ -64,9 +71,10 @@ export default function Footer() {
         </div>
       </div>
 
-      <div class={`${styles.wide} ${styles.payments}`}>
+      <div class={styles.payments}>
         <PaymentMethods />
         <span class={styles.paymentsNote}>Secure payments processed by Mollie</span>
+      </div>
       </div>
 
       <div class={`${styles.wide} ${styles.bottom}`}>
@@ -82,6 +90,14 @@ export default function Footer() {
           <A href="/terms">Business details</A>
           <A href="/privacy">Privacy</A>
           <A href="/terms">Terms</A>
+          <a
+            href="https://www.nik0s.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class={styles.credit}
+          >
+            Designed by <span>Niko Studio</span>
+          </a>
         </div>
       </div>
     </footer>

@@ -8,13 +8,10 @@ export default function ShopByGame() {
       <div class={styles.wide}>
         <header class={styles.header}>
           <div>
-            <h2 class={styles.heading}>Trading card games</h2>
-            <p class={styles.sub}>Every game has its own storefront for current stock, set releases, singles, and sealed products.</p>
+            <h2>Trading card games</h2>
+            <p>Each game has its own storefront with current stock, set releases, singles and sealed products.</p>
           </div>
-          <A href="/categories" class={styles.allGames}>
-            Browse all games
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-          </A>
+          <A href="/categories" class={styles.allGames}>Browse all games</A>
         </header>
 
         <GameTiles />

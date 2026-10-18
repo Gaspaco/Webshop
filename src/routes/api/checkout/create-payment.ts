@@ -4,6 +4,7 @@ import { auth } from "~/lib/auth";
 import { createCheckoutPayment } from "~/lib/checkout.server";
 import { checkRateLimit } from "~/lib/rate-limit.server";
 import { validateJsonRequest } from "~/lib/request-security.server";
+import { logServerError } from "~/lib/server-log";
 
 function json(data: unknown, init?: ResponseInit) {
   return Response.json(data, {
@@ -17,7 +18,7 @@ function json(data: unknown, init?: ResponseInit) {
 
 export async function POST(event: APIEvent) {
   try {
-    const invalidRequest = validateJsonRequest(event, { maxBytes: 64_000 });
+    const invalidRequest = await validateJsonRequest(event, { maxBytes: 64_000 });
     if (invalidRequest) return invalidRequest;
 
     const session = await auth.api.getSession({
@@ -87,7 +88,7 @@ export async function POST(event: APIEvent) {
       return json({ error: error.message }, { status: 400 });
     }
 
-    console.error("Checkout payment creation failed", error);
+    logServerError("Checkout payment creation failed.", error);
 
     return json(
       { error: "Checkout is unavailable right now. Please try again later." },

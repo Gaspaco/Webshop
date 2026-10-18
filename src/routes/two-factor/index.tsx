@@ -1,6 +1,8 @@
 import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
 import { createSignal, For, onCleanup, Show } from "solid-js";
+
+const CODE_LENGTH = 6;
 import { authClient } from "~/lib/auth-client";
 import styles from "./index.module.scss";
 
@@ -38,7 +40,20 @@ export default function TwoFactorChallenge() {
   const [resendLocked, setResendLocked] = createSignal(false);
   const [notice, setNotice] = createSignal("");
   const [error, setError] = createSignal("");
+  const [codeFocused, setCodeFocused] = createSignal(false);
   let resendTimer: number | undefined;
+  let formRef: HTMLFormElement | undefined;
+
+  // Digits only for app and email codes; submit as soon as all six are in.
+  const updateDigits = (input: HTMLInputElement) => {
+    const digits = input.value.replace(/\D/g, "").slice(0, CODE_LENGTH);
+    // Write back to the field too: if a letter was typed the signal stays the
+    // same, so the field would otherwise keep showing it.
+    input.value = digits;
+    setCode(digits);
+    setError("");
+    if (digits.length === CODE_LENGTH && !loading()) formRef?.requestSubmit();
+  };
 
   onCleanup(() => {
     if (resendTimer !== undefined) window.clearTimeout(resendTimer);
@@ -137,7 +152,8 @@ export default function TwoFactorChallenge() {
       return;
     }
 
-    window.location.assign("/account");
+    const current = await authClient.getSession();
+    window.location.assign(current.data?.user && (current.data.user as { role?: string }).role === "admin" ? "/admin" : "/account");
   };
 
   const selectMethod = async (nextMethod: VerificationMethod) => {
@@ -161,136 +177,164 @@ export default function TwoFactorChallenge() {
     await sendEmailCode(true);
   };
 
+  const heading = () =>
+    method() === "authenticator"
+      ? "Enter your app code"
+      : method() === "email"
+        ? "Check your email"
+        : "Use a recovery code";
+
+  const description = () =>
+    method() === "authenticator"
+      ? "Open your authenticator app and type the six-digit code for TCGHaven."
+      : method() === "email"
+        ? "We sent a six-digit code to your verified email address."
+        : "Type one of the backup codes you saved when you turned on two-step verification.";
+
   return (
     <main class={styles.page}>
       <Title>Verify your sign in | TCGHaven</Title>
 
-      <section class={styles.shell}>
-        <div class={styles.topbar}>
+      <div class={styles.column}>
+        <header class={styles.topbar}>
           <A href="/" class={styles.logo} aria-label="TCGHaven home">
-            TCG<span>Haven</span>
+            <img src="/images/logo-mark.png" alt="" width="409" height="379" />
+            <span>TCG<span>Haven</span></span>
           </A>
-          <span class={styles.secureLabel}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-              <rect x="5" y="10" width="14" height="10" rx="2" />
-              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-            </svg>
-            Secure sign-in
-          </span>
-        </div>
+          <A href="/login" class={styles.back}>Back to sign in</A>
+        </header>
 
-        <div class={styles.intro}>
-          <div class={styles.securityMark} aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M12 3 5.5 5.7v5.6c0 4.1 2.6 7.8 6.5 9.7 3.9-1.9 6.5-5.6 6.5-9.7V5.7L12 3Z" />
-              <path d="m9.2 12.1 1.8 1.8 3.9-4" />
-            </svg>
-          </div>
-          <div>
-            <h1>Verify your sign in</h1>
-            <p>
-              {method() === "authenticator"
-                ? "Enter the current code from your authenticator app."
-                : method() === "email"
-                  ? "Enter the code sent to your verified email address."
-                : "Enter one unused recovery code from your saved set."}
-            </p>
-          </div>
-        </div>
+        <span class={styles.lock} aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" />
+            <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+            <circle cx="12" cy="15.5" r="1.2" fill="currentColor" />
+          </svg>
+        </span>
 
-        <span class={styles.methodLabel}>Choose verification method</span>
-        <div class={styles.methodPicker} aria-label="Verification method">
-          <For each={METHODS}>
-            {option => (
-              <button
-                type="button"
-                class={styles.methodOption}
-                classList={{ [styles.methodOptionActive]: method() === option.id }}
-                aria-pressed={method() === option.id}
-                aria-label={`${option.label}. ${option.description}`}
-                disabled={sendingEmail() || loading()}
-                onClick={() => void selectMethod(option.id)}
-              >
-                <strong>{option.label}</strong>
-              </button>
-            )}
-          </For>
-        </div>
+        <h1>{heading()}</h1>
+        <p class={styles.lead}>{description()}</p>
 
-        <Show when={notice()}>
-          <p class={styles.notice} role="status">{notice()}</p>
-        </Show>
-
-        <form onSubmit={submit}>
-          <label>
-            <span class={styles.fieldHeading}>
-              <span>
-                {method() === "authenticator"
-                  ? "Authenticator code"
-                  : method() === "email"
-                    ? "Email security code"
-                  : "Recovery code"}
+        <form ref={formRef} class={styles.form} onSubmit={submit}>
+          <Show
+            when={method() !== "recovery"}
+            fallback={
+              <label class={styles.recovery}>
+                <span class={styles.srOnly}>Recovery code</span>
+                <input
+                  type="text"
+                  autocomplete="one-time-code"
+                  maxlength={64}
+                  placeholder="xxxxx-xxxxx"
+                  value={code()}
+                  autofocus
+                  required
+                  onInput={event => setCode(event.currentTarget.value)}
+                />
+              </label>
+            }
+          >
+            {/* One real input laid over six boxes: paste, SMS/email autofill
+                and screen readers all treat it as a single code field. */}
+            <label class={styles.otp} classList={{ [styles.otpError]: Boolean(error()) }}>
+              <span class={styles.srOnly}>
+                {method() === "email" ? "Email security code" : "Authenticator code"}
               </span>
-              <small>{method() === "recovery" ? "Single use" : "6 digits"}</small>
-            </span>
-            <input
-              type="text"
-              inputmode={method() === "recovery" ? "text" : "numeric"}
-              autocomplete="one-time-code"
-              maxlength={method() === "recovery" ? 64 : 6}
-              placeholder={
-                method() === "recovery" ? "Recovery code" : "000000"
-              }
-              value={code()}
-              autofocus
-              required
-              onInput={event => setCode(event.currentTarget.value)}
-            />
-          </label>
+              <input
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                pattern="[0-9]*"
+                value={code()}
+                autofocus
+                required
+                disabled={method() === "email" && !emailSent()}
+                onInput={event => updateDigits(event.currentTarget)}
+                onFocus={() => setCodeFocused(true)}
+                onBlur={() => setCodeFocused(false)}
+              />
+              <For each={Array.from({ length: CODE_LENGTH }, (_, index) => index)}>
+                {index => (
+                  <span
+                    class={styles.digit}
+                    classList={{
+                      [styles.digitFilled]: index < code().length,
+                      [styles.digitActive]:
+                        codeFocused() &&
+                        (index === code().length ||
+                          (code().length === CODE_LENGTH && index === CODE_LENGTH - 1)),
+                    }}
+                    aria-hidden="true"
+                  >
+                    {code()[index] ?? ""}
+                  </span>
+                )}
+              </For>
+            </label>
+          </Show>
 
-          <label class={styles.trustDevice}>
+          <Show when={error()}>
+            <p class={styles.error} role="alert">{error()}</p>
+          </Show>
+          <Show when={!error() && notice()}>
+            <p class={styles.notice} role="status">{notice()}</p>
+          </Show>
+
+          <label class={styles.trust}>
             <input
               type="checkbox"
               checked={trustDevice()}
               onChange={event => setTrustDevice(event.currentTarget.checked)}
             />
-            <span>Trust this device for 30 days</span>
+            <span class={styles.switch} aria-hidden="true"><span /></span>
+            <span>Remember this device for 30 days</span>
           </label>
-
-          <Show when={error()}>
-            <p class={styles.error} role="alert">
-              {error()}
-            </p>
-          </Show>
 
           <button
             class={styles.primary}
             disabled={loading() || sendingEmail() || (method() === "email" && !emailSent())}
           >
-            {loading() ? "Checking code" : "Verify and continue"}
+            {loading() ? "Checking code…" : "Verify and continue"}
           </button>
+
+          <Show when={method() === "email" && emailSent()}>
+            <button
+              type="button"
+              class={styles.resend}
+              disabled={sendingEmail() || resendLocked()}
+              onClick={() => void resendEmailCode()}
+            >
+              {sendingEmail()
+                ? "Sending a new code…"
+                : resendLocked()
+                  ? "New code sent. You can resend in a moment."
+                  : "Didn't get it? Send a new code"}
+            </button>
+          </Show>
         </form>
 
-        <Show when={method() === "email" && emailSent()}>
-          <button
-            type="button"
-            class={styles.methodSwitch}
-            disabled={sendingEmail() || resendLocked()}
-            onClick={() => void resendEmailCode()}
-          >
-            {sendingEmail()
-              ? "Sending a new code"
-              : resendLocked()
-                ? "Code sent — resend available shortly"
-                : "Did not receive it? Send another code"}
-          </button>
-        </Show>
-
-        <footer class={styles.footer}>
-          <A href="/login" class={styles.cancel}>Return to sign in</A>
-          <span>Protected by two-step verification</span>
-        </footer>
-      </section>
+        <div class={styles.other}>
+          <span>Other ways to verify</span>
+          <div>
+            <For each={METHODS.filter(option => option.id !== method())}>
+              {option => (
+                <button
+                  type="button"
+                  class={styles.otherOption}
+                  disabled={sendingEmail() || loading()}
+                  onClick={() => void selectMethod(option.id)}
+                >
+                  {option.id === "authenticator"
+                    ? "Use my authenticator app"
+                    : option.id === "email"
+                      ? "Email me a code"
+                      : "Use a recovery code"}
+                </button>
+              )}
+            </For>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

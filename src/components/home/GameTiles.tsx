@@ -1,6 +1,6 @@
 import { A } from "@solidjs/router";
 import { For, onCleanup, onMount, Show } from "solid-js";
-import { revealOnScroll } from "~/lib/motion";
+import { revealCards } from "~/lib/motion";
 import styles from "./ShopByGameDirectory.module.scss";
 
 type Game = {
@@ -71,39 +71,19 @@ export default function GameTiles() {
   let rootRef: HTMLDivElement | undefined;
 
   onMount(() => {
-    // A real list, so a stagger reads as sequence rather than decoration.
-    const stop = rootRef
-      ? revealOnScroll(rootRef, { children: `.${styles.feature}, li`, y: 20, stagger: 0.06 })
-      : undefined;
-    onCleanup(() => stop?.());
+    if (rootRef) onCleanup(revealCards(rootRef, `.${styles.feature}, li`));
   });
 
   return (
     <div class={styles.directory} ref={rootRef}>
-      <A
-        href={FEATURED.href}
-        class={`${styles.feature} ${styles[FEATURED.theme]}`}
-      >
+      <A href={FEATURED.href} data-motion-card="10" class={`${styles.feature} ${styles[FEATURED.theme]}`}>
         <div class={styles.featureBody}>
           <h3 class={styles.featureName}>{FEATURED.name}</h3>
-          <p class={styles.featureTagline}>{FEATURED.tagline}</p>
-          <span class={styles.formats}>
-            <For each={FEATURED.formats}>{format => <span>{format}</span>}</For>
-          </span>
-          <span class={styles.featureCta}>
-            Shop {FEATURED.name}
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </span>
+          <p class={styles.tagline}>{FEATURED.tagline}</p>
+          <span class={styles.featureCta}>Shop {FEATURED.name}</span>
         </div>
         <Show when={FEATURED.art}>
-          <img
-            class={styles.featureArt}
-            src={FEATURED.art}
-            alt=""
-            draggable={false}
-          />
+          <img class={styles.featureArt} data-motion-art src={FEATURED.art} alt="" draggable={false} />
         </Show>
       </A>
 
@@ -111,17 +91,9 @@ export default function GameTiles() {
         <For each={REST}>
           {game => (
             <li>
-              <A href={game.href} class={`${styles.row} ${styles[game.theme]}`}>
-                <span class={styles.rowMain}>
-                  <strong>{game.name}</strong>
-                  <span class={styles.rowTagline}>{game.tagline}</span>
-                </span>
-                <span class={styles.formats}>
-                  <For each={game.formats}>{format => <span>{format}</span>}</For>
-                </span>
-                <svg class={styles.rowArrow} viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
+              <A href={game.href} class={`${styles.tile} ${styles[game.theme]}`}>
+                <strong class={styles.tileName}>{game.name}</strong>
+                <span class={styles.tagline}>{game.tagline}</span>
               </A>
             </li>
           )}

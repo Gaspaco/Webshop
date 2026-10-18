@@ -1,3 +1,4 @@
+import { safeApiResponse } from "~/lib/request-security.server";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq } from "drizzle-orm";
 import { db } from "~/db";
@@ -23,6 +24,7 @@ async function getSession(event: APIEvent) {
 }
 
 export async function GET(event: APIEvent) {
+  return safeApiResponse(async () => {
   const session = await getSession(event);
 
   if (!session) {
@@ -46,10 +48,12 @@ export async function GET(event: APIEvent) {
     address: address ?? null,
     email: session.user.email,
   });
+  });
 }
 
 export async function PUT(event: APIEvent) {
-  const invalidRequest = validateJsonRequest(event, { maxBytes: 8_000 });
+  return safeApiResponse(async () => {
+  const invalidRequest = await validateJsonRequest(event, { maxBytes: 8_000 });
   if (invalidRequest) return invalidRequest;
 
   const session = await getSession(event);
@@ -94,4 +98,5 @@ export async function PUT(event: APIEvent) {
     });
 
   return json({ address });
+  });
 }

@@ -1,0 +1,12 @@
+{
+  "name": "@tcghaven/braces",
+  "version": "3.0.3-tcghaven.1",
+  "private": true,
+  "description": "Repository-maintained braces 3.0.3 fork with bounded AST recursion (CVE-2026-93687).",
+  "license": "MIT",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "main": "index.js",
+  "files": ["index.js", "lib", "LICENSE", "security-provenance.json"],
+  "engines": { "node": ">=22" },
+  "dependencies": { "fill-range": "7.1.1" }
+}

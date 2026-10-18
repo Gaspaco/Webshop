@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -135,7 +136,7 @@ export async function POST(event: APIEvent) {
         { status: 400 },
       );
     }
-    console.error("Cardmarket ID linking failed", error);
+    logServerError("Cardmarket ID linking failed", error);
     return apiJson(
       { error: "Cardmarket IDs could not be linked. No variants were changed." },
       { status: 500 },

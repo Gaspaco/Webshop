@@ -31,7 +31,7 @@ const replySchema = z.object({
 export async function POST(event: APIEvent) {
   const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
-  const invalidRequest = validateJsonRequest(event, { maxBytes: 12_000 });
+  const invalidRequest = await validateJsonRequest(event, { maxBytes: 12_000 });
   if (invalidRequest) return invalidRequest;
 
   try {
@@ -130,7 +130,7 @@ const deleteSchema = z.object({
 export async function PATCH(event: APIEvent) {
   const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
-  const invalidRequest = validateJsonRequest(event, { maxBytes: 2_000 });
+  const invalidRequest = await validateJsonRequest(event, { maxBytes: 2_000 });
   if (invalidRequest) return invalidRequest;
 
   try {
@@ -176,7 +176,7 @@ export async function PATCH(event: APIEvent) {
 export async function DELETE(event: APIEvent) {
   const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
-  const invalidRequest = validateJsonRequest(event, { maxBytes: 2_000 });
+  const invalidRequest = await validateJsonRequest(event, { maxBytes: 2_000 });
   if (invalidRequest) return invalidRequest;
 
   try {

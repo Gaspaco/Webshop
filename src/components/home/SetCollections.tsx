@@ -1,8 +1,9 @@
 import { A } from "@solidjs/router";
-import { createMemo, For, Show } from "solid-js";
+import { createMemo, For, onCleanup, onMount, Show } from "solid-js";
 import type { ShopProduct } from "~/lib/categories";
 import { CATEGORIES } from "~/lib/categories";
 import { setPathSegment } from "~/lib/game-storefront";
+import { revealCards } from "~/lib/motion";
 import styles from "./SetCollections.module.scss";
 
 type SetCollectionsProps = { products: ShopProduct[] };
@@ -48,21 +49,30 @@ function collectSets(products: ShopProduct[]): SetEntry[] {
 
 export default function SetCollections(props: SetCollectionsProps) {
   const sets = createMemo(() => collectSets(props.products));
+  let railRef: HTMLDivElement | undefined;
+
+  onMount(() => {
+    if (railRef) onCleanup(revealCards(railRef, ":scope > a"));
+  });
 
   return (
     <Show when={sets().length}>
       <section class={styles.section}>
         <div class={styles.wide}>
           <header class={styles.header}>
-            <h2>Shop by set</h2>
+            <div>
+              <h2>Shop by set</h2>
+              <p>The sets we carry the most sealed products from right now.</p>
+            </div>
             <A href="/products" class={styles.viewAll}>All products</A>
           </header>
 
-          <div class={styles.rail}>
+          <div class={styles.rail} ref={railRef}>
             <For each={sets()}>
               {set => (
                 <A
                   href={set.href}
+                  data-motion-card="9"
                   class={`${styles.collection} ${styles[set.theme] ?? ""}`}
                 >
                   <span class={styles.media} aria-hidden="true">
@@ -70,7 +80,7 @@ export default function SetCollections(props: SetCollectionsProps) {
                       when={set.image}
                       fallback={<span class={styles.mediaCode}>{set.code ?? set.name.slice(0, 3)}</span>}
                     >
-                      {image => <img src={image()} alt="" draggable={false} loading="lazy" />}
+                      {image => <img data-motion-art src={image()} alt="" draggable={false} loading="lazy" />}
                     </Show>
                   </span>
 

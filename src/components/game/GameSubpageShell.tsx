@@ -1,63 +1,23 @@
-import { A } from "@solidjs/router";
 import type { JSX } from "solid-js";
-import { Show } from "solid-js";
+import GameHeader from "~/components/game/GameHeader";
 import type { CategoryData } from "~/lib/categories";
-import { getGameIdentity } from "~/lib/game-storefront";
 import styles from "./GameSubpageShell.module.scss";
 
 type GameSubpageShellProps = {
   category: CategoryData;
   active: "releases" | "sets" | "products";
-  title: string;
+  /** Used for the document title by callers; the header shows the game. */
+  title?: string;
   description?: string;
   artwork?: string;
   children: JSX.Element;
 };
 
 export default function GameSubpageShell(props: GameSubpageShellProps) {
-  const identity = () => getGameIdentity(props.category.slug);
-  const root = () => `/categories/${props.category.slug}`;
-
   return (
-    <main
-      class={styles.page}
-      style={`--game-accent:${identity().accent};--game-accent-strong:${identity().accentStrong};--game-ink:${identity().accentInk}`}
-    >
+    <main class={styles.page}>
       <div class={styles.wide}>
-        <nav class={styles.breadcrumb} aria-label="Breadcrumb">
-          <A href="/">Home</A>
-          <span aria-hidden="true">/</span>
-          <A href="/categories">Games</A>
-          <span aria-hidden="true">/</span>
-          <A href={root()}>{props.category.name}</A>
-        </nav>
-
-        <header class={styles.head} classList={{ [styles.headWithArtwork]: Boolean(props.artwork) }}>
-          <div class={styles.headCopy}>
-            <span class={styles.code}>{identity().code}</span>
-            <h1>{props.title}</h1>
-            <Show when={props.description}>
-              <p>{props.description}</p>
-            </Show>
-          </div>
-
-          <Show when={props.artwork}>
-            {artwork => (
-              <div class={styles.artwork} aria-hidden="true">
-                <span>{identity().code}</span>
-                <img src={artwork()} alt="" draggable={false} />
-              </div>
-            )}
-          </Show>
-        </header>
-
-        <nav class={styles.tabs} aria-label={`${props.category.name} pages`}>
-          <A href={root()} end>Overview</A>
-          <A href={`${root()}/products`} classList={{ [styles.active]: props.active === "products" }} aria-current={props.active === "products" ? "page" : undefined}>Shop</A>
-          <A href={`${root()}/sets`} classList={{ [styles.active]: props.active === "sets" }} aria-current={props.active === "sets" ? "page" : undefined}>Sets</A>
-          <A href={`${root()}/releases`} classList={{ [styles.active]: props.active === "releases" }} aria-current={props.active === "releases" ? "page" : undefined}>Releases</A>
-        </nav>
-
+        <GameHeader slug={props.category.slug} name={props.category.name} active={props.active} />
         <div class={styles.content}>{props.children}</div>
       </div>
     </main>

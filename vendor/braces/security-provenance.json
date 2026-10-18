@@ -1,0 +1,21 @@
+{
+  "upstream": {
+    "name": "braces",
+    "version": "3.0.3",
+    "url": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+    "integrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA=="
+  },
+  "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+  "fix": "Reject parsing and AST traversal beyond 100 nesting levels.",
+  "maintenance": "This is a local security fork, not an upstream release. Retire the override when a verified upstream fix is available. npm audit does not assess this fork; regression tests and this source manifest must remain in the build gate.",
+  "files": {
+    "LICENSE": "35bdd8a44339719441900fb50fbefc5e2dca1ca662cbaed7a687de842c8b70f2",
+    "index.js": "332ea07c7b006361aad12aa994ca75dc1db8e8382b884909e2f38f10b85c88a4",
+    "lib/compile.js": "7dad93712a92693710a9d50f9e7b550759e7c13955f982dc1ef69adc9e5602a3",
+    "lib/constants.js": "c18ac5adb57308f1ce42a28552da3a31f5d83709743ebd9a636336813a744d4b",
+    "lib/expand.js": "98fcca11b2e394e3f8d5e1979dc37d933c113a5193065eb963b2ed0ac87fdaf5",
+    "lib/parse.js": "201c0b44d5464b5cb02ba4c4495e7b4d4f7d6351db059c235561398ddf80a5af",
+    "lib/stringify.js": "5d7ff27e027883e649700d6207fff7984be2e57556988550a3fab323c439f3b0",
+    "lib/utils.js": "b5a7596aa67730412b3c029ef09e84e6b67b8e445cffd35d1d295549c89066c7"
+  }
+}

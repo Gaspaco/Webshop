@@ -1,5 +1,6 @@
+import { safeApiResponse } from "~/lib/request-security.server";
 import type { APIEvent } from "@solidjs/start/server";
-import { desc, eq, inArray, or } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "~/db";
 import {
   customerAddresses,
@@ -10,6 +11,7 @@ import {
   wishlistItems,
 } from "~/db/schema";
 import { auth } from "~/lib/auth";
+import { customerOrderAccess } from "~/lib/order-access";
 
 function json(data: unknown, init?: ResponseInit) {
   return Response.json(data, {
@@ -22,6 +24,7 @@ function json(data: unknown, init?: ResponseInit) {
 }
 
 export async function GET(event: APIEvent) {
+  return safeApiResponse(async () => {
   const session = await auth.api.getSession({
     headers: event.request.headers,
   });
@@ -50,12 +53,7 @@ export async function GET(event: APIEvent) {
       createdAt: orders.createdAt,
     })
     .from(orders)
-    .where(
-      or(
-        eq(orders.userId, session.user.id),
-        eq(orders.email, session.user.email),
-      ),
-    )
+    .where(customerOrderAccess(session.user))
     .orderBy(desc(orders.createdAt))
     .limit(20);
 
@@ -144,5 +142,6 @@ export async function GET(event: APIEvent) {
     latestAddress:
       savedAddress ?? customerOrders[0]?.shippingAddress ?? null,
     hasSavedAddress: Boolean(savedAddress),
+  });
   });
 }

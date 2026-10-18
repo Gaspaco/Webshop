@@ -8,9 +8,8 @@ import {
   user,
 } from "~/db/schema";
 import { requireAdmin } from "~/lib/admin.server";
+import { csvCell } from "~/lib/csv";
 
-const csvCell = (value: unknown) =>
-  `"${String(value ?? "").replaceAll('"', '""')}"`;
 const csv = (headers: string[], rows: unknown[][]) =>
   `${headers.map(csvCell).join(",")}\n${rows
     .map(row => row.map(csvCell).join(","))

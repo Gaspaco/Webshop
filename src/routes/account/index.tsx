@@ -24,6 +24,7 @@ import {
   PROFILE_IMAGE_MAX_DATA_URL_LENGTH,
   PROFILE_IMAGE_MAX_SOURCE_BYTES,
 } from "~/lib/profile-image";
+import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import styles from "./index.module.scss";
 
 type Section =
@@ -731,12 +732,7 @@ export default function Account() {
         fallback={
           <Show
             when={!session().isPending && session().error}
-            fallback={
-              <div class={styles.loading} role="status">
-                <span />
-                Loading your account
-              </div>
-            }
+            fallback={<RouteSkeleton variant="account" inline />}
           >
             <section class={styles.sessionError} role="alert">
               <p>Account connection</p>
@@ -815,10 +811,11 @@ export default function Account() {
             <section class={styles.workspace}>
               <header class={styles.sectionHeader}>
                 <div>
-                  <span class={styles.welcome}>
-                    Welcome back, {data().user.name.split(" ")[0]}
-                  </span>
-                  <h1>{SECTION_COPY[activeSection()].title}</h1>
+                  <h1>
+                    {activeSection() === "overview"
+                      ? `Welcome back, ${data().user.name.split(" ")[0]}`
+                      : SECTION_COPY[activeSection()].title}
+                  </h1>
                   <p>{SECTION_COPY[activeSection()].description}</p>
                 </div>
                 <div class={styles.headerActions}>
@@ -863,7 +860,6 @@ export default function Account() {
                             onClick={() => setActiveSection("deliveries")}
                           >
                             View delivery
-                            <span aria-hidden="true">→</span>
                           </button>
                         </section>
                       )}
@@ -891,7 +887,6 @@ export default function Account() {
                       <section class={styles.panel}>
                         <div class={styles.panelHead}>
                           <div>
-                            <span>Recent activity</span>
                             <h3>Latest orders</h3>
                           </div>
                           <button type="button" onClick={() => setActiveSection("orders")}>
@@ -917,7 +912,7 @@ export default function Account() {
                                     <strong>{order.orderNumber}</strong>
                                     <span>{formatDate(order.createdAt)}</span>
                                   </div>
-                                  <span class={styles.status}>{readableStatus(order.status)}</span>
+                                  <span class={styles.status} data-status={order.status}>{readableStatus(order.status)}</span>
                                   <strong>{formatMoney(order.totalCents, order.currency)}</strong>
                                 </div>
                               )}
@@ -929,21 +924,20 @@ export default function Account() {
                       <section class={`${styles.panel} ${styles.quickPanel}`}>
                         <div class={styles.panelHead}>
                           <div>
-                            <span>Shortcuts</span>
                             <h3>Quick actions</h3>
                           </div>
                         </div>
                         <button type="button" onClick={() => setActiveSection("wishlist")}>
-                          Open wishlist <span aria-hidden="true">→</span>
+                          Open wishlist
                         </button>
                         <button type="button" onClick={() => setActiveSection("deliveries")}>
-                          Track deliveries <span aria-hidden="true">→</span>
+                          Track deliveries
                         </button>
                         <button type="button" onClick={() => setActiveSection("profile")}>
-                          Edit profile <span aria-hidden="true">→</span>
+                          Edit profile
                         </button>
                         <A href="/contact">
-                          Contact support <span aria-hidden="true">→</span>
+                          Contact support
                         </A>
                       </section>
                     </div>
@@ -975,7 +969,7 @@ export default function Account() {
                                     : "Order details"}
                                 </small>
                               </div>
-                              <span class={styles.status}>{readableStatus(order.status)}</span>
+                              <span class={styles.status} data-status={order.status}>{readableStatus(order.status)}</span>
                               <div class={styles.orderActions}>
                                 <strong class={styles.orderTotal}>
                                   {formatMoney(order.totalCents, order.currency)}
@@ -1173,7 +1167,6 @@ export default function Account() {
                         onSubmit={saveAddress}
                       >
                         <div class={styles.settingsTitle}>
-                          <span>Default delivery address</span>
                           <h3>
                             {overview()?.hasSavedAddress
                               ? "Edit your address"
@@ -1327,7 +1320,6 @@ export default function Account() {
                       <section class={styles.paymentHistory}>
                         <div class={styles.panelHead}>
                           <div>
-                            <span>Payment activity</span>
                             <h3>Recent payments</h3>
                           </div>
                         </div>
@@ -1362,7 +1354,7 @@ export default function Account() {
                                     </div>
                                   </div>
                                   <div class={styles.paymentMeta}>
-                                    <span class={styles.status}>
+                                    <span class={styles.status} data-status={payment.status}>
                                       {readableStatus(payment.status)}
                                     </span>
                                     <small>{formatDate(payment.createdAt)}</small>
@@ -1403,7 +1395,6 @@ export default function Account() {
                     <div class={styles.settingsGrid}>
                       <form class={styles.settingsPanel} onSubmit={saveProfile}>
                         <div class={styles.settingsTitle}>
-                          <span>Personal information</span>
                           <h3>Your details</h3>
                         </div>
 
@@ -1472,7 +1463,6 @@ export default function Account() {
                         onSubmit={requestEmailChange}
                       >
                         <div class={styles.settingsTitle}>
-                          <span>Login email</span>
                           <h3>Change email address</h3>
                         </div>
                         <div class={styles.verificationState}>
@@ -1544,7 +1534,6 @@ export default function Account() {
                     <div class={styles.settingsGrid}>
                       <form class={styles.settingsPanel} onSubmit={updatePassword}>
                         <div class={styles.settingsTitle}>
-                          <span>Password</span>
                           <h3>Change password</h3>
                         </div>
 
@@ -1600,7 +1589,6 @@ export default function Account() {
 
                       <section class={styles.settingsPanel}>
                         <div class={styles.settingsTitle}>
-                          <span>Active sessions</span>
                           <h3>Signed-in devices</h3>
                         </div>
                         <p class={styles.settingsCopy}>
@@ -1623,7 +1611,6 @@ export default function Account() {
                     <section class={styles.twoFactorPanel}>
                       <div class={styles.twoFactorIntro}>
                         <div>
-                          <span>Authenticator app</span>
                           <h3>Two-factor authentication</h3>
                         </div>
                         <span

@@ -26,94 +26,81 @@ export default function Shipping() {
     <main class={styles.page}>
       <Title>Shipping and returns | TCGHaven</Title>
       <div class={styles.wide}>
-        <header class={styles.hero}>
-          <div>
-            <span>Delivery from the Netherlands</span>
-            <h1>Shipping that fits the collection.</h1>
-          </div>
-          <div class={styles.heroFact}>
-            <strong>{formatPrice(profile().freeShippingThresholdCents)}</strong>
-            <span>Free PostNL shipping from this order value</span>
-          </div>
+        <header class={styles.header}>
+          <h1>Shipping and returns</h1>
+          <p>
+            Every order ships from the Netherlands with PostNL, or you can collect it
+            for free in Rotterdam.
+          </p>
+          <span class={styles.freeShipping}>
+            Free shipping from {formatPrice(profile().freeShippingThresholdCents)}
+          </span>
         </header>
 
-        <section class={styles.rateSection}>
-          <div class={styles.sectionIntro}>
-            <span>PostNL</span>
-            <h2>Current Netherlands rates</h2>
-            <p>Choose PostNL delivery or free collection in Rotterdam. The final delivery method depends on the size, value, and protection needed for the order.</p>
-          </div>
-          <div class={styles.rateList}>
-            <For each={postnlRates()}>
-              {(rate, index) => (
-                <article>
-                  <span>{String(index() + 1).padStart(2, "0")}</span>
-                  <div><strong>{rate.name}</strong><small>{rate.detail}</small></div>
-                  <b>{formatPrice(rate.price)}</b>
-                </article>
-              )}
-            </For>
-          </div>
-        </section>
+        <div class={styles.grid}>
+          <section class={`${styles.panel} ${styles.rates}`} aria-labelledby="nl-rates">
+            <h2 id="nl-rates">Netherlands</h2>
+            <p class={styles.panelIntro}>
+              The final method depends on the size, value and protection the order needs.
+            </p>
+            <ul class={styles.rateList}>
+              <For each={postnlRates()}>
+                {rate => (
+                  <li>
+                    <span>
+                      <strong>{rate.name}</strong>
+                      <small>{rate.detail}</small>
+                    </span>
+                    <b>{formatPrice(rate.price)}</b>
+                  </li>
+                )}
+              </For>
+              <li>
+                <span>
+                  <strong>Pick up in Rotterdam</strong>
+                  <small>Wait for the ready-for-pickup email before travelling.</small>
+                </span>
+                <b>Free</b>
+              </li>
+            </ul>
+          </section>
 
-        <section class={styles.carrierSection}>
-          <article>
-            <span>Collection</span>
-            <h2>Pick up in Rotterdam</h2>
-            <p>Collection is free. Wait for the ready-for-pickup confirmation before travelling to {profile().businessAddress || "the TCGHaven pickup location"}.</p>
-          </article>
-          <article>
-            <span>PostNL</span>
-            <h2>Domestic and international</h2>
-            <p>Delivered orders use PostNL. Checkout calculates the owner-approved rate from the destination and verifies it again on the server.</p>
-          </article>
-        </section>
+          <section class={`${styles.panel} ${styles.international}`} aria-labelledby="intl-rates">
+            <h2 id="intl-rates">International</h2>
+            <p class={styles.panelIntro}>
+              Per order. Orders of {formatPrice(profile().freeShippingThresholdCents)} or more ship free.
+            </p>
+            <ul class={styles.countryList}>
+              <For each={INTERNATIONAL_POSTNL_DESTINATIONS}>
+                {destination => (
+                  <li>
+                    <strong>{destination.name}</strong>
+                    <span>{destination.zone}</span>
+                    <b>{formatPrice(
+                      profile().internationalPostnlRates[destination.code] ??
+                        destination.priceCents,
+                    )}</b>
+                  </li>
+                )}
+              </For>
+            </ul>
+            <p class={styles.note}>
+              Somewhere else? <A href="/contact">Contact the shop</A> before ordering and we'll confirm the PostNL price.
+            </p>
+          </section>
+        </div>
 
-        <section class={styles.internationalSection}>
-          <div class={styles.sectionIntro}>
-            <span>PostNL abroad</span>
-            <h2>International rates</h2>
-            <p>These customer prices apply per order. Orders of {formatPrice(profile().freeShippingThresholdCents)} or more ship free.</p>
-          </div>
-          <div class={styles.internationalRates}>
-            <div class={styles.rateHeader} aria-hidden="true">
-              <span>Destination</span>
-              <span>Zone</span>
-              <span>Price</span>
+        <section class={`${styles.panel} ${styles.returns}`} aria-labelledby="return-policy-title">
+          <div class={styles.returnsIntro}>
+            <h2 id="return-policy-title">Returns</h2>
+            <p>
+              Let us know within 14 days after delivery. You don't need to give a reason.
+              After that you have another 14 days to send the products back.
+            </p>
+            <div class={styles.returnsActions}>
+              <A href="/returns" class={styles.primaryAction}>Start a return</A>
+              <a href={`mailto:${profile().businessEmail}`} class={styles.secondaryAction}>Email the shop</a>
             </div>
-            <For each={INTERNATIONAL_POSTNL_DESTINATIONS}>
-              {destination => (
-                <div class={styles.internationalRate}>
-                  <strong>{destination.name}</strong>
-                  <span>{destination.zone}</span>
-                  <b>{formatPrice(
-                    profile().internationalPostnlRates[destination.code] ??
-                      destination.priceCents,
-                  )}</b>
-                </div>
-              )}
-            </For>
-          </div>
-          <p class={styles.destinationNote}>
-            Need delivery somewhere else? Contact the shop before ordering so the current PostNL price can be confirmed.
-          </p>
-        </section>
-
-        <section class={styles.returnSection}>
-          <div>
-            <span>Withdrawal and returns</span>
-            <h2>Clear dates, costs, and refund steps.</h2>
-          </div>
-          <div>
-            <p>Notify us within 14 days after delivery. You do not need to give a reason. After notifying us, send the products back within another 14 days.</p>
-            <A href="/returns">Submit withdrawal request</A>
-          </div>
-        </section>
-
-        <section class={styles.returnPolicy} aria-labelledby="return-policy-title">
-          <div class={styles.policyIntro}>
-            <h2 id="return-policy-title">How a return works</h2>
-            <p>Use the online form or email {profile().businessEmail}. We send a reference and the correct return instructions.</p>
             <Show when={profile().returnAddress}>
               <address>
                 <span>Return address</span>

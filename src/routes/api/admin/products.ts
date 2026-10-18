@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -133,7 +134,7 @@ function failure(error: unknown) {
     );
   }
 
-  console.error("Admin product mutation failed", error);
+  logServerError("Admin product mutation failed", error);
   return apiJson(
     { error: "The product could not be saved." },
     { status: 500 },

@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { z } from "zod";
 import { db } from "~/db";
@@ -38,7 +39,7 @@ export async function PUT(event: APIEvent) {
         { status: 400 },
       );
     }
-    console.error("Store profile update failed", error);
+    logServerError("Store profile update failed", error);
     return apiJson({ error: "Store settings could not be saved." }, { status: 500 });
   }
 }

@@ -1,236 +1,128 @@
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-let registered = false;
-
 /**
- * GSAP is client-only and the plugin must be registered once. Everything here
- * uses `gsap.from()` deliberately: the element's CSS default is the *visible*
- * state, so if JS never runs (headless render, blocked script, an error before
- * mount) the content still ships visible instead of stuck at opacity 0.
+ * Motion helpers for the public storefront.
+ *
+ * Small, frequent motion (button presses, card hovers, reveals, the route
+ * fade) is plain CSS so the browser can run it off the main thread. GSAP is
+ * kept for the few moments that need sequencing, and is loaded on demand so
+ * pages that never use it never download it.
  */
-function setup() {
-  if (registered) return;
-  gsap.registerPlugin(ScrollTrigger);
-  registered = true;
-}
 
 export const prefersReducedMotion = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-type RevealOptions = {
-  /** Children to stagger. Omit to animate the element itself. */
-  children?: string;
-  y?: number;
-  duration?: number;
-  stagger?: number;
-  delay?: number;
-  start?: string;
-};
-
 /**
- * Lifts an element (or its children, staggered) into place as it scrolls in.
- * Returns a cleanup function.
+ * Cards in a grid deal in as they scroll into view, in reading order. Only for
+ * real lists of items, so the stagger reads as sequence.
+ *
+ * The hidden state is applied from JS (`data-reveal`), so if this never runs
+ * the content simply ships visible. Styles live in app.scss.
  */
-export function revealOnScroll(
-  element: HTMLElement,
-  options: RevealOptions = {},
-) {
-  if (prefersReducedMotion()) return () => {};
-  setup();
+export function revealCards(container: HTMLElement, selector: string) {
+  if (prefersReducedMotion() || typeof IntersectionObserver === "undefined") return () => {};
 
-  const {
-    children,
-    y = 24,
-    duration = 0.85,
-    stagger = 0.08,
-    delay = 0,
-    start = "top 85%",
-  } = options;
-
-  const targets = children
-    ? Array.from(element.querySelectorAll<HTMLElement>(children))
-    : [element];
+  const targets = Array.from(container.querySelectorAll<HTMLElement>(selector));
   if (!targets.length) return () => {};
+  targets.forEach(target => target.setAttribute("data-reveal", ""));
 
-  // The tween is created inside onEnter rather than passed a scrollTrigger.
-  // A `from` tween with a scrollTrigger hides its targets the moment it is
-  // built and only reveals them when the trigger fires, so a trigger that
-  // never runs would ship the section blank. Building it on enter means the
-  // untouched, visible DOM is always the fallback.
-  const trigger = ScrollTrigger.create({
-    trigger: element,
-    start,
-    once: true,
-    onEnter: () => {
-      gsap.from(targets, {
-        opacity: 0,
-        y,
-        duration,
-        delay,
-        stagger,
-        ease: "power3.out",
-      });
+  const observer = new IntersectionObserver(
+    entries => {
+      // Items entering together stagger in the order they were reported,
+      // which is document order.
+      entries
+        .filter(entry => entry.isIntersecting)
+        .forEach((entry, index) => {
+          const target = entry.target as HTMLElement;
+          target.style.transitionDelay = `${index * 70}ms`;
+          target.setAttribute("data-reveal", "in");
+          observer.unobserve(target);
+          target.addEventListener(
+            "transitionend",
+            () => {
+              target.removeAttribute("data-reveal");
+              target.style.removeProperty("transition-delay");
+            },
+            { once: true },
+          );
+        });
     },
-  });
-
-  return () => trigger.kill();
-}
-
-/**
- * A card settling onto the table: rises, straightens, and eases out.
- * Used where a single piece of art is the focal point.
- */
-export function dealCard(element: HTMLElement, options: { delay?: number } = {}) {
-  if (prefersReducedMotion()) return () => {};
-  setup();
-
-  const trigger = ScrollTrigger.create({
-    trigger: element,
-    start: "top 88%",
-    once: true,
-    onEnter: () => {
-      gsap.from(element, {
-        opacity: 0,
-        y: 56,
-        rotate: -14,
-        scale: 0.94,
-        duration: 1.1,
-        delay: options.delay ?? 0,
-        ease: "expo.out",
-      });
-    },
-  });
-
-  return () => trigger.kill();
-}
-
-const MOTION_CONTROL_SELECTOR = [
-  "button:not([role='tab'])",
-  "a[data-motion-control]",
-  "a[class*='Action']",
-  "a[class*='action']",
-  "a[class*='Cta']",
-  "a[class*='cta']",
-  "a[class*='Button']",
-  "a[class*='button']",
-].join(",");
-
-function motionControl(root: HTMLElement, target: EventTarget | null) {
-  if (!(target instanceof Element)) return null;
-  const control = target.closest<HTMLElement>(MOTION_CONTROL_SELECTOR);
-  return control && root.contains(control) ? control : null;
-}
-
-/**
- * One restrained interaction language for public-page controls. The movement
- * is intentionally tiny: it should communicate response, not call attention
- * to the animation itself.
- */
-function enhanceControls(root: HTMLElement) {
-  if (prefersReducedMotion()) return () => {};
-  setup();
-
-  const hoverCapable = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  const animated = new Set<HTMLElement>();
-
-  const enter = (event: PointerEvent) => {
-    if (!hoverCapable) return;
-    const control = motionControl(root, event.target);
-    if (!control || control.matches(":disabled, [aria-disabled='true']")) return;
-    if (event.relatedTarget instanceof Node && control.contains(event.relatedTarget)) return;
-    animated.add(control);
-    gsap.to(control, {
-      y: -1,
-      scale: 1.01,
-      duration: 0.22,
-      ease: "power2.out",
-      overwrite: "auto",
-    });
-  };
-
-  const leave = (event: PointerEvent) => {
-    const control = motionControl(root, event.target);
-    if (!control) return;
-    if (event.relatedTarget instanceof Node && control.contains(event.relatedTarget)) return;
-    gsap.to(control, {
-      y: 0,
-      scale: 1,
-      duration: 0.28,
-      ease: "power3.out",
-      overwrite: "auto",
-      clearProps: "transform",
-    });
-  };
-
-  const press = (event: PointerEvent) => {
-    const control = motionControl(root, event.target);
-    if (!control || control.matches(":disabled, [aria-disabled='true']")) return;
-    animated.add(control);
-    gsap.to(control, {
-      y: 0,
-      scale: 0.975,
-      duration: 0.1,
-      ease: "power2.out",
-      overwrite: "auto",
-    });
-  };
-
-  const release = (event: PointerEvent) => {
-    const control = motionControl(root, event.target);
-    if (!control) return;
-    gsap.to(control, {
-      y: hoverCapable ? -1 : 0,
-      scale: hoverCapable ? 1.01 : 1,
-      duration: 0.18,
-      ease: "power2.out",
-      overwrite: "auto",
-    });
-  };
-
-  root.addEventListener("pointerover", enter);
-  root.addEventListener("pointerout", leave);
-  root.addEventListener("pointerdown", press);
-  root.addEventListener("pointerup", release);
-  root.addEventListener("pointercancel", leave);
+    { rootMargin: "0px 0px -8% 0px" },
+  );
+  targets.forEach(target => observer.observe(target));
 
   return () => {
-    root.removeEventListener("pointerover", enter);
-    root.removeEventListener("pointerout", leave);
-    root.removeEventListener("pointerdown", press);
-    root.removeEventListener("pointerup", release);
-    root.removeEventListener("pointercancel", leave);
-    gsap.killTweensOf([...animated]);
-    animated.forEach(control => gsap.set(control, { clearProps: "transform" }));
+    observer.disconnect();
+    targets.forEach(target => {
+      target.removeAttribute("data-reveal");
+      target.style.removeProperty("transition-delay");
+    });
   };
 }
 
 /**
- * Shared public-route entrance and control feedback. Auth and dashboard routes
- * keep their task-specific behavior and do not use this layer. Section reveals
- * stay opt-in at component level so long pages never feel over-animated.
+ * A short fade as a public route mounts. Styles live in app.scss.
  */
 export function animatePublicRoute(root: HTMLElement) {
   if (prefersReducedMotion()) return () => {};
-  setup();
-
-  const routeTween = gsap.fromTo(
-    root,
-    { autoAlpha: 0, y: 10 },
-    {
-      autoAlpha: 1,
-      y: 0,
-      duration: 0.46,
-      ease: "power3.out",
-      clearProps: "opacity,visibility,transform",
-    },
-  );
-
-  const stopControls = enhanceControls(root);
-
+  root.classList.add("route-enter");
+  const done = () => root.classList.remove("route-enter");
+  root.addEventListener("animationend", done, { once: true });
   return () => {
-    routeTween.kill();
-    stopControls();
+    root.removeEventListener("animationend", done);
+    done();
   };
+}
+
+/**
+ * Sends a copy of the product image into the navbar cart, then bumps the
+ * cart icon so the added item has somewhere visible to land.
+ */
+export async function flyToCart(source: Element | null | undefined) {
+  if (prefersReducedMotion() || !(source instanceof HTMLImageElement)) return;
+  const cart = document.querySelector<HTMLElement>("[data-cart-target]");
+  if (!cart) return;
+
+  // Measure before the (possibly first) GSAP load, while the click position
+  // is still where the visitor is looking.
+  const from = source.getBoundingClientRect();
+  const to = cart.getBoundingClientRect();
+  if (!from.width || !to.width) return;
+
+  const size = Math.min(from.width, from.height, 120);
+  const ghost = source.cloneNode() as HTMLImageElement;
+  ghost.removeAttribute("data-motion-art");
+  Object.assign(ghost.style, {
+    position: "fixed",
+    zIndex: "9999",
+    left: `${from.left + from.width / 2 - size / 2}px`,
+    top: `${from.top + from.height / 2 - size / 2}px`,
+    width: `${size}px`,
+    height: `${size}px`,
+    padding: "0",
+    objectFit: "contain",
+    pointerEvents: "none",
+    filter: "drop-shadow(0 12px 16px rgba(0,0,0,.45))",
+  });
+  document.body.appendChild(ghost);
+
+  const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+  const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+
+  const { gsap } = await import("gsap");
+
+  // Horizontal and vertical travel use different eases, which bends the path
+  // into an arc without needing the MotionPath plugin.
+  gsap
+    .timeline({ onComplete: () => ghost.remove() })
+    .to(ghost, { scale: 1.08, duration: 0.14, ease: "power2.out" })
+    .to(ghost, { x: dx, duration: 0.7, ease: "power1.inOut" }, ">")
+    .to(ghost, { y: dy, duration: 0.7, ease: "back.in(1.4)" }, "<")
+    .to(ghost, { scale: 0.12, rotation: 18, duration: 0.7, ease: "power2.in" }, "<")
+    .to(ghost, { autoAlpha: 0, duration: 0.12 }, ">-0.1")
+    .fromTo(
+      cart,
+      { scale: 1 },
+      { scale: 1.3, duration: 0.14, ease: "power2.out", yoyo: true, repeat: 1, clearProps: "transform" },
+      "<",
+    );
 }

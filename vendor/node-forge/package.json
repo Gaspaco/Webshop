@@ -1,0 +1,12 @@
+{
+  "name": "@tcghaven/node-forge",
+  "version": "1.4.0-tcghaven.1",
+  "private": true,
+  "description": "Repository-maintained node-forge 1.4.0 fork with strict nested DigestAlgorithm validation (CVE-2026-85393).",
+  "license": "(BSD-3-Clause OR GPL-2.0)",
+  "author": "Digital Bazaar, Inc.",
+  "main": "lib/index.js",
+  "files": ["lib", "LICENSE", "security-provenance.json"],
+  "engines": { "node": ">=22" },
+  "browser": { "buffer": false, "crypto": false, "process": false }
+}

@@ -19,6 +19,8 @@ import { formatPrice, useCart } from "~/lib/cart";
 import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
 import { variantRarity } from "~/lib/card-finish";
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
+import ProductSection from "~/components/product/ProductSection";
+import { flyToCart } from "~/lib/motion";
 import styles from "./[id].module.scss";
 
 function isSealedProduct(product: ShopProduct) {
@@ -153,10 +155,38 @@ export default function ProductDetail() {
     return catalog?.products.find(candidate => candidate.id === id);
   };
 
+  // Related products load after the main product, from one page of in-stock
+  // catalogue: same set first, then the same game, then anything to fill.
+  const [relatedPool] = createResource(
+    () => product()?.id,
+    () => fetchDatabaseCatalogState({ available: true, limit: 80 }),
+  );
+  const relatedProducts = () => {
+    const current = product();
+    const pool = relatedPool()?.products ?? [];
+    if (!current) return [];
+    const others = pool.filter(candidate => candidate.id !== current.id);
+    const sameSet = others.filter(
+      candidate => candidate.game === current.game && current.set && candidate.set === current.set,
+    );
+    const sameGame = others.filter(
+      candidate => candidate.game === current.game && !sameSet.includes(candidate),
+    );
+    const rest = others.filter(candidate => candidate.game !== current.game);
+    return [...sameSet, ...sameGame, ...rest].slice(0, 4);
+  };
+
   const [quantity, setQuantity] = createSignal(1);
   const [selectedVariantId, setSelectedVariantId] = createSignal("");
   const [detailImageFailed, setDetailImageFailed] = createSignal(false);
   const [added, setAdded] = createSignal(false);
+  // Stays up after adding (until another product opens) so the shopper has a
+  // clear next step instead of a link that was always there.
+  const [addedToCart, setAddedToCart] = createSignal(false);
+  createEffect(() => {
+    params.id;
+    setAddedToCart(false);
+  });
   const [saved, setSaved] = createSignal(false);
   const [wishlistBusy, setWishlistBusy] = createSignal(false);
   const [wishlistMessage, setWishlistMessage] = createSignal("");
@@ -265,6 +295,29 @@ export default function ProductDetail() {
   };
 
   const orderedVariants = () => variantsWithAvailableFirst(product()?.variants);
+
+  // Thumbnails: the default image, then every printing with its own picture.
+  // Picking one selects that printing, so the price and stock follow.
+  const galleryImages = () => {
+    const current = product();
+    if (!current) return [];
+    const seen = new Set<string>();
+    const images: Array<{ image: string; variantId?: string; label: string }> = [];
+    const add = (image: string | undefined, label: string, variantId?: string) => {
+      if (!image || seen.has(image)) return;
+      seen.add(image);
+      images.push({ image, label, variantId });
+    };
+    add(mainVariant()?.image ?? current.image, current.name);
+    for (const variant of orderedVariants()) add(variant.image, variant.name, variant.id);
+    return images.slice(0, 6);
+  };
+
+  const showGalleryImage = (variantId?: string) => {
+    setSelectedVariantId(variantId ?? "");
+    setQuantity(1);
+    setDetailImageFailed(false);
+  };
 
   const moveDetailCard = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
     if (event.pointerType === "touch") return;
@@ -420,7 +473,9 @@ export default function ProductDetail() {
     );
 
     setAdded(true);
+    setAddedToCart(true);
     setTimeout(() => setAdded(false), 1600);
+    flyToCart(document.querySelector(`main .${styles.productMedia} img`));
   };
 
   return (
@@ -451,27 +506,37 @@ export default function ProductDetail() {
 
           <div class={styles.wide}>
             <nav class={styles.breadcrumb} aria-label="Breadcrumb">
-              <A href="/products">Shop</A>
-              <span aria-hidden="true">/</span>
-              <A href={`/categories/${item().game}`}>{item().gameName}</A>
-              <span aria-hidden="true">/</span>
-              <span>{item().name}</span>
+              <A
+                href={`/categories/${item().game}/products`}
+                class={styles.crumbBack}
+                aria-label={`Back to ${item().gameName}`}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </A>
+              <ol>
+                <li><A href="/products">Shop</A></li>
+                <li>
+                  <A href={`/categories/${item().game}`} class={styles.crumbGame} data-game={item().game}>
+                    {item().gameName}
+                  </A>
+                </li>
+                <li aria-current="page"><span>{item().name}</span></li>
+              </ol>
             </nav>
 
             <section
               class={styles.hero}
+              data-game={item().game}
               classList={{
                 [styles.sealedHero]: isSealedProduct(item()),
                 [styles.variableHero]: (item().variants?.length ?? 0) > 1,
               }}
             >
               <div class={styles.mediaPanel}>
-                <div class={styles.mediaHeader}>
-                  <A href={`/categories/${item().game}/products`}>{item().gameName}</A>
-                  <span>{variantSetCode(displayVariant()) ?? item().setCode ?? item().sku ?? "TCGH"}</span>
-                </div>
-
                 <div class={styles.productMedia}>
+                  <span class={styles.floor} aria-hidden="true" />
                   <Show
                     when={activeProduct()?.image && !detailImageFailed()}
                     fallback={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
@@ -503,16 +568,32 @@ export default function ProductDetail() {
                   </Show>
                 </div>
 
-                <div class={styles.mediaFooter}>
-                  <span>{item().image ? "Product image" : "Product preview"}</span>
-                  <strong>{displayVariant()?.name ?? item().badge ?? conditionFor(item())}</strong>
-                </div>
+                <Show when={galleryImages().length > 1}>
+                  <div class={styles.thumbs} role="group" aria-label="Product images">
+                    <For each={galleryImages()}>
+                      {thumb => (
+                        <button
+                          type="button"
+                          class={styles.thumb}
+                          classList={{ [styles.thumbActive]: activeProduct()?.image === thumb.image }}
+                          aria-label={`Show ${thumb.label}`}
+                          aria-pressed={activeProduct()?.image === thumb.image}
+                          onClick={() => showGalleryImage(thumb.variantId)}
+                        >
+                          <img src={thumb.image} alt="" loading="lazy" draggable={false} />
+                        </button>
+                      )}
+                    </For>
+                  </div>
+                </Show>
               </div>
 
               <aside class={styles.purchase}>
                 <header class={styles.purchaseHeader}>
                   <div class={styles.productKicker}>
-                    <span>{isSealedProduct(item()) ? "Sealed product" : item().productType ?? "Single card"}</span>
+                    <A href={`/categories/${item().game}`} class={styles.gameLink} data-game={item().game}>
+                      {item().gameName}
+                    </A>
                     <Show when={variantSetName(displayVariant()) ?? item().set}>
                       {setName => (
                         <A href={`/categories/${item().game}/sets`}>{setName()}</A>
@@ -541,12 +622,6 @@ export default function ProductDetail() {
                   </Show>
                 </header>
 
-                <Show when={activePreorder() && preorderCountdown()}>
-                  <div class={styles.preorderNotice}>
-                    <strong>Pre-order</strong>
-                    <span>Releases in {preorderCountdown()}</span>
-                  </div>
-                </Show>
 
                 <div class={styles.priceStockRow}>
                   <div class={styles.priceBlock}>
@@ -565,14 +640,23 @@ export default function ProductDetail() {
 
                   <div
                     class={styles.stockLine}
-                    classList={{ [styles.stockLineOut]: activeProduct()?.stock === 0 }}
+                    classList={{
+                      [styles.stockLineOut]: activeProduct()?.stock === 0,
+                      [styles.stockLinePreorder]: activePreorder() && activeProduct()?.stock !== 0,
+                    }}
                   >
                     <span />
                     {activeProduct()?.stock === 0
                       ? "Out of stock"
-                      : "In stock"}
+                      : activePreorder()
+                        ? "Pre-order"
+                        : "In stock"}
                   </div>
                 </div>
+
+                <Show when={activePreorder() && preorderCountdown()}>
+                  <p class={styles.preorderNotice}>Releases in {preorderCountdown()}</p>
+                </Show>
 
                 <p class={styles.description}>{describe(item())}</p>
 
@@ -692,7 +776,27 @@ export default function ProductDetail() {
                       </Show>
                     </button>
                   </div>
-                  <A href="/cart" class={styles.cartLink}>View your cart</A>
+                  <Show when={addedToCart()}>
+                    <div class={styles.addedNotice} role="status">
+                      <span class={styles.addedCheck} aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                      </span>
+                      <span class={styles.addedText}>Added to your cart</span>
+                      <div class={styles.addedActions}>
+                        <A href="/cart" class={styles.viewCart}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                            <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
+                          </svg>
+                          View cart
+                          <span class={styles.viewCartCount}>{cart.count()}</span>
+                        </A>
+                        <A href="/checkout" class={styles.checkoutNow}>Checkout</A>
+                      </div>
+                    </div>
+                  </Show>
                 </Show>
 
                 <Show when={buyableVariants().length > 1}>
@@ -832,7 +936,6 @@ export default function ProductDetail() {
               {trailerUrl => (
                 <section class={styles.videoSection}>
                   <div class={styles.videoCopy}>
-                    <span class={styles.sectionLabel}>Set trailer</span>
                     <h2>See what this release brings to the table.</h2>
                     <p>The official set trailer is provided for collectors who want a closer look before choosing a pack or display.</p>
                   </div>
@@ -865,6 +968,21 @@ export default function ProductDetail() {
             </section>
 
           </div>
+
+          <Show when={relatedProducts().length}>
+            <div class={styles.related}>
+              <ProductSection
+                heading={
+                  relatedProducts().every(related => related.game === item().game)
+                    ? `More from ${item().gameName}`
+                    : "More in stock"
+                }
+                sub="In stock now, starting with the same set."
+                products={relatedProducts()}
+                viewAllHref={`/categories/${item().game}/products`}
+              />
+            </div>
+          </Show>
         </main>
       )}
       </Show>

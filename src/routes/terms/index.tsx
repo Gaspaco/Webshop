@@ -1,10 +1,11 @@
 import { Title } from "@solidjs/meta";
-import { createSignal, For, onMount, Show } from "solid-js";
+import { createSignal, onMount, Show } from "solid-js";
 import {
   DEFAULT_STORE_PROFILE,
   fetchStoreProfile,
   type StoreProfile,
 } from "~/lib/store-profile";
+import LegalLayout from "~/components/legal/LegalLayout";
 import styles from "~/styles/legal.module.scss";
 
 const SECTIONS = [
@@ -24,38 +25,33 @@ const SECTIONS = [
   { id: "changes", title: "Changes to these terms" },
 ];
 
+const SUMMARY = [
+  { title: "14 days to change your mind", text: "Withdraw from most online purchases within 14 days of delivery." },
+  { title: "Another 14 days to send it back", text: "After you tell us, you have 14 more days to return the products." },
+  { title: "We carry the delivery risk", text: "Until your parcel arrives, any loss or damage in transit is on us." },
+  { title: "Your guarantee still applies", text: "The legal guarantee for faulty products is separate from returns." },
+];
+
 export default function Terms() {
   const [profile, setProfile] = createSignal<StoreProfile>(DEFAULT_STORE_PROFILE);
   onMount(async () => setProfile(await fetchStoreProfile()));
 
   return (
-    <main class={styles.page}>
-      <div class={styles.wide}>
-        <Title>Terms and conditions | TCGHaven</Title>
+    <LegalLayout
+      title="Terms and conditions"
+      updated="30 August 2026"
+      intro="The agreement between you and TCGHaven when you order: prices, delivery, returns and your rights."
+      sections={SECTIONS}
+      summary={SUMMARY}
+      contact={{
+        title: "Changed your mind about an order?",
+        text: "You can withdraw from most online purchases within 14 days of delivery, no reason needed.",
+        href: "/returns",
+        label: "Withdraw from an order",
+      }}
+    >
+      <Title>Terms and conditions | TCGHaven</Title>
 
-        <header class={styles.header}>
-          <span class={styles.headerIcon}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 2h6l5 5v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z" />
-              <path d="M14 2v5h5" />
-              <path d="M9 13h6M9 17h6" />
-            </svg>
-          </span>
-          <div>
-            <h1 class={styles.heading}>Terms and conditions</h1>
-            <p class={styles.updated}>Last updated: 30 August 2026</p>
-          </div>
-        </header>
-
-        <div class={styles.layout}>
-          <nav class={styles.toc} aria-label="Terms sections">
-            <span class={styles.tocLabel}>On this page</span>
-            <For each={SECTIONS}>
-              {section => <a href={`#${section.id}`} class={styles.tocLink}>{section.title}</a>}
-            </For>
-          </nav>
-
-          <div class={styles.content}>
             <section id="business" class={styles.section}>
               <h2 class={styles.sectionTitle}>The seller</h2>
               <p>
@@ -283,35 +279,6 @@ export default function Terms() {
                 date appears at the top of this page.
               </p>
             </section>
-          </div>
-
-          <aside class={styles.aside}>
-            <div class={styles.asideCard}>
-              <h2 class={styles.asideTitle}>Key customer rights</h2>
-              <ul class={styles.asideList}>
-                <For each={[
-                  "14 days to withdraw from most online purchases",
-                  "Another 14 days to send a withdrawn order back",
-                  "TCGHaven carries delivery risk until receipt",
-                  "Statutory guarantee remains separate from returns",
-                ]}>
-                  {point => (
-                    <li class={styles.asideItem}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                      {point}
-                    </li>
-                  )}
-                </For>
-              </ul>
-            </div>
-            <div class={styles.asideContact}>
-              <h2 class={styles.asideTitle}>Need help with an order?</h2>
-              <p>Use the contact form for a question or the withdrawal form to cancel a purchase.</p>
-              <a href="/returns" class={styles.asideCta}>Withdraw from an order</a>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </main>
+    </LegalLayout>
   );
 }

@@ -1,0 +1,89 @@
+diff --git a/lib/compile.js b/lib/compile.js
+index dce69be..aa5d176 100644
+--- a/lib/compile.js
++++ b/lib/compile.js
+@@ -4,7 +4,10 @@ const fill = require('fill-range');
+ const utils = require('./utils');
+ 
+ const compile = (ast, options = {}) => {
+-  const walk = (node, parent = {}) => {
++  const walk = (node, parent = {}, depth = 0) => {
++    if (depth > 100) {
++      throw new SyntaxError('Brace AST exceeds maximum nesting depth (100)');
++    }
+     const invalidBlock = utils.isInvalidBrace(parent);
+     const invalidNode = node.invalid === true && options.escapeInvalid === true;
+     const invalid = invalidBlock === true || invalidNode === true;
+@@ -47,7 +50,7 @@ const compile = (ast, options = {}) => {
+ 
+     if (node.nodes) {
+       for (const child of node.nodes) {
+-        output += walk(child, node);
++        output += walk(child, node, depth + 1);
+       }
+     }
+ 
+diff --git a/lib/expand.js b/lib/expand.js
+index 35b2c41..f2fe49e 100644
+--- a/lib/expand.js
++++ b/lib/expand.js
+@@ -33,7 +33,10 @@ const append = (queue = '', stash = '', enclose = false) => {
+ const expand = (ast, options = {}) => {
+   const rangeLimit = options.rangeLimit === undefined ? 1000 : options.rangeLimit;
+ 
+-  const walk = (node, parent = {}) => {
++  const walk = (node, parent = {}, depth = 0) => {
++    if (depth > 100) {
++      throw new SyntaxError('Brace AST exceeds maximum nesting depth (100)');
++    }
+     node.queue = [];
+ 
+     let p = parent;
+@@ -100,7 +103,7 @@ const expand = (ast, options = {}) => {
+       }
+ 
+       if (child.nodes) {
+-        walk(child, node);
++        walk(child, node, depth + 1);
+       }
+     }
+ 
+diff --git a/lib/parse.js b/lib/parse.js
+index 3a6988e..b53aead 100644
+--- a/lib/parse.js
++++ b/lib/parse.js
+@@ -55,6 +55,9 @@ const parse = (input, options = {}) => {
+ 
+   const advance = () => input[index++];
+   const push = node => {
++    if (stack.length >= 100 && node.nodes) {
++      throw new SyntaxError('Brace pattern exceeds maximum nesting depth (100)');
++    }
+     if (node.type === 'text' && prev.type === 'dot') {
+       prev.type = 'text';
+     }
+diff --git a/lib/stringify.js b/lib/stringify.js
+index 8bcf872..b414bd3 100644
+--- a/lib/stringify.js
++++ b/lib/stringify.js
+@@ -3,7 +3,10 @@
+ const utils = require('./utils');
+ 
+ module.exports = (ast, options = {}) => {
+-  const stringify = (node, parent = {}) => {
++  const stringify = (node, parent = {}, depth = 0) => {
++    if (depth > 100) {
++      throw new SyntaxError('Brace AST exceeds maximum nesting depth (100)');
++    }
+     const invalidBlock = options.escapeInvalid && utils.isInvalidBrace(parent);
+     const invalidNode = node.invalid === true && options.escapeInvalid === true;
+     let output = '';
+@@ -21,7 +24,7 @@ module.exports = (ast, options = {}) => {
+ 
+     if (node.nodes) {
+       for (const child of node.nodes) {
+-        output += stringify(child);
++        output += stringify(child, {}, depth + 1);
+       }
+     }
+     return output;

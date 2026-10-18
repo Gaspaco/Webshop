@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -168,7 +169,7 @@ export async function PATCH(event: APIEvent) {
         { status: 400 },
       );
     }
-    console.error("Catalogue bulk update failed", error);
+    logServerError("Catalogue bulk update failed", error);
     return apiJson({ error: "The selected products could not be updated." }, { status: 500 });
   }
 }

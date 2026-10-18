@@ -13,6 +13,18 @@ import {
 } from "~/lib/game-storefront";
 import styles from "./game-pages.module.scss";
 
+// "2026-11-06" -> { day: "6", month: "Nov", year: "2026" } for the
+// calendar-leaf date.
+function releaseParts(date?: string) {
+  const parsed = date ? new Date(`${date}T12:00:00Z`) : undefined;
+  if (!parsed || Number.isNaN(parsed.getTime())) return { day: "–", month: "TBA", year: "" };
+  return {
+    day: String(parsed.getUTCDate()),
+    month: parsed.toLocaleString("en-GB", { month: "short", timeZone: "UTC" }),
+    year: String(parsed.getUTCFullYear()),
+  };
+}
+
 export default function GameReleasesPage() {
   const params = useParams();
   const game = () => params.game ?? "";
@@ -46,9 +58,18 @@ export default function GameReleasesPage() {
               <div class={styles.releaseList}>
                 <For each={upcoming()}>{product => (
                   <A href={product.href} class={styles.releaseItem}>
-                    <time datetime={product.releaseDate}>{formatReleaseDate(product.releaseDate)}</time>
-                    <div><strong>{product.name}</strong><span>{product.setCode ? `${product.setCode} · ` : ""}{product.set ?? cat().name}</span></div>
-                    <span aria-hidden="true">↗</span>
+                    <time datetime={product.releaseDate} class={styles.calendar} aria-label={formatReleaseDate(product.releaseDate)}>
+                      <span class={styles.calMonth}>{releaseParts(product.releaseDate).month}</span>
+                      <span class={styles.calDay}>{releaseParts(product.releaseDate).day}</span>
+                      <span class={styles.calYear}>{releaseParts(product.releaseDate).year}</span>
+                    </time>
+                    <div class={styles.releaseCopy}>
+                      <strong>{product.name}</strong>
+                      <span>{product.set ?? cat().name}</span>
+                    </div>
+                    <Show when={product.image}>
+                      {image => <img src={image()} alt="" class={styles.releaseArt} loading="lazy" />}
+                    </Show>
                   </A>
                 )}</For>
               </div>

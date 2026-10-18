@@ -31,7 +31,10 @@ $container-padding: 1.5rem;
 // Every storefront section, the navbar and the footer share this container so
 // their left and right edges line up at any viewport width.
 $container-wide: 110rem;
-$header-height: 4.5rem;
+// The floating navbar sits $header-gap below the top of the window; the
+// header's total height includes that gap so sticky offsets line up.
+$header-gap: 1rem;
+$header-height: 4.9rem;
 $product-card-min: 21rem;
 $product-card-max: 24rem;
 $product-card-gap: 1.5rem;
@@ -48,6 +51,16 @@ $radius-md: 0.3125rem;
 $radius-lg: 0.4375rem;
 $radius-xl: 0.625rem;
 $radius-full: 9999px;
+
+// Storefront surfaces. A real card's corner is ~5% of its width, so panels
+// and tiles round more than the controls inside them.
+$radius-panel: 1.25rem;
+$radius-tile: 0.875rem;
+$radius-inner: 0.625rem;
+
+// Physical motion: quick out, soft settle.
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-press: cubic-bezier(0.3, 0, 0.5, 1);
 
 // Transitions
 $transition-fast: 150ms ease-out;

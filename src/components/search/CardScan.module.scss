@@ -1,0 +1,379 @@
+@use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+
+.trigger {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: $radius-full;
+  color: $gray-400;
+  transition: color 160ms $ease-out, background-color 160ms $ease-out;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    color: $white;
+    background: rgba($white, 0.07);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
+}
+
+.triggerOpen,
+.triggerOpen:hover {
+  color: $primary-light;
+  background: rgba($primary, 0.14);
+}
+
+.file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+// Dropdown under the scan button.
+.panel {
+  position: fixed;
+  z-index: $z-modal;
+  top: var(--top);
+  right: var(--right);
+  display: flex;
+  width: 23rem;
+  max-height: calc(100dvh - var(--top) - 1rem);
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 1rem;
+  border-radius: $radius-panel;
+  background: $surface-raised;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08), 0 1.5rem 3.5rem -1rem rgba(#000, 0.75);
+  transform-origin: top right;
+  animation: drop 320ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes drop {
+  from {
+    opacity: 0;
+    translate: 0 -0.4rem;
+    scale: 0.97;
+  }
+}
+
+.intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding-left: 0.25rem;
+
+  h2 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+}
+
+.close {
+  @include btn-icon(2rem);
+  flex-shrink: 0;
+  background: transparent;
+  box-shadow: none;
+  color: $gray-400;
+
+  svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+}
+
+// The drop target: also opens the file picker when clicked.
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1.5rem 1rem 1.25rem;
+  border: 1.5px dashed rgba($white, 0.16);
+  border-radius: $radius-tile;
+  background: rgba($white, 0.025);
+  color: $gray-400;
+  font-size: 0.85rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 180ms $ease-out, background-color 180ms $ease-out, scale 220ms $ease-out;
+
+  strong {
+    margin-top: 0.5rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  kbd {
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.35rem;
+    background: rgba($white, 0.08);
+    color: $gray-300;
+    font-family: $font-body;
+    font-size: 0.78rem;
+  }
+
+  &:hover {
+    border-color: rgba($white, 0.28);
+    background: rgba($white, 0.045);
+
+    .choose {
+      background: rgba($white, 0.12);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
+}
+
+.dropActive,
+.dropActive:hover {
+  border-color: $primary-light;
+  background: rgba($primary, 0.1);
+  scale: 1.015;
+
+  .dropIcon {
+    background: rgba($primary, 0.22);
+    color: $primary-light;
+    translate: 0 -2px;
+  }
+}
+
+.dropIcon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  background: rgba($white, 0.06);
+  color: $gray-300;
+  transition: background-color 180ms $ease-out, color 180ms $ease-out, translate 220ms $ease-out;
+
+  svg {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+}
+
+.choose {
+  margin-top: 0.75rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: $radius-full;
+  background: rgba($white, 0.08);
+  color: $white;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: background-color 160ms $ease-out;
+}
+
+.note {
+  margin-top: 0.75rem;
+  color: $gray-500;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+
+  > div {
+    flex: 1;
+    min-width: 0;
+    padding-top: 0.35rem;
+  }
+
+  h2 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: $gray-400;
+    font-size: 0.9rem;
+    line-height: 1.45;
+
+    strong {
+      color: $white;
+      font-weight: 600;
+    }
+  }
+}
+
+// The photo, with a scan line sweeping over it while it's being read.
+.photo {
+  position: relative;
+  display: grid;
+  width: 3.6rem;
+  height: 5rem;
+  flex-shrink: 0;
+  place-items: center;
+  overflow: hidden;
+  border-radius: $radius-inner;
+  background: $background;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.photoEmpty {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: rgba($white, 0.08);
+}
+
+.photoReading::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba($primary-light, 0.55) 50%, transparent 60%);
+  background-size: 100% 220%;
+  content: "";
+  animation: sweep 1.3s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  from { background-position: 0 100%; }
+  to { background-position: 0 0; }
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 1rem;
+  list-style: none;
+}
+
+.result {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.5rem 0.7rem 0.5rem 0.5rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.03);
+  transition: background-color 150ms $ease-out;
+
+  &:hover {
+    background: rgba($white, 0.07);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: -2px;
+  }
+}
+
+.thumb {
+  display: grid;
+  width: 2.9rem;
+  height: 2.9rem;
+  place-items: center;
+  padding: 0.2rem;
+  border-radius: $radius-inner;
+  background: rgba($white, 0.05);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+
+  strong {
+    overflow: hidden;
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    overflow: hidden;
+    color: $gray-500;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  b {
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9rem;
+  }
+
+  em {
+    color: #fca5a5;
+    font-size: 0.72rem;
+    font-style: normal;
+  }
+}
+
+.again {
+  @include btn-secondary(sm);
+  width: 100%;
+  margin-top: 0.9rem;
+}
+
+// Phones: full width under the navbar.
+@media (max-width: $bp-sm) {
+  .panel {
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .photoReading::after {
+    animation: none;
+  }
+
+  .drop,
+  .dropActive {
+    scale: none;
+  }
+}

@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
-import { afterEach, describe, it } from "node:test";
+import { afterEach, beforeEach, describe, it } from "node:test";
 import { DEFAULT_STORE_PROFILE } from "./store-profile";
 import { getLaunchReadiness } from "./readiness.server";
 
 const managedKeys = [
   "MOLLIE_API_KEY",
+  "ORDER_RECOVERY_ENCRYPTION_KEY",
+  "CRON_SECRET",
   "SMTP_HOST",
   "SMTP_PORT",
   "SMTP_USER",
@@ -23,6 +25,8 @@ const managedKeys = [
 const originalValues = Object.fromEntries(
   managedKeys.map(key => [key, process.env[key]]),
 );
+
+beforeEach(() => { process.env.ORDER_RECOVERY_ENCRYPTION_KEY = "isolated-readiness-test-recovery-key-not-used-in-production"; });
 
 afterEach(() => {
   for (const key of managedKeys) {
@@ -44,6 +48,13 @@ function baseInput() {
 }
 
 describe("getLaunchReadiness", () => {
+  it("blocks checkout when the dedicated recovery encryption key is missing", () => {
+    delete process.env.ORDER_RECOVERY_ENCRYPTION_KEY;
+    const readiness = getLaunchReadiness(baseInput());
+    assert.equal(readiness.items.find(item => item.id === "payment-recovery-key")?.configured, false);
+    assert.equal(readiness.items.find(item => item.id === "payment-recovery-key")?.blocking, true);
+    assert.equal(readiness.ready, false);
+  });
   it("uses paid-order evidence and does not block launch on optional automation", () => {
     Object.assign(process.env, {
       MOLLIE_API_KEY: "live_example",

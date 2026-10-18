@@ -1,54 +1,28 @@
 import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
-import {
-  createMemo,
-  createResource,
-  createSignal,
-  For,
-  onMount,
-  Show,
-} from "solid-js";
+import { createMemo, createResource, For, Show } from "solid-js";
 import { formatPrice } from "~/lib/cart";
-import type { SectionProduct } from "~/components/product/ProductCard";
 import { CATEGORY_LIST } from "~/lib/categories";
-import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import styles from "./index.module.scss";
 
-function priceOf(product: SectionProduct) {
-  return product.priceRangeCents ? product.priceRangeCents[0] : product.priceCents ?? 0;
+type GameSummary = { game: string; count: number; fromCents: number | null; previews: string[] };
+
+async function loadSummaries() {
+  const response = await fetch("/api/catalog/games", { headers: { Accept: "application/json" } });
+  if (!response.ok) return [] as GameSummary[];
+  return ((await response.json()) as { games: GameSummary[] }).games;
 }
 
 export default function Categories() {
-  const [clientReady, setClientReady] = createSignal(false);
-  const [databaseCatalog] = createResource(
-    clientReady,
-    () => fetchDatabaseCatalogState(),
-  );
-
-  onMount(() => setClientReady(true));
+  // Fetched on the client only, so the rows render straight away and the
+  // counts and artwork fill in.
+  const [summaries] = createResource(() => typeof window !== "undefined", loadSummaries);
+  const ready = () => summaries.state === "ready";
 
   const games = createMemo(() => {
-    const managed = databaseCatalog()?.products ?? [];
-
-    return CATEGORY_LIST.map(game => {
-      const products = managed.filter(product => product.game === game.slug);
-      const priced = products.map(priceOf).filter(cents => cents > 0);
-
-      return {
-        ...game,
-        count: products.length,
-        from: priced.length ? Math.min(...priced) : null,
-        preview: products.filter(product => product.image).slice(0, 3),
-      };
-    }).sort((a, b) => b.count - a.count);
-  });
-
-  const totals = createMemo(() => {
-    const list = games();
-    return {
-      products: list.reduce((sum, game) => sum + game.count, 0),
-      stocked: list.filter(game => game.count > 0).length,
-    };
+    const byGame = new Map((ready() ? summaries() ?? [] : []).map(row => [row.game, row]));
+    return CATEGORY_LIST.map(game => ({ ...game, summary: byGame.get(game.slug) }))
+      .sort((a, b) => (b.summary?.count ?? 0) - (a.summary?.count ?? 0));
   });
 
   return (
@@ -56,71 +30,47 @@ export default function Categories() {
       <Title>Browse by game | TCGHaven</Title>
 
       <div class={styles.wide}>
-        <header class={styles.head}>
-          <h1>Games</h1>
-          <p>
-            <strong>{totals().products}</strong> products across{" "}
-            <strong>{totals().stocked}</strong> of {games().length} games
-          </p>
-        </header>
+        <h1 class={styles.title}>Games</h1>
 
-        <ul class={styles.directory}>
+        <ul class={styles.list}>
           <For each={games()}>
-            {game => {
-              const stocked = () => game.count > 0;
+            {game => (
+              <li>
+                <A
+                  href={`/categories/${game.slug}`}
+                  class={styles.row}
+                  classList={{ [styles.rowEmpty]: ready() && !game.summary?.count }}
+                  data-game={game.slug}
+                >
+                  <span class={styles.copy}>
+                    <span class={styles.name}>{game.name}</span>
+                    <span class={styles.tagline}>{game.tagline}</span>
+                  </span>
 
-              return (
-                <li>
-                  <A
-                    href={`/categories/${game.slug}`}
-                    class={`${styles.card} ${styles[game.theme]}`}
-                    classList={{ [styles.cardQuiet]: !stocked() }}
-                  >
-                    <div class={styles.cardText}>
-                      <h2>{game.name}</h2>
-                      <p>{game.tagline}</p>
-                    </div>
-
-                    <Show when={game.preview.length}>
-                      <div class={styles.preview} aria-hidden="true">
-                        <For each={game.preview}>
-                          {(product, index) => (
-                            <img
-                              src={product.image}
-                              alt=""
-                              draggable={false}
-                              loading="lazy"
-                              style={{ "--i": `${index()}` }}
-                            />
-                          )}
-                        </For>
-                      </div>
-                    </Show>
-
-                    <div class={styles.cardFoot}>
-                      <Show
-                        when={stocked()}
-                        fallback={<span class={styles.soon}>Coming soon</span>}
-                      >
-                        <span class={styles.meta}>
-                          <strong>{game.count}</strong>
-                          {game.count === 1 ? " product" : " products"}
-                          <Show when={game.from}>
-                            {value => <> · from <strong>{formatPrice(value())}</strong></>}
-                          </Show>
+                  <span class={styles.meta}>
+                    <Show when={ready()} fallback={<span class={styles.pending} />}>
+                      <Show when={game.summary?.count} fallback={<span>Coming soon</span>}>
+                        <span>
+                          <span class={styles.dot} aria-hidden="true" />
+                          {game.summary!.count} {game.summary!.count === 1 ? "product" : "products"}
                         </span>
-                        <span class={styles.enter}>
-                          Shop
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M5 12h14M13 6l6 6-6 6" />
-                          </svg>
-                        </span>
+                        <Show when={game.summary!.fromCents && game.summary!.fromCents >= 100}>
+                          <span>from {formatPrice(game.summary!.fromCents!)}</span>
+                        </Show>
                       </Show>
-                    </div>
-                  </A>
-                </li>
-              );
-            }}
+                    </Show>
+                  </span>
+
+                  <span class={styles.art} aria-hidden="true">
+                    <For each={game.summary?.previews ?? []}>
+                      {(src, index) => (
+                        <img src={src} alt="" decoding="async" draggable={false} style={{ "--i": `${index()}` }} />
+                      )}
+                    </For>
+                  </span>
+                </A>
+              </li>
+            )}
           </For>
         </ul>
       </div>

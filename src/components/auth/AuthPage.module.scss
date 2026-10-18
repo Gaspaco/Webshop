@@ -1,4 +1,7 @@
 @use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+
+$gutter: 0.75rem;
 
 .page {
   position: relative;
@@ -8,31 +11,49 @@
   // Keep a vh fallback, then use the dynamic viewport on modern browsers.
   height: 100vh;
   height: 100dvh;
-  min-height: 34rem;
+  min-height: 36rem;
   overflow: hidden;
+  background: $background;
 
   @media (max-width: $bp-lg) {
     grid-template-columns: 1fr;
+    height: auto;
     min-height: 100dvh;
+    overflow: visible;
   }
 }
 
 // ---------- Brand panel ----------
+// A rounded panel like the storefront's, sliding across to whichever side the
+// form is not on.
 
 .brandPanel {
   position: absolute;
-  inset: 0 auto 0 0;
   z-index: 3;
-  width: 50%;
-  overflow: hidden;
+  top: $gutter;
+  bottom: $gutter;
+  left: $gutter;
   display: flex;
+  width: calc(50% - #{$gutter * 1.5});
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-end;
+  overflow: hidden;
   padding: clamp(2rem, 4vw, 3.5rem);
-  background: #0a0d0c;
+  border-radius: $radius-panel;
+  background: $surface;
   isolation: isolate;
   transition: transform 760ms cubic-bezier(0.76, 0, 0.24, 1);
-  will-change: transform;
+
+  // Card frame, at the scale of the panel.
+  &::after {
+    position: absolute;
+    z-index: 3;
+    inset: 0.6rem;
+    border: 1px solid rgba($white, 0.06);
+    border-radius: calc($radius-panel - 0.35rem);
+    content: "";
+    pointer-events: none;
+  }
 
   @media (max-width: $bp-lg) {
     display: none;
@@ -40,159 +61,123 @@
 }
 
 .signupMode .brandPanel {
-  transform: translateX(100%);
+  transform: translateX(calc(100% + #{$gutter}));
 }
 
-// Holographic gradient mesh with emerald, gold, and a violet whisper,
-// echoing foil-card packaging without using a literal photo.
 .brandMesh {
   position: absolute;
-  inset: 0;
-  z-index: -2;
-  background:
-    radial-gradient(ellipse 60% 50% at 85% 8%, rgba($primary, 0.5) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 45% at 8% 95%, rgba($accent-gold, 0.22) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 40% at 95% 85%, rgba(#7c3aed, 0.18) 0%, transparent 65%),
-    linear-gradient(165deg, #0a0d0c 0%, #0d1310 55%, #0a0d0c 100%);
-}
-
-.brandMeshGlow {
-  position: absolute;
-  inset: 0;
   z-index: -1;
-  background: linear-gradient(0deg, rgba(#07090a, 0.85) 0%, rgba(#07090a, 0.15) 45%, transparent 70%);
+  inset: 0;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 32%, rgba($primary, 0.24), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 0% 100%, rgba($primary-dark, 0.2), transparent 70%),
+    linear-gradient(0deg, rgba(#000, 0.35), transparent 55%);
 }
 
-.brandMotif {
-  position: relative;
-  z-index: 1;
-  width: min(38rem, 138%);
-  max-width: none;
-  height: auto;
-  margin: clamp(2.5rem, 6vh, 4rem) 0 0;
-  align-self: center;
-  pointer-events: none;
-  opacity: 0.85;
-  animation: brandMotifIn 780ms cubic-bezier(0.22, 1, 0.36, 1) 280ms both;
+// ---------- Card fan ----------
 
-  @media (max-width: $bp-lg) {
-    width: min(29rem, 118%);
-    margin-top: 1.75rem;
+.cardFan {
+  position: absolute;
+  top: 9%;
+  left: 50%;
+  display: flex;
+  width: min(30rem, 80%);
+  height: 42%;
+  align-items: center;
+  justify-content: center;
+  translate: -50% 0;
+  animation: fanIn 900ms $ease-out 200ms both;
+
+  img {
+    position: absolute;
+    width: auto;
+    height: 100%;
+    border-radius: 4.5% / 3.2%;
+    filter: drop-shadow(0 1.5rem 1.5rem rgba(#000, 0.5));
+    transition: transform 600ms $ease-out;
+
+    &:nth-child(1) { transform: translateX(-46%) rotate(-11deg) scale(0.88); }
+    &:nth-child(2) { z-index: 2; transform: translateY(-3%) rotate(1deg); }
+    &:nth-child(3) { transform: translateX(46%) rotate(11deg) scale(0.88); }
   }
 }
 
-@keyframes brandMotifIn {
+.brandPanel:hover .cardFan img {
+  &:nth-child(1) { transform: translateX(-56%) rotate(-15deg) scale(0.9); }
+  &:nth-child(2) { transform: translateY(-7%) rotate(0deg) scale(1.03); }
+  &:nth-child(3) { transform: translateX(56%) rotate(15deg) scale(0.9); }
+}
+
+@keyframes fanIn {
   from {
     opacity: 0;
-    transform: translateY(24px) scale(0.96);
+    translate: -50% 1.5rem;
   }
-  to {
-    opacity: 0.85;
-    transform: translateY(0) scale(1);
-  }
+}
+
+// ---------- Brand copy ----------
+
+.brandBottom {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  animation: brandFadeUp 700ms $ease-out 300ms both;
 }
 
 .brandIntro {
-  animation: brandFadeUp 700ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
-}
-
-@keyframes brandFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  max-width: 24rem;
 }
 
 .brandHeadline {
-  font-family: $font-display;
-  font-weight: 800;
-  font-size: clamp(1.875rem, 3vw, 2.75rem);
-  letter-spacing: -0.03em;
-  line-height: 1.08;
   max-width: 13ch;
   color: $white;
+  font-family: $font-display;
+  font-size: clamp(1.9rem, 3vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
 }
 
 .brandSub {
+  max-width: 34ch;
   margin-top: 0.75rem;
-  max-width: 30ch;
+  color: $gray-400;
   font-size: 0.9375rem;
-  line-height: 1.65;
-  color: $gray-300;
+  line-height: 1.6;
 }
 
 .benefits {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-top: auto;
-  padding-top: 2rem;
-  position: relative;
-  z-index: 1;
-  animation: brandFadeUp 700ms cubic-bezier(0.22, 1, 0.36, 1) 460ms both;
+  gap: 0.6rem;
 }
 
 .benefitItem {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  font-size: 0.875rem;
+  gap: 0.6rem;
   color: $gray-300;
+  font-size: 0.875rem;
 
   svg {
-    width: 1rem;
-    height: 1rem;
-    color: $primary;
+    width: 1.35rem;
+    height: 1.35rem;
     flex-shrink: 0;
+    padding: 0.25rem;
+    border-radius: 50%;
+    background: rgba($primary, 0.16);
+    color: $primary-light;
   }
 }
 
-.socials {
-  position: absolute;
-  right: clamp(1.5rem, 3vw, 3rem);
-  bottom: clamp(1.5rem, 3vw, 3rem);
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-
-  a {
-    display: grid;
-    place-items: center;
-    width: 2.35rem;
-    height: 2.35rem;
-    border-radius: $radius-md;
-    color: $gray-400;
-    transition:
-      color $transition-fast,
-      background $transition-fast,
-      transform $transition-base;
-
-    &:hover {
-      color: $white;
-      background: rgba($white, 0.08);
-      transform: translateY(-2px);
-    }
-
-    &:focus-visible {
-      outline: 2px solid $primary-light;
-      outline-offset: 2px;
-    }
-  }
-
-  svg {
-    width: 1.15rem;
-    height: 1.15rem;
-    fill: currentColor;
-  }
-
-  @media (max-width: $bp-lg) {
-    right: $container-padding;
-    bottom: $container-padding;
+@keyframes brandFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
   }
 }
 
@@ -200,12 +185,11 @@
 
 .formPanel {
   display: flex;
-  align-items: center;
-  justify-content: center;
   min-width: 0;
   min-height: 0;
-  padding: clamp(0.875rem, 1.4vw, 1.5rem);
-  background: $background;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 4vw, 3rem);
 }
 
 .signupForm {
@@ -236,33 +220,33 @@
 
 .formInner {
   width: 100%;
-  max-width: 49rem;
+  max-width: 26rem;
   max-height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
-  -ms-overflow-style: none;
   opacity: 0;
 
   &::-webkit-scrollbar {
     width: 0;
     height: 0;
   }
+
+  @media (max-width: $bp-lg) {
+    max-height: none;
+    overflow: visible;
+  }
 }
 
-// Fades the form content in once its panel is uncovered by the
-// sliding brand panel, in sync on both the login and signup side.
+// Fades the form in once the sliding brand panel uncovers it.
 .formInnerActive {
-  animation: formFadeIn 900ms cubic-bezier(0.22, 1, 0.36, 1) 380ms both;
+  animation: formFadeIn 800ms $ease-out 380ms both;
 }
 
 @keyframes formFadeIn {
   from {
     opacity: 0;
-    transform: translateY(26px);
-  }
-  60% {
-    opacity: 1;
+    transform: translateY(1.25rem);
   }
   to {
     opacity: 1;
@@ -270,56 +254,81 @@
   }
 }
 
+// Auth pages hide the site nav, so the header gives its own way home.
+.formHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: clamp(2rem, 6vh, 3.5rem);
+}
+
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
+  border-radius: $radius-inner;
+  color: $primary;
   font-family: $font-display;
-  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  font-size: 1.15rem;
   font-weight: 800;
-  color: $gray-400;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 
-  &:hover {
-    color: $white;
+  img {
+    width: 30px;
+    height: auto;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 4px;
   }
 }
 
 .logoAccent {
+  margin-left: 0.15em;
   color: $primary;
 }
 
+.backLink {
+  @include btn-secondary(sm);
+  font-weight: 500;
+}
+
 .title {
-  margin-top: clamp(1rem, 2.2vh, 1.5rem);
-  font-size: clamp(1.65rem, 2.4vw, 2.15rem);
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(1.9rem, 3vw, 2.5rem);
   font-weight: 800;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
 }
 
 .subtitle {
-  margin-top: 0.5rem;
-  font-size: 0.9375rem;
+  margin-top: 0.6rem;
   color: $gray-400;
-  line-height: 1.6;
+  font-size: 0.9375rem;
+  line-height: 1.55;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: clamp(0.8rem, 1.8vh, 1.2rem);
-  margin-top: clamp(1.15rem, 2.4vh, 1.75rem);
+  gap: 1.1rem;
+  margin-top: clamp(1.5rem, 3.5vh, 2rem);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .label {
+  color: $gray-300;
+  font-family: $font-display;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: $gray-400;
 }
 
 .fieldLabelRow {
@@ -330,10 +339,10 @@
 }
 
 .forgotPassword {
-  color: $primary-light;
-  font-size: 0.78rem;
-  font-weight: 600;
-  transition: color $transition-fast;
+  color: $gray-400;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: color 180ms $ease-out;
 
   &:hover {
     color: $white;
@@ -342,72 +351,78 @@
   &:focus-visible {
     outline: 2px solid $primary-light;
     outline-offset: 3px;
+    border-radius: 2px;
   }
 }
 
+// Filled fields: a soft well that rings in emerald on focus.
 .inputWrap {
   position: relative;
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    height: 2px;
-    width: 100%;
-    background: $primary;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  &:focus-within::after {
-    transform: scaleX(1);
-  }
 }
 
 .input {
   width: 100%;
-  height: clamp(2.35rem, 5.5vh, 2.75rem);
-  padding-inline: 0;
-  border: none;
-  border-bottom: 1.5px solid rgba($white, 0.14);
-  border-radius: 0;
-  background: transparent;
+  height: 3rem;
+  padding-inline: 1rem;
+  border: 0;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.05);
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
   color: $white;
   font-family: $font-body;
   font-size: 1rem;
-  transition: border-color $transition-fast;
+  transition: box-shadow 180ms $ease-out, background-color 180ms $ease-out;
 
   &::placeholder {
     color: $gray-600;
   }
 
+  &:hover:not(:disabled) {
+    background: rgba($white, 0.065);
+  }
+
   &:focus {
     outline: none;
-    border-bottom-color: transparent;
+    background: rgba($white, 0.07);
+    box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
+  }
+
+  &:-webkit-autofill {
+    -webkit-text-fill-color: $white;
+    box-shadow: inset 0 0 0 1px rgba($white, 0.08), inset 0 0 0 100px #1d2420;
+    caret-color: $white;
   }
 }
 
 .passwordRow {
-  position: relative;
   display: flex;
+
+  .input {
+    padding-right: 3rem;
+  }
 }
 
 .passwordToggle {
   position: absolute;
-  right: 0;
-  top: 0;
+  top: 0.25rem;
+  right: 0.25rem;
   display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: clamp(2.35rem, 5.5vh, 2.75rem);
+  border-radius: $radius-inner;
   color: $gray-500;
-  transition: color $transition-fast;
+  transition: color 180ms $ease-out, background-color 180ms $ease-out;
 
-  &:hover {
+  &:hover:not(:disabled) {
     color: $white;
+    background: rgba($white, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 0;
   }
 
   svg {
@@ -417,67 +432,41 @@
 }
 
 .hint {
-  font-size: 0.75rem;
   color: $gray-500;
+  font-size: 0.78rem;
 }
 
 .error {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.75rem 0.875rem;
-  border-radius: $radius-md;
+  gap: 0.55rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: $radius-tile;
   background: rgba(#f87171, 0.1);
-  border: 1px solid rgba(#f87171, 0.25);
   color: #fca5a5;
-  font-size: 0.8438rem;
+  font-size: 0.875rem;
   line-height: 1.5;
 
   svg {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
-    margin-top: 0.125rem;
+    margin-top: 0.15rem;
   }
 }
 
 .submit {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  height: clamp(2.5rem, 5.8vh, 2.875rem);
-  margin-top: 0.25rem;
-  border-radius: $radius-md;
-  background: $primary;
-  color: #06120d;
-  font-family: $font-display;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  transition: background $transition-base, transform $transition-base, opacity $transition-fast;
-
-  &:hover:not(:disabled) {
-    background: $primary-light;
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  &:focus-visible {
-    outline: 3px solid $accent-gold;
-    outline-offset: 3px;
-  }
+  @include btn-primary(lg);
+  width: 100%;
+  margin-top: 0.4rem;
 }
 
 .spinner {
   width: 16px;
   height: 16px;
+  border: 2px solid rgba(#03231a, 0.3);
+  border-top-color: #03231a;
   border-radius: 50%;
-  border: 2px solid rgba(#06120d, 0.3);
-  border-top-color: #06120d;
   animation: spin 0.7s linear infinite;
 }
 
@@ -486,28 +475,39 @@
 }
 
 .switchLine {
-  margin-top: clamp(1rem, 2.3vh, 1.5rem);
-  font-size: 0.875rem;
+  margin-top: 1.5rem;
   color: $gray-400;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .switchLink {
   color: $primary-light;
   font-weight: 600;
+  transition: color 180ms $ease-out;
 
   &:hover {
-    color: $primary;
+    color: $white;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 3px;
+    border-radius: 2px;
   }
 }
 
+// ---------- Password reset dialog ----------
+
 .modalBackdrop {
   position: fixed;
-  inset: 0;
   z-index: $z-modal-backdrop;
+  inset: 0;
   display: grid;
   place-items: center;
   padding: 1rem;
   background: rgba(#050706, 0.78);
+  backdrop-filter: blur(6px);
   animation: backdropIn 180ms ease-out both;
 }
 
@@ -515,46 +515,33 @@
   position: relative;
   z-index: $z-modal;
   width: min(28rem, 100%);
-  padding: clamp(1.5rem, 5vw, 2.25rem);
-  border-radius: $radius-xl;
-  background: $surface-raised;
-  box-shadow: 0 8px 0 rgba(#000, 0.22);
-  animation: dialogIn 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  padding: clamp(1.75rem, 5vw, 2.25rem);
+  border-radius: $radius-panel;
+  background: $surface;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.06), 0 2rem 4rem -1rem rgba(#000, 0.7);
+  animation: dialogIn 320ms $ease-out both;
 
   h2 {
-    margin-top: 0.45rem;
-    padding-right: 2rem;
-    font-size: clamp(1.6rem, 5vw, 2rem);
-    letter-spacing: -0.03em;
+    padding-right: 2.5rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.5rem, 5vw, 1.85rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
   }
 }
 
 .dialogClose {
+  @include btn-icon(2.5rem);
   position: absolute;
   top: 1rem;
   right: 1rem;
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: $radius-md;
+  background: transparent;
+  box-shadow: none;
   color: $gray-400;
-  transition:
-    color $transition-fast,
-    background $transition-fast;
-
-  &:hover {
-    color: $white;
-    background: rgba($white, 0.07);
-  }
-
-  &:focus-visible {
-    outline: 2px solid $primary-light;
-    outline-offset: 2px;
-  }
 
   svg {
-    width: 1.15rem;
+    width: 1.1rem;
     fill: none;
     stroke: currentColor;
     stroke-width: 2;
@@ -562,37 +549,30 @@
   }
 }
 
-.dialogKicker {
-  color: $primary-light;
-  font-size: 0.8rem;
-  font-weight: 650;
-}
-
 .dialogCopy {
   max-width: 38ch;
-  margin-top: 0.75rem;
+  margin-top: 0.6rem;
   color: $gray-400;
-  font-size: 0.9rem;
-  line-height: 1.6;
+  font-size: 0.9375rem;
+  line-height: 1.55;
 }
 
 .resetForm {
   margin-top: 1.5rem;
 
   .inputWrap {
-    margin-top: 0.4rem;
+    margin-top: 0.45rem;
   }
 
   .submit {
-    width: 100%;
-    margin-top: 1.35rem;
+    margin-top: 1.25rem;
   }
 }
 
 .resetError {
   margin-top: 0.75rem;
   color: #fca5a5;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
 }
 
 .resetSuccess {
@@ -601,10 +581,10 @@
   gap: 0.75rem;
   margin-top: 1.5rem;
   padding: 1rem;
-  border-radius: $radius-md;
+  border-radius: $radius-tile;
   background: rgba($primary, 0.1);
   color: $gray-200;
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   line-height: 1.55;
 
   svg {
@@ -615,9 +595,7 @@
 }
 
 @keyframes backdropIn {
-  from {
-    opacity: 0;
-  }
+  from { opacity: 0; }
 }
 
 @keyframes dialogIn {
@@ -627,30 +605,16 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation: none;
+// ---------- Small screens ----------
+
+@media (max-width: $bp-sm) {
+  .formPanel {
+    align-items: flex-start;
+    padding-top: 1.25rem;
   }
-  .inputWrap::after {
-    transition: none;
-  }
-  .modalBackdrop,
-  .resetDialog {
-    animation: none;
-  }
-  .formInner {
-    opacity: 1;
-  }
-  .formInnerActive {
-    animation: none;
-  }
-  .brandIntro,
-  .benefits {
-    animation: none;
-  }
-  .brandMotif {
-    animation: none;
-    opacity: 0.85;
+
+  .formHeader {
+    margin-bottom: 2.25rem;
   }
 }
 
@@ -658,50 +622,27 @@
   .brandPanel {
     transition: none;
   }
-}
 
-// Auth pages hide the site nav, so they need their own way out.
-.backLink {
-  // Block-level so it sits on its own row above the wordmark; the logo is
-  // inline-flex and they would otherwise share a line.
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: fit-content;
-  margin-bottom: 1.25rem;
-  color: $gray-400;
-  font-size: 0.8125rem;
-  font-weight: 650;
-  transition: color $transition-fast;
-
-  svg {
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
-    transition: transform $transition-base;
+  .spinner,
+  .modalBackdrop,
+  .resetDialog,
+  .formInnerActive,
+  .brandBottom,
+  .cardFan {
+    animation: none;
   }
 
-  &:hover {
-    color: $white;
+  .formInner {
+    opacity: 1;
   }
 
-  &:hover svg {
-    transform: translateX(-3px);
-  }
-
-  &:focus-visible {
-    outline: 2px solid $primary-light;
-    outline-offset: 3px;
-    border-radius: $radius-sm;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .backLink svg {
+  .cardFan img {
     transition: none;
   }
 
-  .backLink:hover svg {
-    transform: none;
+  .brandPanel:hover .cardFan img {
+    &:nth-child(1) { transform: translateX(-46%) rotate(-11deg) scale(0.88); }
+    &:nth-child(2) { transform: translateY(-3%) rotate(1deg); }
+    &:nth-child(3) { transform: translateX(46%) rotate(11deg) scale(0.88); }
   }
 }

@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import { query } from "@solidjs/router";
 import { eq } from "drizzle-orm";
 import { db } from "~/db";
@@ -81,10 +82,7 @@ export const getHomeData = query(async () => {
       content: (contentRows[0]?.value ?? {}) as HomeContent,
     };
   } catch (error) {
-    console.error(
-      "Homepage data load failed; rendering the catalogue fallback.",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logServerError("Homepage data load failed; rendering the catalogue fallback.", error);
     return emptyHomeData();
   }
 }, "home-data");

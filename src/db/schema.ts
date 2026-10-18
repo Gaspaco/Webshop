@@ -79,6 +79,11 @@ export const session = pgTable(
   ],
 );
 
+export const adminSessionApprovals = pgTable("admin_session_approvals", {
+  sessionId: uuid("session_id").primaryKey().references(() => session.id, { onDelete: "cascade" }),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const account = pgTable(
   "account",
   {
@@ -361,6 +366,13 @@ export const orders = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     orderNumber: text("order_number").notNull(),
+    guestAccessHash: text("guest_access_hash"),
+    discountReleased: boolean("discount_released").default(false).notNull(),
+    labelState: text("label_state").default("none").notNull(),
+    paymentCreationState: text("payment_creation_state").default("none").notNull(),
+    paymentParametersEncrypted: text("payment_parameters_encrypted"),
+    paymentCredentialHash: text("payment_credential_hash"),
+    paymentCreationStartedAt: timestamp("payment_creation_started_at", { withTimezone: true }),
     userId: uuid("user_id").references(() => user.id, {
       onDelete: "set null",
     }),
@@ -414,6 +426,7 @@ export const returnRequests = pgTable(
     status: returnStatus("status").default("requested").notNull(),
     reason: text("reason").notNull(),
     amountCents: integer("amount_cents"),
+    mollieRefundId: text("mollie_refund_id"),
     adminNote: text("admin_note"),
     resolvedBy: uuid("resolved_by").references(() => user.id, {
       onDelete: "set null",
@@ -424,6 +437,7 @@ export const returnRequests = pgTable(
   table => [
     index("return_request_order_idx").on(table.orderId),
     index("return_request_status_idx").on(table.status),
+    uniqueIndex("return_request_mollie_refund_idx").on(table.mollieRefundId),
   ],
 );
 
@@ -466,6 +480,42 @@ export const payments = pgTable(
     index("payment_order_idx").on(table.orderId),
   ],
 );
+
+export const refundRequests = pgTable("refund_requests", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  paymentId: uuid("payment_id").notNull().references(() => payments.id),
+  orderId: uuid("order_id").notNull().references(() => orders.id),
+  mollieRefundId: text("mollie_refund_id"),
+  status: text("status").default("creating").notNull(),
+  amountCents: integer("amount_cents").notNull(),
+  reason: text("reason").notNull(),
+  requestedBy: uuid("requested_by").references(() => user.id, { onDelete: "set null" }),
+  credentialHash: text("credential_hash"),
+  ...timestamps,
+}, table => [uniqueIndex("refund_mollie_id_idx").on(table.mollieRefundId), index("refund_payment_idx").on(table.paymentId)]);
+
+// Durable delivery records: one independent job per recipient, never resend a
+// successful customer email just because the owner's SMTP delivery failed.
+export const orderEmailJobs = pgTable("order_email_jobs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "cascade" }),
+  audience: text("audience").notNull(),
+  status: text("status").default("pending").notNull(),
+  attempts: integer("attempts").default(0).notNull(),
+  nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).defaultNow().notNull(),
+  leaseToken: uuid("lease_token"),
+  leaseUntil: timestamp("lease_until", { withTimezone: true }),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  ...timestamps,
+}, table => [uniqueIndex("order_email_audience_idx").on(table.orderId, table.audience), index("order_email_due_idx").on(table.status, table.nextAttemptAt)]);
+
+// Shared across serverless instances; token-fenced release prevents an expired
+// request from releasing a newer request's lease.
+export const providerOperationLeases = pgTable("provider_operation_leases", {
+  key: text("key").primaryKey(),
+  token: uuid("token").notNull(),
+  leaseUntil: timestamp("lease_until", { withTimezone: true }).notNull(),
+});
 
 export const importJobs = pgTable(
   "import_jobs",

@@ -180,6 +180,7 @@ export function databaseCatalogRowsToState(
 
 type CatalogRequest = {
   slug?: string;
+  game?: string;
   limit?: number;
   available?: boolean;
 };
@@ -199,6 +200,7 @@ export async function fetchDatabaseCatalogState(
       offset: String(offset),
     });
     if (options?.slug) params.set("slug", options.slug);
+    if (options?.game) params.set("game", options.game);
     if (options?.available) params.set("available", "1");
 
     const response = await fetch(`/api/catalog/products?${params.toString()}`, {

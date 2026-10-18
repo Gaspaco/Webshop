@@ -11,7 +11,16 @@ export default function Cart() {
     <main class={styles.page}>
       <div class="container">
         <Title>Cart | TCGHaven</Title>
-        <h1 class={styles.heading}>Your cart</h1>
+        <header class={styles.header}>
+          <h1 class={styles.heading}>
+            Your cart
+            <Show when={cart.count() > 0}>
+              <span class={styles.count}>
+                {cart.count()} {cart.count() === 1 ? "item" : "items"}
+              </span>
+            </Show>
+          </h1>
+        </header>
 
         <Show
           when={cart.items().length > 0}
@@ -29,20 +38,15 @@ export default function Cart() {
                 Browse singles, sealed product, and accessories, then add something
                 to your cart to see it here.
               </p>
-              <A href="/products" class={styles.emptyCta}>
-                Browse the shop
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </A>
+              <A href="/products" class={styles.emptyCta}>Browse the shop</A>
             </div>
           }
         >
           <div class={styles.layout}>
             <div class={styles.list}>
               <For each={cart.items()}>
-                {(item, index) => (
-                  <div class={styles.row} style={{ "--row-index": index() }}>
+                {item => (
+                  <div class={styles.row}>
                     <span class={styles.thumb}>
                       <img src={item.image} alt="" draggable={false} />
                     </span>
@@ -115,16 +119,11 @@ export default function Cart() {
                 <span>{formatPrice(cart.subtotalCents())}</span>
               </div>
 
-              <A href="/checkout" class={styles.checkoutBtn}>
-                Checkout
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </A>
+              <A href="/checkout" class={styles.checkoutBtn}>Go to checkout</A>
 
-              <A href="/products" class={styles.continueLink}>
-                Continue shopping
-              </A>
+              <p class={styles.summaryNote}>
+                Secure payment with Mollie. Prices and stock are checked again before you pay.
+              </p>
             </aside>
           </div>
         </Show>
