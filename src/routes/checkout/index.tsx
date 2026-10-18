@@ -312,23 +312,9 @@ export default function Checkout() {
         >
             <header class={styles.header}>
               <div class={styles.headerCopy}>
-                <span class={styles.checkoutMark} aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M12 3 5 6v5c0 4.6 2.8 8.1 7 10 4.2-1.9 7-5.4 7-10V6l-7-3Z" />
-                    <path d="m9.5 12 1.7 1.7 3.6-3.8" />
-                  </svg>
-                </span>
-                <div>
-                  <h1>Checkout</h1>
-                  <p>Secure payment through Mollie, with PostNL delivery or local pickup.</p>
-                </div>
+                <h1>Checkout</h1>
+                <p>Secure payment through Mollie, with PostNL delivery or local pickup.</p>
               </div>
-              <A href="/cart" class={styles.backLink}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
-                Back to cart
-              </A>
             </header>
 
             <Show
@@ -346,6 +332,7 @@ export default function Checkout() {
               <form class={styles.layout} onSubmit={submitOrder}>
               <div class={styles.formPanel}>
                 <CheckoutSection
+                  step={1}
                   title="Delivery details"
                   description="Your receipt, delivery updates, and shipping address."
                 >
@@ -455,6 +442,7 @@ export default function Checkout() {
                 </CheckoutSection>
 
                 <CheckoutSection
+                  step={2}
                   title="Delivery method"
                   description="Choose tracked PostNL delivery or collect from TCGHaven."
                 >
@@ -486,6 +474,7 @@ export default function Checkout() {
                 </CheckoutSection>
 
                 <CheckoutSection
+                  step={3}
                   title="Payment"
                   description="Payment details are handled securely outside TCGHaven."
                 >
@@ -662,6 +651,7 @@ export default function Checkout() {
 }
 
 function CheckoutSection(props: {
+  step: number;
   title: string;
   description: string;
   children: JSX.Element;
@@ -669,8 +659,11 @@ function CheckoutSection(props: {
   return (
     <section class={styles.section}>
       <header class={styles.sectionHeading}>
-        <h2>{props.title}</h2>
-        <p>{props.description}</p>
+        <span class={styles.step} aria-hidden="true">{props.step}</span>
+        <div>
+          <h2>{props.title}</h2>
+          <p>{props.description}</p>
+        </div>
       </header>
       <div class={styles.sectionBody}>{props.children}</div>
     </section>
@@ -712,6 +705,20 @@ type PaymentReturnData = {
 };
 
 type ConfirmationState = "checking" | "paid" | "failed" | "unknown";
+
+function guestOrderAccess(reference: string) {
+  const url = new URL(window.location.href);
+  const token = url.searchParams.get("access");
+  const key = `tcghaven.order-access.${reference}`;
+  try {
+    if (token && /^[A-Za-z0-9_-]{43}$/.test(token)) {
+      sessionStorage.setItem(key, token);
+      url.searchParams.delete("access");
+      window.history.replaceState(window.history.state, "", url.toString());
+    }
+    return sessionStorage.getItem(key) ?? token ?? "";
+  } catch { return token ?? ""; }
+}
 
 function PaymentReturn(props: { orderNumber: string | string[] | undefined }) {
   const cart = useCart();
@@ -783,7 +790,7 @@ function PaymentReturn(props: { orderNumber: string | string[] | undefined }) {
     try {
       const response = await fetch(
         `/api/checkout/order-status?order=${encodeURIComponent(reference)}`,
-        { headers: { Accept: "application/json" } },
+        { headers: { Accept: "application/json", "X-Order-Access": guestOrderAccess(reference) } },
       );
       const result = (await response.json()) as {
         order?: PaymentReturnData;

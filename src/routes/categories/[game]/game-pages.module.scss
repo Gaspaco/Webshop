@@ -1,314 +1,376 @@
 @use "../../../styles/variables" as *;
+@use "../../../styles/buttons" as *;
+
+// ---------- Shop: type filters ----------
+// Plain tabs, like the main shop's game tabs.
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+
+  button {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: 0.45rem;
+    padding-inline: 1rem;
+    border-radius: $radius-full;
+    color: $gray-400;
+    font-family: $font-display;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: color 180ms $ease-out, background-color 180ms $ease-out;
+
+    span {
+      color: $gray-600;
+      font-size: 0.78rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    &:hover {
+      color: $white;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $primary-light;
+      outline-offset: -2px;
+    }
+  }
+}
+
+.filterActive {
+  background: rgba($white, 0.09);
+  color: $white !important;
+
+  span {
+    color: $gray-400 !important;
+  }
+}
+
+.resultCount {
+  margin-bottom: 1rem;
+  color: $gray-500;
+  font-family: $font-display;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+// ---------- Sections (releases) ----------
 
 .section + .section {
-  margin-top: clamp(4.5rem, 9vw, 7rem);
+  margin-top: clamp(2.5rem, 6vw, 4rem);
 }
 
 .sectionHead {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 
   h2 {
     color: $white;
     font-family: $font-display;
-    font-size: clamp(1.4rem, 2.5vw, 2rem);
-    font-weight: 760;
-    letter-spacing: -0.035em;
-    line-height: 1.15;
+    font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
   }
 
   p {
-    max-width: 52ch;
-    margin-top: 0.45rem;
-    color: $gray-500;
-    font-size: 0.82rem;
-    line-height: 1.55;
+    margin-top: 0.4rem;
+    color: $gray-400;
+    font-size: 0.9375rem;
   }
 
   > span {
-    flex: 0 0 auto;
-    color: var(--game-accent);
-    font-size: 0.75rem;
-    font-weight: 750;
+    flex-shrink: 0;
+    padding: 0.35rem 0.75rem;
+    border-radius: $radius-full;
+    background: rgba($accent-gold, 0.12);
+    color: $accent-gold;
+    font-family: $font-display;
+    font-size: 0.8125rem;
+    font-weight: 600;
   }
 }
 
+// Upcoming releases: a calendar leaf for the date, then the product.
 .releaseList {
   display: grid;
-  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
+  gap: 0.75rem;
 }
 
 .releaseItem {
   display: grid;
-  grid-template-columns: minmax(8rem, 0.22fr) minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: clamp(1rem, 3vw, 2.5rem);
-  min-height: 5.25rem;
-  padding: 1rem 1.35rem;
-  background: #161817;
-  color: $white;
-  border-radius: $radius-md;
-  transition: background $transition-fast, transform $transition-fast;
+  gap: 1.25rem;
+  min-height: 7rem;
+  padding: 0.9rem 1.25rem 0.9rem 0.9rem;
+  border-radius: $radius-panel;
+  background: $surface;
+  transition: background-color 180ms $ease-out;
 
   &:hover {
-    background: #1c1f1d;
-    transform: translateY(-2px);
+    background: $surface-raised;
   }
 
-  time {
-    color: var(--game-accent);
-    font-size: 0.75rem;
-    font-weight: 750;
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
   }
-
-  div {
-    display: grid;
-    gap: 0.3rem;
-
-    strong {
-      font-family: $font-display;
-      font-size: 1rem;
-      font-weight: 720;
-    }
-
-    span { color: $gray-500; font-size: 0.72rem; }
-  }
-
-  > span { color: $gray-600; font-size: 1rem; }
 }
 
-.empty {
-  display: grid;
-  min-height: 17rem;
-  place-content: center;
-  gap: 0.5rem;
-  padding: clamp(2rem, 5vw, 3rem);
-  background: #151715;
-  border-radius: $radius-md;
+.calendar {
+  display: flex;
+  width: 4.75rem;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding-bottom: 0.45rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.05);
+  font-family: $font-display;
   text-align: center;
+}
+
+.calMonth {
+  width: 100%;
+  padding: 0.25rem 0;
+  background: $accent-gold;
+  color: #2a1d00;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.calDay {
+  margin-top: 0.15rem;
+  color: $white;
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.calYear {
+  color: $gray-500;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.releaseCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
 
   strong {
     color: $white;
     font-family: $font-display;
-    font-size: 1.1rem;
-    font-weight: 750;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.25;
   }
 
-  p {
-    max-width: 44ch;
+  span {
     color: $gray-500;
-    font-size: 0.84rem;
-    line-height: 1.55;
-  }
-
-  button {
-    min-height: 2.5rem;
-    margin: 0.75rem auto 0;
-    padding-inline: 1rem;
-    background: var(--game-accent-strong);
-    color: var(--game-ink);
-    border-radius: $radius-sm;
-    font-size: 0.78rem;
-    font-weight: 800;
-
-    &:hover { background: var(--game-accent); }
-    &:focus-visible { outline: 2px solid $white; outline-offset: 3px; }
-  }
-
-  a {
-    margin-top: 0.5rem;
-    color: var(--game-accent);
-    font-size: 0.8rem;
-    font-weight: 750;
+    font-size: 0.875rem;
   }
 }
 
-.resultCount {
-  margin-bottom: 1.4rem;
-  color: $gray-500;
-  font-size: 0.82rem;
-
-  strong {
-    color: $gray-200;
-    font-weight: 750;
-    font-variant-numeric: tabular-nums;
-  }
+.releaseArt {
+  width: 4.5rem;
+  height: 5rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0.5rem 0.6rem rgba(#000, 0.45));
 }
+
+// ---------- Sets ----------
+// Wide rows with the set's art on the left, so any number of sets reads
+// as a deliberate list.
 
 .setGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
-  gap: clamp(1rem, 2vw, 1.5rem);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
+  gap: 0.75rem;
 }
 
 .setLink {
-  position: relative;
   display: grid;
-  grid-template-rows: minmax(14rem, 1fr) auto;
-  min-height: 22rem;
-  overflow: hidden;
-  background: #151715;
-  color: $white;
-  border-radius: $radius-md;
-  transition: background $transition-fast, transform $transition-base;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1.25rem;
+  min-height: 8.5rem;
+  padding: 0.75rem 1.5rem 0.75rem 0.75rem;
+  border-radius: $radius-panel;
+  background: $surface;
+  transition: background-color 180ms $ease-out;
 
   &:hover {
-    background: #1a1d1b;
-    transform: translateY(-0.3rem);
-
-    .setArtwork img {
-      transform: translateY(-0.35rem) scale(1.025);
-    }
-
-    .setArrow { color: var(--game-accent); transform: translate(0.15rem, -0.15rem); }
+    background: $surface-raised;
   }
 
   &:focus-visible {
-    outline: 2px solid var(--game-accent);
+    outline: 2px solid $primary-light;
     outline-offset: 3px;
   }
 }
 
 .setArtwork {
-  display: grid;
-  min-height: 14rem;
-  place-items: center;
+  display: flex;
+  height: 7rem;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  padding: 1.75rem;
-  background:
-    radial-gradient(circle at center, color-mix(in srgb, var(--game-accent) 19%, transparent), transparent 64%),
-    #111411;
+  padding: 0.6rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.04);
 
   img {
-    display: block;
-    width: 100%;
-    height: 11rem;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
     object-fit: contain;
-    filter: drop-shadow(0 1.25rem 1.5rem rgba(#000, 0.5));
-    transition: transform $transition-base;
+    filter: drop-shadow(0 0.6rem 0.6rem rgba(#000, 0.45));
+    transition: translate 400ms $ease-out;
   }
 
   > span {
-    color: color-mix(in srgb, var(--game-accent) 25%, transparent);
+    color: rgba($white, 0.35);
     font-family: $font-display;
-    font-size: 4rem;
-    font-weight: 900;
-    letter-spacing: -0.08em;
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+}
+
+@media (hover: hover) {
+  .setLink:hover .setArtwork img {
+    translate: 0 -0.3rem;
   }
 }
 
 .setCopy {
-  display: grid;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
   gap: 0.35rem;
-  padding: 1.3rem 3rem 1.35rem 1.35rem;
-
-  > span {
-    color: var(--game-accent);
-    font-size: 0.68rem;
-    font-weight: 780;
-  }
 
   strong {
-    overflow: hidden;
     color: $white;
     font-family: $font-display;
-    font-size: 1.05rem;
-    font-weight: 740;
+    font-size: 1.2rem;
+    font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.2;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
-  small { color: $gray-600; font-size: 0.72rem; }
-}
-
-.setArrow {
-  position: absolute;
-  right: 1.25rem;
-  bottom: 1.55rem;
-  color: $gray-700;
-  font-size: 1rem;
-  transition: color $transition-fast, transform $transition-fast;
-}
-
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 1.5rem;
-
-  button {
-    display: inline-flex;
-    min-height: 2.4rem;
+  small {
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding-inline: 0.9rem;
-    background: #161817;
+    gap: 0.6rem;
     color: $gray-400;
-    border-radius: $radius-full;
-    font-size: 0.78rem;
-    font-weight: 680;
-    transition: background $transition-fast, color $transition-fast;
+    font-size: 0.875rem;
+  }
+}
 
-    span {
-      color: $gray-600;
-      font-size: 0.7rem;
-      font-variant-numeric: tabular-nums;
-    }
+.setCode {
+  padding: 0.15rem 0.5rem;
+  border-radius: $radius-inner;
+  background: rgba($white, 0.07);
+  color: $gray-300;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
 
-    &:hover {
-      background: #1e211f;
-      color: $white;
-    }
+// ---------- Empty + missing ----------
 
-    &:focus-visible { outline: 2px solid var(--game-accent); outline-offset: 2px; }
+.empty {
+  display: flex;
+  min-height: 18rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1.5rem;
+  border-radius: $radius-panel;
+  background: $surface;
+  text-align: center;
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.2rem;
   }
 
-  .filterActive {
-    background: color-mix(in srgb, var(--game-accent) 16%, #161817);
-    color: var(--game-accent);
+  p {
+    max-width: 44ch;
+    color: $gray-400;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
 
-    span { color: var(--game-accent); }
+  a,
+  button {
+    @include btn-primary;
+    margin-top: 0.9rem;
   }
 }
 
 .missing {
-  display: grid;
-  min-height: 60dvh;
-  place-content: center;
+  display: flex;
+  min-height: 60vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 1rem;
-  color: $white;
-  text-align: center;
 
-  a { color: $primary-light; }
-}
-
-@media (max-width: $bp-md) {
-  .sectionHead,
-  .empty {
-    align-items: flex-start;
+  h1 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.75rem;
   }
 
-  .sectionHead { flex-direction: column; }
-  .releaseItem { grid-template-columns: 1fr auto; gap: 0.5rem 1rem; padding-block: 1.2rem; }
-  .releaseItem time { grid-column: 1 / -1; }
+  a {
+    @include btn-primary;
+  }
 }
 
 @media (max-width: $bp-sm) {
-  .setGrid { grid-template-columns: 1fr; }
-  .setLink { grid-template-rows: 13rem auto; min-height: 20rem; }
-  .setArtwork { min-height: 13rem; }
+  .releaseItem {
+    gap: 0.9rem;
+    padding-right: 0.9rem;
+  }
+
+  .releaseArt {
+    width: 3.25rem;
+    height: 4rem;
+  }
+
+  .sectionHead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .setLink {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    padding-right: 1rem;
+  }
+
+  .setArtwork {
+    height: 5.5rem;
+  }
+
+  .setCopy strong {
+    font-size: 1.05rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .releaseItem,
-  .setLink,
-  .setArtwork img,
-  .setArrow {
-    transition: none;
+  .setLink:hover .setArtwork img {
+    translate: none;
   }
 }

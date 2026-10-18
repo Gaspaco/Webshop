@@ -1,757 +1,577 @@
 @use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
 
 .showcase {
   padding-top: clamp(0.75rem, 2.5vh, 1.5rem);
-  padding-bottom: clamp(1.5rem, 4vh, 2.75rem);
+  padding-bottom: clamp(2.5rem, 6vh, 4rem);
 }
 
 .grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem);
+  gap: 0.75rem;
+  align-items: stretch;
   width: min($container-wide, calc(100% - clamp(2rem, 4vw, 3rem)));
   margin-inline: auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-  gap: clamp(1rem, 2vw, 1.75rem);
-  align-items: stretch;
 
   @media (max-width: $bp-lg) {
     grid-template-columns: 1fr;
   }
 }
 
-// ---------- Featured carousel ----------
+// ---------- Stage ----------
+// The featured product stands on a lit stage. The light follows the pointer;
+// everything else holds still until a slide changes.
 
-.featured {
+.stage {
+  --mx: 0.68;
+  --my: 0.42;
   position: relative;
-  border-radius: $radius-xl;
+  min-height: clamp(26rem, 62vh, 36rem);
   overflow: hidden;
-  min-height: clamp(340px, 48vh, 460px);
+  border-radius: $radius-panel;
   background: $surface;
   isolation: isolate;
+
+  // Card frame, at the scale of the stage.
+  &::after {
+    position: absolute;
+    z-index: 3;
+    inset: 0.6rem;
+    border: 1px solid rgba($white, 0.06);
+    border-radius: calc($radius-panel - 0.35rem);
+    content: "";
+    pointer-events: none;
+  }
+}
+
+.spotlight {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at calc(var(--mx) * 100%) calc(var(--my) * 100%),
+      rgba($primary, 0.2) 0%,
+      rgba($primary, 0.06) 22%,
+      transparent 46%
+    ),
+    radial-gradient(ellipse 70% 90% at 100% 100%, rgba($primary-dark, 0.18), transparent 70%);
+  transition: background-position 300ms $ease-out;
+  pointer-events: none;
 }
 
 .slide {
   position: absolute;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(1rem, 3vw, 3rem);
   inset: 0;
-  opacity: 0;
+  padding: clamp(2rem, 4.5vw, 4rem) clamp(2rem, 4.5vw, 4.5rem) clamp(4.5rem, 7vw, 5.5rem);
   visibility: hidden;
   pointer-events: none;
+
+  // The game's own colour, faint, in the corner the product stands in.
+  &::before {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: radial-gradient(ellipse 55% 75% at 78% 55%, color-mix(in srgb, var(--theme) 45%, transparent), transparent 70%);
+    content: "";
+    opacity: 0;
+    transition: opacity 700ms $ease-out;
+  }
 }
 
 .slideActive {
-  opacity: 1;
   visibility: visible;
   pointer-events: auto;
 
-  .slideBody > * {
-    animation: riseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-  .slideTags { animation-delay: 0.05s; }
-  .slideTitle { animation-delay: 0.12s; }
-  .slideBlurb { animation-delay: 0.19s; }
-  .slideFooter { animation-delay: 0.26s; }
-
-  .slideArt {
-    animation: artIn 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  &::before {
+    opacity: 1;
   }
 }
 
-// Colored wash unique per slide
-.slideWash {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background:
-    radial-gradient(120% 130% at 88% 18%, color-mix(in oklab, var(--theme) 70%, transparent) 0%, transparent 55%),
-    linear-gradient(115deg, #0c0f0d 18%, color-mix(in oklab, var(--theme) 22%, #0c0f0d) 100%);
+// ---------- Copy ----------
+
+.copy {
+  display: flex;
+  max-width: 34rem;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.slideArt {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  right: clamp(1rem, 4vw, 3.5rem);
-  width: 58%;
-  height: 84%;
-  object-fit: contain;
-  transform: translateY(-50%) rotate(5deg);
-  filter: brightness(1.12) contrast(1.03) drop-shadow(0 30px 50px rgba(#000, 0.62));
-  user-select: none;
-
-  @media (max-width: $bp-md) {
-    width: 62%;
-    height: 82%;
-    right: -2.5rem;
-  }
-
-  @media (max-width: $bp-sm) {
-    right: -3rem;
-    width: 76%;
-    height: 70%;
-    opacity: 0.5;
-  }
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
-.slideArtGlow {
-  position: absolute;
+.game {
+  color: $gray-200;
+}
+
+.tag {
+  padding: 0.3rem 0.65rem;
+  border-radius: $radius-full;
+  background: rgba($primary, 0.14);
+  color: $primary-light;
+  font-size: 0.75rem;
+}
+
+.tagPreorder {
+  background: rgba($accent-gold, 0.14);
+  color: $accent-gold;
+}
+
+.title {
+  max-width: 14ch;
+  color: $white;
+  font-family: $font-display;
+  font-size: clamp(2.25rem, 4.6vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.blurb {
+  display: -webkit-box;
+  max-width: 40ch;
+  margin-top: 1.1rem;
+  overflow: hidden;
+  color: $gray-400;
+  font-size: clamp(0.98rem, 1.15vw, 1.075rem);
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.primaryCta {
+  @include btn-primary(lg);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.addCta {
+  @include btn-secondary(lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.done {
+  @include btn-done;
+}
+
+// ---------- Product art ----------
+
+.art {
+  position: relative;
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  place-items: center;
+  perspective: 900px;
+}
+
+.artImage {
+  position: relative;
   z-index: 1;
-  top: 50%;
-  right: 2%;
-  width: 60%;
-  height: 86%;
-  transform: translateY(-50%);
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in oklab, var(--theme) 72%, white 28%) 0%,
-    color-mix(in oklab, var(--theme) 34%, transparent) 38%,
-    transparent 72%
-  );
-  filter: blur(2.5rem);
-  opacity: 0.42;
-  pointer-events: none;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: min(100%, 26rem);
+  object-fit: contain;
+  filter: drop-shadow(0 2.25rem 2rem rgba(#000, 0.55));
+  user-select: none;
+}
+
+// The shadow the product casts on the stage floor.
+.floor {
+  position: absolute;
+  z-index: 0;
+  bottom: 4%;
+  left: 50%;
+  width: 62%;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(#000, 0.55), transparent);
+  transform: translateX(-50%);
 }
 
 .sealedPlaceholder {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  right: clamp(3rem, 8vw, 7rem);
-  display: flex;
-  width: clamp(10.5rem, 24%, 13.5rem);
-  aspect-ratio: 0.7;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 1.2rem;
-  border: 1px solid color-mix(in oklab, var(--theme) 62%, white 14%);
-  border-radius: 0.5rem;
-  transform: translateY(-50%) rotate(2deg);
+  display: grid;
+  width: min(15rem, 80%);
+  aspect-ratio: 63 / 88;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  border-radius: 5% / 3.6%;
   background:
-    linear-gradient(155deg, rgba(#fff, 0.1), transparent 38%),
-    repeating-linear-gradient(135deg, transparent 0 1.4rem, rgba(#fff, 0.03) 1.4rem 1.46rem),
-    color-mix(in oklab, var(--theme) 38%, #090c0a);
-  box-shadow:
-    0.8rem 0.8rem 0 color-mix(in oklab, var(--theme) 18%, #0a0d0b),
-    1.55rem 1.55rem 0 rgba(#050605, 0.72),
-    0 2rem 4rem rgba(#000, 0.45),
-    inset 0 0 0 0.35rem rgba(#000, 0.1);
-  color: $white;
-  user-select: none;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0.75rem 0.75rem auto;
-    height: 0.22rem;
-    border-radius: 99rem;
-    background: var(--theme);
-    box-shadow: 0 0 1.5rem var(--theme);
-  }
-
-  span,
-  i {
-    color: rgba($white, 0.68);
-    font-size: 0.64rem;
-    font-style: normal;
-    font-weight: 750;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
+    radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--theme) 55%, transparent), transparent 70%),
+    $surface-raised;
+  box-shadow: inset 0 0 0 0.4rem $surface-raised, inset 0 0 0 calc(0.4rem + 1px) rgba($white, 0.12);
+  color: $gray-300;
+  font-family: $font-display;
+  font-weight: 600;
 
   img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 4rem;
-    height: 4rem;
-    object-fit: contain;
-    opacity: 0.82;
-    transform: translate(-50%, -62%);
-    filter: drop-shadow(0 0.8rem 1.2rem rgba(#000, 0.35));
-  }
-
-  strong {
-    margin: 0.35rem 0 0.65rem;
-    font-family: $font-display;
-    font-size: clamp(1.2rem, 2vw, 1.75rem);
-    line-height: 1.05;
+    width: 4.5rem;
+    opacity: 0.85;
   }
 }
 
-.loadingCards {
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  right: clamp(2rem, 6vw, 5.5rem);
-  width: min(48%, 29rem);
-  height: 78%;
-  transform: translateY(-50%);
-  pointer-events: none;
+// ---------- Progress ----------
+// Each segment fills over the time its slide is shown.
 
-  img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 46%;
-    max-height: 92%;
-    object-fit: contain;
-    filter: drop-shadow(0 1.4rem 1.6rem rgba(#000, 0.48));
-  }
-
-  img:nth-child(1) {
-    transform: translate(-92%, -48%) rotate(-9deg);
-  }
-
-  img:nth-child(2) {
-    z-index: 1;
-    transform: translate(-50%, -54%) rotate(1deg);
-  }
-
-  img:nth-child(3) {
-    transform: translate(-8%, -47%) rotate(10deg);
-  }
-
-  @media (max-width: $bp-sm) {
-    right: -2rem;
-    width: 75%;
-    opacity: 0.48;
-  }
-}
-
-.slideScrim {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: linear-gradient(
-    100deg,
-    rgba(#070908, 0.94) 0%,
-    rgba(#070908, 0.88) 34%,
-    rgba(#070908, 0.55) 54%,
-    rgba(#070908, 0.12) 72%,
-    transparent 88%
-  );
-}
-
-.slideBody {
+// Dots for the other slides; the current one stretches into a pill that
+// fills over the slide's time.
+.progress {
   position: absolute;
   z-index: 4;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  width: min(30rem, 78%);
-  padding: clamp(1.5rem, 3vw, 2.75rem);
-
-  @media (max-width: $bp-sm) {
-    top: auto;
-    bottom: 0;
-    transform: none;
-    width: 100%;
-  }
-}
-
-.slideTags {
+  bottom: clamp(1.5rem, 3vw, 2.1rem);
+  left: clamp(2rem, 4.5vw, 4.5rem);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 0.15rem;
 }
 
-.gameTag,
-.setTag {
-  display: inline-flex;
-  align-items: center;
-  height: 1.75rem;
-  padding-inline: 0.75rem;
-  border-radius: $radius-full;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-.gameTag {
-  background: $primary;
-  color: #06120d;
-}
-
-.setTag {
-  background: rgba($white, 0.12);
-  color: $white;
-  backdrop-filter: blur(4px);
-}
-
-.slideTitle {
-  font-size: clamp(1.75rem, 3.4vw, 2.85rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  color: $white;
-  margin-bottom: 0.75rem;
-  max-width: 16ch;
-}
-
-.slideBlurb {
-  font-size: clamp(0.9375rem, 1.1vw, 1.0625rem);
-  line-height: 1.6;
-  color: $gray-300;
-  max-width: 32ch;
-  margin-bottom: 1.75rem;
-}
-
-.slideFooter {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-}
-
-.slideCta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  height: 3rem;
-  padding-inline: 1.5rem;
-  border-radius: $radius-md;
-  background: $primary;
-  color: #06120d;
-  font-family: $font-display;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  transition: background $transition-base, transform $transition-base;
-
-  svg {
-    width: 1.1rem;
-    height: 1.1rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: transform $transition-fast;
-  }
-
-  &:hover {
-    background: $primary-light;
-    svg { transform: translateX(3px); }
-  }
-
-  &:focus-visible {
-    outline: 3px solid $accent-gold;
-    outline-offset: 3px;
-  }
-}
-
-.slideAddBtn {
-  border: 1px solid rgba($white, 0.12);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  flex-shrink: 0;
-  border-radius: $radius-md;
-  background: rgba($white, 0.08);
-  color: $white;
-  transition: background $transition-base, border-color $transition-base, transform 160ms ease-out;
-
-  svg {
-    width: 1.15rem;
-    height: 1.15rem;
-  }
-
-  &:hover {
-    background: rgba($white, 0.14);
-    border-color: rgba($white, 0.22);
-  }
-
-  &:active {
-    transform: scale(0.92);
-  }
-
-  &:focus-visible {
-    outline: 3px solid $accent-gold;
-    outline-offset: 3px;
-  }
-}
-
-.addBtnDone {
-  border: 1px solid rgba($white, 0.12);
-  background: $primary !important;
-  border-color: $primary !important;
-  color: #06120d !important;
-}
-
-.slidePrice {
-  font-family: $font-display;
-  font-size: 1.0625rem;
-  font-weight: 700;
-  color: $white;
-}
-
-.dots {
-  position: absolute;
-  z-index: 5;
-  right: clamp(1.25rem, 3vw, 2rem);
-  bottom: clamp(1.25rem, 3vw, 1.75rem);
-  display: flex;
-  gap: 0.5rem;
-}
-
-.dot {
+.segment {
   position: relative;
   display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 1.4rem;
+  height: 1.75rem;
   place-items: center;
   border-radius: $radius-full;
+  transition: width 520ms $ease-out;
 
+  // The visible track is small; the button around it is the tap target.
   &::before {
-    width: 0.5rem;
-    height: 0.5rem;
+    width: calc(100% - 0.8rem);
+    height: 0.4rem;
     border-radius: $radius-full;
-    background: rgba($white, 0.3);
+    background: rgba($white, 0.22);
     content: "";
-    transition: background $transition-fast, width $transition-base;
+    transition: background-color 220ms $ease-out;
   }
 
-  &:hover::before { background: rgba($white, 0.6); }
+  &:hover::before {
+    background: rgba($white, 0.45);
+  }
 
   &:focus-visible {
     outline: 2px solid $primary-light;
-    outline-offset: 3px;
+    outline-offset: 1px;
   }
 }
 
-.dotActive {
+.segmentActive {
+  width: 3.4rem;
+
   &::before {
-    width: 1.5rem;
-    background: $primary;
+    background: rgba($white, 0.16);
   }
-
-  &:hover::before { background: $primary; }
 }
 
-// ---------- Bestsellers ----------
+.segmentFill {
+  position: absolute;
+  top: calc(50% - 0.2rem);
+  left: 0.4rem;
+  width: calc(100% - 0.8rem);
+  height: 0.4rem;
+  border-radius: $radius-full;
+  background: $primary-light;
+  box-shadow: 0 0 10px rgba($primary-light, 0.5);
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0;
+}
 
-.bestsellers {
+.segmentActive .segmentFill {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+.segmentActive .segmentTimed {
+  animation: fill 6s linear both;
+}
+
+@keyframes fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+// ---------- Ready to ship shelf ----------
+
+.shelf {
   display: flex;
+  min-width: 0;
   flex-direction: column;
-  padding: clamp(1.25rem, 2vw, 1.75rem);
-  padding-right: clamp(1.5rem, 2.4vw, 2.125rem);
-  border-radius: $radius-xl;
+  padding: 1.5rem 1.25rem 1rem;
+  border-radius: $radius-panel;
   background: $surface;
 }
 
-.bestHeader {
+.shelfHeader {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba($white, 0.07);
+  gap: 1rem;
+  padding-inline: 0.25rem;
+  margin-bottom: 0.75rem;
 
   h2 {
-    font-size: 1.25rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
     color: $white;
+    font-family: $font-display;
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 }
 
 .viewAll {
+  @include btn-link;
   font-size: 0.8125rem;
-  font-weight: 600;
-  color: $primary-light;
-
-  &:hover { color: $primary; }
 }
 
-.bestList {
+.shelfList {
   display: flex;
-  flex-direction: column;
   flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.bestLoading {
-  .bestHeader span {
-    color: $gray-500;
-    font-size: 0.75rem;
-  }
-}
-
-.loadingItem {
-  display: grid;
-  grid-template-columns: 3.5rem minmax(0, 1fr);
-  gap: 1.125rem;
-  align-items: center;
-  min-height: 5.25rem;
-}
-
-.loadingThumb,
-.loadingCopy i {
-  display: block;
-  background: rgba($white, 0.065);
-  animation: stockLoading 1.4s ease-in-out infinite alternate;
-}
-
-.loadingThumb {
-  width: 3.5rem;
-  height: 4.625rem;
-  border-radius: $radius-sm;
-}
-
-.loadingCopy {
-  display: grid;
-  gap: 0.6rem;
-
-  i {
-    width: 82%;
-    height: 0.7rem;
-    border-radius: $radius-full;
-  }
-
-  i + i {
-    width: 48%;
-    opacity: 0.7;
-  }
-}
-
-.bestItem {
+.shelfItem {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.625rem 0.5rem;
-  margin-inline: -0.5rem;
-  border-radius: $radius-md;
-  transition: background $transition-fast;
+  padding: 0.25rem;
+  border-radius: $radius-tile;
+  transition: background-color 180ms $ease-out;
 
   &:hover {
-    background: rgba($white, 0.04);
-
-    .bestThumb img { transform: scale(1.06) rotate(-2deg); }
-    .bestName { color: $primary-light; }
+    background: rgba($white, 0.035);
   }
 }
 
-.bestLink {
+.shelfLink {
   display: flex;
-  align-items: center;
-  flex: 1;
   min-width: 0;
-  gap: 1.125rem;
-  padding-block: 0.25rem;
-
-  &:focus-visible {
-    outline: 2px solid $primary-light;
-    outline-offset: 2px;
-    border-radius: $radius-sm;
-  }
-}
-
-.addBtn {
-  display: inline-flex;
+  flex: 1;
   align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  flex-shrink: 0;
-  border-radius: $radius-full;
-  background: rgba($white, 0.06);
-  border: 1px solid rgba($white, 0.1);
-  color: $gray-300;
-  transition: background $transition-base, border-color $transition-base, color $transition-fast, transform 160ms ease-out;
-
-  svg {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  &:hover {
-    background: rgba($primary, 0.16);
-    border-color: rgba($primary, 0.4);
-    color: $primary-light;
-  }
-
-  &:active {
-    transform: scale(0.9);
-  }
+  gap: 0.9rem;
+  padding: 0.35rem;
+  border-radius: $radius-inner;
 
   &:focus-visible {
     outline: 2px solid $primary-light;
-    outline-offset: 2px;
+    outline-offset: 0;
   }
 }
 
-.bestThumb {
-  flex-shrink: 0;
+.thumb {
+  display: grid;
   width: 3.5rem;
-  height: 4.625rem;
-  border-radius: $radius-sm;
+  flex-shrink: 0;
+  aspect-ratio: 63 / 88;
+  place-items: center;
   overflow: hidden;
+  border-radius: $radius-inner;
   background: $surface-raised;
-  box-shadow: 0 4px 10px rgba(#000, 0.35);
 
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transition: transform $transition-base;
+    padding: 0.2rem;
+    object-fit: contain;
   }
 }
 
-.bestInfo {
-  display: grid;
-  gap: 0.2rem;
+.itemInfo {
+  display: flex;
   min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
-.bestName {
-  font-family: $font-display;
-  font-size: 0.9375rem;
-  font-weight: 600;
+.itemName {
+  display: -webkit-box;
+  overflow: hidden;
   color: $white;
-  letter-spacing: -0.01em;
-  transition: color $transition-fast;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
-.bestRating {
+.itemSet {
+  overflow: hidden;
+  color: $gray-500;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemPrice {
+  margin-top: 0.2rem;
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.addBtn {
+  @include btn-icon(2.5rem);
+  margin-right: 0.25rem;
+}
+
+// ---------- Loading ----------
+
+.loadingCards {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+
+  img {
+    position: absolute;
+    width: clamp(7rem, 14vw, 10rem);
+    border-radius: 5% / 3.6%;
+    filter: drop-shadow(0 1.5rem 1.5rem rgba(#000, 0.5));
+    animation: deal 1.6s $ease-out infinite alternate;
+
+    &:nth-child(1) { --r: -12deg; --x: -60%; }
+    &:nth-child(2) { --r: 0deg; --x: 0%; z-index: 1; }
+    &:nth-child(3) { --r: 12deg; --x: 60%; }
+  }
+}
+
+.shelfLoading .shelfList {
+  justify-content: flex-start;
+  gap: 0.6rem;
+}
+
+.loadingItem {
   display: flex;
   align-items: center;
+  gap: 0.9rem;
+  padding: 0.6rem;
 }
 
-.stars {
-  display: inline-flex;
-  gap: 0.0625rem;
+.loadingThumb {
+  width: 3.5rem;
+  aspect-ratio: 63 / 88;
+  border-radius: $radius-inner;
+  background: $surface-raised;
+  animation: pulse 1.4s ease-in-out infinite;
+}
 
-  svg {
-    width: 0.8125rem;
-    height: 0.8125rem;
-    fill: rgba($white, 0.16);
+.loadingCopy {
+  display: grid;
+  flex: 1;
+  gap: 0.5rem;
+
+  i {
+    height: 0.7rem;
+    border-radius: $radius-full;
+    background: $surface-raised;
+    animation: pulse 1.4s ease-in-out infinite;
+
+    &:last-child { width: 45%; }
   }
 }
 
-.starOn {
-  fill: $accent-gold !important;
+// ---------- Keyframes ----------
+
+@keyframes deal {
+  from { transform: translateX(0) rotate(0); }
+  to { transform: translateX(var(--x)) rotate(var(--r)); }
 }
 
-.bestPrice {
-  font-family: $font-display;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: $primary;
+@keyframes pulse {
+  50% { opacity: 0.5; }
 }
 
-@keyframes riseIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+// ---------- Responsive ----------
 
-@keyframes artIn {
-  from { opacity: 0; transform: translateY(-50%) translateX(40px) rotate(8deg); }
-  to { opacity: 1; transform: translateY(-50%) rotate(4deg); }
-}
+@media (max-width: $bp-md) {
+  .stage {
+    min-height: 0;
+    display: grid;
+  }
 
-@keyframes stockLoading {
-  to { background: rgba($white, 0.11); }
+  // Stack: product on top, copy underneath. Slides share one grid cell so the
+  // stage takes the height of the tallest instead of a fixed guess.
+  .slide {
+    position: relative;
+    grid-area: 1 / 1;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    align-items: start;
+    gap: 1.25rem;
+    padding: 1.5rem 1.5rem 4.25rem;
+
+    &::before {
+      background: radial-gradient(ellipse 90% 45% at 50% 22%, color-mix(in srgb, var(--theme) 45%, transparent), transparent 70%);
+    }
+  }
+
+  .art {
+    order: -1;
+    height: 15rem;
+  }
+
+  .artImage {
+    max-height: 15rem;
+  }
+
+  .title {
+    font-size: clamp(2rem, 9vw, 2.75rem);
+  }
+
+  .progress {
+    bottom: 1rem;
+    left: 1.1rem;
+  }
+
+  .loadingCards {
+    position: relative;
+    min-height: 22rem;
+  }
 }
 
 @media (max-width: $bp-sm) {
-  .featured {
-    min-height: 36rem;
+  .actions {
+    width: 100%;
   }
 
-  .slideArt {
-    top: 1rem;
-    right: 0.5rem;
-    width: 54%;
-    height: 42%;
-    opacity: 1;
-    transform: rotate(4deg);
+  .primaryCta {
+    flex: 1;
   }
-
-  .sealedPlaceholder {
-    top: 1rem;
-    right: 1.5rem;
-    width: 10rem;
-    transform: rotate(2deg);
-    opacity: 0.68;
-  }
-
-  .slideActive .slideArt {
-    animation-name: artInMobile;
-  }
-
-  .slideArtGlow {
-    top: 12%;
-    right: -8%;
-    width: 70%;
-    height: 48%;
-    transform: none;
-  }
-
-  .slideScrim {
-    background: linear-gradient(
-      to bottom,
-      rgba(#070908, 0.08) 0%,
-      rgba(#070908, 0.22) 28%,
-      rgba(#070908, 0.94) 44%,
-      #070908 64%
-    );
-  }
-
-  .slideBody {
-    padding: 1.5rem;
-  }
-
-  .slideBlurb {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
-    margin-bottom: 1.25rem;
-  }
-
-  .slideFooter {
-    gap: 0.75rem;
-  }
-
-  .slideCta {
-    max-width: 100%;
-    height: auto;
-    min-height: 3rem;
-    padding-block: 0.65rem;
-  }
-
-  .dots {
-    top: 1rem;
-    right: auto;
-    bottom: auto;
-    left: 0.75rem;
-  }
-}
-
-@media (max-width: 23rem) {
-  .slideBody {
-    padding-inline: 1.25rem;
-  }
-
-  .slideTitle {
-    font-size: 1.65rem;
-  }
-
-  .slideCta {
-    padding-inline: 1rem;
-  }
-}
-
-@keyframes artInMobile {
-  from { opacity: 0; transform: translateX(2rem) rotate(8deg); }
-  to { opacity: 1; transform: rotate(4deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .slideActive .slideBody > *,
-  .slideActive .slideArt,
-  .loadingThumb,
-  .loadingCopy i {
+  .loadingCards img {
     animation: none;
   }
 }

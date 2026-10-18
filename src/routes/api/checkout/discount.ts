@@ -8,7 +8,7 @@ import { validateJsonRequest } from "~/lib/request-security.server";
 
 export async function POST(event: APIEvent) {
   try {
-    const invalidRequest = validateJsonRequest(event, { maxBytes: 4_000 });
+    const invalidRequest = await validateJsonRequest(event, { maxBytes: 4_000 });
     if (invalidRequest) return invalidRequest;
 
     if (

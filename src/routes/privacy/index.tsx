@@ -1,10 +1,11 @@
 import { Title } from "@solidjs/meta";
-import { createSignal, For, onMount, Show } from "solid-js";
+import { createSignal, onMount, Show } from "solid-js";
 import {
   DEFAULT_STORE_PROFILE,
   fetchStoreProfile,
   type StoreProfile,
 } from "~/lib/store-profile";
+import LegalLayout from "~/components/legal/LegalLayout";
 import styles from "~/styles/legal.module.scss";
 
 const SECTIONS = [
@@ -21,37 +22,33 @@ const SECTIONS = [
   { id: "changes", title: "Changes and contact" },
 ];
 
+const SUMMARY = [
+  { title: "Only what the shop needs", text: "Order and account details are used to run the shop and deliver your cards." },
+  { title: "Payments stay with Mollie", text: "Card and bank details are entered at Mollie. We never see or store them." },
+  { title: "Never sold", text: "Your personal data is not sold or rented to anyone." },
+  { title: "You're in control", text: "Ask to see, correct or delete your data and we'll answer within a month." },
+];
+
 export default function Privacy() {
   const [profile, setProfile] = createSignal<StoreProfile>(DEFAULT_STORE_PROFILE);
   onMount(async () => setProfile(await fetchStoreProfile()));
 
   return (
-    <main class={styles.page}>
-      <div class={styles.wide}>
-        <Title>Privacy policy | TCGHaven</Title>
+    <LegalLayout
+      title="Privacy policy"
+      updated="30 August 2026"
+      intro="What we collect when you shop with us, why, and what you can ask us to do with it."
+      sections={SECTIONS}
+      summary={SUMMARY}
+      contact={{
+        title: "Want to see, change or delete your data?",
+        text: "Tell us what you need and the email linked to your account or order. We normally answer within a month.",
+        href: "/contact",
+        label: "Send a privacy request",
+      }}
+    >
+      <Title>Privacy policy | TCGHaven</Title>
 
-        <header class={styles.header}>
-          <span class={styles.headerIcon}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3l7 4v5c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V7l7-4Z" />
-              <path d="M9 12l2 2 4-4" />
-            </svg>
-          </span>
-          <div>
-            <h1 class={styles.heading}>Privacy policy</h1>
-            <p class={styles.updated}>Last updated: 30 August 2026</p>
-          </div>
-        </header>
-
-        <div class={styles.layout}>
-          <nav class={styles.toc} aria-label="Privacy sections">
-            <span class={styles.tocLabel}>On this page</span>
-            <For each={SECTIONS}>
-              {section => <a href={`#${section.id}`} class={styles.tocLink}>{section.title}</a>}
-            </For>
-          </nav>
-
-          <div class={styles.content}>
             <section id="controller" class={styles.section}>
               <h2 class={styles.sectionTitle}>Who controls your data</h2>
               <p>
@@ -213,35 +210,6 @@ export default function Privacy() {
                 Privacy questions can be sent to <a href={`mailto:${profile().businessEmail}`}>{profile().businessEmail}</a>.
               </p>
             </section>
-          </div>
-
-          <aside class={styles.aside}>
-            <div class={styles.asideCard}>
-              <h2 class={styles.asideTitle}>Privacy at a glance</h2>
-              <ul class={styles.asideList}>
-                <For each={[
-                  "Order and account data are used to run the shop",
-                  "Mollie handles complete payment credentials",
-                  "No sale of customer personal data",
-                  "Privacy requests normally answered within one month",
-                ]}>
-                  {point => (
-                    <li class={styles.asideItem}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                      {point}
-                    </li>
-                  )}
-                </For>
-              </ul>
-            </div>
-            <div class={styles.asideContact}>
-              <h2 class={styles.asideTitle}>Exercise a privacy right</h2>
-              <p>Tell us what you need and provide the email connected to your account or order.</p>
-              <a href="/contact" class={styles.asideCta}>Send privacy request</a>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </main>
+    </LegalLayout>
   );
 }

@@ -91,6 +91,15 @@ export default defineConfig({
       "/account": {
         headers: privateAuthHeaders,
       },
+      "/two-factor": {
+        headers: privateAuthHeaders,
+      },
+      "/checkout": {
+        headers: privateAuthHeaders,
+      },
+      "/admin/**": {
+        headers: privateAuthHeaders,
+      },
     },
   },
 });

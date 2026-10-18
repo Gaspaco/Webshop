@@ -2,7 +2,7 @@ import { Title } from "@solidjs/meta";
 import { A } from "@solidjs/router";
 import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { authClient } from "~/lib/auth-client";
-import SocialLinks from "~/components/layout/SocialLinks";
+import { safeAccountReturnPath } from "~/lib/auth-redirect";
 import {
   meetsPasswordRequirements,
   PASSWORD_MAX_LENGTH,
@@ -18,33 +18,7 @@ type AuthPageProps = {
 };
 
 function safeNextPath() {
-  const candidate = new URLSearchParams(window.location.search).get("next");
-  if (
-    !candidate ||
-    !candidate.startsWith("/") ||
-    candidate.startsWith("//") ||
-    candidate.includes("\\")
-  ) {
-    return "/account";
-  }
-
-  // Authentication entry points and the homepage are never useful account
-  // return destinations. They previously allowed a successful sign-in to
-  // appear to bounce straight back home or show the sign-in form again.
-  const pathname = candidate.split(/[?#]/, 1)[0].replace(/\/+$/, "") || "/";
-  if (
-    pathname === "/" ||
-    pathname === "/login" ||
-    pathname === "/signup" ||
-    pathname === "/verify-email" ||
-    pathname === "/reset-password" ||
-    pathname === "/two-factor" ||
-    pathname === "/admin/login"
-  ) {
-    return "/account";
-  }
-
-  return candidate;
+  return safeAccountReturnPath(new URLSearchParams(window.location.search).get("next"));
 }
 
 export default function AuthPage(props: AuthPageProps) {
@@ -86,71 +60,61 @@ export default function AuthPage(props: AuthPageProps) {
 
   const submitLogin = async (event: SubmitEvent) => {
     event.preventDefault();
+    if (loading()) return;
     setError(undefined);
     setLoading(true);
 
-    const { data: authData, error: authError } = await authClient.signIn.email({
-      email: loginEmail(),
-      password: loginPassword(),
-    });
+    try {
+      const { data: authData, error: authError } = await authClient.signIn.email({
+        email: loginEmail(),
+        password: loginPassword(),
+      });
 
-    if (authError) {
-      setLoading(false);
-      if (
-        authError.status === 403 ||
-        authError.code === "EMAIL_NOT_VERIFIED"
-      ) {
-        window.sessionStorage.setItem(
-          "tcghaven.pending-verification-email",
-          loginEmail(),
+      if (authError) {
+        if (authError.code === "EMAIL_NOT_VERIFIED") {
+          window.sessionStorage.setItem(
+            "tcghaven.pending-verification-email",
+            loginEmail(),
+          );
+          window.location.assign("/verify-email");
+          return;
+        }
+
+        setError(
+          authError.code === "ACCOUNT_SUSPENDED"
+            ? "This account is suspended. Contact TCGHaven support for help."
+            : authError.status === 429
+              ? "Too many sign-in attempts. Wait a minute and try again."
+              : authError.status >= 500
+                ? "The account service is temporarily unavailable. Please try again shortly."
+                : "Email or password is incorrect.",
         );
-        window.location.assign("/verify-email");
         return;
       }
 
-      setError(
-        authError.status === 429
-          ? "Too many sign-in attempts. Wait a minute and try again."
-          : authError.status >= 500
-            ? "The account service is temporarily unavailable. Please try again shortly."
-            : "Email or password is incorrect.",
+      if (authData && "twoFactorRedirect" in authData) return;
+
+      // Confirm that the browser received the session cookie before redirecting.
+      const sessionResult = await authClient.getSession();
+      const signedInUser = sessionResult.data?.user as
+        | { role?: string }
+        | undefined;
+
+      if (!signedInUser) {
+        setError(
+          "Your details were accepted, but the browser did not keep the session. Enable cookies for TCGHaven and try again.",
+        );
+        return;
+      }
+
+      window.location.assign(
+        signedInUser.role === "admin" ? "/admin" : safeNextPath(),
       );
-      return;
-    }
-
-    if (authData && "twoFactorRedirect" in authData) {
-      setLoading(false);
-      return;
-    }
-
-    // Confirm that the browser received the session cookie before leaving the
-    // form. This prevents a successful credential response from being followed
-    // by a confusing account -> login bounce.
-    let sessionResult;
-    try {
-      sessionResult = await authClient.getSession();
     } catch {
+      setError("We couldn't reach the account service. Check your connection and try again.");
+    } finally {
       setLoading(false);
-      setError(
-        "You are signed in, but we could not confirm the session. Check your connection and try again.",
-      );
-      return;
     }
-    const signedInUser = sessionResult.data?.user as
-      | { role?: string }
-      | undefined;
-
-    if (!signedInUser) {
-      setLoading(false);
-      setError(
-        "Your details were accepted, but the browser did not keep the session. Enable cookies for TCGHaven and try again.",
-      );
-      return;
-    }
-
-    window.location.assign(
-      signedInUser?.role === "admin" ? "/admin" : safeNextPath(),
-    );
   };
 
   const submitSignup = async (event: SubmitEvent) => {
@@ -326,16 +290,13 @@ export default function AuthPage(props: AuthPageProps) {
           class={styles.formInner}
           classList={{ [styles.formInnerActive]: mode() === "signup" }}
         >
-          <A href="/products" class={styles.backLink}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M19 12H5M11 18l-6-6 6-6" />
-            </svg>
-            Back to the shop
-          </A>
-
-          <A href="/" class={styles.logo}>
-            TCG<span class={styles.logoAccent}>Haven</span>
-          </A>
+          <div class={styles.formHeader}>
+            <A href="/" class={styles.logo}>
+              <img src="/images/logo-mark.png" alt="" width="409" height="379" />
+              <span>TCG<span class={styles.logoAccent}>Haven</span></span>
+            </A>
+            <A href="/products" class={styles.backLink}>Back to the shop</A>
+          </div>
 
           <h1 class={styles.title}>Create your account</h1>
           <p class={styles.subtitle}>It only takes a minute.</p>
@@ -464,16 +425,13 @@ export default function AuthPage(props: AuthPageProps) {
           class={styles.formInner}
           classList={{ [styles.formInnerActive]: mode() === "login" }}
         >
-          <A href="/products" class={styles.backLink}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M19 12H5M11 18l-6-6 6-6" />
-            </svg>
-            Back to the shop
-          </A>
-
-          <A href="/" class={styles.logo}>
-            TCG<span class={styles.logoAccent}>Haven</span>
-          </A>
+          <div class={styles.formHeader}>
+            <A href="/" class={styles.logo}>
+              <img src="/images/logo-mark.png" alt="" width="409" height="379" />
+              <span>TCG<span class={styles.logoAccent}>Haven</span></span>
+            </A>
+            <A href="/products" class={styles.backLink}>Back to the shop</A>
+          </div>
 
           <h1 class={styles.title}>Sign in</h1>
           <p class={styles.subtitle}>Enter your details to access your account.</p>
@@ -560,32 +518,37 @@ export default function AuthPage(props: AuthPageProps) {
 
       <section class={styles.brandPanel}>
         <div class={styles.brandMesh} />
-        <div class={styles.brandMeshGlow} />
 
-        <div class={styles.brandIntro}>
-          <h2 class={styles.brandHeadline}>Your collection has a home.</h2>
-          <p class={styles.brandSub}>
-            Honest grading, real stock, and every order kept together in one
-            account.
-          </p>
+        <div class={styles.cardFan}>
+          <img src="/images/cards/venusaur.png" alt="" />
+          <img src="/images/cards/charizard.png" alt="" />
+          <img src="/images/cards/blastoise.png" alt="" />
         </div>
 
-        <div class={styles.benefits}>
-          <span class={styles.benefitItem}>
-            <CheckIcon />
-            Track every order in one place
-          </span>
-          <span class={styles.benefitItem}>
-            <CheckIcon />
-            Pick up your saved wishlist
-          </span>
-          <span class={styles.benefitItem}>
-            <CheckIcon />
-            Check out faster next time
-          </span>
-        </div>
+        <div class={styles.brandBottom}>
+          <div class={styles.brandIntro}>
+            <h2 class={styles.brandHeadline}>Your collection has a home</h2>
+            <p class={styles.brandSub}>
+              Real stock, honest condition notes, and every order kept together
+              in one account.
+            </p>
+          </div>
 
-        <SocialLinks class={styles.socials} />
+          <ul class={styles.benefits}>
+            <li class={styles.benefitItem}>
+              <CheckIcon />
+              Track every order in one place
+            </li>
+            <li class={styles.benefitItem}>
+              <CheckIcon />
+              Keep a wishlist of cards you want
+            </li>
+            <li class={styles.benefitItem}>
+              <CheckIcon />
+              Check out faster next time
+            </li>
+          </ul>
+        </div>
       </section>
 
       <Show when={resetOpen()}>
@@ -612,7 +575,6 @@ export default function AuthPage(props: AuthPageProps) {
               </svg>
             </button>
 
-            <p class={styles.dialogKicker}>Account recovery</p>
             <h2 id="reset-password-title">Reset your password</h2>
             <p class={styles.dialogCopy}>
               Enter the email linked to your account. We’ll send you a secure

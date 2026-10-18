@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -330,7 +331,7 @@ export async function POST(event: APIEvent) {
         { status: 400 },
       );
     }
-    console.error("Admin import failed", error);
+    logServerError("Admin import failed", error);
     return apiJson({ error: "The import could not be completed." }, { status: 500 });
   }
 }

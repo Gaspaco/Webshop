@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -60,7 +61,7 @@ export async function POST(event: APIEvent) {
     if (error instanceof z.ZodError) {
       return apiJson({ error: "Check the discount details." }, { status: 400 });
     }
-    console.error("Discount creation failed", error);
+    logServerError("Discount creation failed", error);
     return apiJson({ error: "The discount could not be created." }, { status: 500 });
   }
 }

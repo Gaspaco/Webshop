@@ -1,6 +1,7 @@
 import { A } from "@solidjs/router";
-import { createSignal, createUniqueId, For, Show } from "solid-js";
+import { createSignal, createUniqueId, For, onCleanup, onMount, Show } from "solid-js";
 import { useCart } from "~/lib/cart";
+import { revealCards } from "~/lib/motion";
 import ProductCard, {
   type ProductVariantOption,
   type SectionProduct,
@@ -20,6 +21,11 @@ export default function ProductSection(props: ProductSectionProps) {
   const cart = useCart();
   const headingId = `products-${createUniqueId()}`;
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
+  let gridRef: HTMLDivElement | undefined;
+
+  onMount(() => {
+    if (gridRef) onCleanup(revealCards(gridRef, ":scope > article"));
+  });
 
   const addToCart = (
     product: SectionProduct,
@@ -63,7 +69,7 @@ export default function ProductSection(props: ProductSectionProps) {
         {/* A grid rather than a scroll rail: on a wide screen the rail always
             left a card sliced in half at the edge, and hid the rest behind
             arrows. */}
-        <div class={styles.grid}>
+        <div class={styles.grid} ref={gridRef}>
           <For each={props.products}>
             {product => (
               <ProductCard

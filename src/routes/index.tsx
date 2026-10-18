@@ -1,7 +1,7 @@
 import { Title } from "@solidjs/meta";
 import { createAsync } from "@solidjs/router";
 import { createMemo, Show, Suspense } from "solid-js";
-import ShopNote from "~/components/home/ShopNote";
+import ShopByBudget from "~/components/home/ShopByBudget";
 import HavenBand from "~/components/home/HavenBand";
 import Hero from "~/components/home/Hero";
 import SetCollections from "~/components/home/SetCollections";
@@ -81,7 +81,7 @@ export default function Home() {
             />
           </Show>
           <CollectionPaths />
-          <ShopNote />
+          <ShopByBudget />
           <HavenBand />
         </Show>
       </Suspense>

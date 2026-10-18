@@ -10,6 +10,7 @@ import {
   onMount,
   Show,
 } from "solid-js";
+import SearchSuggestions from "~/components/search/SearchSuggestions";
 import ProductCard, {
   type ProductVariantOption,
   type SectionProduct,
@@ -300,13 +301,25 @@ export default function Products() {
     }, 1400);
   };
 
+  let shopSearchInput: HTMLInputElement | undefined;
+
   return (
     <main class={styles.page}>
       <Title>Shop | TCGHaven</Title>
 
       <div class={styles.wide}>
         <header class={styles.head}>
-          <h1>Shop</h1>
+          <div class={styles.titleRow}>
+            <h1>Shop</h1>
+            <Show
+              when={!catalogPending()}
+              fallback={<p class={styles.resultCount}>Loading products</p>}
+            >
+              <p class={styles.resultCount}>
+                {visible().length} {visible().length === 1 ? "product" : "products"}
+              </p>
+            </Show>
+          </div>
 
           <div class={styles.searchRow}>
             <label class={styles.searchField}>
@@ -316,11 +329,13 @@ export default function Products() {
                 <path d="m20 20-4-4" />
               </svg>
               <input
+                ref={shopSearchInput}
                 type="search"
                 value={search()}
                 onInput={event => setSearch(event.currentTarget.value)}
                 placeholder="Search a card, set, or game…"
               />
+              <SearchSuggestions query={search} input={() => shopSearchInput} />
               <Show when={search()}>
                 <button type="button" onClick={clearSearch} aria-label="Clear search">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -330,22 +345,53 @@ export default function Products() {
               </Show>
             </label>
 
-            <button
-              type="button"
-              class={styles.filterToggle}
-              aria-expanded={filtersOpen()}
-              onClick={() => setFiltersOpen(open => !open)}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                <path d="M3 6h18M6 12h12M10 18h4" />
+            <label class={styles.sortField}>
+              <span>Sort</span>
+              <select value={sort()} onChange={event => setSort(event.currentTarget.value as SortKey)}>
+                <For each={SORT_OPTIONS}>
+                  {option => <option value={option.key}>{option.label}</option>}
+                </For>
+              </select>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="m6 9 6 6 6-6" />
               </svg>
-              <span>Filters</span>
-              <Show when={activeChips().length}>
-                <span class={styles.filterCount}>{activeChips().length}</span>
-              </Show>
-            </button>
+            </label>
+
           </div>
         </header>
+
+        <div class={styles.filterBar}>
+          <div class={styles.gameTabs} role="group" aria-label="Game">
+            <For each={GAME_OPTIONS}>
+              {option => (
+                <button
+                  type="button"
+                  class={styles.gameTab}
+                  classList={{ [styles.gameTabActive]: game() === option.key }}
+                  aria-pressed={game() === option.key}
+                  disabled={option.key !== "all" && !gameCounts().get(option.key)}
+                  onClick={() => setGame(option.key)}
+                >
+                  {option.key === "all" ? "All games" : option.label}
+                </button>
+              )}
+            </For>
+          </div>
+          <button
+            type="button"
+            class={styles.filterToggle}
+            aria-expanded={filtersOpen()}
+            onClick={() => setFiltersOpen(open => !open)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M3 6h18M6 12h12M10 18h4" />
+            </svg>
+            <span>Filters</span>
+            <Show when={activeChips().length}>
+              <span class={styles.filterCount}>{activeChips().length}</span>
+            </Show>
+          </button>
+        </div>
 
         <div class={styles.shell}>
           <Show when={filtersOpen()}>
@@ -364,6 +410,9 @@ export default function Products() {
           >
             <div class={styles.railHead}>
               <h2>Filters</h2>
+              <Show when={activeChips().length}>
+                <button type="button" class={styles.railResetTop} onClick={clearFilters}>Reset</button>
+              </Show>
               <button type="button" class={styles.railClose} onClick={() => setFiltersOpen(false)} aria-label="Close filters">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                   <path d="M18 6 6 18M6 6l12 12" />
@@ -389,42 +438,19 @@ export default function Products() {
               </div>
             </div>
 
-            <div class={styles.group} role="group" aria-labelledby="filter-game">
-              <p id="filter-game">Game</p>
-              <div class={styles.optionList}>
-                <For each={GAME_OPTIONS}>
-                  {option => (
-                    <button
-                      type="button"
-                      class={styles.option}
-                      classList={{ [styles.optionActive]: game() === option.key }}
-                      aria-pressed={game() === option.key}
-                      disabled={option.key !== "all" && !gameCounts().get(option.key)}
-                      onClick={() => setGame(option.key)}
-                    >
-                      <span class={styles.optionDot} aria-hidden="true" />
-                      <span class={styles.optionLabel}>{option.label}</span>
-                      <span class={styles.optionCount}>{gameCounts().get(option.key) ?? 0}</span>
-                    </button>
-                  )}
-                </For>
-              </div>
-            </div>
-
             <div class={styles.group} role="group" aria-labelledby="filter-price">
               <p id="filter-price">Price</p>
-              <div class={styles.optionList}>
+              <div class={styles.priceChips}>
                 <For each={PRICE_OPTIONS}>
                   {option => (
                     <button
                       type="button"
-                      class={styles.option}
-                      classList={{ [styles.optionActive]: price() === option.key }}
+                      class={styles.priceChip}
+                      classList={{ [styles.priceChipActive]: price() === option.key }}
                       aria-pressed={price() === option.key}
                       onClick={() => setPrice(option.key)}
                     >
-                      <span class={styles.optionDot} aria-hidden="true" />
-                      <span class={styles.optionLabel}>{option.label}</span>
+                      {option.label}
                     </button>
                   )}
                 </For>
@@ -460,30 +486,6 @@ export default function Products() {
           </aside>
 
           <section class={styles.results} aria-label="Products">
-            <div class={styles.toolbar}>
-              <Show
-                when={!catalogPending()}
-                fallback={<p class={styles.resultCount}>Loading products</p>}
-              >
-                <p class={styles.resultCount}>
-                  <strong>{visible().length}</strong>
-                  {visible().length === 1 ? " product" : " products"}
-                </p>
-              </Show>
-
-              <label class={styles.sortField}>
-                <span>Sort</span>
-                <select value={sort()} onChange={event => setSort(event.currentTarget.value as SortKey)}>
-                  <For each={SORT_OPTIONS}>
-                    {option => <option value={option.key}>{option.label}</option>}
-                  </For>
-                </select>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </label>
-            </div>
-
             <Show when={activeChips().length}>
               <div class={styles.chips}>
                 <For each={activeChips()}>

@@ -2,6 +2,7 @@ import type { APIEvent } from "@solidjs/start/server";
 import { and, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
+import { logServerError } from "~/lib/server-log";
 import {
   customerAdminProfiles,
   session,
@@ -14,7 +15,7 @@ import {
 } from "~/lib/admin.server";
 
 export async function DELETE(event: APIEvent) {
-  const guard = await requireAdmin(event);
+  const guard = await requireAdmin(event, { fresh: true });
   if (guard.response) return guard.response;
 
   try {
@@ -70,7 +71,7 @@ export async function DELETE(event: APIEvent) {
       );
     }
 
-    console.error("Admin customer removal failed", error);
+    logServerError("Admin customer removal failed.", error);
     return apiJson(
       { error: "The customer account could not be removed." },
       { status: 500 },
@@ -127,28 +128,30 @@ export async function PATCH(event: APIEvent) {
       return apiJson({ ok: true });
     }
 
-    await db
-      .insert(customerAdminProfiles)
-      .values({
-        userId: customer.id,
-        notes: input.notes || null,
-        tags: input.tags,
-        suspended: input.suspended,
-        updatedBy: guard.session!.user.id,
-      })
-      .onConflictDoUpdate({
-        target: customerAdminProfiles.userId,
-        set: {
+    await db.transaction(async tx => {
+      await tx
+        .insert(customerAdminProfiles)
+        .values({
+          userId: customer.id,
           notes: input.notes || null,
           tags: input.tags,
           suspended: input.suspended,
           updatedBy: guard.session!.user.id,
-        },
-      });
+        })
+        .onConflictDoUpdate({
+          target: customerAdminProfiles.userId,
+          set: {
+            notes: input.notes || null,
+            tags: input.tags,
+            suspended: input.suspended,
+            updatedBy: guard.session!.user.id,
+          },
+        });
 
-    if (input.suspended) {
-      await db.delete(session).where(eq(session.userId, customer.id));
-    }
+      if (input.suspended) {
+        await tx.delete(session).where(eq(session.userId, customer.id));
+      }
+    });
 
     await writeAuditLog({
       event,
@@ -170,7 +173,7 @@ export async function PATCH(event: APIEvent) {
         { status: 400 },
       );
     }
-    console.error("Admin customer update failed", error);
+    logServerError("Admin customer update failed.", error);
     return apiJson(
       { error: "Customer controls could not be saved." },
       { status: 500 },

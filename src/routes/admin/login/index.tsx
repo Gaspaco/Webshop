@@ -58,6 +58,8 @@ export default function AdminLogin() {
         credentials: "same-origin",
       });
       if (response.status === 403) {
+        const denied = await response.json() as { code?: string };
+        if (["ADMIN_MFA_REQUIRED", "ADMIN_REAUTH_REQUIRED"].includes(denied.code ?? "")) { window.location.assign("/admin/security"); return; }
         await authClient.signOut();
         setError("This account does not have owner access.");
         return;
@@ -78,15 +80,21 @@ export default function AdminLogin() {
   return (
     <main class={styles.page}>
       <Title>Owner sign in | TCGHaven</Title>
-      <A href="/" class={styles.backLink}>Return to storefront</A>
-
       <section class={styles.loginPanel}>
-        <div class={styles.brand}>
-          <img src="/images/logo-mark.png" alt="" />
-          <span>TCGHaven</span>
-        </div>
-        <p class={styles.context}>Private shop operations</p>
-        <h1>Owner sign in</h1>
+        <header class={styles.topbar}>
+          <A href="/" class={styles.brand} aria-label="TCGHaven home">
+            <img src="/images/logo-mark.png" alt="" />
+            <span>TCG<span>Haven</span></span>
+          </A>
+          <A href="/" class={styles.backLink}>Back to the shop</A>
+        </header>
+
+        <span class={styles.badge} aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l1.5-5h15L21 9M3 9v11h18V9M3 9h18M9 20v-6h6v6" />
+          </svg>
+        </span>
+        <h1>Shop owner sign in</h1>
         <p class={styles.intro}>
           Manage the catalogue, stock, orders, and customer activity.
         </p>

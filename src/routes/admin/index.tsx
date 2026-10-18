@@ -16,6 +16,8 @@ import {
 import RemoteCardLibrary from "~/components/admin/RemoteCardLibrary";
 import CardmarketPriceImport from "~/components/admin/CardmarketPriceImport";
 import { authClient } from "~/lib/auth-client";
+import { verifyOwner } from "~/components/admin/OwnerVerification";
+import { csvCell } from "~/lib/csv";
 import { INTERNATIONAL_POSTNL_DESTINATIONS } from "~/lib/shipping";
 import {
   DEFAULT_STORE_PROFILE,
@@ -424,18 +426,18 @@ function createEmptyVariantDraft(): VariantDraft {
 }
 
 const NAV_ITEMS: Array<{ id: AdminSection; label: string; short: string }> = [
-  { id: "overview", label: "Overview", short: "Today" },
-  { id: "products", label: "Catalogue", short: "Products and stock" },
-  { id: "orders", label: "Orders", short: "Fulfilment" },
-  { id: "contacts", label: "Messages", short: "Customer inbox" },
-  { id: "customers", label: "Customers", short: "Accounts" },
-  { id: "discounts", label: "Discounts", short: "Campaigns" },
-  { id: "storefront", label: "Storefront", short: "Homepage content" },
-  { id: "store", label: "Store setup", short: "Business and shipping" },
-  { id: "analytics", label: "Analytics", short: "Sales performance" },
-  { id: "activity", label: "Activity", short: "Security history" },
-  { id: "imports", label: "Bulk import", short: "CSV tools" },
-  { id: "readiness", label: "Launch readiness", short: "Owner and developer" },
+  { id: "overview", label: "Overview", short: "Here's what's happening in the shop today." },
+  { id: "products", label: "Catalogue", short: "Products, prices and stock." },
+  { id: "orders", label: "Orders", short: "Pack, ship and track every order." },
+  { id: "contacts", label: "Messages", short: "Questions from customers." },
+  { id: "customers", label: "Customers", short: "Customer accounts and history." },
+  { id: "discounts", label: "Discounts", short: "Discount codes and campaigns." },
+  { id: "storefront", label: "Storefront", short: "What customers see on the homepage." },
+  { id: "store", label: "Store setup", short: "Business details and shipping rates." },
+  { id: "analytics", label: "Analytics", short: "How sales are doing." },
+  { id: "activity", label: "Activity", short: "Who changed what, and when." },
+  { id: "imports", label: "Bulk import", short: "Add many products at once." },
+  { id: "readiness", label: "Launch readiness", short: "Everything needed before going live." },
 ];
 
 const READINESS_CATEGORIES = [
@@ -673,11 +675,20 @@ async function loadDashboard() {
     headers: { Accept: "application/json" },
   });
   if (response.status === 401 || response.status === 403) {
-    window.location.replace("/admin/login");
+    const denied = await response.json() as { code?: string };
+    window.location.replace(["ADMIN_MFA_REQUIRED", "ADMIN_REAUTH_REQUIRED"].includes(denied.code ?? "") ? "/admin/security" : "/admin/login");
     return new Promise<never>(() => undefined);
   }
   if (!response.ok) throw new Error("Dashboard could not be loaded.");
   return response.json() as Promise<AdminDashboard>;
+}
+
+// A count next to a nav item when that section needs the owner.
+function navBadge(section: AdminSection, data: AdminDashboard) {
+  if (section === "contacts") return data.metrics.unreadMessages || undefined;
+  if (section === "orders") return data.metrics.openOrders || undefined;
+  if (section === "readiness") return data.readiness.blockers || undefined;
+  return undefined;
 }
 
 function initials(name: string) {
@@ -690,7 +701,7 @@ function initials(name: string) {
 }
 
 function escapeCsvCell(value: string) {
-  return `"${value.replaceAll('"', '""')}"`;
+  return csvCell(value);
 }
 
 function downloadTemplate() {
@@ -1885,6 +1896,7 @@ function OrderRow(props: {
   const [refundAmount, setRefundAmount] = createSignal(
     (props.order.totalCents / 100).toFixed(2),
   );
+  const [refundStatuses, setRefundStatuses] = createSignal<Array<{ id: string; status: string; amountCents: number }>>([]);
   const [reason, setReason] = createSignal("");
   const [busy, setBusy] = createSignal(false);
   const [message, setMessage] = createSignal("");
@@ -1932,10 +1944,26 @@ function OrderRow(props: {
       | {
           action: "resend_tracking_email";
           id: string;
+        }
+      | {
+          action: "sync_refunds";
+          id: string;
+        }
+      | { action: "recover_payment" | "retry_order_emails"; id: string }
+      | { action: "resolve_missing_payment"; id: string; confirmation: "CHECKED_MOLLIE_NO_PAYMENT" }
+      | { action: "retry_refund"; id: string; requestId: string }
+      | {
+          action: "resolve_missing_refund";
+          id: string;
+          requestId: string;
+          confirmation: "CHECKED_MOLLIE_NO_REFUND";
         },
   ) => {
+    if (busy()) return;
+    if (["recover_payment", "resolve_missing_payment", "retry_refund", "resolve_missing_refund"].includes(payload.action) && !await verifyOwner()) return;
     setBusy(true);
     setMessage("");
+    try {
     const response = await fetch("/api/admin/orders", {
       method: "POST",
       credentials: "same-origin",
@@ -1944,6 +1972,10 @@ function OrderRow(props: {
     });
     const result = (await response.json()) as {
       error?: string;
+      refundStatus?: string;
+      refunds?: Array<{ id: string; status: string; amountCents: number }>;
+      paymentStatus?: string;
+      emails?: Array<{ audience: string; status: string }>;
       notification?: {
         status: "sent" | "failed";
         error?: string;
@@ -1955,6 +1987,7 @@ function OrderRow(props: {
       return;
     }
     await Promise.resolve(props.onUpdated());
+    if (result.refunds) setRefundStatuses(result.refunds);
     setMessage(
       payload.action === "ship" || payload.action === "resend_tracking_email"
         ? result.notification?.status === "sent"
@@ -1962,14 +1995,23 @@ function OrderRow(props: {
             ? "Shipment saved and tracking email accepted by the mail server"
             : "Tracking email accepted by the mail server"
           : result.notification?.error ?? "Tracking email failed. You can retry it here."
-        : payload.action === "refund"
-          ? "Mollie refund completed"
+        : payload.action === "recover_payment" ? `Payment reconciled: ${result.paymentStatus}`
+        : payload.action === "resolve_missing_payment" ? "Missing payment resolved after Mollie review. Order cancelled and stock released."
+        : payload.action === "retry_order_emails" ? result.emails?.map(email => `${email.audience}: ${email.status}`).join(" • ") || "No queued confirmation emails. Already-sent emails are not resent."
+        : payload.action === "resolve_missing_refund" ? "Missing refund resolved after your Mollie review. Refresh refund status before issuing a replacement."
+        : payload.action === "refund" || payload.action === "retry_refund"
+          ? result.refundStatus === "refunded" ? "Mollie refund confirmed" : "Refund requested. Use Check refund status to confirm completion."
+          : payload.action === "sync_refunds" ? result.refunds?.length
+            ? result.refunds.map(refund => `${formatMoney(refund.amountCents)}: ${refund.status}`).join(" • ")
+            : "No refund requests recorded for this order"
           : "Return request recorded",
     );
-    setBusy(false);
+    } catch {
+      setMessage("The response could not be confirmed. Refresh the order and check its status before retrying a payment or refund action.");
+    } finally { setBusy(false); }
   };
 
-  const refund = () => {
+  const refund = async () => {
     const amountCents = Math.round(Number(refundAmount()) * 100);
     if (!reason().trim()) {
       setMessage("Add a reason before issuing a refund.");
@@ -1980,6 +2022,7 @@ function OrderRow(props: {
         `Refund ${formatMoney(amountCents)} through Mollie? This payment action cannot be undone.`,
       )
     ) return;
+    if (!await verifyOwner()) return;
     void runAction({
       action: "refund",
       id: props.order.id,
@@ -1990,6 +2033,7 @@ function OrderRow(props: {
   };
 
   const createLabel = async () => {
+    if (busy()) return;
     const weightGrams = Number(postnlWeight());
     if (!Number.isInteger(weightGrams) || weightGrams < 1 || weightGrams > 30_000) {
       setMessage("Enter a parcel weight between 1 and 30,000 grams.");
@@ -2262,6 +2306,15 @@ function OrderRow(props: {
                   });
                 }}>
                   <h3>Return and refund</h3>
+                  <Show when={props.order.status === "pending"}>
+                    <button type="button" disabled={busy()} onClick={() => void runAction({ action: "recover_payment", id: props.order.id })}>Recover / check payment</button>
+                    <button type="button" disabled={busy()} onClick={() => {
+                      if (window.confirm("Only continue after checking Mollie and confirming NO payment exists for this order. Wait at least one hour. If a payment exists, use Recover / check payment instead.")) {
+                        void runAction({ action: "resolve_missing_payment", id: props.order.id, confirmation: "CHECKED_MOLLIE_NO_PAYMENT" });
+                      }
+                    }}>Resolve missing payment after Mollie review</button>
+                  </Show>
+                  <button type="button" disabled={busy()} onClick={() => void runAction({ action: "retry_order_emails", id: props.order.id })}>Retry failed confirmation emails</button>
                   <label>
                     <span>Reason</span>
                     <textarea required rows="3" value={reason()} onInput={event => setReason(event.currentTarget.value)} />
@@ -2275,7 +2328,19 @@ function OrderRow(props: {
                     <button type="button" class={styles.dangerAction} disabled={busy()} onClick={refund}>
                       Refund through Mollie
                     </button>
+                    <button type="button" disabled={busy()} onClick={() => void runAction({ action: "sync_refunds", id: props.order.id })}>Check refund status</button>
                   </div>
+                  <For each={refundStatuses()}>{refund => <div>
+                    <p>{formatMoney(refund.amountCents)} · {refund.status}</p>
+                    <Show when={refund.status === "unknown" || refund.status === "creating"}>
+                      <button type="button" disabled={busy()} onClick={() => void runAction({ action: "retry_refund", id: props.order.id, requestId: refund.id })}>Recover original refund</button>
+                      <button type="button" disabled={busy()} onClick={() => {
+                        if (window.confirm("Only continue after checking Mollie and confirming this refund was NOT created. Wait at least one hour after the original attempt. This releases its reserved refund balance; do not use this if a refund exists.")) {
+                          void runAction({ action: "resolve_missing_refund", id: props.order.id, requestId: refund.id, confirmation: "CHECKED_MOLLIE_NO_REFUND" });
+                        }
+                      }}>Resolve missing refund after Mollie review</button>
+                    </Show>
+                  </div>}</For>
                 </form>
               </div>
               <Show when={message()}>
@@ -2358,6 +2423,7 @@ function CustomerRow(props: {
       return;
     }
 
+    if (!await verifyOwner()) return;
     setRemoving(true);
     const response = await fetch("/api/admin/customers", {
       method: "DELETE",
@@ -4160,10 +4226,7 @@ export default function Admin() {
             <aside class={styles.sidebar}>
               <A href="/" class={styles.brand}>
                 <img src="/images/logo-mark.png" alt="" />
-                <div>
-                  <strong>TCGHaven</strong>
-                  <span>Owner workspace</span>
-                </div>
+                <strong>TCG<span>Haven</span></strong>
               </A>
 
               <nav aria-label="Admin sections">
@@ -4173,10 +4236,14 @@ export default function Admin() {
                       type="button"
                       class={styles.navItem}
                       classList={{ [styles.navItemActive]: section() === item.id }}
+                      aria-current={section() === item.id ? "page" : undefined}
                       onClick={() => setSection(item.id)}
                     >
+                      <AdminNavIcon section={item.id} />
                       <strong>{item.label}</strong>
-                      <span>{item.short}</span>
+                      <Show when={navBadge(item.id, data())}>
+                        {count => <span class={styles.navBadge}>{count()}</span>}
+                      </Show>
                     </button>
                   )}
                 </For>
@@ -4201,16 +4268,25 @@ export default function Admin() {
             <section class={styles.workspace}>
               <header class={styles.topbar}>
                 <div>
-                  <p>Shop operations</p>
-                  <h1>{NAV_ITEMS.find(item => item.id === section())?.label}</h1>
+                  <h1>
+                    {section() === "overview"
+                      ? `Welcome back, ${data().owner.name.split(" ")[0]}`
+                      : NAV_ITEMS.find(item => item.id === section())?.label}
+                  </h1>
+                  <p>{NAV_ITEMS.find(item => item.id === section())?.short}</p>
                 </div>
                 <div class={styles.topActions}>
-                  <span class={styles.liveStatus}>
+                  <button
+                    type="button"
+                    class={styles.liveStatus}
+                    classList={{ [styles.liveStatusWarn]: !data().readiness.ready }}
+                    onClick={() => setSection("readiness")}
+                  >
                     <i />
                     {data().readiness.ready
-                      ? "Ready for owner approval"
-                      : `${data().readiness.blockers} launch blockers`}
-                  </span>
+                      ? "Ready to launch"
+                      : `${data().readiness.blockers} launch ${data().readiness.blockers === 1 ? "blocker" : "blockers"}`}
+                  </button>
                   <A href="/" target="_blank">Open storefront</A>
                 </div>
               </header>
@@ -4344,7 +4420,7 @@ export default function Admin() {
                       <h2>
                         {data().readiness.ready
                           ? "The technical checklist is complete."
-                          : `${data().readiness.blockers} required items still need attention.`}
+                          : `${data().readiness.blockers} required ${data().readiness.blockers === 1 ? "item still needs" : "items still need"} attention.`}
                       </h2>
                       <p>
                         Live evidence is checked where possible. Owner approvals remain separate from technical configuration so the dashboard never claims a legal or operational decision was made automatically.
@@ -4457,21 +4533,6 @@ export default function Admin() {
                       </button>
                     </div>
                   </section>
-
-                  <div class={styles.productGuide}>
-                    <div>
-                      <strong>Add one product</strong>
-                      <span>Use the green button for cards, sealed products, graded cards, and accessories.</span>
-                    </div>
-                    <div>
-                      <strong>Full product workspace</strong>
-                      <span>Edit identity, URL, pricing, stock, barcode, card data, media, and every variant.</span>
-                    </div>
-                    <div>
-                      <strong>Choose when it appears</strong>
-                      <span>Draft stays private. Live publishes the product in the customer shop.</span>
-                    </div>
-                  </div>
 
                   <Show when={composerOpen()}>
                     <form class={styles.productForm} onSubmit={createProduct}>
@@ -5703,5 +5764,28 @@ export default function Admin() {
         )}
       </Show>
     </main>
+  );
+}
+
+const NAV_ICON_PATHS: Record<AdminSection, string> = {
+  overview: "M4 5.5A1.5 1.5 0 0 1 5.5 4h4A1.5 1.5 0 0 1 11 5.5v4A1.5 1.5 0 0 1 9.5 11h-4A1.5 1.5 0 0 1 4 9.5ZM13 5.5A1.5 1.5 0 0 1 14.5 4h4A1.5 1.5 0 0 1 20 5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4A1.5 1.5 0 0 1 13 9.5ZM4 14.5A1.5 1.5 0 0 1 5.5 13h4a1.5 1.5 0 0 1 1.5 1.5v4A1.5 1.5 0 0 1 9.5 20h-4A1.5 1.5 0 0 1 4 18.5ZM13 14.5a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a1.5 1.5 0 0 1-1.5-1.5Z",
+  products: "M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM9 8h6M9 12h6M9 16h3",
+  orders: "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4ZM3 6h18M16 10a4 4 0 0 1-8 0",
+  contacts: "M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12Z",
+  customers: "M16 20a4 4 0 0 0-8 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 19a3 3 0 0 0-3-3M17 6a3 3 0 0 1 0 6",
+  discounts: "M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8ZM7.5 7.5h.01",
+  storefront: "M3 9l1.5-5h15L21 9M3 9v11h18V9M3 9h18M9 20v-6h6v6",
+  store: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z",
+  analytics: "M4 20V10M10 20V4M16 20v-7M22 20H2",
+  activity: "M22 12h-4l-3 9L9 3l-3 9H2",
+  imports: "M12 3v12M7 10l5 5 5-5M5 21h14",
+  readiness: "M12 3 5.5 5.7v5.6c0 4.1 2.6 7.8 6.5 9.7 3.9-1.9 6.5-5.6 6.5-9.7V5.7ZM9.2 12.1l1.8 1.8 3.9-4",
+};
+
+function AdminNavIcon(props: { section: AdminSection }) {
+  return (
+    <svg class={styles.navIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d={NAV_ICON_PATHS[props.section]} />
+    </svg>
   );
 }

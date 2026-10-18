@@ -4,6 +4,8 @@ import { z } from "zod";
 import { db } from "~/db";
 import { orders, payments } from "~/db/schema";
 import { checkRateLimit } from "~/lib/rate-limit.server";
+import { auth } from "~/lib/auth";
+import { verifyGuestOrderToken } from "~/lib/guest-order-access";
 
 const orderNumberSchema = z
   .string()
@@ -32,6 +34,7 @@ export async function GET(event: APIEvent) {
   }
 
   if (
+    await checkRateLimit({ event, namespace: "checkout-status-total", identity: "all", limit: 120, windowMs: 10 * 60 * 1000 }) ||
     await checkRateLimit({
       event,
       namespace: "checkout-status",
@@ -49,6 +52,9 @@ export async function GET(event: APIEvent) {
   const [order] = await db
     .select({
       orderNumber: orders.orderNumber,
+      guestAccessHash: orders.guestAccessHash,
+      userId: orders.userId,
+      email: orders.email,
       orderStatus: orders.status,
       paymentStatus: payments.status,
       totalCents: orders.totalCents,
@@ -60,9 +66,16 @@ export async function GET(event: APIEvent) {
     .where(eq(orders.orderNumber, parsed.data))
     .limit(1);
 
-  if (!order) {
+  const session = await auth.api.getSession({ headers: event.request.headers });
+  const owned = order && session && (order.userId === session.user.id ||
+    (!order.userId && session.user.emailVerified && order.email.toLowerCase() === session.user.email.toLowerCase()));
+  const permitted = order && (owned || verifyGuestOrderToken(
+    event.request.headers.get("x-order-access"), order.guestAccessHash,
+  ));
+  if (!permitted) {
     return json({ error: "This order could not be found." }, { status: 404 });
   }
 
-  return json({ order });
+  const { guestAccessHash: _hash, userId: _userId, email: _email, ...publicOrder } = order;
+  return json({ order: publicOrder });
 }

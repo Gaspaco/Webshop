@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -313,7 +314,7 @@ export async function GET(event: APIEvent) {
     ]);
     return searchResponse(cards, sets);
   } catch (error) {
-    console.error("TCGdex search failed", error);
+    logServerError("TCGdex search failed", error);
     return apiJson(
       {
         error: error instanceof TcgdexRequestError && error.status === 429
@@ -427,7 +428,7 @@ export async function POST(event: APIEvent) {
     if (error instanceof TcgdexRequestError && error.status === 404) {
       return apiJson({ error: "That Pokémon card is no longer available in TCGdex." }, { status: 404 });
     }
-    console.error("TCGdex catalogue import failed", error);
+    logServerError("TCGdex catalogue import failed", error);
     return apiJson(
       { error: "The Pokémon card could not be added. Check the server log for the reason." },
       { status: 500 },

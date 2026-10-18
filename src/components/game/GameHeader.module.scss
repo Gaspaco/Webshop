@@ -1,0 +1,98 @@
+@use "../../styles/variables" as *;
+@use "../../styles/games" as *;
+
+.header {
+  @include game-color;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.titleBlock {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  h1 {
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+}
+
+.back {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.3rem;
+  color: $gray-500;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 160ms $ease-out;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &:hover {
+    color: $white;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+.tabs {
+  display: flex;
+  max-width: 100%;
+  gap: 0.15rem;
+  overflow-x: auto;
+  padding: 0.25rem;
+  border-radius: $radius-full;
+  background: $surface;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab {
+  display: inline-flex;
+  min-height: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  padding-inline: 1.15rem;
+  border-radius: $radius-full;
+  color: $gray-400;
+  font-family: $font-display;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 180ms $ease-out, background-color 180ms $ease-out;
+
+  &:hover {
+    color: $white;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: -2px;
+  }
+}
+
+.tabActive {
+  color: $white;
+  background: rgba($white, 0.1);
+}

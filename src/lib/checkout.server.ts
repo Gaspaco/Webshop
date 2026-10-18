@@ -1,11 +1,12 @@
-import { and, eq, sql } from "drizzle-orm";
-import type { PaymentCreateParams } from "@mollie/api-client";
+import { and, asc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import type { Payment, PaymentCreateParams } from "@mollie/api-client";
 import { z } from "zod";
 import { db } from "~/db";
 import {
   discountCodes,
   inventoryMovements,
   orderItems,
+  orderEmailJobs,
   orders,
   payments,
   products,
@@ -24,6 +25,12 @@ import {
   isShippingMethodAllowed,
 } from "~/lib/shipping";
 import { getStoreProfile } from "~/lib/store-profile.server";
+import { makeGuestOrderToken, hashGuestOrderToken } from "~/lib/guest-order-access";
+import { nextFulfilmentStatus } from "~/lib/payment-state";
+import { logServerError } from "~/lib/server-log";
+import { syncPaymentRefunds } from "~/lib/refunds.server";
+import { acquireOperationLease, releaseOperationLease } from "~/lib/operation-lease.server";
+import { canReplayProviderRequest, mollieCredentialHash, openPaymentParameters, providerDefinitivelyRejected, sealPaymentParameters } from "~/lib/provider-recovery.server";
 
 const shippingMethodSchema = z.enum([
   "postnl_letterbox",
@@ -89,7 +96,7 @@ function appUrl(path: string) {
   return new URL(path, getAuthEnv().BETTER_AUTH_URL).toString();
 }
 
-async function sendPaidOrderEmails(orderId: string) {
+async function sendPaidOrderEmail(orderId: string, audience: string) {
   const [order] = await db
     .select()
     .from(orders)
@@ -148,8 +155,8 @@ async function sendPaidOrderEmails(orderId: string) {
     .join("<br>");
   const orderDetailsHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#0b0e0c" style="padding:16px 18px;border-left:4px solid #19c892;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:19px"><span style="color:#7f8d85">Order reference</span><br><strong style="font-size:16px;letter-spacing:.3px">${escapeEmailHtml(order.orderNumber)}</strong></td></tr><tr><td style="padding:8px 0 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${itemHtml}</table>${summaryHtml}</td></tr></table><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#17201c" style="margin:30px 0 0;background:#17201c"><tr><td style="padding:18px"><strong style="display:block;margin-bottom:7px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px">${isPickup ? "Pickup contact details" : "Delivery address"}</strong><span style="color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px">${deliveryHtml}</span></td></tr></table>`;
 
-  await Promise.all([
-    sendTransactionalEmail({
+  const messages = [
+    {
       to: order.email,
       replyTo: profile.businessEmail,
       subject: `Order confirmed: ${order.orderNumber}`,
@@ -173,8 +180,8 @@ async function sendPaidOrderEmails(orderId: string) {
           : "We will send another email with tracking information as soon as your parcel is ready.",
       }),
       idempotencyKey: `paid-customer-${order.id}`,
-    }),
-    sendTransactionalEmail({
+    },
+    {
       to: ownerNotificationEmail,
       replyTo: order.email,
       subject: `New paid order: ${order.orderNumber}`,
@@ -191,12 +198,58 @@ async function sendPaidOrderEmails(orderId: string) {
         },
       }),
       idempotencyKey: `paid-owner-${order.id}`,
-    }),
-  ]);
+    },
+  ];
+  if (audience !== "customer" && audience !== "owner") throw new Error("Unknown order email audience.");
+  await sendTransactionalEmail(messages[audience === "customer" ? 0 : 1]!);
 }
 
-async function releaseOrderReservations(orderId: string, discountId: string | null) {
-  await db.transaction(async tx => {
+/** At-least-once SMTP delivery with durable per-recipient jobs and backoff.
+ * SMTP cannot promise exactly-once delivery after a lost acknowledgement. */
+export async function processPaidOrderEmails(orderId?: string, limit = 10) {
+  const due = and(
+    orderId ? eq(orderEmailJobs.orderId, orderId) : undefined,
+    or(eq(orderEmailJobs.status, "pending"), eq(orderEmailJobs.status, "failed"), eq(orderEmailJobs.status, "sending")),
+    lte(orderEmailJobs.nextAttemptAt, new Date()),
+    or(isNull(orderEmailJobs.leaseUntil), lte(orderEmailJobs.leaseUntil, new Date())),
+  );
+  const jobs = await db.select({ id: orderEmailJobs.id }).from(orderEmailJobs).where(due)
+    .orderBy(asc(orderEmailJobs.nextAttemptAt)).limit(limit);
+  for (const candidate of jobs) {
+    const token = crypto.randomUUID();
+    const [job] = await db.update(orderEmailJobs).set({ status: "sending", leaseToken: token,
+      leaseUntil: new Date(Date.now() + 90_000), attempts: sql`${orderEmailJobs.attempts} + 1` })
+      .where(and(eq(orderEmailJobs.id, candidate.id), due)).returning();
+    if (!job) continue;
+    const owned = and(eq(orderEmailJobs.id, job.id), eq(orderEmailJobs.leaseToken, token));
+    try {
+      await sendPaidOrderEmail(job.orderId, job.audience);
+      await db.update(orderEmailJobs).set({ status: "sent", sentAt: new Date(), leaseUntil: null, leaseToken: null }).where(owned);
+    } catch (error) {
+      await db.update(orderEmailJobs).set({ status: "failed", leaseUntil: null, leaseToken: null,
+        nextAttemptAt: new Date(Date.now() + Math.min(3_600_000, 30_000 * 2 ** Math.min(job.attempts, 7))) }).where(owned);
+      logServerError("Paid order email delivery queued for retry.", error);
+    }
+  }
+}
+
+export async function retryPaidOrderEmails(orderId: string) {
+  await db.update(orderEmailJobs).set({ nextAttemptAt: new Date() }).where(and(
+    eq(orderEmailJobs.orderId, orderId), inArray(orderEmailJobs.status, ["pending", "failed"]),
+    or(isNull(orderEmailJobs.leaseUntil), lte(orderEmailJobs.leaseUntil, new Date())),
+  ));
+  await processPaidOrderEmails(orderId);
+  return db.select({ audience: orderEmailJobs.audience, status: orderEmailJobs.status }).from(orderEmailJobs).where(eq(orderEmailJobs.orderId, orderId));
+}
+
+async function releaseOrderReservations(orderId: string) {
+  await db.transaction(tx => releaseOrderReservationsInTransaction(tx, orderId));
+}
+
+async function releaseOrderReservationsInTransaction(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], orderId: string) {
+    const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).limit(1).for("update");
+    if (!order || order.status !== "pending") return;
+    await releaseDiscountReservation(tx, orderId);
     const reservedItems = await tx
       .select({
         variantId: orderItems.variantId,
@@ -220,13 +273,15 @@ async function releaseOrderReservations(orderId: string, discountId: string | nu
       .set({ status: "cancelled" })
       .where(eq(orders.id, orderId));
 
-    if (discountId) {
-      await tx
-        .update(discountCodes)
-        .set({ usedCount: sql`greatest(${discountCodes.usedCount} - 1, 0)` })
-        .where(eq(discountCodes.id, discountId));
-    }
-  });
+}
+
+async function releaseDiscountReservation(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], orderId: string) {
+  const [released] = await tx.update(orders).set({ discountReleased: true })
+    .where(and(eq(orders.id, orderId), eq(orders.discountReleased, false)))
+    .returning({ code: orders.discountCode });
+  if (released?.code) await tx.update(discountCodes)
+    .set({ usedCount: sql`greatest(${discountCodes.usedCount} - 1, 0)` })
+    .where(eq(discountCodes.code, released.code));
 }
 
 export async function calculateTrustedCheckout(input: unknown) {
@@ -346,6 +401,7 @@ export async function calculateTrustedCheckout(input: unknown) {
     subtotalCents,
     discountId: discount?.id ?? null,
     discountCode: discount?.code ?? null,
+    discountSnapshot: discount ? { type: discount.type, value: discount.value } : null,
     discountCents,
     shippingCents,
     taxCents: 0,
@@ -356,6 +412,7 @@ export async function calculateTrustedCheckout(input: unknown) {
 export async function createCheckoutPayment(input: unknown, userId?: string) {
   const checkout = await calculateTrustedCheckout(input);
   const orderNumber = makeOrderNumber();
+  const guestToken = makeGuestOrderToken();
   const address = {
     firstName: checkout.customer.firstName,
     lastName: checkout.customer.lastName,
@@ -366,6 +423,20 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
   };
 
   const order = await db.transaction(async tx => {
+    if (checkout.discountId && checkout.discountSnapshot) {
+      const claimed = await tx.update(discountCodes)
+        .set({ usedCount: sql`${discountCodes.usedCount} + 1` })
+        .where(and(
+          eq(discountCodes.id, checkout.discountId), eq(discountCodes.active, true),
+          eq(discountCodes.type, checkout.discountSnapshot.type),
+          eq(discountCodes.value, checkout.discountSnapshot.value),
+          sql`${discountCodes.minimumOrderCents} <= ${checkout.subtotalCents}`,
+          sql`(${discountCodes.maximumUses} is null or ${discountCodes.usedCount} < ${discountCodes.maximumUses})`,
+          sql`(${discountCodes.startsAt} is null or ${discountCodes.startsAt} <= now())`,
+          sql`(${discountCodes.expiresAt} is null or ${discountCodes.expiresAt} > now())`,
+        )).returning({ id: discountCodes.id });
+      if (!claimed.length) throw new Error("Discount code is no longer valid for this order.");
+    }
     for (const line of checkout.lines) {
       if (!line.variantId) continue;
 
@@ -391,6 +462,7 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
       .insert(orders)
       .values({
         orderNumber,
+        guestAccessHash: hashGuestOrderToken(guestToken),
         userId: userId ?? null,
         email: checkout.customer.email,
         status: "pending",
@@ -410,6 +482,18 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
 
     if (!createdOrder) throw new Error("Could not create order.");
 
+    const paymentParameters: PaymentCreateParams = {
+      amount: { currency: "EUR", value: centsToAmount(checkout.totalCents) },
+      description: `TCGHaven order ${createdOrder.orderNumber}`,
+      redirectUrl: appUrl(`/checkout?order=${encodeURIComponent(createdOrder.orderNumber)}&access=${guestToken}`),
+      webhookUrl: appUrl("/api/payments/mollie-webhook"),
+      metadata: { orderId: createdOrder.id, orderNumber: createdOrder.orderNumber, recoveryToken: crypto.randomUUID() },
+      idempotencyKey: `checkout-${createdOrder.id}`,
+    };
+    await tx.update(orders).set({ paymentCreationState: "creating", paymentCreationStartedAt: new Date(),
+      paymentCredentialHash: mollieCredentialHash(), paymentParametersEncrypted: sealPaymentParameters(paymentParameters) })
+      .where(eq(orders.id, createdOrder.id));
+
     await tx.insert(orderItems).values(
       checkout.lines.map(line => ({
         orderId: createdOrder.id,
@@ -422,57 +506,10 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
       })),
     );
 
-    if (checkout.discountId) {
-      await tx
-        .update(discountCodes)
-        .set({ usedCount: sql`${discountCodes.usedCount} + 1` })
-        .where(eq(discountCodes.id, checkout.discountId));
-    }
-
     return createdOrder;
   });
 
-  const paymentParameters: PaymentCreateParams = {
-    amount: {
-      currency: "EUR",
-      value: centsToAmount(checkout.totalCents),
-    },
-    description: `TCGHaven order ${order.orderNumber}`,
-    redirectUrl: appUrl(`/checkout?order=${encodeURIComponent(order.orderNumber)}`),
-    webhookUrl: appUrl("/api/payments/mollie-webhook"),
-    metadata: {
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-    },
-  };
-
-  let molliePayment;
-  try {
-    molliePayment = await getMollieClient().payments.create(paymentParameters);
-  } catch (error) {
-    await releaseOrderReservations(order.id, checkout.discountId);
-    throw error;
-  }
-
-  try {
-    await db.insert(payments).values({
-      orderId: order.id,
-      molliePaymentId: molliePayment.id,
-      status: normalizeMollieStatus(molliePayment.status),
-      amountCents: checkout.totalCents,
-      method: molliePayment.method ?? checkout.paymentMethod,
-      rawPayload: {
-        id: molliePayment.id,
-        status: molliePayment.status,
-        amount: molliePayment.amount,
-        metadata: molliePayment.metadata,
-      },
-    });
-  } catch (error) {
-    await getMollieClient().payments.cancel(molliePayment.id).catch(() => undefined);
-    await releaseOrderReservations(order.id, checkout.discountId);
-    throw error;
-  }
+  const molliePayment = await recoverCheckoutPayment(order.id);
 
   return {
     orderNumber: order.orderNumber,
@@ -491,6 +528,115 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
   };
 }
 
+type ProviderPayment = Payment;
+
+async function attachPayment(order: typeof orders.$inferSelect, payment: ProviderPayment) {
+  if (!order.paymentParametersEncrypted) throw new Error("Missing durable payment parameters.");
+  const parameters = openPaymentParameters<PaymentCreateParams>(order.paymentParametersEncrypted);
+  const identity = payment.metadata as { orderId?: string; recoveryToken?: string } | null;
+  const expected = parameters.metadata as { recoveryToken: string };
+  if (identity?.orderId !== order.id || identity.recoveryToken !== expected.recoveryToken ||
+    payment.amount.currency !== "EUR" || Math.round(Number(payment.amount.value) * 100) !== order.totalCents) {
+    throw new Error("Recovered payment identity mismatch.");
+  }
+  await db.transaction(async tx => {
+    await tx.select({ id: orders.id }).from(orders).where(eq(orders.id, order.id)).for("update");
+    const [existing] = await tx.select().from(payments).where(eq(payments.orderId, order.id)).limit(1);
+    if (existing && existing.molliePaymentId !== payment.id) throw new Error("Order already has a different payment.");
+    if (!existing) await tx.insert(payments).values({ orderId: order.id, molliePaymentId: payment.id,
+      status: "open", amountCents: order.totalCents, method: payment.method ?? "mollie" });
+    await tx.update(orders).set({ paymentCreationState: "linked" }).where(eq(orders.id, order.id));
+  });
+}
+
+export async function recoverCheckoutPayment(orderId: string) {
+  const key = `checkout-create:${orderId}`;
+  const token = await acquireOperationLease(key);
+  if (!token) throw new Error("Payment recovery is already running. Try again shortly.");
+  try {
+    const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+    if (!order) throw new Error("Order not found.");
+    const [existing] = await db.select().from(payments).where(eq(payments.orderId, orderId)).limit(1);
+    if (existing) return await getMollieClient().payments.get(existing.molliePaymentId);
+    if (!order.paymentParametersEncrypted || !order.paymentCreationStartedAt || order.paymentCreationState === "failed") {
+      throw new Error("This order has no recoverable payment attempt.");
+    }
+    let payment: ProviderPayment;
+    if (canReplayProviderRequest(order.paymentCreationStartedAt, order.paymentCredentialHash)) {
+      // Exact same parameters, same key, same API credential, within Mollie's
+      // one-hour cache. Never blindly replay after a credential rotation.
+      try { payment = await getMollieClient().payments.create(openPaymentParameters<PaymentCreateParams>(order.paymentParametersEncrypted)); }
+      catch (error) {
+        await db.update(orders).set({ paymentCreationState: providerDefinitivelyRejected(error) ? "failed" : "unknown" }).where(eq(orders.id, orderId));
+        if (providerDefinitivelyRejected(error)) await releaseOrderReservations(orderId);
+        throw error;
+      }
+    } else {
+      // Once the idempotency window expires only look up existing operations.
+      // A bounded scan that cannot establish identity must fail closed.
+      let found: ProviderPayment | undefined;
+      let count = 0;
+      for await (const candidate of getMollieClient().payments.iterate()) {
+        if (++count > 1000) throw new Error("Payment needs manual Mollie reconciliation.");
+        if ((candidate.metadata as { orderId?: string } | null)?.orderId === orderId) {
+          if (found) throw new Error("Multiple payments need owner review.");
+          found = candidate;
+        }
+      }
+      if (!found) throw new Error("Payment needs manual Mollie reconciliation; stock remains reserved.");
+      payment = found;
+    }
+    await attachPayment(order, payment);
+    return payment;
+  } finally { await releaseOperationLease(key, token); }
+}
+
+export async function cancelCheckoutOrder(orderId: string) {
+  const payment = await recoverCheckoutPayment(orderId);
+  if (["paid", "authorized"].includes(payment.status)) {
+    await syncMolliePaymentStatus(payment.id);
+    throw new Error("Payment was received or authorized. Use the refund flow instead.");
+  }
+  if (!["canceled", "failed", "expired"].includes(payment.status)) {
+    try { await getMollieClient().payments.cancel(payment.id); }
+    catch (error) {
+      await syncMolliePaymentStatus(payment.id);
+      throw new Error("Mollie has not confirmed cancellation. Check the payment before trying again.");
+    }
+  }
+  const synced = await syncMolliePaymentStatus(payment.id);
+  if (!["cancelled", "failed", "expired"].includes(synced.status)) throw new Error("Mollie has not confirmed cancellation. No stock was released.");
+  return { id: orderId, status: "cancelled" };
+}
+
+/** Last-resort, explicitly owner-reviewed resolution after the replay window.
+ * A complete provider scan must confirm no matching operation before release. */
+export async function resolveMissingCheckoutPayment(orderId: string) {
+  const key = `checkout-create:${orderId}`;
+  const token = await acquireOperationLease(key);
+  if (!token) throw new Error("Payment recovery is already running.");
+  try {
+    const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+    if (!order || order.status !== "pending" || !order.paymentCreationStartedAt ||
+      Date.now() - order.paymentCreationStartedAt.getTime() < 60 * 60_000) throw new Error("Wait at least one hour and check Mollie first.");
+    let count = 0;
+    for await (const payment of getMollieClient().payments.iterate()) {
+      if (++count > 1000) throw new Error("Provider scan incomplete. Reservations remain held.");
+      if ((payment.metadata as { orderId?: string } | null)?.orderId === orderId) {
+        await attachPayment(order, payment);
+        throw new Error("A matching payment exists. Recover/check it instead; no reservation was released.");
+      }
+    }
+    await db.transaction(async tx => {
+      await tx.select({ id: orders.id }).from(orders).where(eq(orders.id, orderId)).for("update");
+      const [existing] = await tx.select({ id: payments.id }).from(payments).where(eq(payments.orderId, orderId)).limit(1);
+      if (existing) throw new Error("A payment is linked. Reconcile it instead.");
+      await tx.update(orders).set({ paymentCreationState: "failed" }).where(eq(orders.id, orderId));
+      await releaseOrderReservationsInTransaction(tx, orderId);
+    });
+  } finally { await releaseOperationLease(key, token); }
+}
+
 export async function syncMolliePaymentStatus(paymentId: string) {
   const [knownPayment] = await db
     .select({ id: payments.id })
@@ -498,16 +644,19 @@ export async function syncMolliePaymentStatus(paymentId: string) {
     .where(eq(payments.molliePaymentId, paymentId))
     .limit(1);
 
-  if (!knownPayment) {
-    return {
-      paymentId,
-      status: "unknown" as const,
-      amountMatches: false,
-      orderStatus: "unknown" as const,
-    };
+  let molliePayment: ProviderPayment;
+  try { molliePayment = await getMollieClient().payments.get(paymentId); }
+  catch (error) {
+    if (!knownPayment && Number((error as { statusCode?: number }).statusCode) === 404) return { paymentId, status: "unknown", amountMatches: false, orderStatus: "unknown" };
+    throw error;
   }
-
-  const molliePayment = await getMollieClient().payments.get(paymentId);
+  if (!knownPayment) {
+    const orderId = (molliePayment.metadata as { orderId?: string } | null)?.orderId;
+    if (!orderId || !/^[0-9a-f-]{36}$/i.test(orderId)) return { paymentId, status: "unknown", amountMatches: false, orderStatus: "unknown" };
+    const [recoverable] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+    if (!recoverable?.paymentParametersEncrypted) return { paymentId, status: "unknown", amountMatches: false, orderStatus: "unknown" };
+    await attachPayment(recoverable, molliePayment);
+  }
   const normalizedStatus = normalizeMollieStatus(molliePayment.status);
   const amountCents = Math.round(Number(molliePayment.amount.value) * 100);
 
@@ -521,7 +670,10 @@ export async function syncMolliePaymentStatus(paymentId: string) {
 
     if (!storedPayment) throw new Error("The payment record disappeared during synchronization.");
 
-    const amountMatches = storedPayment.amountCents === amountCents;
+    const [currentOrder] = await tx.select({ status: orders.status }).from(orders)
+      .where(eq(orders.id, storedPayment.orderId)).limit(1).for("update");
+    if (!currentOrder) throw new Error("Payment order not found.");
+    const amountMatches = storedPayment.amountCents === amountCents && molliePayment.amount.currency === "EUR";
     const previousIsTerminal = [
       "paid",
       "failed",
@@ -534,14 +686,7 @@ export async function syncMolliePaymentStatus(paymentId: string) {
       : amountMatches
         ? normalizedStatus
         : "failed";
-    const nextOrderStatus =
-      effectiveStatus === "paid"
-        ? "paid"
-        : effectiveStatus === "failed" ||
-            effectiveStatus === "cancelled" ||
-            effectiveStatus === "expired"
-          ? "cancelled"
-          : "pending";
+    const nextOrderStatus = nextFulfilmentStatus(currentOrder.status, effectiveStatus) as typeof orders.$inferSelect.status;
     const firstPaidTransition =
       effectiveStatus === "paid" &&
       ["open", "pending", "authorized"].includes(storedPayment.status);
@@ -552,6 +697,7 @@ export async function syncMolliePaymentStatus(paymentId: string) {
       );
 
     if (firstPaidTransition || firstReleaseTransition) {
+      if (firstReleaseTransition) await releaseDiscountReservation(tx, storedPayment.orderId);
       const reservedItems = await tx
         .select({
           variantId: orderItems.variantId,
@@ -616,6 +762,11 @@ export async function syncMolliePaymentStatus(paymentId: string) {
       })
       .where(eq(orders.id, storedPayment.orderId));
 
+    if (firstPaidTransition) await tx.insert(orderEmailJobs).values([
+      { orderId: storedPayment.orderId, audience: "customer" },
+      { orderId: storedPayment.orderId, audience: "owner" },
+    ]).onConflictDoNothing();
+
     return {
       paymentId,
       status: effectiveStatus,
@@ -626,13 +777,10 @@ export async function syncMolliePaymentStatus(paymentId: string) {
     };
   });
 
-  if (result.sendPaidEmail) {
-    try {
-      await sendPaidOrderEmails(result.orderId);
-    } catch (error) {
-      console.error("Paid order email delivery failed.", error);
-    }
-  }
+  await processPaidOrderEmails(result.orderId);
+
+  // Refunds have a separate lifecycle from the payment itself.
+  await syncPaymentRefunds(paymentId);
 
   return {
     paymentId: result.paymentId,

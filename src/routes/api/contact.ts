@@ -10,6 +10,7 @@ import {
 } from "~/lib/email.server";
 import { getEmailEnv } from "~/lib/env.server";
 import { checkRateLimit } from "~/lib/rate-limit.server";
+import { logServerError } from "~/lib/server-log";
 import { validateJsonRequest } from "~/lib/request-security.server";
 import { getStoreProfile } from "~/lib/store-profile.server";
 
@@ -50,7 +51,7 @@ const json = (data: unknown, init?: ResponseInit) =>
 
 export async function POST(event: APIEvent) {
   try {
-    const invalidRequest = validateJsonRequest(event, { maxBytes: 16_000 });
+    const invalidRequest = await validateJsonRequest(event, { maxBytes: 16_000 });
     if (invalidRequest) return invalidRequest;
 
     const input = contactSchema.parse(await event.request.json());
@@ -127,7 +128,7 @@ export async function POST(event: APIEvent) {
         { status: 400 },
       );
     }
-    console.error("Contact form delivery failed", error);
+    logServerError("Contact form delivery failed.", error);
     return json(
       { error: "Your message could not be sent. Please try again later." },
       { status: 500 },

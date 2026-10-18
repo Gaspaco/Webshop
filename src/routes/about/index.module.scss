@@ -1,250 +1,377 @@
 @use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+@use "../../styles/page" as *;
 
 .page {
-  min-height: calc(100dvh - $header-height);
-  padding-block: 1rem clamp(4rem, 8vh, 7rem);
-  padding-inline: 0;
+  @include page;
 }
 
 .wide {
-  width: min($container-wide, calc(100% - clamp(2rem, 4vw, 3rem)));
-  margin-inline: auto;
-}
-
-// ---------- Hero ----------
-
-.hero {
-  max-width: 48rem;
-  padding-block: clamp(2rem, 5vh, 3.25rem) clamp(2rem, 5vh, 3rem);
-  margin-bottom: clamp(2.5rem, 6vh, 4rem);
-}
-
-.eyebrow {
-  display: inline-block;
-  margin-bottom: 0.875rem;
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  border: 0;
-  font-family: $font-display;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: $primary-light;
-}
-
-.heading {
-  font-family: $font-display;
-  font-size: clamp(2.4rem, 5vw, 3.75rem);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
-  color: $white;
-  margin-bottom: 1rem;
-}
-
-.lead {
-  max-width: 56ch;
-  margin-top: 1rem;
-  color: $gray-300;
-  font-size: clamp(1rem, 1.2vw, 1.125rem);
-  line-height: 1.65;
-}
-
-// ---------- Story ----------
-
-.storyGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
-  gap: clamp(2rem, 6vw, 6rem);
-  align-items: center;
-  padding: clamp(2rem, 5vw, 5rem);
-  margin-bottom: clamp(4rem, 9vh, 7rem);
-  background: #e7ece8;
-
-  @media (max-width: $bp-lg) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.media {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: clamp(22rem, 32vw, 30rem);
-  border-radius: 0;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse 90% 70% at 50% 0%, rgba($primary, 0.16) 0%, transparent 60%),
-    $surface;
-  border: 1px solid rgba($white, 0.07);
-
-  img {
-    height: 86%;
-    width: auto;
-    max-width: 82%;
-    transform: rotate(-4deg);
-    filter: drop-shadow(0 1.5rem 2.5rem rgba(#000, 0.6));
-  }
-}
-
-.story {
+  @include wide;
   display: flex;
   flex-direction: column;
-  gap: 1.125rem;
-  max-width: 40rem;
-
-  p {
-    color: #39463e;
-    font-size: 1rem;
-    line-height: 1.75;
-  }
+  gap: clamp(3rem, 7vw, 5.5rem);
 }
 
-.storyHeading {
-  font-family: $font-display;
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
-  font-weight: 800;
-  letter-spacing: -0.028em;
-  color: #101712;
-  line-height: 1.05;
-  margin-bottom: 0.25rem;
+.primary {
+  @include btn-primary(lg);
 }
 
-// ---------- How I run it ----------
-// A plain definition list. Four identical icon-tile cards read as a template,
-// and the icons carried no information the headings didn't already.
-
-.values {
-  padding-block: clamp(2rem, 5vh, 3rem);
-  border-top: 1px solid rgba($white, 0.1);
-  margin-bottom: clamp(2.5rem, 6vh, 4rem);
+.secondary {
+  @include btn-secondary(lg);
 }
 
-.valuesHeading {
-  color: $white;
-  font-family: $font-display;
-  font-size: clamp(1.5rem, 2.4vw, 2rem);
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  margin-bottom: clamp(1.5rem, 3vh, 2rem);
-}
+// ---------- Hero: words on the left, Alex's card on the right ----------
 
-.valueList {
+.hero {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-  gap: clamp(1.5rem, 3vw, 2.75rem) clamp(2rem, 4vw, 4rem);
-  margin: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-top: clamp(1rem, 3vw, 2.5rem);
 }
 
-.value {
-  min-width: 0;
+.heroCopy {
+  max-width: 34rem;
 
-  dt {
+  h1 {
     color: $white;
     font-family: $font-display;
-    font-size: 1.0625rem;
-    font-weight: 750;
-    letter-spacing: -0.01em;
+    font-size: clamp(3rem, 7vw, 5.75rem);
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 0.95;
   }
 
-  dd {
-    max-width: 46ch;
-    margin: 0.5rem 0 0;
-    color: $gray-400;
-    font-size: 0.9375rem;
+  p {
+    margin-top: 1.5rem;
+    color: $gray-300;
+    font-size: clamp(1.05rem, 1.5vw, 1.25rem);
     line-height: 1.65;
   }
 }
 
-// ---------- CTA ----------
-
-.cta {
+.actions {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: clamp(1.5rem, 4vw, 3rem);
   flex-wrap: wrap;
-  padding: clamp(2rem, 4vw, 3rem);
-  min-height: 16rem;
-  border-radius: 0;
-  border: 1px solid rgba($primary, 0.24);
-  background:
-    radial-gradient(ellipse 70% 120% at 100% 0%, rgba($primary, 0.22) 0%, transparent 60%),
-    #0a0b0a;
+  gap: 0.6rem;
+  margin-top: 2rem;
 }
 
-.ctaText {
+// ---------- The card ----------
+
+.cardWrap {
+  display: grid;
+  place-items: center;
+  perspective: 1200px;
+}
+
+.card {
+  position: relative;
+  width: min(23rem, 100%);
+  aspect-ratio: 63 / 88;
+  padding: 0.7rem;
+  overflow: hidden;
+  border-radius: 4.5% / 3.2%;
+  background: linear-gradient(150deg, #f5d36b 0%, #d9a326 35%, #f8e08e 55%, #b98417 100%);
+  box-shadow:
+    0 2.5rem 4rem -1.5rem rgba(#000, 0.75),
+    0 0 0 1px rgba(#000, 0.4);
+  rotate: 4deg;
+  transition: rotate 700ms $ease-out, translate 700ms $ease-out;
+}
+
+@media (hover: hover) {
+  .card:hover {
+    rotate: 0deg;
+    translate: 0 -0.5rem;
+  }
+}
+
+.cardInner {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.75rem 0.85rem 0.6rem;
+  border-radius: 3.5% / 2.5%;
+  background: linear-gradient(180deg, #123b2c 0%, #0c2a1f 100%);
+  color: $white;
+}
+
+.cardTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  strong {
+    font-family: $font-display;
+    font-size: clamp(1.4rem, 2.6vw, 1.75rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  span {
+    padding: 0.15rem 0.55rem;
+    border-radius: $radius-full;
+    background: rgba($accent-gold, 0.2);
+    color: #f8e08e;
+    font-family: $font-display;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+}
+
+.cardArt {
+  display: grid;
+  flex: 1 1 42%;
+  min-height: 0;
+  place-items: center;
+  border-radius: 0.4rem;
+  background:
+    radial-gradient(circle at 50% 45%, rgba($primary-light, 0.45), transparent 62%),
+    linear-gradient(160deg, #0f5c43, #07261c);
+  box-shadow: inset 0 0 0 2px rgba(#f8e08e, 0.55);
+
+  img {
+    width: 46%;
+    filter: drop-shadow(0 0.75rem 1rem rgba(#000, 0.45));
+  }
+}
+
+.cardType {
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.3rem;
+  background: rgba(#f8e08e, 0.14);
+  color: #f3dc94;
+  font-size: 0.75rem;
+  font-style: italic;
+  text-align: center;
+}
+
+.abilities {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0.55rem;
+  }
+
+  strong {
+    font-family: $font-display;
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
   p {
-    margin-top: 0.5rem;
-    max-width: 40ch;
-    color: $gray-300;
-    font-size: 1rem;
+    margin-top: 0.1rem;
+    color: rgba($white, 0.75);
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+}
+
+// Little energy symbols, like the cost dots on an attack.
+.energy {
+  width: 0.95rem;
+  height: 0.95rem;
+  margin-top: 0.1rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #8ff5c9, $primary 60%, $primary-dark);
+  box-shadow: 0 0 0 1.5px rgba(#f8e08e, 0.7);
+}
+
+.cardFoot {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  color: rgba($white, 0.55);
+  font-size: 0.65rem;
+}
+
+// A foil sheen that sweeps across when the card is hovered.
+.foil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(#fff, 0.28) 45%,
+    rgba(#a7f3d0, 0.18) 50%,
+    transparent 60%
+  );
+  background-size: 250% 100%;
+  background-position: 120% 0;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  transition: background-position 1100ms $ease-out;
+}
+
+@media (hover: hover) {
+  .card:hover .foil {
+    background-position: -40% 0;
+  }
+}
+
+// ---------- Story: four steps, in order ----------
+
+.story h2,
+.cta h2 {
+  @include panel-title;
+  font-size: clamp(1.6rem, 3vw, 2.4rem) !important;
+  letter-spacing: -0.04em !important;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: clamp(1.25rem, 3vw, 2rem);
+  list-style: none;
+}
+
+.step {
+  @include panel;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.25rem 1.5rem;
+
+  h3 {
+    margin-top: 0.6rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin-top: 0.4rem;
+    color: $gray-400;
+    font-size: 0.9375rem;
     line-height: 1.6;
   }
 }
 
-.ctaHeading {
-  font-family: $font-display;
-  font-size: clamp(1.5rem, 2.6vw, 2rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: $white;
+.stepArt {
+  display: grid;
+  height: 11rem;
+  place-items: center;
+  margin-bottom: 1rem;
+  border-radius: $radius-tile;
+  background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba($white, 0.07), transparent 75%), rgba($white, 0.025);
+
+  img {
+    max-width: 62%;
+    max-height: 9rem;
+    object-fit: contain;
+    filter: drop-shadow(0 0.75rem 0.9rem rgba(#000, 0.5));
+    transition: translate 450ms $ease-out, rotate 450ms $ease-out;
+  }
 }
 
-.ctaActions {
+.step:nth-child(odd) .stepArt img {
+  rotate: -5deg;
+}
+
+.step:nth-child(even) .stepArt img {
+  rotate: 4deg;
+}
+
+@media (hover: hover) {
+  .step:hover .stepArt img {
+    translate: 0 -0.4rem;
+    rotate: 0deg;
+  }
+}
+
+.stepNumber {
+  display: grid;
+  width: 1.85rem;
+  height: 1.85rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba($primary, 0.16);
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+// ---------- Call to action ----------
+
+.cta {
+  @include panel;
   display: flex;
-  align-items: center;
-  gap: 0.875rem;
   flex-wrap: wrap;
-}
-
-.ctaPrimary {
-  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  height: 3rem;
-  padding-inline: 1.5rem;
-  border-radius: $radius-md;
-  background: $primary;
-  color: #06120d;
-  font-family: $font-display;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  transition: background $transition-base, transform $transition-base;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  padding: clamp(1.75rem, 4.5vw, 3.25rem);
+  background:
+    radial-gradient(ellipse 50% 140% at 100% 50%, rgba($primary, 0.16), transparent 70%),
+    $surface;
 
-  svg {
-    width: 1.0625rem;
-    height: 1.0625rem;
-    transition: transform $transition-fast;
-  }
-
-  &:hover {
-    background: $primary-light;
-    transform: translateY(-1px);
-
-    svg {
-      transform: translateX(3px);
-    }
+  p {
+    margin-top: 0.5rem;
+    color: $gray-400;
+    font-size: 1.0625rem;
   }
 }
 
-.ctaSecondary {
-  display: inline-flex;
-  align-items: center;
-  height: 3rem;
-  padding-inline: 1.5rem;
-  border-radius: $radius-md;
-  background: rgba($white, 0.05);
-  border: 1px solid rgba($white, 0.12);
-  color: $white;
-  font-family: $font-display;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  transition: background $transition-fast, border-color $transition-fast;
+// ---------- Small screens ----------
 
-  &:hover {
-    background: rgba($white, 0.09);
-    border-color: rgba($white, 0.2);
+@media (max-width: $bp-lg) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .cardWrap {
+    order: -1;
+  }
+
+  // Let the card grow with its text instead of squeezing the art window.
+  .card {
+    width: min(20rem, 88vw);
+    aspect-ratio: auto;
+  }
+
+  .cardArt {
+    flex: none;
+    height: 9rem;
+  }
+
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .stepArt {
+    height: 9rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .foil,
+  .stepArt img {
+    transition: none;
+  }
+
+  .card:hover {
+    rotate: 4deg;
+    translate: none;
   }
 }

@@ -1,3 +1,4 @@
+import { safeApiResponse } from "~/lib/request-security.server";
 import type { APIEvent } from "@solidjs/start/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -40,6 +41,7 @@ async function findActiveProduct(slug: string) {
 }
 
 export async function GET(event: APIEvent) {
+  return safeApiResponse(async () => {
   const session = await getSession(event);
   if (!session) return json({ error: "Authentication required." }, { status: 401 });
 
@@ -65,10 +67,12 @@ export async function GET(event: APIEvent) {
     .limit(1);
 
   return json({ saved: Boolean(savedItem) });
+  });
 }
 
 export async function PUT(event: APIEvent) {
-  const invalidRequest = validateJsonRequest(event, { maxBytes: 1_000 });
+  return safeApiResponse(async () => {
+  const invalidRequest = await validateJsonRequest(event, { maxBytes: 1_000 });
   if (invalidRequest) return invalidRequest;
 
   const session = await getSession(event);
@@ -90,10 +94,12 @@ export async function PUT(event: APIEvent) {
     .onConflictDoNothing();
 
   return json({ saved: true });
+  });
 }
 
 export async function DELETE(event: APIEvent) {
-  const invalidRequest = validateJsonRequest(event, { maxBytes: 1_000 });
+  return safeApiResponse(async () => {
+  const invalidRequest = await validateJsonRequest(event, { maxBytes: 1_000 });
   if (invalidRequest) return invalidRequest;
 
   const session = await getSession(event);
@@ -117,4 +123,5 @@ export async function DELETE(event: APIEvent) {
   }
 
   return json({ saved: false });
+  });
 }

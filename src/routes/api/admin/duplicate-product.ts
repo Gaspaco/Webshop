@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -258,7 +259,7 @@ export async function POST(event: APIEvent) {
     if ((error as { code?: string }).code === "23505") {
       return apiJson({ error: "The copy conflicted with an existing slug or SKU. Try again." }, { status: 409 });
     }
-    console.error("Product duplication failed", error);
+    logServerError("Product duplication failed", error);
     return apiJson({ error: "The product could not be duplicated." }, { status: 500 });
   }
 }

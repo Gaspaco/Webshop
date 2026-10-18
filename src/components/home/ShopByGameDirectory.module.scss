@@ -1,8 +1,8 @@
 @use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
 
 .section {
-  padding: clamp(4.5rem, 9vh, 7.5rem) 0;
-  background: #101110;
+  padding-block: clamp(2rem, 4vw, 3.5rem);
 }
 
 .wide {
@@ -11,337 +11,193 @@
 }
 
 .header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 2rem;
-  margin-bottom: clamp(2rem, 4vw, 3.25rem);
-}
-
-.heading {
-  color: $white;
-  font-family: $font-display;
-  // Sits a clear step below the hero h1 so the page keeps a hierarchy.
-  font-size: clamp(1.9rem, 3.2vw, 2.9rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.04;
-  text-wrap: balance;
-}
-
-.sub {
-  max-width: 56ch;
-  margin-top: 1rem;
-  color: $gray-400;
-  font-size: clamp(0.98rem, 1.1vw, 1.08rem);
-  line-height: 1.65;
+  @include section-header;
 }
 
 .allGames {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  flex: 0 0 auto;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid rgba($primary, 0.7);
-  color: $primary-light;
-  font-size: 0.84rem;
-  font-weight: 750;
-
-  svg {
-    width: 1rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.2;
-    stroke-linecap: round;
-    transition: transform $transition-fast;
-  }
-
-  &:hover svg { transform: translateX(3px); }
-  &:focus-visible { outline: 2px solid $accent-gold; outline-offset: 4px; }
+  @include btn-link;
 }
 
 // ---------- Per-game accent ----------
 
-.pokemon { --game-accent: #2ed39a; }
-.yugioh { --game-accent: #a78bfa; }
-.magic { --game-accent: #f28753; }
-.lorcana { --game-accent: #c084fc; }
-.riftbound { --game-accent: #7dd3fc; }
-.digimon { --game-accent: #60a5fa; }
-.cyberpunk { --game-accent: #facc15; }
+.pokemon { --frame: #2ed39a; }
+.yugioh { --frame: #a78bfa; }
+.magic { --frame: #f28753; }
+.lorcana { --frame: #c084fc; }
+.riftbound { --frame: #7dd3fc; }
+.digimon { --frame: #60a5fa; }
+.cyberpunk { --frame: #facc15; }
 
-// ---------- Directory: one lead shelf + a stacked index ----------
-// Deliberately not a 7-up card grid. Only Pokémon has real card art, so the
-// rest lead with their name and what we actually stock rather than filler.
+// ---------- Directory: one lead tile + a 3 × 2 grid ----------
+// Only Pokémon has real card art, so it leads; the rest are named tiles lit
+// in their own game's colour.
 
 .directory {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-  gap: clamp(1.25rem, 2.5vw, 2.25rem);
-  align-items: stretch;
-
-  @media (max-width: $bp-lg) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  gap: 0.75rem;
 }
 
-// ---------- Lead shelf ----------
-
-.feature {
-  --game-accent: #{$primary};
-  position: relative;
-  display: flex;
-  min-height: clamp(19rem, 26vw, 25rem);
-  align-items: flex-end;
+.feature,
+.tile {
+  @include card-frame;
   overflow: hidden;
-  padding: clamp(1.75rem, 3vw, 2.75rem);
-  border-radius: $radius-xl;
-  background:
-    radial-gradient(
-      ellipse 85% 70% at 82% 22%,
-      color-mix(in oklab, var(--game-accent) 26%, transparent) 0%,
-      transparent 68%
-    ),
-    #0d100e;
-  box-shadow: inset 0 0 0 1px rgba($white, 0.09);
-  isolation: isolate;
-  transition: box-shadow $transition-base;
+  border-radius: $radius-tile;
+  background: $surface;
+  transition: background-color 260ms $ease-out;
 
-  &:hover {
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--game-accent) 55%, transparent);
+  // The game's colour pooling in from one corner; brighter on hover.
+  &::after {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--frame) 22%, transparent), transparent 60%);
+    content: "";
+    opacity: 0.55;
+    transition: opacity 260ms $ease-out;
   }
 
-  &:hover .featureArt {
-    transform: rotate(-4deg) translateY(-10px) scale(1.03);
-  }
-
-  &:hover .featureCta svg {
-    transform: translateX(4px);
+  &:hover::after,
+  &:focus-visible::after {
+    opacity: 1;
   }
 
   &:focus-visible {
-    outline: 2px solid var(--game-accent);
+    outline: 2px solid $primary-light;
     outline-offset: 3px;
+  }
+}
+
+.feature {
+  display: flex;
+  min-height: 24rem;
+  align-items: flex-end;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+
+  &::after {
+    background: radial-gradient(ellipse 80% 70% at 85% 40%, color-mix(in srgb, var(--frame) 26%, transparent), transparent 70%);
   }
 }
 
 .featureBody {
   position: relative;
-  z-index: 2;
-  max-width: 26rem;
+  z-index: 1;
+  display: flex;
+  max-width: 55%;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .featureName {
   color: $white;
   font-family: $font-display;
-  font-size: clamp(1.85rem, 3vw, 2.75rem);
+  font-size: clamp(2rem, 3.4vw, 3rem);
   font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.02;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
 
-.featureTagline {
-  margin-top: 0.7rem;
-  color: $gray-300;
-  font-size: 1rem;
-  line-height: 1.6;
+.tagline {
+  margin-top: 0.5rem;
+  color: $gray-400;
+  font-size: 0.9375rem;
+  line-height: 1.45;
 }
 
 .featureCta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.6rem;
-  color: var(--game-accent);
-  font-family: $font-display;
-  font-size: 0.9375rem;
-  font-weight: 750;
-
-  svg {
-    width: 1.05rem;
-    height: 1.05rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: transform $transition-base;
-  }
+  @include btn-primary;
+  margin-top: 1.5rem;
 }
 
 .featureArt {
   position: absolute;
-  z-index: 1;
-  // Bleeds off the bottom only. Clipping mid-card on the right read as broken.
-  right: clamp(1rem, 3vw, 2.75rem);
-  bottom: -9%;
-  width: clamp(10rem, 17vw, 15rem);
-  height: auto;
-  border-radius: 0.65rem;
-  transform: rotate(-7deg);
-  filter: drop-shadow(0 1.5rem 3rem rgba(0, 0, 0, 0.6));
-  transition: transform $transition-slow;
-  pointer-events: none;
-
-  @media (max-width: $bp-sm) {
-    right: -4rem;
-    opacity: 0.55;
-  }
+  z-index: 0;
+  right: 6%;
+  bottom: -14%;
+  width: clamp(11rem, 18vw, 15rem);
+  border-radius: 4.5% / 3.2%;
+  filter: drop-shadow(0 1.5rem 1.5rem rgba(#000, 0.5));
+  transform: rotate(8deg);
+  user-select: none;
 }
-
-// ---------- Stacked index ----------
 
 .list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 0.75rem;
+
+  li {
+    display: flex;
+  }
+}
+
+.tile {
   display: flex;
+  width: 100%;
+  min-height: 9rem;
   flex-direction: column;
-  padding: 0;
-  margin: 0;
-  gap: 0.5rem;
-  list-style: none;
+  justify-content: flex-end;
+  padding: 1.4rem 1.5rem;
 }
 
-.row {
-  --game-accent: #{$primary};
-  position: relative;
-  display: flex;
-  min-height: 5.5rem;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 1rem 1.25rem;
-  border-radius: $radius-lg;
-  background: $surface;
-  overflow: hidden;
-  transition: background $transition-fast, transform $transition-base;
-
-  // Accent wash grows from the left on hover, so colour reads as arrival
-  // rather than a permanent stripe.
-  &::before {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      color-mix(in oklab, var(--game-accent) 16%, transparent),
-      transparent 55%
-    );
-    content: "";
-    opacity: 0;
-    transition: opacity $transition-base;
-  }
-
-  &:hover {
-    background: $surface-raised;
-    transform: translateY(-2px);
-  }
-
-  &:hover::before {
-    opacity: 1;
-  }
-
-  &:hover .rowArrow {
-    color: var(--game-accent);
-    transform: translateX(3px);
-  }
-
-  &:hover .rowMain strong {
-    color: var(--game-accent);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--game-accent);
-    outline-offset: 2px;
-  }
+.tileName {
+  color: $white;
+  font-family: $font-display;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  transition: color 200ms $ease-out;
 }
 
-.rowMain {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  min-width: 0;
-  flex: 1 1 auto;
-  flex-direction: column;
-
-  strong {
-    color: $white;
-    font-family: $font-display;
-    font-size: 1.0625rem;
-    font-weight: 750;
-    letter-spacing: -0.015em;
-    transition: color $transition-fast;
-  }
+.tile:hover .tileName {
+  color: color-mix(in srgb, var(--frame) 55%, $white);
 }
 
-.rowTagline {
-  margin-top: 0.2rem;
-  color: $gray-500;
+.tile .tagline {
+  margin-top: 0.3rem;
   font-size: 0.8125rem;
-  line-height: 1.5;
 }
 
-.rowArrow {
-  position: relative;
-  z-index: 1;
-  width: 1.1rem;
-  height: 1.1rem;
-  flex: 0 0 auto;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  color: $gray-600;
-  transition:
-    color $transition-fast,
-    transform $transition-base;
-}
-
-// ---------- Shared format chips ----------
-
-.formats {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem 0.85rem;
-
-  span {
-    color: $gray-500;
-    font-size: 0.75rem;
-    white-space: nowrap;
+@media (max-width: $bp-lg) {
+  .directory {
+    grid-template-columns: 1fr;
   }
 
-  span + span::before {
-    margin-right: 0.85rem;
-    color: $gray-700;
-    content: "·";
+  .feature {
+    min-height: 18rem;
   }
 }
 
-.featureBody .formats {
-  margin-top: 1.15rem;
+@media (max-width: $bp-md) {
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
-  span {
-    font-size: 0.8125rem;
+  .tile {
+    min-height: 7.5rem;
+    padding: 1.1rem 1.15rem;
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 }
 
-.row .formats {
-  flex: 0 0 auto;
-
-  @media (max-width: $bp-md) {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .featureArt,
-  .row::before,
-  .rowArrow,
-  .featureCta svg {
-    transition-duration: 0.01ms;
+@media (max-width: $bp-sm) {
+  .featureBody {
+    max-width: 62%;
   }
 
-  .feature:hover .featureArt {
-    transform: rotate(-7deg);
+  .featureArt {
+    right: -4%;
+    width: 9.5rem;
+  }
+
+  .tileName {
+    font-size: 1.05rem;
   }
 }

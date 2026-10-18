@@ -1,0 +1,242 @@
+@use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+
+.header {
+  height: $header-height;
+  padding-top: $header-gap;
+}
+
+.inner {
+  display: grid;
+  height: calc($header-height - $header-gap);
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  width: min($container-wide, calc(100% - clamp(2rem, 4vw, 3rem)));
+  margin-inline: auto;
+  padding-inline: 1rem;
+  border-radius: $radius-panel;
+  background: $surface;
+}
+
+.logo {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.55rem;
+  border-radius: $radius-inner;
+  color: $primary;
+  font-family: $font-display;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+
+  img {
+    width: 30px;
+    height: auto;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 4px;
+  }
+}
+
+.logoAccent {
+  margin-left: 0.15em;
+}
+
+// ---------- Steps ----------
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border-radius: $radius-full;
+  background: rgba($white, 0.04);
+  list-style: none;
+}
+
+.stepLink {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.9rem 0 0.4rem;
+  border-radius: $radius-full;
+  color: $gray-500;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 180ms $ease-out, background-color 180ms $ease-out;
+
+  &:is(a):hover {
+    color: $white;
+    background: rgba($white, 0.06);
+  }
+
+  &:is(a):focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
+}
+
+.stepDot {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba($white, 0.08);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.stepDone .stepLink {
+  color: $gray-300;
+}
+
+.stepDone .stepDot {
+  background: rgba($primary, 0.18);
+  color: $primary-light;
+}
+
+.stepCurrent .stepLink {
+  color: $white;
+  background: rgba($white, 0.09);
+}
+
+.stepCurrent .stepDot {
+  background: $primary;
+  color: #03231a;
+}
+
+// ---------- End ----------
+
+.end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.25rem;
+}
+
+.secure {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: $gray-400;
+  font-size: 0.8125rem;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    color: $primary-light;
+  }
+}
+
+.continue {
+  @include btn-secondary(sm);
+}
+
+.continueShort {
+  display: none;
+}
+
+// ---------- Footer ----------
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  width: min($container-wide, calc(100% - clamp(2rem, 4vw, 3rem)));
+  margin: 0 auto;
+  padding: 1.5rem 0.25rem 2rem;
+  color: $gray-500;
+  font-size: 0.8125rem;
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+  }
+
+  a {
+    color: $gray-500;
+    transition: color 160ms $ease-out;
+
+    &:hover {
+      color: $white;
+    }
+  }
+}
+
+// ---------- Small screens ----------
+
+@media (max-width: $bp-lg) {
+  .secure {
+    display: none;
+  }
+}
+
+@media (max-width: $bp-md) {
+  .inner {
+    grid-template-columns: auto 1fr auto;
+    padding-inline: 0.75rem 0.5rem;
+  }
+
+  .logo span {
+    display: none;
+  }
+
+  .steps {
+    justify-self: center;
+  }
+
+  // Only the current step keeps its label; the others shrink to numbers.
+  .stepLink {
+    padding-right: 0.4rem;
+  }
+
+  .stepCurrent .stepLink {
+    padding-right: 0.8rem;
+  }
+
+  li:not(.stepCurrent) .stepLabel {
+    display: none;
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .inner {
+    gap: 0.5rem;
+    padding-inline: 0.6rem 0.4rem;
+  }
+
+  .steps {
+    gap: 0.1rem;
+  }
+
+  .continueLong {
+    display: none;
+  }
+
+  .continue {
+    padding-inline: 0.75rem;
+  }
+
+  .stepLink {
+    padding-left: 0.25rem;
+  }
+
+  .stepDot {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .continueShort {
+    display: inline;
+  }
+}

@@ -2,6 +2,9 @@ import type { APIEvent } from "@solidjs/start/server";
 import { db } from "~/db";
 import { adminAuditLog } from "~/db/schema";
 import { auth } from "~/lib/auth";
+import { limitJsonBody } from "~/lib/request-security.server";
+import { hasAdminApproval, hasFreshAdminApproval } from "~/lib/admin-approval.server";
+import { logServerError } from "~/lib/server-log";
 
 export function apiJson(data: unknown, init?: ResponseInit) {
   return Response.json(data, {
@@ -15,7 +18,16 @@ export function apiJson(data: unknown, init?: ResponseInit) {
   });
 }
 
-export async function requireAdmin(event: APIEvent) {
+type AdminOptions = { allowEnrollment?: boolean; fresh?: boolean };
+export async function requireAdmin(event: APIEvent, options: AdminOptions = {}) {
+  try { return await checkAdmin(event, options); }
+  catch (error) {
+    logServerError("Owner authorization service failed.", error);
+    return { session: null, response: apiJson({ error: "Owner access is temporarily unavailable." }, { status: 503 }) };
+  }
+}
+
+async function checkAdmin(event: APIEvent, options: AdminOptions) {
   if (!["GET", "HEAD", "OPTIONS"].includes(event.request.method)) {
     const origin = event.request.headers.get("origin");
     const requestOrigin = new URL(event.request.url).origin;
@@ -52,6 +64,20 @@ export async function requireAdmin(event: APIEvent) {
     };
   }
 
+  if (!options.allowEnrollment && !(session.user as { twoFactorEnabled?: boolean }).twoFactorEnabled) {
+    return { session: null, response: apiJson({ code: "ADMIN_MFA_REQUIRED", error: "Set up owner two-factor authentication first." }, { status: 403 }) };
+  }
+  if (options.fresh && !await hasFreshAdminApproval(session.session.id)) {
+    return { session: null, response: apiJson({ code: "ADMIN_REAUTH_REQUIRED", error: "Verify your password and authenticator code before this action." }, { status: 403 }) };
+  }
+  if (!options.allowEnrollment && !await hasAdminApproval(session.session.id)) {
+    return { session: null, response: apiJson({ code: "ADMIN_REAUTH_REQUIRED", error: "Verify owner access on this session." }, { status: 403 }) };
+  }
+  if (!["GET", "HEAD", "OPTIONS"].includes(event.request.method)) {
+    const bounded = await limitJsonBody(event.request, 4_000_000);
+    if (bounded instanceof Response) return { session: null, response: bounded };
+    event.request = bounded;
+  }
   return { session, response: null };
 }
 

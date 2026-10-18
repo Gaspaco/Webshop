@@ -3,18 +3,6 @@ import { Show } from "solid-js";
 import { authClient } from "~/lib/auth-client";
 import styles from "./HavenBand.module.scss";
 
-const ArrowIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    aria-hidden="true"
-  >
-    <path d="M5 12h14M13 6l6 6-6 6" />
-  </svg>
-);
-
 export default function HavenBand() {
   const session = authClient.useSession();
   const currentUser = () => session().data?.user as
@@ -46,7 +34,7 @@ export default function HavenBand() {
         <div class={styles.content}>
           <div class={styles.intro}>
             <h2 id="collector-confidence-title">
-              Know exactly which card is arriving.
+              Know exactly which card is arriving
             </h2>
             <p>
               The option you choose stays connected to its image, finish,
@@ -72,7 +60,6 @@ export default function HavenBand() {
           <div class={styles.actions}>
             <A href="/products?type=single" class={styles.primaryAction}>
               Browse single cards
-              <ArrowIcon />
             </A>
 
             <Show

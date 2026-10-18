@@ -3,6 +3,9 @@
   "regions": [
     "sfo1"
   ],
+  "crons": [
+    { "path": "/api/jobs/order-recovery", "schedule": "0 4 * * *" }
+  ],
   "services": {
     "web": {
       "root": ".",

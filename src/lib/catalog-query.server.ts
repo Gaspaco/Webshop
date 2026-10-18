@@ -5,6 +5,7 @@ import type { DatabaseCatalogProduct } from "~/lib/catalog";
 
 export type CatalogQueryOptions = {
   slug?: string;
+  game?: string;
   available?: boolean;
   limit?: number;
   offset?: number;
@@ -23,6 +24,7 @@ export async function loadDatabaseCatalogRows(
   const productWhere = and(
     eq(products.status, "active"),
     options.slug ? eq(products.slug, options.slug) : undefined,
+    options.game ? eq(products.game, options.game) : undefined,
   );
   const where = and(
     productWhere,

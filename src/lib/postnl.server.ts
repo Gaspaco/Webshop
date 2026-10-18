@@ -108,6 +108,7 @@ export async function createPostnlLabel(input: {
   weightGrams: number;
   productCode: string;
 }) {
+  validatePostnlAddresses(input.shippingAddress, input.senderAddress);
   const env = getPostnlEnv();
   const baseUrl =
     env.POSTNL_MODE === "production"
@@ -220,4 +221,10 @@ export async function createPostnlLabel(input: {
     mode: env.POSTNL_MODE,
     confirmed: confirm,
   };
+}
+
+export function validatePostnlAddresses(recipient: ShippingAddress, sender: SenderAddress) {
+  splitStreetAndHouseNumber(recipient.streetAndHouseNumber ?? "");
+  splitStreetAndHouseNumber(sender.streetAndHouseNumber);
+  splitPostalCodeAndCity(sender.postalCodeAndCity);
 }

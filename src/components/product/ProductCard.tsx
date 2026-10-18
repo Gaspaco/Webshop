@@ -3,6 +3,7 @@ import { createEffect, createMemo, createSignal, For, onCleanup, onMount, Show }
 import { Portal } from "solid-js/web";
 import { formatPrice } from "~/lib/cart";
 import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
+import { flyToCart } from "~/lib/motion";
 import styles from "./ProductSection.module.scss";
 
 export type BoxTheme =
@@ -143,19 +144,7 @@ export default function ProductCard(props: ProductCardProps) {
     setQuickViewOpen(true);
   };
 
-  const moveCard = (event: PointerEvent & { currentTarget: HTMLSpanElement }) => {
-    if (event.pointerType === "touch" || !hasCardTilt()) return;
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
-    const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
-    event.currentTarget.style.setProperty("--card-tilt-x", `${((0.5 - y) * 3).toFixed(2)}deg`);
-    event.currentTarget.style.setProperty("--card-tilt-y", `${((x - 0.5) * 3.5).toFixed(2)}deg`);
-  };
-
-  const resetCard = (event: PointerEvent & { currentTarget: HTMLSpanElement }) => {
-    event.currentTarget.style.removeProperty("--card-tilt-x");
-    event.currentTarget.style.removeProperty("--card-tilt-y");
-  };
+  let artRef: HTMLImageElement | undefined;
 
   const confirmVariant = () => {
     const variant = selectedVariant();
@@ -186,6 +175,7 @@ export default function ProductCard(props: ProductCardProps) {
 
   return (
     <article
+      data-motion-card={hasCardTilt() ? "12" : "8"}
       class={styles.card}
       classList={{
         [styles.cardFill]: props.fill,
@@ -207,10 +197,10 @@ export default function ProductCard(props: ProductCardProps) {
           <span
             class={styles.cardArtwork}
             classList={{ [styles.cardArtworkTilt]: hasCardTilt() }}
-            onPointerMove={moveCard}
-            onPointerLeave={resetCard}
           >
             <img
+              ref={artRef}
+              data-motion-art
               src={displayImage()}
               alt={p.set ? `${p.name}, ${p.set}` : p.name}
               draggable={false}
@@ -221,7 +211,11 @@ export default function ProductCard(props: ProductCardProps) {
           </span>
         </Show>
         <Show when={displayBadge()}>
-          {badge => <span class={styles.badge}>{badge()}</span>}
+          {badge => (
+            <span class={styles.badge} classList={{ [styles.badgePreorder]: activePreorder() }}>
+              {badge()}
+            </span>
+          )}
         </Show>
         <Show when={activePreorder() && preorderCountdown()}>
           <span class={styles.preorderCountdown}>
@@ -261,8 +255,8 @@ export default function ProductCard(props: ProductCardProps) {
                 onClick={openQuickView}
               >
                 <span>{hasAvailableChoice() ? "Choose" : "Preview"}</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m9 6 6 6-6 6" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 7h16M7 12h10M10 17h4" />
                 </svg>
               </button>
             }
@@ -271,7 +265,10 @@ export default function ProductCard(props: ProductCardProps) {
               type="button"
               class={styles.addBtn}
               classList={{ [styles.addBtnDone]: props.isJustAdded() }}
-              onClick={() => props.onAdd(p, mainVariant())}
+              onClick={() => {
+                props.onAdd(p, mainVariant());
+                flyToCart(artRef);
+              }}
               disabled={isUnavailable()}
               aria-label={isUnavailable() ? `${p.name} is sold out` : `Add ${p.name} to cart`}
             >

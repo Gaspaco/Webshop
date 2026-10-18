@@ -1,9 +1,31 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import nodemailer from "nodemailer";
 import {
   describeLoginDevice,
   renderTransactionalEmail,
 } from "./email.server";
+
+describe("patched email transport", () => {
+  it("renders a complete MIME message locally without sending email", async () => {
+    const transport = nodemailer.createTransport({ streamTransport: true, buffer: true });
+    const result = await transport.sendMail({
+      from: "TCGHaven <no-reply@tcghaven.com>",
+      to: "test@example.test",
+      subject: "Verify your TCGHaven email",
+      text: "Confirm your email address.",
+      html: renderTransactionalEmail({
+        preheader: "Confirm your email address.", label: "Account security",
+        heading: "Verify your email", intro: "Confirm your email address.",
+        action: { label: "Verify email", url: "https://www.tcghaven.com/verify-email" },
+      }),
+    });
+    const mime = result.message.toString();
+    assert.ok(mime.includes("Subject: Verify your TCGHaven email"));
+    assert.ok(mime.includes("multipart/alternative"));
+    assert.ok(mime.includes("To: test@example.test"));
+  });
+});
 
 describe("describeLoginDevice", () => {
   it("describes Chrome on macOS", () => {

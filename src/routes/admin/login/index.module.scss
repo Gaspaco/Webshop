@@ -1,156 +1,164 @@
 @use "../../../styles/variables" as *;
+@use "../../../styles/buttons" as *;
+@use "../../../styles/page" as *;
 
+// Same calm single column as the two-step verification page.
 .page {
   display: grid;
   min-height: 100dvh;
   place-items: center;
-  padding: 3rem 1.25rem;
+  padding: 1.5rem 1.25rem 3rem;
   background:
-    radial-gradient(circle at 12% 18%, rgba($primary, 0.12), transparent 30rem),
-    #090c0a;
-}
-
-.backLink {
-  position: fixed;
-  top: 1.5rem;
-  left: 1.5rem;
-  color: $gray-400;
-  font-size: 0.78rem;
-  font-weight: 700;
-  transition: color 180ms ease;
-}
-
-.backLink:hover {
-  color: $white;
+    radial-gradient(ellipse 60% 45% at 50% 0%, rgba($primary, 0.13), transparent 70%),
+    $background;
 }
 
 .loginPanel {
-  width: min(100%, 30rem);
-  padding: clamp(2rem, 6vw, 3.5rem);
-  border: 1px solid rgba($white, 0.1);
-  border-radius: 0.875rem;
-  background: #0d110e;
+  display: flex;
+  width: min(26rem, 100%);
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  h1 {
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.9rem, 5vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+  }
+
+  form {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 1.1rem;
+    margin-top: 2rem;
+    text-align: left;
+  }
+
+  label {
+    @include field;
+  }
+}
+
+.topbar {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: clamp(2.5rem, 8vh, 4rem);
 }
 
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 3rem;
-  color: $white;
-  font-weight: 850;
+  gap: 0.5rem;
+  border-radius: $radius-inner;
+  color: $primary;
+  font-family: $font-display;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+
+  img {
+    width: 28px;
+    height: auto;
+  }
+
+  span span {
+    margin-left: 0.15em;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 4px;
+  }
 }
 
-.brand img {
-  width: 2.25rem;
-  height: 2.25rem;
-  object-fit: contain;
+.backLink {
+  @include btn-secondary(sm);
+  font-weight: 500;
 }
 
-.context {
-  margin-bottom: 0.6rem;
+.badge {
+  display: grid;
+  width: 3.75rem;
+  height: 3.75rem;
+  margin-bottom: 1.5rem;
+  place-items: center;
+  border-radius: 1.1rem;
+  background: rgba($primary, 0.14);
   color: $primary-light;
-  font-size: 0.72rem;
-  font-weight: 750;
-}
+  rotate: -6deg;
 
-.loginPanel h1 {
-  font-family: $font-body;
-  font-size: 2rem;
-  letter-spacing: -0.025em;
+  svg {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
 }
 
 .intro {
+  max-width: 34ch;
   margin-top: 0.75rem;
   color: $gray-400;
-  font-size: 0.9rem;
-  line-height: 1.6;
-}
-
-.loginPanel form {
-  display: flex;
-  margin-top: 2.25rem;
-  flex-direction: column;
-  gap: 1.1rem;
-}
-
-.loginPanel label > span {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: $gray-300;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.loginPanel input {
-  width: 100%;
-  min-height: 3.25rem;
-  padding: 0 1rem;
-  border: 1px solid rgba($white, 0.14);
-  border-radius: 0.5rem;
-  outline: none;
-  background: #080b09;
-  color: $white;
-  font: inherit;
-  transition: border-color 180ms ease;
-}
-
-.loginPanel input:focus {
-  border-color: $primary;
+  font-size: 1rem;
+  line-height: 1.55;
 }
 
 .passwordField {
   position: relative;
-}
 
-.passwordField input {
-  padding-right: 4.5rem;
-}
+  input {
+    padding-right: 4.5rem !important;
+  }
 
-.passwordField button {
-  position: absolute;
-  top: 0;
-  right: 0.75rem;
-  height: 100%;
-  color: $gray-400;
-  font-size: 0.72rem;
-  font-weight: 750;
+  button {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    height: 2.4rem;
+    padding-inline: 0.85rem;
+    border-radius: $radius-inner;
+    color: $gray-400;
+    font-family: $font-display;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: color 160ms $ease-out, background-color 160ms $ease-out;
+
+    &:hover {
+      color: $white;
+      background: rgba($white, 0.06);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $primary-light;
+      outline-offset: 0;
+    }
+  }
 }
 
 .error {
-  padding: 0.8rem 1rem;
-  border-radius: 0.5rem;
-  background: rgba(#ef4444, 0.1);
+  padding: 0.75rem 0.95rem;
+  border-radius: $radius-tile;
+  background: rgba(#f87171, 0.1);
   color: #fca5a5;
-  font-size: 0.78rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .submit {
-  min-height: 3.25rem;
-  margin-top: 0.35rem;
-  border-radius: 0.5rem;
-  background: $primary;
-  color: #04130c;
-  font-size: 0.82rem;
-  font-weight: 850;
-  transition:
-    background 180ms ease,
-    transform 180ms ease;
-}
-
-.submit:hover:not(:disabled) {
-  background: $primary-light;
-  transform: translateY(-1px);
-}
-
-.submit:disabled {
-  cursor: wait;
-  opacity: 0.65;
+  @include btn-primary(lg);
+  width: 100%;
+  margin-top: 0.25rem;
 }
 
 .securityNote {
-  margin-top: 1.5rem;
-  color: $gray-600;
-  font-size: 0.7rem;
+  max-width: 36ch;
+  margin-top: 2rem;
+  color: $gray-500;
+  font-size: 0.8125rem;
   line-height: 1.55;
 }

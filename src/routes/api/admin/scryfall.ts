@@ -1,3 +1,4 @@
+import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -358,7 +359,7 @@ export async function GET(event: APIEvent) {
       });
       return rateLimitResponse(error);
     }
-    console.error("Scryfall search failed", error);
+    logServerError("Scryfall search failed", error);
     return apiJson(
       { error: "Scryfall could not be reached. Try again shortly." },
       { status: 503 },
@@ -489,7 +490,7 @@ export async function POST(event: APIEvent) {
     if (error instanceof ScryfallRequestError && error.status === 429) {
       return rateLimitResponse(error);
     }
-    console.error("Scryfall catalogue import failed", error);
+    logServerError("Scryfall catalogue import failed", error);
     return apiJson(
       { error: "The Magic card could not be added. Check the server log for the reason." },
       { status: 500 },

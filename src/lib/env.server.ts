@@ -104,3 +104,12 @@ export const getEmailEnv = () => {
 export const getMollieEnv = () => mollieSchema.parse(process.env);
 export const getPostnlEnv = () => postnlSchema.parse(process.env);
 export const getScrydexEnv = () => scrydexSchema.parse(process.env);
+
+// Optional: card scanning stays off until a Google Cloud Vision key is set.
+const visionSchema = z.object({
+  GOOGLE_VISION_API_KEY: z.string().trim().min(20).max(256),
+});
+export const getVisionEnv = () => {
+  const parsed = visionSchema.safeParse(process.env);
+  return parsed.success ? parsed.data : null;
+};

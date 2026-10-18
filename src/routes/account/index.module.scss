@@ -1,18 +1,24 @@
 @use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+
+$gutter: 0.75rem;
+
+// ---------- Shell ----------
 
 .page {
   min-height: 100dvh;
-  background: #0d0f0e;
+  background: $background;
 }
 
 .account {
   display: grid;
   width: 100%;
   height: 100dvh;
-  min-height: 42rem;
+  min-height: 40rem;
+  grid-template-columns: 16.5rem minmax(0, 1fr);
+  gap: $gutter;
+  padding: $gutter;
   overflow: hidden;
-  grid-template-columns: 17rem minmax(0, 1fr);
-  background: #0d0f0e;
 }
 
 .loading {
@@ -22,18 +28,22 @@
   justify-content: center;
   gap: 0.75rem;
   color: $gray-400;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-family: $font-display;
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  span {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: $primary-light;
+    animation: pulse 1.1s ease-in-out infinite alternate;
+  }
 }
 
-.loading span {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: $primary-light;
-  animation: pulse 1.1s ease-in-out infinite alternate;
+@keyframes pulse {
+  from { opacity: 0.35; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .sessionError {
@@ -43,341 +53,271 @@
   margin-inline: auto;
   flex-direction: column;
   justify-content: center;
-  color: $white;
+
+  > p {
+    color: $primary-light;
+    font-family: $font-display;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  h1 {
+    margin-top: 0.5rem;
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  > span {
+    margin-top: 1rem;
+    color: $gray-400;
+    line-height: 1.6;
+  }
+
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.75rem;
+  }
+
+  button {
+    @include btn-primary;
+  }
+
+  a {
+    @include btn-secondary;
+  }
 }
 
-.sessionError > p {
-  margin: 0 0 0.8rem;
-  color: $primary-light;
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.sessionError h1 {
-  margin: 0;
-  font-size: clamp(2rem, 7vw, 3.5rem);
-  line-height: 0.98;
-}
-
-.sessionError > span {
-  margin-top: 1rem;
-  color: $gray-400;
-  line-height: 1.6;
-}
-
-.sessionError > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.75rem;
-}
-
-.sessionError button,
-.sessionError a {
-  display: inline-flex;
-  min-height: 2.9rem;
-  align-items: center;
-  justify-content: center;
-  padding-inline: 1.15rem;
-  border: 0;
-  border-radius: 0.45rem;
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 750;
-  cursor: pointer;
-}
-
-.sessionError button {
-  background: $primary;
-  color: #06100b;
-}
-
-.sessionError a {
-  background: rgba($white, 0.06);
-  color: $white;
-}
-
-.settingsTitle > span,
-.panelHead > div > span,
-.stats article > span,
-.addressTop > span,
-.wishlistItem > span {
-  color: $gray-500;
-  font-size: 0.7rem;
-  font-weight: 650;
-  letter-spacing: 0;
-}
+// ---------- Sidebar ----------
+// A floating panel like the storefront navbar, holding who you are, where you
+// can go, and the two ways out.
 
 .sidebar {
-  position: relative;
   display: flex;
   min-width: 0;
   min-height: 0;
   flex-direction: column;
-  padding: 1rem 0.75rem;
-  background: #090c0a;
-}
-
-// Sits in the sidebar footer beside Sign out: both are ways out of the
-// dashboard, so they read as a pair instead of one squatting in the brand slot.
-.backLink {
-  display: flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.6rem;
-  padding-inline: 0.75rem;
-  border-radius: 0.5rem;
-  color: $gray-500;
-  font-size: 0.75rem;
-  font-weight: 650;
-  transition:
-    color 180ms ease,
-    background 180ms ease;
-}
-
-.backLink svg {
-  width: 1rem;
-  height: 1rem;
-  flex-shrink: 0;
-  transition: transform 180ms ease;
-}
-
-.backLink:hover {
-  background: rgba($white, 0.045);
-  color: $white;
-}
-
-.backLink:hover svg {
-  transform: translateX(-3px);
-}
-
-.backLink:focus-visible {
-  outline: 2px solid $primary-light;
-  outline-offset: -2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .backLink svg {
-    transition: none;
-  }
-
-  .backLink:hover svg {
-    transform: none;
-  }
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: $radius-panel;
+  background: $surface;
 }
 
 .identity {
   display: flex;
+  min-width: 0;
   align-items: center;
-  gap: 0.9rem;
-  min-height: 4.75rem;
-  margin: 0 0.25rem 1rem;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  background: #121614;
+  gap: 0.75rem;
+  padding: 0.6rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.035);
+
+  > div {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  strong {
+    overflow: hidden;
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span:not(.avatar) {
+    overflow: hidden;
+    color: $gray-500;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  flex: 0 0 auto;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  place-items: center;
+  overflow: hidden;
   border-radius: 50%;
-  background: $primary;
-  color: #06120d;
-  font-family: $font-body;
-  font-size: 0.85rem;
-  font-weight: 800;
-  line-height: 1;
-  text-align: center;
-  overflow: hidden;
-}
+  background: rgba($primary, 0.16);
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: 0.9rem;
+  font-weight: 700;
 
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.identity div {
-  min-width: 0;
-}
-
-.identity div > strong,
-.identity div > span {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.identity strong {
-  color: $white;
-  font-size: 0.86rem;
-}
-
-.identity div > span {
-  margin-top: 0.2rem;
-  color: $gray-500;
-  font-size: 0.72rem;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .navigation {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 0 0.25rem;
+  gap: 0.15rem;
 }
 
 .navItem {
-  position: relative;
   display: flex;
-  min-height: 2.9rem;
+  min-height: 2.75rem;
   align-items: center;
   gap: 0.75rem;
   padding-inline: 0.85rem;
-  border-radius: 0.65rem;
+  border-radius: $radius-full;
   color: $gray-400;
-  font-size: 0.82rem;
-  font-weight: 650;
+  font-family: $font-display;
+  font-size: 0.9375rem;
+  font-weight: 600;
   text-align: left;
-  transition:
-    background 180ms ease,
-    color 180ms ease,
-    transform 180ms ease;
+  transition: color 180ms $ease-out, background-color 180ms $ease-out;
+
+  &:hover {
+    color: $white;
+    background: rgba($white, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: -2px;
+  }
 }
 
 .navIcon {
-  width: 1.05rem;
-  height: 1.05rem;
-  flex: 0 0 auto;
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+  transition: color 180ms $ease-out;
 }
 
-.navItem:hover {
-  background: rgba($white, 0.055);
-  color: $white;
-  transform: translateX(2px);
-}
-
+// The current section: a quiet pill, with the icon carrying the colour.
 .navItemActive {
-  background: $primary;
-  color: #06120d;
+  color: $white;
+  background: rgba($white, 0.09);
+
+  .navIcon {
+    color: $primary-light;
+  }
+
+  &:hover {
+    background: rgba($white, 0.11);
+  }
 }
 
 .sidebarFooter {
   display: flex;
-  margin-top: auto;
-  padding: 1rem 0.25rem 0;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.35rem;
+  margin-top: auto;
+
+  > span {
+    padding: 0 0.85rem 0.5rem;
+    color: $gray-500;
+    font-size: 0.78rem;
+  }
 }
 
-.sidebarFooter > span {
-  padding-inline: 0.5rem;
-  color: $gray-600;
-  font-size: 0.65rem;
-}
-
+.backLink,
 .signOut {
   display: flex;
   min-height: 2.75rem;
   align-items: center;
+  gap: 0.6rem;
+  padding-inline: 0.85rem;
+  border-radius: $radius-full;
+  color: $gray-400;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 180ms $ease-out, background-color 180ms $ease-out;
+
+  svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    color: $white;
+    background: rgba($white, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: -2px;
+  }
+}
+
+.signOut {
   justify-content: space-between;
-  gap: 1rem;
-  padding-inline: 0.75rem;
-  border-radius: 0.5rem;
-  color: $gray-500;
-  font-size: 0.75rem;
-  font-weight: 650;
-  transition:
-    color 180ms ease,
-    background 180ms ease;
+  background: rgba($white, 0.04);
 }
 
-.signOut svg {
-  width: 1rem;
-  height: 1rem;
-}
-
-.signOut:hover {
-  background: rgba(#f87171, 0.08);
-  color: #fca5a5;
-}
+// ---------- Workspace ----------
 
 .workspace {
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 clamp(1.5rem, 4vw, 4.5rem) 4rem;
-  background: #0d0f0e;
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.5rem) 4rem;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+
+  > * + * {
+    margin-top: 0.75rem;
+  }
 }
 
 .sectionHeader {
-  position: sticky;
-  top: 0;
-  z-index: 2;
   display: flex;
-  min-height: 8.75rem;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 2rem;
-  padding-block: 1.75rem;
-  background: rgba(#0d0f0e, 0.96);
-  backdrop-filter: blur(14px);
+  gap: 1.5rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+
+  h1 {
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.9rem, 3.2vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.02;
+  }
+
+  p {
+    max-width: 52ch;
+    margin-top: 0.5rem;
+    color: $gray-400;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
 }
 
-.welcome {
-  display: block;
-  margin-bottom: 0.4rem;
-  color: $primary-light;
-  font-size: 0.76rem;
-  font-weight: 650;
-}
-
-.sectionHeader h1 {
-  color: $white;
-  font-family: $font-display;
-  font-size: clamp(1.9rem, 3vw, 2.35rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-}
-
-.sectionHeader p {
-  margin-top: 0.5rem;
-  color: $gray-500;
-  font-size: 0.82rem;
+.workspace > .sectionHeader + * {
+  margin-top: 0;
 }
 
 .headerActions {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
-  gap: 1rem;
-}
+  gap: 0.75rem;
 
-.headerActions > a {
-  display: inline-flex;
-  min-height: 2.65rem;
-  align-items: center;
-  justify-content: center;
-  padding-inline: 1rem;
-  border-radius: 0.5rem;
-  background: $primary;
-  color: #06120d;
-  font-size: 0.75rem;
-  font-weight: 800;
-  transition:
-    background 180ms ease,
-    transform 180ms ease;
-}
-
-.headerActions > a:hover {
-  background: $primary-light;
-  transform: translateY(-1px);
+  a {
+    @include btn-secondary;
+  }
 }
 
 .syncing {
@@ -385,675 +325,962 @@
   align-items: center;
   gap: 0.45rem;
   color: $gray-500;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
+  font-size: 0.8125rem;
 
-.syncing::before {
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 50%;
-  background: $primary-light;
-  content: "";
-  animation: pulse 1s ease-in-out infinite alternate;
+  &::before {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: $primary-light;
+    animation: pulse 1.1s ease-in-out infinite alternate;
+    content: "";
+  }
 }
 
 .errorState {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  margin-top: 1.25rem;
-  padding: 1rem;
-  border-radius: 0.65rem;
-  background: rgba(#fbbf24, 0.08);
-  color: #fde68a;
-  font-size: 0.8rem;
+  padding: 1rem 1.15rem;
+  border-radius: $radius-tile;
+  background: rgba(#f87171, 0.1);
+
+  strong {
+    color: #fca5a5;
+    font-size: 0.9375rem;
+  }
+
+  span {
+    color: $gray-400;
+    font-size: 0.875rem;
+  }
 }
 
-.errorState span {
-  color: $gray-400;
+// ---------- Shared surfaces ----------
+
+.panel,
+.settingsPanel,
+.paymentHistory,
+.paymentSafety,
+.twoFactorPanel,
+.addressCard,
+.deliveryCard {
+  min-width: 0;
+  padding: clamp(1.25rem, 2.4vw, 1.75rem);
+  border-radius: $radius-panel;
+  background: $surface;
 }
 
-.stats {
-  display: grid;
-  margin-top: 1.5rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  button {
+    @include btn-link;
+    font-size: 0.875rem;
+  }
 }
+
+.panelHead h3,
+.settingsTitle h3,
+.twoFactorIntro h3,
+.paymentSafety h3 {
+  color: $white;
+  font-family: $font-display;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.settingsTitle {
+  margin-bottom: 1.25rem;
+}
+
+// Order and payment states, coloured by what they mean for the customer.
+.status {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  border-radius: $radius-full;
+  background: rgba($white, 0.07);
+  color: $gray-300;
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &[data-status="paid"],
+  &[data-status="processing"],
+  &[data-status="shipped"] {
+    background: rgba($primary, 0.14);
+    color: $primary-light;
+  }
+
+  &[data-status="pending"],
+  &[data-status="open"] {
+    background: rgba($accent-gold, 0.14);
+    color: $accent-gold;
+  }
+
+  &[data-status="cancelled"],
+  &[data-status="canceled"],
+  &[data-status="expired"],
+  &[data-status="failed"],
+  &[data-status="refunded"] {
+    background: rgba(#f87171, 0.12);
+    color: #fca5a5;
+  }
+}
+
+.money {
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- Buttons ----------
+
+.primaryAction {
+  @include btn-primary;
+  align-self: flex-start;
+}
+
+.secondaryAction {
+  @include btn-secondary;
+  align-self: flex-start;
+}
+
+.dangerAction {
+  @include btn-secondary;
+  color: #fca5a5;
+
+  &:hover:not(:disabled) {
+    background: rgba(#f87171, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(#f87171, 0.3);
+  }
+}
+
+.textAction {
+  @include btn-link;
+  align-self: flex-start;
+}
+
+// ---------- Overview ----------
 
 .deliverySpotlight {
   display: grid;
-  min-height: 6.75rem;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding: 1rem 1.15rem;
-  border-radius: 0.75rem;
-  background:
-    linear-gradient(90deg, rgba($primary, 0.14), rgba($primary, 0.025) 58%),
-    #151917;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1.1rem 1.25rem 1.1rem 1.1rem;
+  border-radius: $radius-panel;
+  background:
+    radial-gradient(ellipse 60% 140% at 0% 50%, rgba($primary, 0.16), transparent 70%),
+    $surface;
+
+  > button {
+    @include btn-primary;
+  }
 }
 
 .deliverySpotlightIcon {
   display: grid;
-  width: 3.6rem;
-  height: 3.6rem;
-  border-radius: 0.65rem;
-  background: $primary;
-  color: #06120d;
+  width: 3rem;
+  height: 3rem;
   place-items: center;
-}
+  border-radius: $radius-tile;
+  background: rgba($primary, 0.16);
+  color: $primary-light;
 
-.deliverySpotlightIcon svg {
-  width: 1.6rem;
-  height: 1.6rem;
+  svg {
+    width: 1.45rem;
+    height: 1.45rem;
+  }
 }
 
 .deliverySpotlightCopy {
   display: flex;
   min-width: 0;
   flex-direction: column;
+  gap: 0.15rem;
+
+  span {
+    color: $primary-light;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  small {
+    color: $gray-500;
+    font-size: 0.8125rem;
+  }
 }
 
-.deliverySpotlightCopy > span {
-  color: $primary-light;
-  font-size: 0.66rem;
-  font-weight: 750;
-}
+// One strip of three figures rather than three identical cards.
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: $radius-panel;
+  background: $surface;
 
-.deliverySpotlightCopy > strong {
-  margin-top: 0.2rem;
-  overflow: hidden;
-  color: $white;
-  font-family: $font-display;
-  font-size: 1rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  article {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 1.15rem 1.25rem;
+    border-radius: calc($radius-panel - 0.25rem);
+  }
 
-.deliverySpotlightCopy > small {
-  margin-top: 0.2rem;
-  color: $gray-500;
-  font-size: 0.68rem;
-}
+  article > span {
+    color: $gray-400;
+    font-size: 0.875rem;
+  }
 
-.deliverySpotlight > button {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.65rem;
-  padding-inline: 1rem;
-  border-radius: 0.5rem;
-  background: rgba($white, 0.075);
-  color: $white;
-  font-size: 0.73rem;
-  font-weight: 750;
-  transition: background $transition-fast, color $transition-fast;
-}
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
 
-.deliverySpotlight > button span {
-  color: $primary-light;
-  font-size: 1rem;
-}
-
-.deliverySpotlight > button:hover {
-  background: rgba($primary, 0.13);
-  color: $primary-light;
-}
-
-.stats article {
-  display: flex;
-  min-height: 8.75rem;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 1.25rem 1.35rem;
-  border-radius: 0.75rem;
-  background: #151917;
-}
-
-.stats strong {
-  color: $white;
-  font-family: $font-display;
-  font-size: clamp(2rem, 4vw, 3.2rem);
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 0.9;
-}
-
-.stats .money {
-  color: $primary-light;
-  font-size: clamp(1.75rem, 3vw, 2.75rem);
-}
-
-.stats small {
-  color: $gray-600;
-  font-size: 0.68rem;
-  font-weight: 600;
+  small {
+    color: $gray-500;
+    font-size: 0.78rem;
+  }
 }
 
 .overviewGrid {
   display: grid;
-  margin-top: 1.5rem;
-  grid-template-columns: minmax(0, 1.45fr) minmax(15rem, 0.75fr);
-  gap: 1.5rem;
-}
-
-.panel,
-.settingsPanel,
-.addressCard,
-.addressNote {
-  border-radius: 0.75rem;
-  background: #151917;
-}
-
-.panel {
-  min-height: 20rem;
-  padding: 1.35rem;
-}
-
-.panelHead {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 0.9rem;
-}
-
-.panelHead h3,
-.settingsTitle h3 {
-  margin-top: 0.35rem;
-  color: $white;
-  font-family: $font-display;
-  font-size: 1.1rem;
-}
-
-.panelHead button {
-  color: $primary-light;
-  font-size: 0.72rem;
-  font-weight: 700;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
 }
 
 .recentOrders {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .recentOrder {
   display: grid;
-  min-height: 4rem;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 1rem;
-  padding: 0.65rem 0.8rem;
-  border-radius: 0.6rem;
-  background: #0f1311;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-}
+  padding: 0.85rem 1rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.03);
 
-.recentOrder div {
-  min-width: 0;
-}
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
 
-.recentOrder strong,
-.recentOrder span {
-  font-size: 0.73rem;
-}
+  > div strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
 
-.recentOrder div strong,
-.recentOrder div span {
-  display: block;
-}
+  > div span {
+    color: $gray-500;
+    font-size: 0.8125rem;
+  }
 
-.recentOrder div strong {
-  overflow: hidden;
-  color: $white;
-  text-overflow: ellipsis;
-}
-
-.recentOrder div span {
-  margin-top: 0.15rem;
-  color: $gray-600;
-}
-
-.status {
-  display: inline-flex;
-  min-height: 1.65rem;
-  align-items: center;
-  padding-inline: 0.55rem;
-  border-radius: 999px;
-  background: rgba($primary, 0.12);
-  color: $primary-light;
-  font-size: 0.65rem;
-  font-weight: 700;
+  > strong {
+    min-width: 5.5rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .quickPanel {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
+  gap: 0.15rem;
 
-.quickPanel > button,
-.quickPanel > a {
-  display: flex;
-  min-height: 3.15rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-inline: 0.85rem;
-  border-radius: 0.6rem;
-  background: #0f1311;
-  color: $gray-300;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-align: left;
-  transition: color $transition-fast, padding $transition-base;
-}
+  > button,
+  > a {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    margin-inline: -0.85rem;
+    padding-inline: 0.85rem;
+    border-radius: $radius-full;
+    color: $gray-300;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-align: left;
+    transition: color 180ms $ease-out, background-color 180ms $ease-out;
 
-.quickPanel > button span,
-.quickPanel > a span {
-  color: $primary-light;
-  font-size: 1rem;
-}
+    &:hover {
+      color: $white;
+      background: rgba($white, 0.06);
+    }
 
-.quickPanel > button:hover,
-.quickPanel > a:hover {
-  background: rgba($primary, 0.1);
-  color: $primary-light;
+    &:focus-visible {
+      outline: 2px solid $primary-light;
+      outline-offset: -2px;
+    }
+  }
 }
 
 .compactEmpty {
   display: flex;
-  min-height: 13rem;
-  align-items: flex-start;
-  justify-content: center;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 1.25rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.03);
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1rem;
+  }
+
+  span {
+    color: $gray-400;
+    font-size: 0.875rem;
+  }
+
+  a {
+    @include btn-secondary(sm);
+    margin-top: 0.75rem;
+  }
 }
 
-.compactEmpty strong {
-  color: $white;
-  font-family: $font-display;
-  font-size: 1.15rem;
-}
-
-.compactEmpty span {
-  margin-top: 0.3rem;
-  color: $gray-500;
-  font-size: 0.78rem;
-}
-
-.compactEmpty a {
-  margin-top: 1rem;
-  color: $primary-light;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
+// ---------- Orders ----------
 
 .orderList {
-  display: grid;
-  margin-top: 1.5rem;
-  gap: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
+// A fixed status column so the chips line up from row to row.
 .orderRow {
   display: grid;
-  min-height: 7.5rem;
+  grid-template-columns: minmax(0, 1fr) 7.5rem minmax(0, 23rem);
   align-items: center;
-  gap: 1.5rem;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  background: #151917;
-  grid-template-columns: minmax(0, 1fr) auto minmax(6rem, auto);
-  transition: background $transition-fast;
+  gap: 1.25rem;
+  padding: 1.15rem 1.35rem;
+  border-radius: $radius-panel;
+  background: $surface;
 }
 
-.orderRow:hover {
-  background: rgba($white, 0.025);
+.orderRow > .status {
+  justify-self: start;
 }
 
 .orderMain {
+  display: flex;
   min-width: 0;
-}
+  flex-direction: column;
+  gap: 0.15rem;
 
-.orderMain > span,
-.orderMain > strong,
-.orderMain > small {
-  display: block;
-}
-
-.orderActions {
-  display: grid;
-  justify-items: end;
-  gap: 0.55rem;
-
-  a {
+  span {
     color: $gray-500;
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-decoration: underline;
-    text-underline-offset: 0.2rem;
+    font-size: 0.8125rem;
+  }
 
-    &:hover {
-      color: $primary-light;
-    }
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.05rem;
+    font-weight: 700;
   }
 
   small {
-    max-width: 12rem;
     overflow: hidden;
-    color: $gray-600;
-    font-size: 0.62rem;
+    color: $gray-400;
+    font-size: 0.875rem;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 }
 
-.orderMain > span {
-  color: $gray-600;
-  font-size: 0.64rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
+.orderActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem 0.75rem;
 
-.orderMain > strong {
-  margin-top: 0.35rem;
-  color: $white;
-  font-family: $font-display;
-}
+  a {
+    @include btn-secondary(sm);
+  }
 
-.orderMain > small {
-  max-width: 55rem;
-  margin-top: 0.35rem;
-  overflow: hidden;
-  color: $gray-500;
-  font-size: 0.72rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  small {
+    flex-basis: 100%;
+    color: $gray-500;
+    font-size: 0.75rem;
+    text-align: right;
+  }
 }
 
 .orderTotal {
+  margin-right: 0.25rem;
   color: $white;
   font-family: $font-display;
-  text-align: right;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
+
+// ---------- Deliveries ----------
 
 .deliveryList {
-  display: grid;
-  max-width: 72rem;
-  margin-top: 1.5rem;
-  gap: 1rem;
-}
-
-.deliveryCard {
-  padding: clamp(1.25rem, 2.5vw, 2rem);
-  border-radius: 0.75rem;
-  background: #151917;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .deliveryHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1.5rem;
-}
+  gap: 1rem;
 
-.deliveryHeader > div > span {
-  color: $primary-light;
-  font-size: 0.68rem;
-  font-weight: 750;
-}
+  span:not(.deliveryBadge) {
+    color: $primary-light;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
 
-.deliveryHeader h2 {
-  margin-top: 0.3rem;
-  color: $white;
-  font-family: $font-display;
-  font-size: clamp(1.25rem, 2vw, 1.65rem);
-  letter-spacing: -0.025em;
-}
+  h2 {
+    margin-top: 0.2rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
 
-.deliveryHeader p {
-  margin-top: 0.35rem;
-  color: $gray-500;
-  font-size: 0.75rem;
+  p {
+    margin-top: 0.25rem;
+    color: $gray-500;
+    font-size: 0.875rem;
+  }
 }
 
 .deliveryBadge {
-  display: inline-flex;
-  min-height: 1.85rem;
-  align-items: center;
-  flex: 0 0 auto;
-  padding-inline: 0.7rem;
-  border-radius: 999px;
-  background: rgba($primary, 0.13);
+  flex-shrink: 0;
+  padding: 0.3rem 0.7rem;
+  border-radius: $radius-full;
+  background: rgba($primary, 0.14);
   color: $primary-light;
-  font-size: 0.66rem;
-  font-weight: 750;
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .deliveryBadgeComplete {
-  background: rgba($white, 0.065);
-  color: $gray-400;
+  background: rgba($white, 0.07);
+  color: $gray-300;
 }
 
+// Four steps on one rounded track: the filled part is how far the parcel
+// has come.
 .deliveryTimeline {
   display: grid;
-  margin: 2rem 0 0;
-  padding: 0;
-  list-style: none;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-block: 1.5rem;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    color: $gray-500;
+
+    &::before {
+      height: 0.3rem;
+      border-radius: $radius-full;
+      background: rgba($white, 0.08);
+      content: "";
+    }
+
+    > span {
+      display: none;
+    }
+
+    > strong {
+      font-family: $font-display;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+  }
 }
 
-.deliveryTimeline li {
-  position: relative;
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 0.65rem;
-  color: $gray-600;
+.deliveryStepDone {
+  color: $gray-300 !important;
+
+  &::before {
+    background: $primary !important;
+  }
 }
 
-.deliveryTimeline li::after {
-  position: absolute;
-  top: 50%;
-  left: 2.4rem;
-  width: calc(100% - 2.8rem);
-  height: 1px;
-  background: rgba($white, 0.09);
-  content: "";
-}
+.deliveryStepCurrent {
+  color: $white !important;
 
-.deliveryTimeline li:last-child::after {
-  display: none;
-}
-
-.deliveryTimeline li > span {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: #202522;
-  color: $gray-500;
-  font-size: 0.67rem;
-  font-weight: 800;
-  place-items: center;
-}
-
-.deliveryTimeline li > strong {
-  position: relative;
-  z-index: 1;
-  padding-right: 0.65rem;
-  background: #151917;
-  font-size: 0.68rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.deliveryTimeline .deliveryStepDone,
-.deliveryTimeline .deliveryStepCurrent {
-  color: $white;
-}
-
-.deliveryTimeline .deliveryStepDone::after {
-  background: rgba($primary, 0.48);
-}
-
-.deliveryTimeline .deliveryStepDone > span {
-  background: rgba($primary, 0.18);
-  color: $primary-light;
-}
-
-.deliveryTimeline .deliveryStepCurrent > span {
-  background: $primary;
-  color: #06120d;
-  box-shadow: 0 0 0 0.3rem rgba($primary, 0.1);
+  &::before {
+    background: linear-gradient(90deg, $primary, rgba($primary, 0.25)) !important;
+  }
 }
 
 .deliveryDetails {
   display: grid;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding: 1rem;
-  border-radius: 0.65rem;
-  background: #0f1311;
-  grid-template-columns: minmax(0, 1.7fr) minmax(8rem, 0.7fr) minmax(10rem, 0.8fr);
-}
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
 
-.deliveryDetails > div {
-  min-width: 0;
-}
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.9rem 1rem;
+    border-radius: $radius-tile;
+    background: rgba($white, 0.03);
+  }
 
-.deliveryDetails span,
-.deliveryDetails strong {
-  display: block;
-}
+  span {
+    color: $gray-500;
+    font-size: 0.8125rem;
+  }
 
-.deliveryDetails span {
-  color: $gray-600;
-  font-size: 0.63rem;
-  font-weight: 700;
-}
-
-.deliveryDetails strong {
-  margin-top: 0.3rem;
-  overflow: hidden;
-  color: $gray-300;
-  font-size: 0.73rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  strong {
+    color: $white;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
 }
 
 .deliveryFooter {
   display: flex;
-  min-height: 3.5rem;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-top: 1rem;
+  margin-top: 1.25rem;
+
+  p {
+    color: $gray-400;
+    font-size: 0.875rem;
+  }
+
+  a {
+    @include btn-primary;
+  }
 }
 
-.deliveryFooter p {
-  color: $gray-500;
-  font-size: 0.72rem;
-}
-
-.deliveryFooter a {
-  display: inline-flex;
-  min-height: 2.65rem;
-  align-items: center;
-  gap: 0.65rem;
-  flex: 0 0 auto;
-  padding-inline: 1rem;
-  border-radius: 0.5rem;
-  background: $primary;
-  color: #06120d;
-  font-size: 0.73rem;
-  font-weight: 800;
-  transition: background $transition-fast, transform $transition-fast;
-}
-
-.deliveryFooter a svg {
-  width: 1rem;
-  height: 1rem;
-}
-
-.deliveryFooter a:hover {
-  background: $primary-light;
-  transform: translateY(-1px);
-}
+// ---------- Wishlist ----------
 
 .wishlistGrid {
   display: grid;
-  margin-top: 1.5rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  gap: 0.75rem;
 }
 
 .wishlistItem {
+  @include card-frame(0.45rem, $radius-panel);
   display: flex;
-  min-width: 0;
   flex-direction: column;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  background: #151917;
-  transition: background $transition-base, transform $transition-base;
-}
+  gap: 0.15rem;
+  padding: 0.75rem 0.75rem 1.1rem;
+  border-radius: $radius-panel;
+  background: $surface;
 
-.wishlistItem:hover {
-  background: #1a201d;
-  transform: translateY(-3px);
+  > span {
+    margin-top: 0.75rem;
+    padding-inline: 0.35rem;
+    color: $primary-light;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  > strong {
+    padding-inline: 0.35rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  > small {
+    padding-inline: 0.35rem;
+    color: $gray-500;
+    font-size: 0.8125rem;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 3px;
+  }
 }
 
 .wishlistImage {
   display: grid;
-  aspect-ratio: 1 / 1.05;
-  margin-bottom: 1rem;
+  aspect-ratio: 1;
   place-items: center;
-  overflow: hidden;
-  background: #111512;
+  padding: 1.25rem;
+  border-radius: $radius-tile;
+  background: radial-gradient(ellipse 70% 60% at 50% 45%, rgba($white, 0.07), transparent 75%), rgba($white, 0.02);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0.75rem 0.9rem rgba(#000, 0.45));
+    transition: translate 450ms $ease-out, scale 450ms $ease-out;
+  }
 }
 
-.wishlistImage img {
-  width: 78%;
-  height: 82%;
-  object-fit: contain;
+@media (hover: hover) {
+  .wishlistItem:hover .wishlistImage img {
+    translate: 0 -5px;
+    scale: 1.035;
+  }
 }
 
-.wishlistItem > strong {
-  margin-top: 0.35rem;
-  overflow: hidden;
-  color: $white;
-  font-family: $font-display;
-  font-size: 0.9rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+// ---------- Empty states ----------
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(2.5rem, 6vw, 4.5rem) 1.5rem;
+  border-radius: $radius-panel;
+  background: $surface;
+  text-align: center;
+
+  h3 {
+    margin-top: 1.1rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    max-width: 38ch;
+    margin-top: 0.4rem;
+    color: $gray-400;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  a {
+    @include btn-primary;
+    margin-top: 1.5rem;
+  }
 }
 
-.wishlistItem > small {
-  margin-top: 0.35rem;
-  color: $gray-600;
-  font-size: 0.66rem;
+.emptyIcon {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba($primary, 0.14);
+  color: $primary-light;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+// ---------- Forms ----------
+
+.settingsGrid,
+.addressLayout,
+.paymentLayout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 0.75rem;
 }
 
 .addressLayout,
-.settingsGrid {
-  display: grid;
-  margin-top: 1.5rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
+.paymentLayout {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
 }
 
-.addressCard,
-.addressNote,
 .settingsPanel {
-  min-height: 22rem;
-  padding: clamp(1.25rem, 2.5vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settingsTitle + * {
+  margin-top: -0.25rem;
+}
+
+.settingsCopy {
+  color: $gray-400;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  > span {
+    color: $gray-300;
+    font-family: $font-display;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+    height: 3rem;
+    padding-inline: 1rem;
+    border: 0;
+    border-radius: $radius-tile;
+    background: rgba($white, 0.05);
+    box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+    color: $white;
+    font: inherit;
+    font-size: 1rem;
+    transition: box-shadow 180ms $ease-out, background-color 180ms $ease-out;
+
+    &::placeholder {
+      color: $gray-600;
+    }
+
+    &:hover:not(:disabled) {
+      background: rgba($white, 0.065);
+    }
+
+    &:focus {
+      outline: none;
+      background: rgba($white, 0.07);
+      box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
+    }
+
+    &:disabled {
+      opacity: 0.55;
+    }
+  }
+
+  small {
+    color: $gray-500;
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+}
+
+.formMessage {
+  padding: 0.75rem 0.95rem;
+  border-radius: $radius-tile;
+  background: rgba($primary, 0.1);
+  color: $primary-light;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.formError {
+  background: rgba(#f87171, 0.1);
+  color: #fca5a5;
+}
+
+.emailActions,
+.twoFactorActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.verificationState {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.03);
+
+  > span {
+    padding: 0.25rem 0.65rem;
+    border-radius: $radius-full;
+    background: rgba($accent-gold, 0.14);
+    color: $accent-gold;
+    font-family: $font-display;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  > span.verified {
+    background: rgba($primary, 0.14);
+    color: $primary-light;
+  }
+
+  p {
+    color: $gray-400;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+}
+
+.verified {
+  color: $primary-light;
+}
+
+// ---------- Profile image ----------
+
+.profileImageEditor {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.03);
+}
+
+.profileImagePreview {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: rgba($primary, 0.16);
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: 1.15rem;
+  font-weight: 700;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.profileImageDetails {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  > span {
+    color: $gray-500;
+    font-size: 0.8125rem;
+  }
+}
+
+.profileImageActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+
+  label {
+    @include btn-secondary(sm);
+    position: relative;
+    overflow: hidden;
+
+    &:focus-within {
+      outline: 2px solid $primary-light;
+      outline-offset: 3px;
+    }
+  }
+
+  input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  button {
+    @include btn-link;
+    font-size: 0.8125rem;
+  }
+}
+
+// ---------- Address ----------
+
+.addressEditor {
+  gap: 1rem;
+}
+
+.addressFieldRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.addressPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  address {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 1.1rem 1.15rem;
+    border-radius: $radius-tile;
+    background: rgba($white, 0.03);
+    color: $gray-300;
+    font-size: 0.9375rem;
+    font-style: normal;
+    line-height: 1.5;
+
+    strong {
+      color: $white;
+      font-family: $font-display;
+      font-weight: 700;
+    }
+  }
+
+  p {
+    color: $gray-400;
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+
+  a {
+    @include btn-secondary(sm);
+    align-self: flex-start;
+  }
 }
 
 .addressTop {
@@ -1061,723 +1288,267 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 1rem;
+
+  > span {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  > strong {
+    padding: 0.25rem 0.65rem;
+    border-radius: $radius-full;
+    background: rgba($primary, 0.14);
+    color: $primary-light;
+    font-family: $font-display;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
 }
 
-.addressTop strong {
-  color: $primary-light;
-  font-size: 0.68rem;
-  text-transform: uppercase;
-}
-
-.addressCard address {
-  display: flex;
-  margin-top: 2.5rem;
-  color: $gray-400;
-  flex-direction: column;
-  font-style: normal;
-  line-height: 1.7;
-}
-
-.addressCard address strong {
-  margin-bottom: 0.4rem;
-  color: $white;
-  font-family: $font-display;
-  font-size: 1.3rem;
-}
-
-.addressEditor {
-  min-height: auto;
-}
-
-.addressFieldRow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.addressPreview {
-  display: flex;
-  min-height: 32rem;
-  flex-direction: column;
-}
-
-.addressPreview address {
-  margin-top: 2rem;
-}
-
-.addressPreview > p {
-  max-width: 38ch;
-  margin-top: auto;
-  padding-top: 2rem;
-  color: $gray-400;
-  font-size: 0.8rem;
-  line-height: 1.65;
-}
-
-.addressPreview > a {
-  width: fit-content;
-  margin-top: 1rem;
-  color: $primary-light;
-  font-size: 0.74rem;
-  font-weight: 750;
-}
-
-.addressNote {
-  display: flex;
-  justify-content: flex-end;
-  flex-direction: column;
-}
-
-.addressNote > span {
-  color: $primary-light;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.addressNote p,
-.settingsCopy {
-  margin-top: 0.75rem;
-  color: $gray-400;
-  font-size: 0.85rem;
-  line-height: 1.65;
-}
-
-.addressNote a,
-.textAction {
-  width: fit-content;
-  margin-top: 1.25rem;
-  color: $primary-light;
-  font-size: 0.74rem;
-  font-weight: 700;
-}
-
-.settingsPanel {
-  display: flex;
-  flex-direction: column;
-}
-
-.settingsTitle {
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.25rem;
-}
-
-.profileImageEditor {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 0.8rem;
-  border-radius: 0.65rem;
-  background: #0f1311;
-}
-
-.profileImagePreview {
-  display: grid;
-  width: 5rem;
-  height: 5rem;
-  flex: 0 0 auto;
-  place-items: center;
-  overflow: hidden;
-  border-radius: 0.75rem;
-  background: rgba($primary, 0.14);
-  color: $primary-light;
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-.profileImagePreview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.profileImageDetails {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.profileImageDetails > strong {
-  color: $white;
-  font-size: 0.8rem;
-}
-
-.profileImageDetails > span {
-  margin-top: 0.2rem;
-  color: $gray-500;
-  font-size: 0.67rem;
-}
-
-.profileImageActions {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin-top: 0.75rem;
-}
-
-.profileImageActions label,
-.profileImageActions button {
-  display: inline-flex;
-  min-height: 2.25rem;
-  align-items: center;
-  justify-content: center;
-  padding-inline: 0.8rem;
-  border-radius: 0.45rem;
-  font-size: 0.7rem;
-  font-weight: 750;
-  transition:
-    background 180ms ease,
-    color 180ms ease;
-}
-
-.profileImageActions label {
-  background: $primary;
-  color: #06120d;
-  cursor: pointer;
-}
-
-.profileImageActions label:hover {
-  background: $primary-light;
-}
-
-.profileImageActions label:focus-within {
-  outline: 2px solid $primary-light;
-  outline-offset: 2px;
-}
-
-.profileImageActions label input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.profileImageActions button {
-  color: $gray-400;
-}
-
-.profileImageActions button:hover {
-  background: rgba(#f87171, 0.08);
-  color: #fca5a5;
-}
-
-.profileImageActions label:has(input:disabled),
-.profileImageActions button:disabled {
-  opacity: 0.55;
-  cursor: wait;
-}
-
-.field {
-  display: flex;
-  margin-bottom: 1rem;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.field > span {
-  color: $gray-400;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.field input {
-  width: 100%;
-  height: 3rem;
-  padding-inline: 0.85rem;
-  border: 1px solid rgba($white, 0.12);
-  border-radius: $radius-md;
-  outline: none;
-  background: #090b0a;
-  color: $white;
-  font: inherit;
-  transition: border-color $transition-fast;
-}
-
-.field input:hover {
-  border-color: rgba($white, 0.24);
-}
-
-.field input:focus {
-  border-color: $primary;
-}
-
-.field input:disabled {
-  color: $gray-500;
-  cursor: not-allowed;
-}
-
-.field small {
-  color: $gray-600;
-  font-size: 0.65rem;
-}
-
-.formMessage {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  border-radius: 0.6rem;
-  background: rgba($primary, 0.1);
-  color: $primary-light;
-  font-size: 0.74rem;
-}
-
-.formError {
-  background: rgba(#f87171, 0.08);
-  color: #fca5a5;
-}
-
-.emailActions {
-  display: flex;
-  align-items: flex-start;
-  margin-top: auto;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.emailActions .primaryAction,
-.emailActions .secondaryAction {
-  margin-top: 0;
-}
-
-.primaryAction,
-.secondaryAction {
-  display: inline-flex;
-  width: fit-content;
-  min-height: 2.8rem;
-  align-items: center;
-  justify-content: center;
-  margin-top: auto;
-  padding-inline: 1.15rem;
-  border-radius: $radius-md;
-  font-size: 0.76rem;
-  font-weight: 800;
-  transition: background $transition-fast, border-color $transition-fast, color $transition-fast;
-}
-
-.primaryAction {
-  background: $primary;
-  color: #06120d;
-}
-
-.primaryAction:hover {
-  background: $primary-light;
-}
-
-.secondaryAction {
-  background: rgba($white, 0.07);
-  color: $white;
-}
-
-.secondaryAction:hover {
-  background: rgba($white, 0.12);
-}
-
-.primaryAction:disabled,
-.secondaryAction:disabled {
-  opacity: 0.55;
-  cursor: wait;
-}
-
-.verificationState > span {
-  display: inline-flex;
-  min-height: 1.8rem;
-  align-items: center;
-  padding-inline: 0.65rem;
-  border-radius: 999px;
-  background: rgba(#fbbf24, 0.1);
-  color: #fde68a;
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-
-.verificationState > span.verified {
-  background: rgba($primary, 0.12);
-  color: $primary-light;
-}
-
-.verificationState p {
-  margin-top: 1rem;
-  color: $gray-400;
-  font-size: 0.84rem;
-  line-height: 1.65;
-}
-
-.textAction {
-  display: block;
-}
-
-.paymentLayout {
-  display: grid;
-  margin-top: 1.5rem;
-  grid-template-columns: minmax(0, 1.5fr) minmax(17rem, 0.65fr);
-  gap: 1.5rem;
-}
-
-.paymentHistory,
-.paymentSafety,
-.twoFactorPanel {
-  border-radius: 0.75rem;
-  background: #151917;
-}
-
-.paymentHistory {
-  min-height: 27rem;
-  padding: clamp(1.25rem, 2.5vw, 2rem);
-}
+// ---------- Payments ----------
 
 .paymentRows {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .paymentRow {
   display: grid;
-  min-height: 5.5rem;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 1rem;
-  padding: 0.65rem 0.8rem;
-  border-radius: 0.6rem;
-  background: #0f1311;
-  grid-template-columns: minmax(0, 1fr) auto minmax(5rem, auto);
+  padding: 0.85rem 1rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.03);
+
+  > strong {
+    min-width: 5.5rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .paymentMethod {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 0.85rem;
-}
+  gap: 0.8rem;
 
-.paymentMethod > span {
-  display: grid;
-  width: 2.5rem;
-  height: 2.5rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 0.5rem;
-  background: rgba($primary, 0.13);
-  color: $primary-light;
-  font-size: 0.72rem;
-  font-weight: 850;
-}
+  > span {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: $radius-inner;
+    background: rgba($white, 0.07);
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
 
-.paymentMethod div {
-  min-width: 0;
-}
+  > div {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
 
-.paymentMethod strong,
-.paymentMethod small {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
 
-.paymentMethod strong {
-  color: $white;
-  font-size: 0.78rem;
-}
-
-.paymentMethod small,
-.paymentMeta small {
-  margin-top: 0.2rem;
-  color: $gray-600;
-  font-size: 0.65rem;
+  small {
+    color: $gray-500;
+    font-size: 0.8125rem;
+  }
 }
 
 .paymentMeta {
   display: flex;
-  align-items: flex-end;
   flex-direction: column;
-}
+  align-items: flex-end;
+  gap: 0.25rem;
 
-.paymentRow > strong {
-  color: $white;
-  font-family: $font-display;
-  font-size: 0.86rem;
-  text-align: right;
+  small {
+    color: $gray-500;
+    font-size: 0.78rem;
+  }
 }
 
 .paymentSafety {
   display: flex;
-  min-height: 27rem;
-  justify-content: flex-end;
-  padding: clamp(1.25rem, 2.5vw, 2rem);
   flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background:
+    radial-gradient(ellipse 80% 60% at 100% 0%, rgba($primary, 0.12), transparent 70%),
+    $surface;
+
+  p {
+    color: $gray-400;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  a {
+    @include btn-secondary(sm);
+    margin-top: 0.25rem;
+  }
 }
 
 .paymentShield {
   display: grid;
   width: 3rem;
   height: 3rem;
-  margin-bottom: auto;
   place-items: center;
-  border-radius: 0.6rem;
-  background: rgba($primary, 0.13);
+  border-radius: $radius-tile;
+  background: rgba($primary, 0.16);
   color: $primary-light;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
 }
 
-.paymentShield svg {
-  width: 1.4rem;
-  height: 1.4rem;
-  stroke-width: 1.7;
-}
-
-.paymentSafety h3 {
-  color: $white;
-  font-family: $font-display;
-  font-size: 1.25rem;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
-}
-
-.paymentSafety p {
-  margin-top: 0.75rem;
-  color: $gray-400;
-  font-size: 0.82rem;
-  line-height: 1.65;
-}
-
-.paymentSafety a {
-  width: fit-content;
-  margin-top: 1.25rem;
-  color: $primary-light;
-  font-size: 0.74rem;
-  font-weight: 750;
-}
+// ---------- Two-factor ----------
 
 .twoFactorPanel {
-  margin-top: 1.5rem;
-  padding: clamp(1.25rem, 2.5vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .twoFactorIntro {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 0.75rem;
-}
-
-.twoFactorIntro > div > span {
-  color: $gray-500;
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-
-.twoFactorIntro h3 {
-  margin-top: 0.35rem;
-  color: $white;
-  font-family: $font-display;
-  font-size: 1.15rem;
 }
 
 .securityStatus {
-  display: inline-flex;
-  min-height: 1.8rem;
-  align-items: center;
-  padding-inline: 0.65rem;
-  border-radius: 999px;
-  background: rgba(#fbbf24, 0.1);
-  color: #fde68a;
-  font-size: 0.68rem;
-  font-weight: 700;
+  flex-shrink: 0;
+  padding: 0.3rem 0.7rem;
+  border-radius: $radius-full;
+  background: rgba($accent-gold, 0.14);
+  color: $accent-gold;
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .securityStatusActive {
-  background: rgba($primary, 0.12);
+  background: rgba($primary, 0.14);
   color: $primary-light;
 }
 
 .twoFactorStart,
 .twoFactorManage {
   display: grid;
-  max-width: 42rem;
-  margin-top: 1.5rem;
-  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.65fr);
-  gap: 1.25rem 2rem;
-}
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: end;
+  justify-items: start;
+  gap: 1rem 2rem;
 
-.twoFactorStart > p,
-.twoFactorManage > p,
-.authenticatorSetup p,
-.recoveryCodes p {
-  color: $gray-400;
-  font-size: 0.82rem;
-  line-height: 1.65;
-}
+  > .field {
+    width: 100%;
+  }
 
-.twoFactorStart > p,
-.twoFactorManage > p {
-  grid-row: 1 / 3;
-}
-
-.twoFactorStart .field,
-.twoFactorManage .field {
-  margin: 0;
-}
-
-.twoFactorStart .primaryAction,
-.twoFactorManage .secondaryAction {
-  margin-top: 0;
+  > p {
+    grid-row: span 2;
+    align-self: start;
+    max-width: 48ch;
+    color: $gray-400;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
 }
 
 .authenticatorSetup {
   display: grid;
-  max-width: 48rem;
-  margin-top: 1.5rem;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  grid-template-columns: 13rem minmax(0, 1fr);
-  gap: 2rem;
+  gap: 1.5rem 2rem;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  p {
+    color: $gray-400;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
 }
 
 .qrFrame {
+  width: 12rem;
   padding: 0.75rem;
-  background: $white;
-}
+  border-radius: $radius-tile;
+  background: #fff;
 
-.qrFrame img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.authenticatorSetup form {
-  display: flex;
-  flex-direction: column;
-}
-
-.authenticatorSetup .field {
-  margin-top: 1rem;
-}
-
-.twoFactorActions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.dangerAction {
-  display: inline-flex;
-  min-height: 2.8rem;
-  align-items: center;
-  justify-content: center;
-  padding-inline: 1rem;
-  border-radius: $radius-md;
-  background: rgba(#f87171, 0.08);
-  color: #fca5a5;
-  font-size: 0.74rem;
-  font-weight: 750;
-  transition:
-    border-color 180ms ease,
-    background 180ms ease;
-}
-
-.dangerAction:hover {
-  background: rgba(#f87171, 0.14);
-}
-
-.dangerAction:disabled {
-  opacity: 0.55;
-  cursor: wait;
-}
-
-.twoFactorPanel > .formMessage {
-  max-width: 48rem;
-  margin-top: 1.25rem;
-  margin-bottom: 0;
+  img {
+    width: 100%;
+    height: auto;
+  }
 }
 
 .recoveryCodes {
-  max-width: 48rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-}
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.15rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.03);
 
-.recoveryCodes h4 {
-  color: $white;
-  font-family: $font-display;
-  font-size: 1rem;
+  h4 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin-top: 0.2rem;
+    color: $gray-400;
+    font-size: 0.875rem;
+  }
 }
 
 .codeGrid {
   display: grid;
-  margin-top: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-}
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.4rem;
 
-.codeGrid code {
-  padding: 0.65rem 0.75rem;
-  background: #090b0a;
-  color: $gray-300;
-  font-size: 0.75rem;
-}
-
-.recoveryCodes .secondaryAction {
-  margin-top: 1rem;
-}
-
-.emptyState {
-  display: flex;
-  min-height: 28rem;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  text-align: center;
-}
-
-.emptyIcon {
-  display: grid;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 50%;
-  background: rgba($primary, 0.12);
-  color: $primary-light;
-  place-items: center;
-
-  svg {
-    width: 1.4rem;
-    height: 1.4rem;
+  code {
+    padding: 0.55rem 0.75rem;
+    border-radius: $radius-inner;
+    background: $background;
+    color: $gray-200;
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
+    text-align: center;
   }
 }
 
-.emptyState h3 {
-  margin-top: 0.75rem;
-  font-size: 1.5rem;
-}
-
-.emptyState p {
-  max-width: 30rem;
-  margin-top: 0.5rem;
-  color: $gray-500;
-  font-size: 0.85rem;
-}
-
-.emptyState a {
-  display: inline-flex;
-  min-height: 2.8rem;
-  align-items: center;
-  margin-top: 1.25rem;
-  padding-inline: 1.1rem;
-  border-radius: $radius-md;
-  background: rgba($white, 0.07);
-  color: $white;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-@keyframes pulse {
-  from { opacity: 0.35; }
-  to { opacity: 1; }
-}
+// ---------- Responsive ----------
 
 @media (max-width: 72rem) {
   .account {
@@ -1790,131 +1561,118 @@
   .paymentLayout {
     grid-template-columns: 1fr;
   }
-
-  .wishlistGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: $bp-md) {
   .account {
     display: block;
-    width: 100%;
     height: auto;
     min-height: 100dvh;
+    padding: $gutter;
     overflow: visible;
   }
 
   .sidebar {
-    position: relative;
-    padding: 0.75rem 1rem 0;
+    gap: 0.6rem;
+    padding: 0.6rem;
   }
 
-  .identity {
-    min-height: 4.25rem;
-    margin-bottom: 0.75rem;
-    padding: 0.7rem;
-  }
-
-  .avatar {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-
+  // Sections become a scrolling row of pills.
   .navigation {
-    overflow-x: auto;
     flex-direction: row;
-    gap: 0.35rem;
-    padding: 0 0 0.75rem;
+    gap: 0.25rem;
+    overflow-x: auto;
     scrollbar-width: none;
-  }
 
-  .navigation::-webkit-scrollbar {
-    display: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   .navItem {
-    min-height: 2.75rem;
     flex: 0 0 auto;
-    padding-inline: 1rem;
-    border-radius: 0.65rem;
+    padding-inline: 0.9rem;
     white-space: nowrap;
   }
 
-  .navItem:hover {
-    transform: none;
-  }
-
   .sidebarFooter {
-    position: static;
-    padding: 0.25rem 0 0.75rem;
     flex-direction: row;
     justify-content: space-between;
-    gap: 0.5rem;
-  }
 
-  .sidebarFooter > span {
-    display: none;
+    > span {
+      display: none;
+    }
   }
 
   .signOut {
-    min-height: 2.75rem;
+    gap: 0.6rem;
   }
 
   .workspace {
     overflow: visible;
-    padding: 0 1.25rem 4rem;
+    padding: 1.75rem 0.25rem 3rem;
   }
 
   .sectionHeader {
-    position: static;
-    min-height: 8.5rem;
-    padding-block: 1.5rem;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1rem;
   }
 
   .stats {
     grid-template-columns: 1fr;
+
+    article {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0.9rem 1rem;
+    }
+
+    small {
+      display: none;
+    }
+
+    strong {
+      font-size: 1.4rem;
+    }
   }
 
-  .stats article {
-    min-height: 8rem;
+  .deliverySpotlight {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    > button {
+      grid-column: 1 / -1;
+      width: 100%;
+    }
   }
 
   .orderRow {
-    align-items: flex-start;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .orderMain {
+  .orderActions {
     grid-column: 1 / -1;
-  }
+    justify-content: flex-start;
 
-  .orderTotal {
-    text-align: left;
+    small {
+      text-align: left;
+    }
   }
 
   .deliveryTimeline {
-    gap: 0.8rem;
-    grid-template-columns: 1fr;
-  }
-
-  .deliveryTimeline li::after {
-    top: 2rem;
-    left: 1rem;
-    width: 1px;
-    height: calc(100% - 1.2rem);
-  }
-
-  .deliveryTimeline li > strong {
-    padding-right: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 0.35rem;
   }
 
   .deliveryDetails {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
-  .deliveryDetails > div:first-child {
-    grid-column: 1 / -1;
+  .deliveryFooter {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .paymentRow {
@@ -1922,75 +1680,16 @@
   }
 
   .paymentMeta {
-    align-items: flex-start;
     grid-column: 1;
     grid-row: 2;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 3.3rem;
   }
 
   .paymentRow > strong {
     grid-column: 2;
     grid-row: 1 / 3;
-  }
-}
-
-@media (max-width: 34rem) {
-  .wishlistGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .sectionHeader {
-    min-height: 9.5rem;
-    align-items: flex-start;
-    flex-direction: column;
-    justify-content: center;
-    gap: 1rem;
-  }
-
-  .sectionHeader p {
-    max-width: 26ch;
-  }
-
-  .deliverySpotlight {
-    align-items: start;
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-
-  .deliverySpotlight > button {
-    grid-column: 1 / -1;
-  }
-
-  .deliveryHeader,
-  .deliveryFooter {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .deliveryDetails {
-    grid-template-columns: 1fr;
-  }
-
-  .deliveryDetails > div:first-child {
-    grid-column: auto;
-  }
-
-  .headerActions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .addressCard,
-  .addressNote,
-  .settingsPanel {
-    min-height: 20rem;
-  }
-
-  .addressFieldRow {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .addressPreview {
-    min-height: 24rem;
   }
 
   .twoFactorStart,
@@ -2003,17 +1702,29 @@
   .twoFactorManage > p {
     grid-row: auto;
   }
+}
 
-  .authenticatorSetup {
-    align-items: start;
-  }
-
-  .qrFrame {
-    width: min(100%, 14rem);
-  }
-
-  .codeGrid {
+@media (max-width: 34rem) {
+  .addressFieldRow {
     grid-template-columns: 1fr;
+  }
+
+  .recentOrder {
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    .status {
+      grid-row: 2;
+      justify-self: start;
+    }
+
+    > strong {
+      grid-row: 1 / 3;
+      grid-column: 2;
+    }
+  }
+
+  .wishlistGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -2023,16 +1734,8 @@
     animation: none;
   }
 
-  .navItem,
-  .quickPanel > button,
-  .quickPanel > a,
-  .deliverySpotlight > button,
-  .deliveryFooter a,
-  .wishlistItem,
-  .field input,
-  .primaryAction,
-  .secondaryAction,
-  .dangerAction {
-    transition-duration: 0.01ms;
+  .wishlistItem:hover .wishlistImage img {
+    translate: none;
+    scale: none;
   }
 }

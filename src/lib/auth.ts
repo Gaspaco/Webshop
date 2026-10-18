@@ -12,16 +12,16 @@ import {
   sendVerificationEmail,
 } from "~/lib/email.server";
 import { getAuthEnv, getEmailEnv } from "~/lib/env.server";
+import { createAuthSecurityHooks } from "~/lib/auth-security.server";
+import { authRateLimitStorage } from "~/lib/rate-limit.server";
+import { logServerError } from "~/lib/server-log";
+import { hasFreshAdminApproval } from "~/lib/admin-approval.server";
 import {
   meetsPasswordRequirements,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   PASSWORD_REQUIREMENTS_MESSAGE,
 } from "~/lib/password";
-import {
-  isValidStoredProfileImage,
-  PROFILE_IMAGE_ERROR_MESSAGE,
-} from "~/lib/profile-image";
 
 const authEnv = getAuthEnv();
 const emailEnv = getEmailEnv();
@@ -40,88 +40,36 @@ export const auth = betterAuth({
   appName: "TCGHaven",
   baseURL: authEnv.BETTER_AUTH_URL,
   secret: authEnv.BETTER_AUTH_SECRET,
+  logger: {
+    level: "error",
+    log: (level, _message, ...details) => {
+      if (level === "error") {
+        logServerError("Authentication service error.", details.find(value => value instanceof Error));
+      }
+    },
+  },
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
   }),
-  databaseHooks: {
-    user: {
-      create: {
-        before: async user => {
-          const name = user.name.normalize("NFKC").trim();
-          if (
-            name.length < 1 ||
-            name.length > 80 ||
-            /[\u0000-\u001f\u007f]/.test(name)
-          ) {
-            throw new APIError("BAD_REQUEST", {
-              message: "Enter a valid name of 80 characters or fewer.",
-            });
-          }
-
-          return { data: { ...user, name } };
-        },
-      },
-      update: {
-        before: async user => {
-          const data = { ...user };
-
-          if (typeof data.name === "string") {
-            const name = data.name.normalize("NFKC").trim();
-            if (
-              name.length < 1 ||
-              name.length > 80 ||
-              /[\u0000-\u001f\u007f]/.test(name)
-            ) {
-              throw new APIError("BAD_REQUEST", {
-                message: "Enter a valid name of 80 characters or fewer.",
-              });
-            }
-            data.name = name;
-          }
-
-          if (
-            Object.prototype.hasOwnProperty.call(data, "image") &&
-            !isValidStoredProfileImage(data.image)
-          ) {
-            throw new APIError("BAD_REQUEST", {
-              message: PROFILE_IMAGE_ERROR_MESSAGE,
-            });
-          }
-
-          return { data };
-        },
-      },
-    },
-  },
+  databaseHooks: createAuthSecurityHooks(async userId => {
+    const [profile] = await db
+      .select({ suspended: schema.customerAdminProfiles.suspended })
+      .from(schema.customerAdminProfiles)
+      .where(eq(schema.customerAdminProfiles.userId, userId))
+      .limit(1);
+    return profile?.suspended === true;
+  }),
   trustedOrigins: [...trustedOrigins],
   hooks: {
     before: createAuthMiddleware(async context => {
-      if (
-        context.path === "/sign-in/email" &&
-        typeof context.body?.email === "string"
-      ) {
-        const normalizedEmail = context.body.email.trim().toLowerCase();
-        const [account] = await db
-          .select({
-            suspended: schema.customerAdminProfiles.suspended,
-          })
-          .from(schema.user)
-          .leftJoin(
-            schema.customerAdminProfiles,
-            eq(schema.customerAdminProfiles.userId, schema.user.id),
-          )
-          .where(eq(schema.user.email, normalizedEmail))
-          .limit(1);
-
-        if (account?.suspended) {
-          throw new APIError("FORBIDDEN", {
-            message:
-              "This account is suspended. Contact TCGHaven support for help.",
-          });
+      if (["/two-factor/disable", "/two-factor/enable", "/two-factor/get-totp-uri", "/two-factor/generate-backup-codes"].includes(context.path)) {
+        const current = await auth.api.getSession({ headers: context.headers ?? new Headers() });
+        if (current?.user.role === "admin" && current.user.twoFactorEnabled) {
+          if (context.path === "/two-factor/disable") throw new APIError("FORBIDDEN", { message: "Owner two-factor authentication is required." });
+          if (!await hasFreshAdminApproval(current.session.id)) throw new APIError("FORBIDDEN", { message: "Verify owner access before changing two-factor settings." });
         }
       }
-
       const password =
         context.path === "/sign-up/email"
           ? context.body?.password
@@ -140,6 +88,13 @@ export const auth = betterAuth({
       }
     }),
     after: createAuthMiddleware(async context => {
+      const newSession = context.context.newSession;
+      if (["/two-factor/verify-totp", "/two-factor/verify-otp", "/two-factor/verify-backup-code"].includes(context.path) &&
+        newSession?.user.role === "admin" && newSession.user.twoFactorEnabled) {
+        const verifiedAt = new Date();
+        await db.insert(schema.adminSessionApprovals).values({ sessionId: newSession.session.id, verifiedAt })
+          .onConflictDoUpdate({ target: schema.adminSessionApprovals.sessionId, set: { verifiedAt } });
+      }
       if (!emailEnv) return;
 
       const completedSignIn =
@@ -148,7 +103,6 @@ export const auth = betterAuth({
         context.path === "/two-factor/verify-backup-code" ||
         context.path === "/two-factor/verify-otp" ||
         context.path.startsWith("/callback/");
-      const newSession = context.context.newSession;
       if (!completedSignIn || !newSession) return;
 
       try {
@@ -196,6 +150,7 @@ export const auth = betterAuth({
     window: 60,
     max: 60,
     storage: "database",
+    customStorage: authRateLimitStorage,
     customRules: {
       "/sign-in/email": { window: 60, max: 5 },
       "/sign-in/social": { window: 60, max: 10 },
@@ -215,7 +170,7 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: PASSWORD_MIN_LENGTH,
     maxPasswordLength: PASSWORD_MAX_LENGTH,
-    requireEmailVerification: Boolean(emailEnv),
+    requireEmailVerification: process.env.NODE_ENV === "production" || Boolean(emailEnv),
     revokeSessionsOnPasswordReset: true,
     ...(emailEnv
       ? {

@@ -1,9 +1,11 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { and, eq, or } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { orders, returnRequests } from "~/db/schema";
 import { auth } from "~/lib/auth";
+import { customerOrderAccess } from "~/lib/order-access";
+import { logServerError } from "~/lib/server-log";
 import {
   escapeEmailHtml,
   renderTransactionalEmail,
@@ -31,7 +33,7 @@ const json = (data: unknown, init?: ResponseInit) =>
 
 export async function POST(event: APIEvent) {
   try {
-    const invalidRequest = validateJsonRequest(event, { maxBytes: 8_000 });
+    const invalidRequest = await validateJsonRequest(event, { maxBytes: 8_000 });
     if (invalidRequest) return invalidRequest;
 
     const input = requestSchema.parse(await event.request.json());
@@ -55,10 +57,7 @@ export async function POST(event: APIEvent) {
     }
 
     const ownership = session
-      ? or(
-          eq(orders.userId, session.user.id),
-          eq(orders.email, session.user.email.toLowerCase()),
-        )
+      ? customerOrderAccess(session.user)
       : eq(orders.email, input.email!.toLowerCase());
     const [order] = await db
       .select()
@@ -126,7 +125,7 @@ export async function POST(event: APIEvent) {
     if (error instanceof z.ZodError) {
       return json({ error: error.issues[0]?.message ?? "Check the return request." }, { status: 400 });
     }
-    console.error("Customer return request failed", error);
+    logServerError("Customer return request failed.", error);
     return json({ error: "The request could not be saved. Please try again." }, { status: 500 });
   }
 }

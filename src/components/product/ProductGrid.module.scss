@@ -5,48 +5,62 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .count {
-  color: $gray-400;
-  font-size: 0.875rem;
+  color: $gray-500;
+  font-family: $font-display;
+  font-size: 0.9375rem;
+  font-weight: 600;
 
   strong {
-    color: $white;
-    font-weight: 750;
+    color: $gray-300;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
 }
 
+// Same pill as the main shop's sort control.
 .sortLabel {
+  position: relative;
   display: flex;
+  height: 2.75rem;
   align-items: center;
-  gap: 0.625rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: $gray-400;
+  padding-left: 1.1rem;
+  border-radius: $radius-full;
+  background: $surface;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.06);
+  color: $gray-500;
+  font-size: 0.875rem;
+  transition: background-color 180ms $ease-out;
+
+  &:hover {
+    background: $surface-raised;
+  }
+
+  &:focus-within {
+    box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
+  }
 }
 
 .sortSelect {
-  height: 2.375rem;
-  padding-inline: 0.75rem 2rem;
-  border-radius: $radius-md;
-  border: 1px solid rgba($white, 0.12);
-  background: $surface;
-  color: $white;
-  font-size: 0.875rem;
-  appearance: none;
-  cursor: pointer;
+  height: 100%;
+  padding: 0 2.5rem 0 0.4rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 1rem center;
   background-repeat: no-repeat;
-  background-position: right 0.625rem center;
   background-size: 1rem;
-
-  &:focus {
-    outline: none;
-    border-color: $primary;
-  }
+  color: $white;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color-scheme: dark;
+  cursor: pointer;
+  appearance: none;
 }
 
 .grid {
@@ -54,12 +68,12 @@
   // Matches the main shop grid. The 21rem track gave four-across on a wide
   // page and one enormous card whenever a game had a short catalogue.
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 14.5rem), 1fr));
-  gap: 1rem;
+  gap: clamp(0.75rem, 1.4vw, 1.25rem);
 }
 
 @media (max-width: $bp-md) {
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
   }
 }

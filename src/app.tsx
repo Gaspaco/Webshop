@@ -1,17 +1,15 @@
 import { MetaProvider, Title } from "@solidjs/meta";
-import { Router, useLocation } from "@solidjs/router";
+import { Router, useIsRouting, useLocation } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import { Show, Suspense, type ParentProps } from "solid-js";
+import { CheckoutFooter, CheckoutHeader } from "~/components/layout/CheckoutChrome";
 import Footer from "~/components/layout/Footer";
-import LoadingScreen from "~/components/layout/LoadingScreen";
 import Navbar from "~/components/layout/Navbar";
 import RouteSkeleton, { type SkeletonVariant } from "~/components/layout/RouteSkeleton";
 import RouteMotion from "~/components/layout/RouteMotion";
 import { CartProvider } from "~/lib/cart";
 import "./app.scss";
-
-const LOADER_SESSION_KEY = "tcg-haven-loader-seen";
 
 export default function App() {
   const queryClient = new QueryClient({
@@ -38,7 +36,7 @@ export default function App() {
 
 function AppShell(props: ParentProps) {
   const location = useLocation();
-  const isHomeRoute = () => location.pathname === "/";
+  const isRouting = useIsRouting();
   const isAuthRoute = () =>
     [
       "/login",
@@ -55,7 +53,9 @@ function AppShell(props: ParentProps) {
     location.pathname === "/admin" ||
     location.pathname.startsWith("/admin/");
   const chromeless = () => isAuthRoute() || isDashboard();
-  const skipsBrandLoader = () => isHomeRoute() || isDashboard() || isAuthRoute();
+  // Cart and checkout swap the storefront chrome for a slim, task-focused bar.
+  const isCheckoutFlow = () =>
+    location.pathname === "/cart" || location.pathname === "/checkout";
 
   // Routes that read a pending resource suspend, so the fallback below is what
   // the visitor actually looks at while the catalogue loads. Match its shape to
@@ -63,26 +63,28 @@ function AppShell(props: ParentProps) {
   const skeletonVariant = (): SkeletonVariant => {
     const path = location.pathname;
     if (/^\/products\/[^/]+$/.test(path)) return "detail";
-    if (path === "/products" || path.startsWith("/categories")) return "grid";
+    if (path === "/products") return "grid";
+    if (path === "/categories") return "games";
+    if (/^\/categories\/[^/]+$/.test(path)) return "game";
+    if (path.startsWith("/categories/")) return "subpage";
     return "page";
   };
-  const skeletonHasRail = () => location.pathname === "/products";
 
   return (
     <MetaProvider>
       <Title>My Little TCG Haven</Title>
-      <script
-        innerHTML={`try{if(location.pathname==="/"||location.pathname==="/account"||location.pathname.startsWith("/account/")||location.pathname==="/admin"||location.pathname.startsWith("/admin/")){sessionStorage.setItem("${LOADER_SESSION_KEY}","true");document.documentElement.classList.add("loader-seen")}else if(sessionStorage.getItem("${LOADER_SESSION_KEY}")==="true"){document.documentElement.classList.add("loader-seen")}}catch{}`}
+      {/* A thin bar across the top while the next page loads. */}
+      <div
+        class="route-progress"
+        classList={{ "route-progress-active": isRouting() }}
+        aria-hidden="true"
       />
-      <Show when={!skipsBrandLoader()}>
-        <LoadingScreen />
-      </Show>
-      {!chromeless() && <Navbar />}
+      {!chromeless() && (isCheckoutFlow() ? <CheckoutHeader /> : <Navbar />)}
       <Suspense
         fallback={
           chromeless()
             ? undefined
-            : <RouteSkeleton variant={skeletonVariant()} rail={skeletonHasRail()} />
+            : <RouteSkeleton variant={skeletonVariant()} />
         }
       >
         {/* Keyed on pathname so the motion wrapper remounts once per route. */}
@@ -90,7 +92,7 @@ function AppShell(props: ParentProps) {
           {_ => <RouteMotion enabled={!chromeless()}>{props.children}</RouteMotion>}
         </Show>
       </Suspense>
-      {!chromeless() && <Footer />}
+      {!chromeless() && (isCheckoutFlow() ? <CheckoutFooter /> : <Footer />)}
     </MetaProvider>
   );
 }
