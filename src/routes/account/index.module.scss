@@ -3,6 +3,15 @@
 
 $gutter: 0.75rem;
 
+// Collector ranks, from Common (0) to Secret Rare (4).
+@mixin rank-colors {
+  &[data-rank="0"] { --rank: #{$gray-300}; --rank-bg: #{rgba($white, 0.08)}; }
+  &[data-rank="1"] { --rank: #{$primary-light}; --rank-bg: #{rgba($primary, 0.16)}; }
+  &[data-rank="2"] { --rank: #{$accent-gold}; --rank-bg: #{rgba($accent-gold, 0.15)}; }
+  &[data-rank="3"] { --rank: #{#fde68a}; --rank-bg: #{rgba($accent-gold, 0.2)}; }
+  &[data-rank="4"] { --rank: #{#f0abfc}; --rank-bg: #{rgba(#e879f9, 0.16)}; }
+}
+
 // ---------- Shell ----------
 
 .page {
@@ -106,6 +115,30 @@ $gutter: 0.75rem;
   background: $surface;
 }
 
+.brand {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.55rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: $radius-inner;
+  color: $primary;
+  font-family: $font-display;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+
+  img {
+    width: 26px;
+    height: auto;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
+}
+
 .identity {
   display: flex;
   min-width: 0;
@@ -131,12 +164,17 @@ $gutter: 0.75rem;
     white-space: nowrap;
   }
 
-  span:not(.avatar) {
-    overflow: hidden;
-    color: $gray-500;
-    font-size: 0.78rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .rankChip {
+    @include rank-colors;
+    align-self: flex-start;
+    margin-top: 0.2rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: $radius-full;
+    background: var(--rank-bg);
+    color: var(--rank);
+    font-family: $font-display;
+    font-size: 0.7rem;
+    font-weight: 600;
   }
 }
 
@@ -199,6 +237,21 @@ $gutter: 0.75rem;
   transition: color 180ms $ease-out;
 }
 
+.navCount {
+  display: grid;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  margin-left: auto;
+  padding-inline: 0.35rem;
+  place-items: center;
+  border-radius: $radius-full;
+  background: rgba($white, 0.08);
+  color: $gray-300;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 // The current section: a quiet pill, with the icon carrying the colour.
 .navItemActive {
   color: $white;
@@ -206,6 +259,11 @@ $gutter: 0.75rem;
 
   .navIcon {
     color: $primary-light;
+  }
+
+  .navCount {
+    background: $primary;
+    color: #04110b;
   }
 
   &:hover {
@@ -307,17 +365,6 @@ $gutter: 0.75rem;
 
 .workspace > .sectionHeader + * {
   margin-top: 0;
-}
-
-.headerActions {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 0.75rem;
-
-  a {
-    @include btn-secondary;
-  }
 }
 
 .syncing {
@@ -466,95 +513,291 @@ $gutter: 0.75rem;
   align-self: flex-start;
 }
 
-// ---------- Overview ----------
+// ---------- Section entrance ----------
 
-.deliverySpotlight {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 1.1rem;
-  padding: 1.1rem 1.25rem 1.1rem 1.1rem;
-  border-radius: $radius-panel;
-  background:
-    radial-gradient(ellipse 60% 140% at 0% 50%, rgba($primary, 0.16), transparent 70%),
-    $surface;
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 
-  > button {
-    @include btn-primary;
+  > * {
+    animation: viewIn 520ms $ease-out both;
+  }
+
+  > :nth-child(2) { animation-delay: 60ms; }
+  > :nth-child(3) { animation-delay: 120ms; }
+  > :nth-child(4) { animation-delay: 180ms; }
+}
+
+@keyframes viewIn {
+  from {
+    opacity: 0;
+    translate: 0 0.75rem;
   }
 }
 
-.deliverySpotlightIcon {
-  display: grid;
-  width: 3rem;
-  height: 3rem;
-  place-items: center;
-  border-radius: $radius-tile;
-  background: rgba($primary, 0.16);
-  color: $primary-light;
+// ---------- Shared bits ----------
+
+.trackButton {
+  @include btn-primary(sm);
 
   svg {
-    width: 1.45rem;
-    height: 1.45rem;
+    width: 0.95rem;
+    height: 0.95rem;
   }
 }
 
-.deliverySpotlightCopy {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 0.15rem;
+.ghostButton {
+  @include btn-secondary(sm);
+}
 
-  span {
-    color: $primary-light;
+// Product photos overlapping like a small stack of cards.
+.thumbs {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding-right: 0.15rem;
+}
+
+.thumb {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: #222;
+  box-shadow: 0 0 0 2px $surface, inset 0 0 0 1px rgba($white, 0.08);
+
+  & + & {
+    margin-left: -1rem;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    padding: 0.2rem;
+    object-fit: contain;
+  }
+}
+
+.thumbMore {
+  color: $gray-300;
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.thumbsLarge .thumb {
+  width: 4.75rem;
+  height: 4.75rem;
+  border-radius: 0.9rem;
+
+  & + .thumb {
+    margin-left: -2rem;
+  }
+
+  &:nth-child(1) { rotate: -6deg; }
+  &:nth-child(3) { rotate: 6deg; }
+  &:nth-child(2) { z-index: 1; translate: 0 -0.2rem; }
+
+  img {
+    padding: 0.35rem;
+  }
+}
+
+.imageFallback {
+  opacity: 0.45;
+  padding: 25% !important;
+}
+
+// Paid → packing → with PostNL → delivered. The green line is how far the
+// parcel has come.
+.track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+
+  --dot: 1.75rem;
+
+  &::before,
+  &::after {
+    position: absolute;
+    top: calc(var(--dot) / 2 - 1px);
+    left: 12.5%;
+    width: 75%;
+    height: 2px;
+    border-radius: 1px;
+    content: "";
+  }
+
+  &::before {
+    background: rgba($white, 0.1);
+  }
+
+  &::after {
+    background: $primary;
+    transform: scaleX(var(--progress));
+    transform-origin: left;
+    animation: trackFill 1s 200ms $ease-out both;
+  }
+
+  li {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+    color: $gray-500;
+    text-align: center;
+  }
+
+  strong {
+    font-family: $font-display;
     font-size: 0.8125rem;
     font-weight: 600;
   }
+}
 
-  strong {
-    color: $white;
-    font-family: $font-display;
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
+@keyframes trackFill {
+  from { transform: scaleX(0); }
+}
 
-  small {
-    color: $gray-500;
-    font-size: 0.8125rem;
+.trackDot {
+  display: grid;
+  width: var(--dot);
+  height: var(--dot);
+  place-items: center;
+  border-radius: 50%;
+  background: $surface-raised;
+  box-shadow: inset 0 0 0 1.5px rgba($white, 0.14);
+  color: #04110b;
+
+  svg {
+    width: 52%;
+    height: 52%;
   }
 }
 
-// One strip of three figures rather than three identical cards.
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.25rem;
-  padding: 0.25rem;
-  border-radius: $radius-panel;
-  background: $surface;
+.trackDone {
+  color: $gray-300 !important;
 
-  article {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    padding: 1.15rem 1.25rem;
-    border-radius: calc($radius-panel - 0.25rem);
+  .trackDot {
+    background: $primary;
+    box-shadow: none;
   }
+}
 
-  article > span {
-    color: $gray-400;
-    font-size: 0.875rem;
+.trackNow {
+  color: $white !important;
+
+  .trackDot {
+    background: $surface;
+    box-shadow: inset 0 0 0 2px $primary;
+    animation: nowPulse 2s ease-out infinite;
+
+    &::after {
+      width: 38%;
+      height: 38%;
+      border-radius: 50%;
+      background: $primary-light;
+      content: "";
+    }
+  }
+}
+
+@keyframes nowPulse {
+  0% { box-shadow: inset 0 0 0 2px $primary, 0 0 0 0 rgba($primary, 0.45); }
+  70%, 100% { box-shadow: inset 0 0 0 2px $primary, 0 0 0 0.6rem rgba($primary, 0); }
+}
+
+.trackCompact {
+  --dot: 1.05rem;
+
+  li {
+    gap: 0.4rem;
   }
 
   strong {
+    font-size: 0.72rem;
+  }
+}
+
+// ---------- Overview: hello + member card ----------
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 25rem);
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  padding: clamp(0.5rem, 2vw, 1.5rem) 0 clamp(1rem, 2.5vw, 2rem);
+}
+
+.heroCopy {
+  min-width: 0;
+
+  h1 {
+    margin-top: 0.15rem;
+    overflow: hidden;
     color: $white;
     font-family: $font-display;
-    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    font-size: clamp(2.75rem, 6vw, 5rem);
     font-weight: 800;
-    letter-spacing: -0.035em;
-    line-height: 1.1;
-    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.055em;
+    line-height: 0.95;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  > p {
+    max-width: 44ch;
+    margin-top: 1rem;
+    color: $gray-400;
+    font-size: clamp(1rem, 1.4vw, 1.125rem);
+    line-height: 1.55;
+
+    strong {
+      color: $white;
+      font-weight: 600;
+    }
+  }
+}
+
+.heroEyebrow {
+  color: $gray-400;
+  font-family: $font-display;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 600;
+}
+
+.rankProgress {
+  display: grid;
+  max-width: 24rem;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin-top: 1.75rem;
+
+  > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  span {
+    color: $gray-500;
+    font-size: 0.8125rem;
+  }
+
+  strong {
+    @include rank-colors;
+    color: var(--rank);
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 700;
   }
 
   small {
@@ -563,86 +806,408 @@ $gutter: 0.75rem;
   }
 }
 
+.rankBar {
+  display: block;
+  height: 0.4rem;
+  overflow: hidden;
+  border-radius: $radius-full;
+  background: rgba($white, 0.08);
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, $primary, $accent-gold);
+    transform-origin: left;
+    animation: trackFill 1.1s 300ms $ease-out both;
+  }
+}
+
+// A membership card that catches the light as you move over it.
+.memberCard {
+  @include rank-colors;
+  position: relative;
+  display: flex;
+  width: 100%;
+  aspect-ratio: 1.586;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: clamp(1rem, 2vw, 1.35rem);
+  border-radius: 1.1rem;
+  background:
+    radial-gradient(ellipse 80% 70% at 100% 0%, rgba($primary, 0.28), transparent 60%),
+    radial-gradient(ellipse 60% 60% at 0% 100%, rgba($accent-gold, 0.1), transparent 60%),
+    linear-gradient(150deg, #11261d, #0b1310 60%, #101c17);
+  box-shadow:
+    inset 0 0 0 1px rgba($white, 0.1),
+    0 1.75rem 3rem -1.25rem rgba(#000, 0.85);
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, -4deg));
+  transition: transform 600ms $ease-out;
+  animation: cardIn 900ms 120ms cubic-bezier(0.32, 0.72, 0, 1) both;
+
+  &:hover {
+    transition-duration: 140ms;
+  }
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: perspective(900px) rotateX(18deg) rotateY(-18deg) translateY(1.5rem);
+  }
+}
+
+.memberFoil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at var(--mx, 70%) var(--my, 20%), rgba($white, 0.16), transparent 40%),
+    repeating-linear-gradient(
+      115deg,
+      transparent 0,
+      rgba($primary-light, 0.07) 6%,
+      rgba($accent-gold, 0.07) 12%,
+      transparent 18%
+    );
+  background-size: 100% 100%, 220% 220%;
+  background-position: 0 0, var(--mx, 30%) var(--my, 30%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  transition: background-position 600ms $ease-out;
+}
+
+.memberTop,
+.memberWho,
+.memberStats,
+.memberNumber {
+  position: relative;
+}
+
+.memberTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.memberBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: $white;
+  font-family: $font-display;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+
+  img {
+    width: 22px;
+    height: auto;
+  }
+}
+
+.memberRank {
+  padding: 0.2rem 0.6rem;
+  border-radius: $radius-full;
+  background: var(--rank-bg);
+  color: var(--rank);
+  font-family: $font-display;
+  font-size: 0.72rem;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+}
+
+.memberWho {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.8rem;
+
+  > div {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  strong {
+    overflow: hidden;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    color: rgba($white, 0.55);
+    font-size: 0.78rem;
+  }
+}
+
+.memberAvatar {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: rgba($primary, 0.22);
+  box-shadow: 0 0 0 2px rgba($white, 0.12);
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.memberStats {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+
+  div {
+    min-width: 0;
+  }
+
+  dt {
+    color: rgba($white, 0.5);
+    font-size: 0.7rem;
+  }
+
+  dd {
+    margin: 0;
+    overflow: hidden;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.memberNumber {
+  position: absolute;
+  right: clamp(1rem, 2vw, 1.35rem);
+  bottom: clamp(1rem, 2vw, 1.35rem);
+  color: rgba($white, 0.3);
+  font-family: $font-display;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+// ---------- Overview: what's on its way ----------
+
+.onTheWay {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  padding: clamp(1.25rem, 2.5vw, 1.75rem) clamp(1.25rem, 3vw, 2rem);
+  border-radius: $radius-panel;
+  background:
+    radial-gradient(ellipse 45% 120% at 0% 50%, rgba($primary, 0.14), transparent 70%),
+    $surface;
+}
+
+.onTheWayBody {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.onTheWayHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+
+  > div:first-child {
+    min-width: 0;
+  }
+
+  span {
+    color: $primary-light;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  h2 {
+    margin-top: 0.15rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.2rem, 2vw, 1.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  p {
+    margin-top: 0.2rem;
+    overflow: hidden;
+    color: $gray-500;
+    font-size: 0.875rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.onTheWayActions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.4rem;
+}
+
+// ---------- Overview: recent orders + wishlist ----------
+
 .overviewGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  align-items: start;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  align-items: stretch;
   gap: 0.75rem;
 }
 
 .recentOrders {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.3rem;
 }
 
 .recentOrder {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
+  gap: 0.9rem;
+  padding: 0.6rem 1rem 0.6rem 0.6rem;
   border-radius: $radius-tile;
   background: rgba($white, 0.03);
+  text-align: left;
+  transition: background-color 160ms $ease-out;
 
-  > div {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
+  &:hover {
+    background: rgba($white, 0.065);
   }
 
-  > div strong {
-    color: $white;
-    font-family: $font-display;
-    font-size: 0.9375rem;
-    font-weight: 600;
-  }
-
-  > div span {
-    color: $gray-500;
-    font-size: 0.8125rem;
-  }
-
-  > strong {
-    min-width: 5.5rem;
-    color: $white;
-    font-family: $font-display;
-    font-size: 0.9375rem;
-    font-weight: 700;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: -2px;
   }
 }
 
-.quickPanel {
+.recentText {
   display: flex;
+  min-width: 0;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.1rem;
 
-  > button,
-  > a {
-    display: flex;
-    min-height: 2.75rem;
-    align-items: center;
-    margin-inline: -0.85rem;
-    padding-inline: 0.85rem;
-    border-radius: $radius-full;
-    color: $gray-300;
+  strong {
+    overflow: hidden;
+    color: $white;
     font-family: $font-display;
     font-size: 0.9375rem;
     font-weight: 600;
-    text-align: left;
-    transition: color 180ms $ease-out, background-color 180ms $ease-out;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-    &:hover {
-      color: $white;
-      background: rgba($white, 0.06);
-    }
+  small {
+    color: $gray-500;
+    font-size: 0.8rem;
+  }
+}
 
-    &:focus-visible {
-      outline: 2px solid $primary-light;
-      outline-offset: -2px;
-    }
+.recentTotal {
+  min-width: 5rem;
+  color: $white;
+  font-family: $font-display;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.wishPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+// Saved products fanned out like a hand of cards.
+.fan {
+  position: relative;
+  display: grid;
+  min-height: 12.5rem;
+  flex: 1;
+  place-items: center;
+  border-radius: $radius-tile;
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
+}
+
+.fanCard {
+  position: absolute;
+  display: grid;
+  width: 6.25rem;
+  aspect-ratio: 63 / 88;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba($white, 0.08), transparent 75%),
+    #1f1f1f;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.09), 0 0.9rem 1.5rem -0.6rem rgba(#000, 0.7);
+  transform: translate(var(--x), var(--y)) rotate(var(--r));
+  transition: transform 550ms cubic-bezier(0.32, 0.72, 0, 1);
+
+  img {
+    width: 100%;
+    height: 100%;
+    padding: 0.4rem;
+    object-fit: contain;
+  }
+}
+
+@media (hover: hover) {
+  .fan:hover .fanCard {
+    transform: translate(calc(var(--x) * 1.3), calc(var(--y) * 1.4 - 0.5rem)) rotate(calc(var(--r) * 1.35));
+  }
+}
+
+.fanCaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  margin-top: 0.75rem;
+  text-align: center;
+
+  strong {
+    max-width: 100%;
+    overflow: hidden;
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    color: $gray-500;
+    font-size: 0.8125rem;
   }
 }
 
@@ -664,6 +1229,7 @@ $gutter: 0.75rem;
   span {
     color: $gray-400;
     font-size: 0.875rem;
+    line-height: 1.5;
   }
 
   a {
@@ -672,7 +1238,207 @@ $gutter: 0.75rem;
   }
 }
 
+// ---------- Overview: account checklist ----------
+
+.checklist {
+  padding: clamp(1.25rem, 2.4vw, 1.75rem);
+  border-radius: $radius-panel;
+  background: $surface;
+}
+
+.checklistHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h3 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin-top: 0.15rem;
+    color: $gray-500;
+    font-size: 0.875rem;
+  }
+}
+
+.checkRing {
+  position: relative;
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient($primary calc(var(--done) * 360deg), rgba($white, 0.08) 0);
+  color: $white;
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 700;
+  isolation: isolate;
+
+  &::before {
+    position: absolute;
+    z-index: -1;
+    inset: 4px;
+    border-radius: 50%;
+    background: $surface;
+    content: "";
+  }
+}
+
+.checkItems {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.checkItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.95rem 1rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.03);
+  text-align: left;
+  transition: background-color 160ms $ease-out;
+
+  &:hover {
+    background: rgba($white, 0.065);
+
+    .checkArrow {
+      color: $gray-300;
+      translate: 2px 0;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: -2px;
+  }
+}
+
+.checkMark {
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px rgba($accent-gold, 0.6);
+
+  > span {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: $accent-gold;
+  }
+
+  svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+}
+
+.checkItemDone .checkMark {
+  background: $primary;
+  box-shadow: none;
+  color: #04110b;
+}
+
+.checkText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  small {
+    color: $gray-500;
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+}
+
+.checkItemDone .checkText strong {
+  color: $gray-300;
+}
+
+.checkArrow {
+  width: 1rem;
+  height: 1rem;
+  color: $gray-600;
+  transition: color 160ms $ease-out, translate 200ms $ease-out;
+}
+
 // ---------- Orders ----------
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.4rem;
+  padding-inline: 1rem 0.8rem;
+  border-radius: $radius-full;
+  background: rgba($white, 0.05);
+  color: $gray-400;
+  font-family: $font-display;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 160ms $ease-out, background-color 160ms $ease-out;
+
+  span {
+    color: $gray-500;
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &:hover {
+    color: $white;
+    background: rgba($white, 0.08);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
+}
+
+.filterActive,
+.filterActive:hover {
+  background: $white;
+  color: #111;
+
+  span {
+    color: $gray-500;
+  }
+}
+
+.filterEmpty {
+  padding: 2rem;
+  border-radius: $radius-panel;
+  background: $surface;
+  color: $gray-500;
+  text-align: center;
+}
 
 .orderList {
   display: flex;
@@ -680,74 +1446,143 @@ $gutter: 0.75rem;
   gap: 0.5rem;
 }
 
-// A fixed status column so the chips line up from row to row.
-.orderRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 7.5rem minmax(0, 23rem);
-  align-items: center;
-  gap: 1.25rem;
-  padding: 1.15rem 1.35rem;
+.orderCard {
+  padding: 1.15rem 1.35rem 1.25rem;
   border-radius: $radius-panel;
   background: $surface;
 }
 
-.orderRow > .status {
-  justify-self: start;
-}
+.orderHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1rem;
 
-.orderMain {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 0.15rem;
-
-  span {
-    color: $gray-500;
-    font-size: 0.8125rem;
+  > div {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.1rem;
   }
 
-  strong {
+  > div strong {
     color: $white;
     font-family: $font-display;
     font-size: 1.05rem;
     font-weight: 700;
   }
 
-  small {
-    overflow: hidden;
-    color: $gray-400;
-    font-size: 0.875rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  > div span {
+    color: $gray-500;
+    font-size: 0.8125rem;
   }
+}
+
+.orderTotal {
+  min-width: 5.5rem;
+  color: $white;
+  font-family: $font-display;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.orderItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  list-style: none;
+}
+
+.orderItem {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.35rem 0.85rem 0.35rem 0.35rem;
+  border-radius: $radius-tile;
+  background: rgba($white, 0.035);
+  transition: background-color 160ms $ease-out;
+
+  &:hover {
+    background: rgba($white, 0.075);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: -2px;
+  }
+}
+
+.orderItemImage {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex-shrink: 0;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 0.55rem;
+  background: rgba($white, 0.05);
+
+  img {
+    width: 100%;
+    height: 100%;
+    padding: 0.15rem;
+    object-fit: contain;
+  }
+}
+
+.orderItemName {
+  overflow: hidden;
+  color: $gray-200;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderItemQty {
+  flex-shrink: 0;
+  color: $gray-500;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.orderFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-top: 1.1rem;
+
+  .track {
+    width: min(24rem, 100%);
+  }
+}
+
+.orderNote {
+  color: $gray-500;
+  font-size: 0.85rem;
 }
 
 .orderActions {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   justify-content: flex-end;
-  gap: 0.5rem 0.75rem;
-
-  a {
-    @include btn-secondary(sm);
-  }
-
-  small {
-    flex-basis: 100%;
-    color: $gray-500;
-    font-size: 0.75rem;
-    text-align: right;
-  }
+  gap: 0.4rem;
 }
 
-.orderTotal {
-  margin-right: 0.25rem;
-  color: $white;
-  font-family: $font-display;
-  font-size: 1.05rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+.orderClosed {
+  .orderHead > div strong,
+  .orderTotal {
+    color: $gray-400;
+  }
+
+  .orderItem {
+    opacity: 0.7;
+  }
 }
 
 // ---------- Deliveries ----------
@@ -758,97 +1593,53 @@ $gutter: 0.75rem;
   gap: 0.75rem;
 }
 
+.deliveryCard {
+  background:
+    radial-gradient(ellipse 40% 90% at 0% 0%, rgba($primary, 0.1), transparent 70%),
+    $surface;
+}
+
+.deliveryPast {
+  background: $surface;
+}
+
 .deliveryHeader {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  gap: 1.25rem;
 
-  span:not(.deliveryBadge) {
+  > div {
+    min-width: 0;
+  }
+
+  span:not(.thumbs):not(.thumb):not(.thumbMore) {
     color: $primary-light;
     font-size: 0.8125rem;
     font-weight: 600;
   }
 
   h2 {
-    margin-top: 0.2rem;
+    margin-top: 0.15rem;
     color: $white;
     font-family: $font-display;
-    font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+    font-size: clamp(1.25rem, 2.2vw, 1.55rem);
     font-weight: 800;
     letter-spacing: -0.03em;
   }
 
   p {
-    margin-top: 0.25rem;
+    margin-top: 0.2rem;
     color: $gray-500;
     font-size: 0.875rem;
   }
 }
 
-.deliveryBadge {
-  flex-shrink: 0;
-  padding: 0.3rem 0.7rem;
-  border-radius: $radius-full;
-  background: rgba($primary, 0.14);
-  color: $primary-light;
-  font-family: $font-display;
-  font-size: 0.75rem;
-  font-weight: 600;
+.deliveryPast .deliveryHeader span:not(.thumbs):not(.thumb):not(.thumbMore) {
+  color: $gray-400;
 }
 
-.deliveryBadgeComplete {
-  background: rgba($white, 0.07);
-  color: $gray-300;
-}
-
-// Four steps on one rounded track: the filled part is how far the parcel
-// has come.
-.deliveryTimeline {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.35rem;
-  margin-block: 1.5rem;
-
-  li {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    color: $gray-500;
-
-    &::before {
-      height: 0.3rem;
-      border-radius: $radius-full;
-      background: rgba($white, 0.08);
-      content: "";
-    }
-
-    > span {
-      display: none;
-    }
-
-    > strong {
-      font-family: $font-display;
-      font-size: 0.875rem;
-      font-weight: 600;
-    }
-  }
-}
-
-.deliveryStepDone {
-  color: $gray-300 !important;
-
-  &::before {
-    background: $primary !important;
-  }
-}
-
-.deliveryStepCurrent {
-  color: $white !important;
-
-  &::before {
-    background: linear-gradient(90deg, $primary, rgba($primary, 0.25)) !important;
-  }
+.deliveryCard > .track {
+  margin: 1.75rem 0 1.5rem;
 }
 
 .deliveryDetails {
@@ -865,17 +1656,24 @@ $gutter: 0.75rem;
     background: rgba($white, 0.03);
   }
 
-  span {
+  dt {
     color: $gray-500;
-    font-size: 0.8125rem;
+    font-size: 0.78rem;
   }
 
-  strong {
+  dd {
+    margin: 0;
     color: $white;
-    font-size: 0.9375rem;
+    font-size: 0.9rem;
     font-weight: 600;
+    line-height: 1.45;
     overflow-wrap: anywhere;
   }
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
 }
 
 .deliveryFooter {
@@ -889,79 +1687,146 @@ $gutter: 0.75rem;
     color: $gray-400;
     font-size: 0.875rem;
   }
-
-  a {
-    @include btn-primary;
-  }
 }
 
-// ---------- Wishlist ----------
+// ---------- Wishlist: a binder page ----------
 
-.wishlistGrid {
+.binder {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.75rem, 1.6vw, 1.25rem);
+  padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 2.5vw, 1.75rem) clamp(2.5rem, 4vw, 3.25rem);
+  border-radius: $radius-panel;
+  // Ring holes down the left edge.
+  background:
+    radial-gradient(circle at clamp(1.1rem, 1.8vw, 1.5rem) 50%, $background 0.42rem, transparent 0.46rem) 0 0 / 3rem 33.333% repeat-y,
+    $surface;
+  // The page itself fades in; pockets follow.
+  animation: viewIn 520ms $ease-out both;
+
+  > * {
+    animation: pocketIn 520ms $ease-out both;
+  }
+
+  @for $i from 1 through 12 {
+    > :nth-child(#{$i}) { animation-delay: #{$i * 35}ms; }
+  }
 }
 
-.wishlistItem {
-  @include card-frame(0.45rem, $radius-panel);
+@keyframes pocketIn {
+  from {
+    opacity: 0;
+    translate: 0 0.75rem;
+  }
+}
+
+.pocket {
   display: flex;
+  min-width: 0;
   flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.75rem 0.75rem 1.1rem;
-  border-radius: $radius-panel;
-  background: $surface;
-
-  > span {
-    margin-top: 0.75rem;
-    padding-inline: 0.35rem;
-    color: $primary-light;
-    font-size: 0.8125rem;
-    font-weight: 600;
-  }
-
-  > strong {
-    padding-inline: 0.35rem;
-    color: $white;
-    font-family: $font-display;
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.25;
-  }
-
-  > small {
-    padding-inline: 0.35rem;
-    color: $gray-500;
-    font-size: 0.8125rem;
-  }
+  gap: 0.65rem;
+  border-radius: $radius-tile;
 
   &:focus-visible {
     outline: 2px solid $primary-light;
-    outline-offset: 3px;
+    outline-offset: 4px;
   }
 }
 
-.wishlistImage {
+.sleeve {
+  position: relative;
   display: grid;
-  aspect-ratio: 1;
+  aspect-ratio: 63 / 88;
   place-items: center;
-  padding: 1.25rem;
-  border-radius: $radius-tile;
-  background: radial-gradient(ellipse 70% 60% at 50% 45%, rgba($white, 0.07), transparent 75%), rgba($white, 0.02);
+  overflow: hidden;
+  padding: 0.9rem;
+  border-radius: 0.75rem;
+  background:
+    linear-gradient(165deg, rgba($white, 0.075), rgba($white, 0.02) 60%),
+    $background;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  transition: translate 450ms $ease-out, box-shadow 300ms $ease-out;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    filter: drop-shadow(0 0.75rem 0.9rem rgba(#000, 0.45));
-    transition: translate 450ms $ease-out, scale 450ms $ease-out;
+    filter: drop-shadow(0 0.6rem 0.8rem rgba(#000, 0.5));
+    transition: scale 450ms $ease-out;
+  }
+
+  // The plastic sleeve catching the light.
+  &::after {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 35%, rgba($white, 0.1) 47%, transparent 58%);
+    content: "";
+    translate: -110% 0;
+    transition: translate 750ms $ease-out;
+    pointer-events: none;
+  }
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: $gray-600;
+    transition: color 200ms $ease-out;
   }
 }
 
 @media (hover: hover) {
-  .wishlistItem:hover .wishlistImage img {
-    translate: 0 -5px;
-    scale: 1.035;
+  .pocket:hover .sleeve {
+    translate: 0 -4px;
+    box-shadow: inset 0 0 0 1px rgba($white, 0.16), 0 1rem 1.5rem -0.8rem rgba(#000, 0.7);
+
+    img {
+      scale: 1.04;
+    }
+
+    &::after {
+      translate: 110% 0;
+    }
+  }
+}
+
+.pocketText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding-inline: 0.15rem;
+
+  small {
+    color: $primary-light;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  strong {
+    display: -webkit-box;
+    overflow: hidden;
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.3;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+.pocketEmpty .sleeve {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px rgba($white, 0.07);
+
+  &::after {
+    display: none;
+  }
+}
+
+@media (hover: hover) {
+  .pocketEmpty:hover .sleeve svg {
+    color: $primary-light;
   }
 }
 
@@ -1561,6 +2426,24 @@ $gutter: 0.75rem;
   .paymentLayout {
     grid-template-columns: 1fr;
   }
+
+  .binder {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 60rem) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .memberCard {
+    max-width: 25rem;
+  }
+
+  .checkItems {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: $bp-md) {
@@ -1575,6 +2458,10 @@ $gutter: 0.75rem;
   .sidebar {
     gap: 0.6rem;
     padding: 0.6rem;
+  }
+
+  .brand {
+    display: none;
   }
 
   // Sections become a scrolling row of pills.
@@ -1595,6 +2482,10 @@ $gutter: 0.75rem;
     white-space: nowrap;
   }
 
+  .navCount {
+    margin-left: 0.1rem;
+  }
+
   .sidebarFooter {
     flex-direction: row;
     justify-content: space-between;
@@ -1610,7 +2501,7 @@ $gutter: 0.75rem;
 
   .workspace {
     overflow: visible;
-    padding: 1.75rem 0.25rem 3rem;
+    padding: 1.5rem 0.25rem 3rem;
   }
 
   .sectionHeader {
@@ -1619,51 +2510,39 @@ $gutter: 0.75rem;
     gap: 1rem;
   }
 
-  .stats {
+  .onTheWay {
     grid-template-columns: 1fr;
+  }
 
-    article {
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-items: baseline;
-      justify-content: space-between;
-      padding: 0.9rem 1rem;
+  .onTheWayHead {
+    flex-direction: column;
+  }
+
+  .orderHead {
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    .status {
+      grid-row: 2;
+      justify-self: start;
     }
 
-    small {
-      display: none;
-    }
-
-    strong {
-      font-size: 1.4rem;
+    .orderTotal {
+      grid-row: 1 / 3;
+      grid-column: 2;
     }
   }
 
-  .deliverySpotlight {
-    grid-template-columns: auto minmax(0, 1fr);
+  .orderFoot {
+    align-items: stretch;
+    flex-direction: column;
 
-    > button {
-      grid-column: 1 / -1;
+    .track {
       width: 100%;
     }
   }
 
-  .orderRow {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
   .orderActions {
-    grid-column: 1 / -1;
     justify-content: flex-start;
-
-    small {
-      text-align: left;
-    }
-  }
-
-  .deliveryTimeline {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem 0.35rem;
   }
 
   .deliveryDetails {
@@ -1710,32 +2589,59 @@ $gutter: 0.75rem;
   }
 
   .recentOrder {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding-right: 0.8rem;
 
     .status {
-      grid-row: 2;
-      justify-self: start;
+      display: none;
     }
 
-    > strong {
-      grid-row: 1 / 3;
-      grid-column: 2;
+    // One photo per order leaves room for the name.
+    .thumb:not(:first-child) {
+      display: none;
     }
   }
 
-  .wishlistGrid {
+  .fanCard {
+    width: 5.25rem;
+    transform: translate(calc(var(--x) * 0.72), var(--y)) rotate(var(--r));
+  }
+
+  .deliveryHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .track strong {
+    font-size: 0.72rem;
+  }
+
+  .binder {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .loading span,
-  .syncing::before {
+  .syncing::before,
+  .view > *,
+  .binder,
+  .binder > *,
+  .memberCard,
+  .track::after,
+  .rankBar span,
+  .trackNow .trackDot {
     animation: none;
   }
 
-  .wishlistItem:hover .wishlistImage img {
-    translate: none;
-    scale: none;
+  .memberCard {
+    transform: none;
+  }
+
+  .sleeve,
+  .sleeve img,
+  .fanCard {
+    transition: none;
   }
 }

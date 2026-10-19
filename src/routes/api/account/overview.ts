@@ -1,6 +1,6 @@
 import { safeApiResponse } from "~/lib/request-security.server";
 import type { APIEvent } from "@solidjs/start/server";
-import { desc, eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "~/db";
 import {
   customerAddresses,
@@ -8,6 +8,7 @@ import {
   orders,
   payments,
   products,
+  productVariants,
   wishlistItems,
 } from "~/db/schema";
 import { auth } from "~/lib/auth";
@@ -63,8 +64,17 @@ export async function GET(event: APIEvent) {
           orderId: orderItems.orderId,
           name: orderItems.name,
           quantity: orderItems.quantity,
+          variantId: orderItems.variantId,
+          productId: products.id,
+          slug: products.slug,
+          // Only whether a photo exists: images are served by the catalog
+          // image endpoint, never embedded in this response.
+          variantHasImage: sql<boolean>`coalesce(${productVariants.imageUrl} <> '', false)`,
+          productHasImage: sql<boolean>`coalesce(jsonb_array_length(${products.imageUrls}) > 0, false)`,
         })
         .from(orderItems)
+        .leftJoin(productVariants, eq(orderItems.variantId, productVariants.id))
+        .leftJoin(products, eq(productVariants.productId, products.id))
         .where(inArray(orderItems.orderId, customerOrders.map(order => order.id)))
     : [];
 
@@ -86,14 +96,27 @@ export async function GET(event: APIEvent) {
         .limit(20)
     : [];
 
-  const itemsByOrder = new Map<
-    string,
-    Array<{ name: string; quantity: number }>
-  >();
+  type AccountOrderItem = {
+    name: string;
+    quantity: number;
+    slug: string | null;
+    image: string | null;
+  };
+  const itemsByOrder = new Map<string, AccountOrderItem[]>();
 
   for (const item of itemRows) {
     const current = itemsByOrder.get(item.orderId) ?? [];
-    current.push({ name: item.name, quantity: item.quantity });
+    current.push({
+      name: item.name,
+      quantity: item.quantity,
+      slug: item.slug,
+      image:
+        item.variantId && item.variantHasImage
+          ? `/api/catalog/image?variant=${encodeURIComponent(item.variantId)}`
+          : item.productId && item.productHasImage
+            ? `/api/catalog/image?product=${encodeURIComponent(item.productId)}`
+            : null,
+    });
     itemsByOrder.set(item.orderId, current);
   }
 
@@ -103,7 +126,7 @@ export async function GET(event: APIEvent) {
       slug: products.slug,
       name: products.name,
       game: products.game,
-      imageUrls: products.imageUrls,
+      hasImage: sql<boolean>`jsonb_array_length(${products.imageUrls}) > 0`,
       createdAt: wishlistItems.createdAt,
     })
     .from(wishlistItems)
@@ -135,7 +158,9 @@ export async function GET(event: APIEvent) {
       slug: item.slug,
       name: item.name,
       game: item.game,
-      image: item.imageUrls[0] ?? null,
+      image: item.hasImage
+        ? `/api/catalog/image?product=${encodeURIComponent(item.id)}`
+        : null,
       createdAt: item.createdAt,
     })),
     payments: paymentRows,
