@@ -3,6 +3,8 @@ import { describe, it } from "node:test";
 import nodemailer from "nodemailer";
 import {
   describeLoginDevice,
+  emailDetails,
+  emailOrderItems,
   renderTransactionalEmail,
 } from "./email.server";
 
@@ -84,7 +86,28 @@ describe("renderTransactionalEmail", () => {
     assert.ok(html.includes("TCGHaven"));
     assert.ok(html.includes("Secure payments by Mollie"));
     assert.ok(!/<script\b/i.test(html));
-    assert.ok(!/<img\b/i.test(html));
     assert.ok(!/https?:\/\/fonts\./i.test(html));
+    // The only image is the logo, from an absolute https URL, with the
+    // brand name as live text beside it for clients that block images.
+    const images = html.match(/<img\b[^>]*>/gi) ?? [];
+    assert.equal(images.length, 1);
+    assert.match(images[0]!, /src="https:\/\/[^"]+\/images\/logo-mark\.png"/);
+    assert.match(images[0]!, /alt=""/);
+    assert.ok(html.includes("TCG Haven</span>"));
+  });
+});
+
+describe("email building blocks", () => {
+  it("escape every value they render", () => {
+    const details = emailDetails([{ label: "Order <1>", value: "<b>TCG</b>" }]);
+    assert.ok(details.includes("Order &lt;1&gt;"));
+    assert.ok(details.includes("&lt;b&gt;TCG&lt;/b&gt;"));
+
+    const items = emailOrderItems(
+      [{ name: "<img src=x onerror=alert(1)>", quantity: 2, total: "€1,00" }],
+      [{ label: "Total", value: "€1,00", total: true }],
+    );
+    assert.ok(!items.includes("<img src=x"));
+    assert.ok(items.includes("&lt;img src=x onerror=alert(1)&gt;"));
   });
 });

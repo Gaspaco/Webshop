@@ -15,7 +15,7 @@ import {
   writeAuditLog,
 } from "~/lib/admin.server";
 import {
-  escapeEmailHtml,
+  emailHighlight,
   renderTransactionalEmail,
   sendTransactionalEmail,
 } from "~/lib/email.server";
@@ -155,7 +155,7 @@ async function deliverTrackingEmail(input: {
         label: "Dispatched",
         heading: "Your cards are on the way",
         intro: `Order ${input.order.orderNumber} has left TCGHaven. PostNL tracking may take a little while to show its first scan.`,
-        contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0b0e0c" style="margin:30px 0 0;background:#0b0e0c;border-left:4px solid #19c892"><tr><td style="padding:18px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px"><span style="color:#7f8d85">PostNL tracking number</span><br><strong style="font-size:18px;letter-spacing:.4px">${escapeEmailHtml(input.trackingNumber)}</strong></td></tr></table>`,
+        contentHtml: emailHighlight("PostNL tracking number", input.trackingNumber),
         action: {
           label: "Track package",
           url: input.trackingUrl,
@@ -222,8 +222,6 @@ export async function POST(event: APIEvent) {
   try {
     const input = actionSchema.parse(await event.request.json());
     if (["refund", "retry_refund", "resolve_missing_refund", "recover_payment", "resolve_missing_payment"].includes(input.action)) {
-      const fresh = await requireAdmin(event, { fresh: true });
-      if (fresh.response) return fresh.response;
       if (await checkRateLimit({ event, namespace: "admin-refunds", identity: guard.session!.user.id, limit: 10, windowMs: 60 * 60_000 })) {
         return apiJson({ error: "Too many refund requests. Check Mollie before continuing." }, { status: 429 });
       }

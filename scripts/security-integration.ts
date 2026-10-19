@@ -39,7 +39,10 @@ mock.module("../src/lib/email.server.ts", () => ({ sendTransactionalEmail: async
   deliveredEmails.set(message.idempotencyKey, (deliveredEmails.get(message.idempotencyKey) ?? 0) + 1);
 }, sendNewSignInEmail: noop,
   sendVerificationEmail: noop, sendPasswordResetEmail: noop, sendTwoFactorCodeEmail: noop,
-  escapeEmailHtml: (value: string) => value, renderTransactionalEmail: () => "" }));
+  escapeEmailHtml: (value: string) => value, renderTransactionalEmail: () => "",
+  emailPanel: () => "", emailDetails: () => "", emailHighlight: () => "", emailCode: () => "",
+  emailMessage: () => "", emailParagraphs: () => "", emailAddress: () => "", emailOrderItems: () => "",
+  emailFallbackLink: () => "" }));
 const remotePayments = new Map<string, any>();
 const remoteRefunds = new Map<string, any>();
 let paymentNumber = 0;
@@ -431,17 +434,38 @@ console.log("PASS dashboard catalogue pagination and private image handles prese
 const ownerSession = await auth.api.getSession({ headers: new Headers({ Cookie: cookie() }) });
 await db.update(schema.adminSessionApprovals).set({ verifiedAt: new Date(Date.now() - 6 * 60_000) }).where(eq(schema.adminSessionApprovals.sessionId, ownerSession!.session.id));
 assert.equal((await requireAdmin(event(request("/api/admin/orders", undefined, cookie())), { fresh: true })).response?.status, 403);
+assert.equal((await requireAdmin(event(request("/api/admin/orders", undefined, cookie())))).response, null);
+const absentOrderId = "00000000-0000-4000-8000-000000000001";
 for (const action of [
-  { action: "recover_payment", id: orphanId },
-  { action: "resolve_missing_payment", id: missingPaymentOrder.id, confirmation: "CHECKED_MOLLIE_NO_PAYMENT" },
-  { action: "retry_refund", id: orphanId, requestId: missingRefund!.id },
-  { action: "resolve_missing_refund", id: orphanId, requestId: expiredRefund.id, confirmation: "CHECKED_MOLLIE_NO_REFUND" },
+  { action: "refund", id: absentOrderId, amountCents: 100, reason: "Test", confirmation: "REFUND" },
+  { action: "recover_payment", id: absentOrderId },
+  { action: "resolve_missing_payment", id: absentOrderId, confirmation: "CHECKED_MOLLIE_NO_PAYMENT" },
+  { action: "retry_refund", id: absentOrderId, requestId: missingRefund!.id },
+  { action: "resolve_missing_refund", id: absentOrderId, requestId: expiredRefund.id, confirmation: "CHECKED_MOLLIE_NO_REFUND" },
 ]) {
-  assert.equal((await ownerOrderAction(event(request("/api/admin/orders", action, cookie())))).status, 403);
+  // A missing order reaches the business handler without asking the signed-in
+  // owner to reauthenticate. No provider operation is performed by this check.
+  assert.equal((await ownerOrderAction(event(request("/api/admin/orders", action, cookie())))).status, 404);
+  assert.equal((await ownerOrderAction(event(request("/api/admin/orders", action)))).status, 401);
+  assert.equal((await ownerOrderAction(event(request("/api/admin/orders", action, oldCookie)))).status, 403);
+  const crossSite = request("/api/admin/orders", action, cookie());
+  crossSite.headers.set("origin", "https://untrusted.test");
+  assert.equal((await ownerOrderAction(event(crossSite))).status, 403);
 }
+const removeCustomerRequest = (cookieValue: string, origin = "https://shop.test") => event(new Request("https://shop.test/api/admin/customers", {
+  method: "DELETE", headers: { "Content-Type": "application/json", Origin: origin, Cookie: cookieValue },
+  body: JSON.stringify({ id: absentOrderId, confirmation: "REMOVE" }),
+}));
+assert.equal((await ownerRemoveCustomer(removeCustomerRequest(cookie()))).status, 404);
+assert.equal((await ownerRemoveCustomer(removeCustomerRequest(""))).status, 401);
+assert.equal((await ownerRemoveCustomer(removeCustomerRequest(oldCookie))).status, 403);
+assert.equal((await ownerRemoveCustomer(removeCustomerRequest(cookie(), "https://untrusted.test"))).status, 403);
+assert.equal((await ownerDashboard(event(request("/api/admin/dashboard", undefined, cookie())))).status, 200);
+// Sensitive authenticator configuration keeps its separate fresh-verification guard.
+assert.equal((await auth.handler(request("/api/auth/two-factor/get-totp-uri", { password }, cookie()))).status, 403);
 const disabled = await auth.handler(request("/api/auth/two-factor/disable", { password }, cookie()));
 assert.equal(disabled.status, 403);
-console.log("PASS owner MFA enrollment, mandatory MFA, password+TOTP reauthentication, expiry, and disable prevention");
+console.log("PASS owner dashboard actions work after freshness expires while login, MFA, origin checks, and authenticator-setting protection remain enforced");
 
 await pg.close();
 console.log("SECURITY INTEGRATION PASSED; no production database or provider was contacted");
