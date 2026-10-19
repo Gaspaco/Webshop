@@ -258,6 +258,7 @@ export default function TwoFactorChallenge() {
                   <span
                     class={styles.digit}
                     classList={{
+                      [styles.digitSecondGroup]: index === CODE_LENGTH / 2,
                       [styles.digitFilled]: index < code().length,
                       [styles.digitActive]:
                         codeFocused() &&
