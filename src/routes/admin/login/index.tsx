@@ -58,8 +58,6 @@ export default function AdminLogin() {
         credentials: "same-origin",
       });
       if (response.status === 403) {
-        const denied = await response.json() as { code?: string };
-        if (["ADMIN_MFA_REQUIRED", "ADMIN_REAUTH_REQUIRED"].includes(denied.code ?? "")) { window.location.assign("/admin/security"); return; }
         await authClient.signOut();
         setError("This account does not have owner access.");
         return;

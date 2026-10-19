@@ -115,10 +115,15 @@ The owner order tools now provide:
   ledger to calculate the remaining refundable amount.
 - Recover original refund: same-key recovery, never a second blind refund.
   After the safe window, an owner must inspect Mollie and explicitly resolve a
-  confirmed missing request after one hour. Dashboard actions use the signed-in,
-  MFA-verified owner session without repeated five-minute password/code prompts.
+  confirmed missing request after one hour. Owner access uses email/password
+  sign-in and the server-checked admin role, without authenticator/code challenges.
   Confirmation dialogs, authorization, origin checks, rate limits, and audit logs
-  still apply. Changing authenticator settings still requires fresh verification.
+  still apply. Customer two-factor authentication remains available and unchanged.
+
+Migration `0016_owner_password_sign_in` disables existing owners' two-factor flags
+only. Apply it together with this release; otherwise already-enrolled owners will
+still be challenged by the authentication plugin at sign-in. Encrypted factor data
+is retained, customer flags are not changed, and new owner promotions disable 2FA.
 
 Mollie retains idempotency keys for one hour and ties them to the API credential;
 rotating that credential invalidates its key cache. See [Mollie idempotency](https://docs.mollie.com/reference/api-idempotency)

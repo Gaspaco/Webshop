@@ -674,8 +674,7 @@ async function loadDashboard() {
     headers: { Accept: "application/json" },
   });
   if (response.status === 401 || response.status === 403) {
-    const denied = await response.json() as { code?: string };
-    window.location.replace(["ADMIN_MFA_REQUIRED", "ADMIN_REAUTH_REQUIRED"].includes(denied.code ?? "") ? "/admin/security" : "/admin/login");
+    window.location.replace("/admin/login");
     return new Promise<never>(() => undefined);
   }
   if (!response.ok) throw new Error("Dashboard could not be loaded.");

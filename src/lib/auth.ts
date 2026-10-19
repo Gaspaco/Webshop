@@ -15,7 +15,6 @@ import { getAuthEnv, getEmailEnv } from "~/lib/env.server";
 import { createAuthSecurityHooks } from "~/lib/auth-security.server";
 import { authRateLimitStorage } from "~/lib/rate-limit.server";
 import { logServerError } from "~/lib/server-log";
-import { hasFreshAdminApproval } from "~/lib/admin-approval.server";
 import {
   meetsPasswordRequirements,
   PASSWORD_MAX_LENGTH,
@@ -65,9 +64,8 @@ export const auth = betterAuth({
     before: createAuthMiddleware(async context => {
       if (["/two-factor/disable", "/two-factor/enable", "/two-factor/get-totp-uri", "/two-factor/generate-backup-codes"].includes(context.path)) {
         const current = await auth.api.getSession({ headers: context.headers ?? new Headers() });
-        if (current?.user.role === "admin" && current.user.twoFactorEnabled) {
-          if (context.path === "/two-factor/disable") throw new APIError("FORBIDDEN", { message: "Owner two-factor authentication is required." });
-          if (!await hasFreshAdminApproval(current.session.id)) throw new APIError("FORBIDDEN", { message: "Verify owner access before changing two-factor settings." });
+        if (current?.user.role === "admin" && context.path !== "/two-factor/disable") {
+          throw new APIError("FORBIDDEN", { message: "Owner accounts use email and password sign-in. Authenticator setup is not enabled for owners." });
         }
       }
       const password =
@@ -89,12 +87,6 @@ export const auth = betterAuth({
     }),
     after: createAuthMiddleware(async context => {
       const newSession = context.context.newSession;
-      if (["/two-factor/verify-totp", "/two-factor/verify-otp", "/two-factor/verify-backup-code"].includes(context.path) &&
-        newSession?.user.role === "admin" && newSession.user.twoFactorEnabled) {
-        const verifiedAt = new Date();
-        await db.insert(schema.adminSessionApprovals).values({ sessionId: newSession.session.id, verifiedAt })
-          .onConflictDoUpdate({ target: schema.adminSessionApprovals.sessionId, set: { verifiedAt } });
-      }
       if (!emailEnv) return;
 
       const completedSignIn =

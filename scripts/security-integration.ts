@@ -336,46 +336,62 @@ const authorizedJob = request("/api/jobs/order-recovery"); authorizedJob.headers
 assert.equal((await recoveryJob(event(authorizedJob))).status, 200);
 console.log("PASS scheduled recovery is disabled without a secret and rejects invalid credentials");
 
-// Exercise the real Better Auth enrollment and server authorization boundary.
+// Exercise real owner password sign-in, migration of enrolled owners, and the
+// unchanged customer two-factor flow. Every account is local to this test DB.
 const password = "Test-Only-Unused-482!";
 const signedUp = await auth.handler(request("/api/auth/sign-up/email", { name: "Test Owner", email: "owner@example.invalid", password }));
 assert.equal(signedUp.status, 200);
 await db.update(schema.user).set({ role: "admin", emailVerified: true }).where(eq(schema.user.email, "owner@example.invalid"));
 const cookies = new Map<string, string>();
-function remember(response: Response) {
-  for (const value of response.headers.getSetCookie()) { const pair = value.split(";", 1)[0]!; const index = pair.indexOf("="); cookies.set(pair.slice(0, index), pair.slice(index + 1)); }
+function remember(response: Response, jar = cookies) {
+  for (const value of response.headers.getSetCookie()) { const pair = value.split(";", 1)[0]!; const index = pair.indexOf("="); jar.set(pair.slice(0, index), pair.slice(index + 1)); }
 }
 const cookie = () => [...cookies].map(([name, value]) => `${name}=${value}`).join("; ");
 const login = await auth.handler(request("/api/auth/sign-in/email", { email: "owner@example.invalid", password }));
 assert.equal(login.status, 200); remember(login);
-const otherLogin = await auth.handler(request("/api/auth/sign-in/email", { email: "owner@example.invalid", password }));
-const oldCookie = otherLogin.headers.getSetCookie().map(value => value.split(";", 1)[0]).join("; ");
-assert.equal((await requireAdmin(event(request("/api/admin/dashboard", undefined, cookie())))).response?.status, 403);
-assert.equal((await requireAdmin(event(request("/api/admin/security", undefined, cookie())), { allowEnrollment: true })).response, null);
-const enrollment = await auth.handler(request("/api/auth/two-factor/enable", { password }, cookie()));
+assert.ok(!(await login.json()).twoFactorRedirect);
+assert.equal((await requireAdmin(event(request("/api/admin/dashboard", undefined, cookie())))).response, null);
+assert.equal((await auth.handler(request("/api/auth/two-factor/enable", { password }, cookie()))).status, 403);
+assert.equal((await auth.handler(request("/api/auth/sign-in/email", { email: "owner@example.invalid", password: "Wrong-password!" }))).status, 401);
+
+assert.equal((await auth.handler(request("/api/auth/sign-up/email", { name: "Test Customer", email: "factor@example.invalid", password }))).status, 200);
+await db.update(schema.user).set({ emailVerified: true }).where(eq(schema.user.email, "factor@example.invalid"));
+const customerLogin = await auth.handler(request("/api/auth/sign-in/email", { email: "factor@example.invalid", password }));
+assert.equal(customerLogin.status, 200);
+const customerCookies = new Map<string, string>(); remember(customerLogin, customerCookies);
+const customerCookie = () => [...customerCookies].map(([name, value]) => `${name}=${value}`).join("; ");
+const enrollment = await auth.handler(request("/api/auth/two-factor/enable", { password }, customerCookie()));
 assert.equal(enrollment.status, 200);
-remember(enrollment);
+remember(enrollment, customerCookies);
 const enrollmentData = await enrollment.json();
 const secret = new URL(enrollmentData.totpURI).searchParams.get("secret")!;
 const bits = [...secret].map(char => "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".indexOf(char).toString(2).padStart(5, "0")).join("");
 const rawSecret = new TextDecoder().decode(Uint8Array.from(bits.match(/.{8}/g)!, byte => Number.parseInt(byte, 2)));
 const otp = (await auth.api.generateTOTP({ body: { secret: rawSecret } })).code;
-const confirmed = await auth.handler(request("/api/auth/two-factor/verify-totp", { code: otp }, cookie()));
-assert.equal(confirmed.status, 200, await confirmed.clone().text()); remember(confirmed);
+const confirmed = await auth.handler(request("/api/auth/two-factor/verify-totp", { code: otp }, customerCookie()));
+assert.equal(confirmed.status, 200, await confirmed.clone().text()); remember(confirmed, customerCookies);
+const oldCookie = customerCookie(); // An authenticated customer must still be denied owner access.
+const [customerFactor] = await db.select().from(schema.twoFactor);
+const [enrolledOwner] = await db.select().from(schema.user).where(eq(schema.user.email, "owner@example.invalid"));
+await db.insert(schema.twoFactor).values({ userId: enrolledOwner!.id, secret: customerFactor!.secret, backupCodes: customerFactor!.backupCodes });
+const factorsBefore = await db.select().from(schema.twoFactor);
+await db.update(schema.user).set({ twoFactorEnabled: true }).where(eq(schema.user.email, "owner@example.invalid"));
+await pg.exec(readFileSync("drizzle/0016_owner_password_sign_in.sql", "utf8"));
+assert.equal((await db.select().from(schema.user).where(eq(schema.user.email, "owner@example.invalid")))[0]!.twoFactorEnabled, false);
+assert.equal((await db.select().from(schema.user).where(eq(schema.user.email, "factor@example.invalid")))[0]!.twoFactorEnabled, true);
+assert.deepEqual(await db.select().from(schema.twoFactor), factorsBefore);
+const migratedLogin = await auth.handler(request("/api/auth/sign-in/email", { email: "owner@example.invalid", password }));
+assert.equal(migratedLogin.status, 200); remember(migratedLogin);
+assert.ok(!(await migratedLogin.json()).twoFactorRedirect);
+const challengedCustomer = await auth.handler(request("/api/auth/sign-in/email", { email: "factor@example.invalid", password }));
+assert.equal(challengedCustomer.status, 200);
+assert.equal((await challengedCustomer.json()).twoFactorRedirect, true);
 assert.equal((await requireAdmin(event(request("/api/admin/dashboard", undefined, cookie())))).response, null);
 assert.equal((await requireAdmin(event(request("/api/admin/dashboard", undefined, oldCookie)))).response?.status, 403);
-// Enabling MFA does not authorize unrelated pre-existing sessions. Removing
-// this proof emulates an old session that never completed a factor challenge.
 await db.delete(schema.adminSessionApprovals);
-assert.equal((await requireAdmin(event(request("/api/admin/dashboard", undefined, cookie())))).response?.status, 403);
-assert.equal((await requireAdmin(event(request("/api/admin/orders", undefined, cookie())), { fresh: true })).response?.status, 403);
-const wrong = await approveOwner(event(request("/api/admin/security", { password: "wrong-password", code: otp }, cookie())));
-assert.equal(wrong.status, 400);
-const wrongFactor = await approveOwner(event(request("/api/admin/security", { password, code: otp === "000000" ? "111111" : "000000" }, cookie())));
-assert.equal(wrongFactor.status, 400);
-const approval = await approveOwner(event(request("/api/admin/security", { password, code: otp }, cookie())));
-assert.equal(approval.status, 200);
-assert.equal((await requireAdmin(event(request("/api/admin/orders", undefined, cookie())), { fresh: true })).response, null);
+assert.equal((await requireAdmin(event(request("/api/admin/dashboard", undefined, cookie())))).response, null);
+assert.equal((await approveOwner(event(request("/api/admin/security", { password, code: otp }, cookie())))).status, 410);
+assert.equal((await approveOwner(event(request("/api/admin/security", { password, code: otp })))).status, 401);
 const refusedRefund = await ownerOrderAction(event(request("/api/admin/orders", { action: "refund", id: paidOrder!.id, amountCents: 100, reason: "Already refunded", confirmation: "REFUND" }, cookie())));
 assert.equal(refusedRefund.status, 409);
 const ownerUser = (await db.select().from(schema.user).where(eq(schema.user.email, "owner@example.invalid")))[0]!;
@@ -431,9 +447,6 @@ assert.equal(catalogueResponse.status, 200);
 assert.ok((await catalogueResponse.json()).products.every((product: any) => product.variants.every((variant: any) => !variant.imageUrl?.startsWith("data:"))));
 console.log("PASS dashboard catalogue pagination and private image handles preserve galleries, variant photos, and language copies without embedded image payloads");
 
-const ownerSession = await auth.api.getSession({ headers: new Headers({ Cookie: cookie() }) });
-await db.update(schema.adminSessionApprovals).set({ verifiedAt: new Date(Date.now() - 6 * 60_000) }).where(eq(schema.adminSessionApprovals.sessionId, ownerSession!.session.id));
-assert.equal((await requireAdmin(event(request("/api/admin/orders", undefined, cookie())), { fresh: true })).response?.status, 403);
 assert.equal((await requireAdmin(event(request("/api/admin/orders", undefined, cookie())))).response, null);
 const absentOrderId = "00000000-0000-4000-8000-000000000001";
 for (const action of [
@@ -461,11 +474,9 @@ assert.equal((await ownerRemoveCustomer(removeCustomerRequest(""))).status, 401)
 assert.equal((await ownerRemoveCustomer(removeCustomerRequest(oldCookie))).status, 403);
 assert.equal((await ownerRemoveCustomer(removeCustomerRequest(cookie(), "https://untrusted.test"))).status, 403);
 assert.equal((await ownerDashboard(event(request("/api/admin/dashboard", undefined, cookie())))).status, 200);
-// Sensitive authenticator configuration keeps its separate fresh-verification guard.
+// Owner setup is retired; customer setup and challenges were verified above.
 assert.equal((await auth.handler(request("/api/auth/two-factor/get-totp-uri", { password }, cookie()))).status, 403);
-const disabled = await auth.handler(request("/api/auth/two-factor/disable", { password }, cookie()));
-assert.equal(disabled.status, 403);
-console.log("PASS owner dashboard actions work after freshness expires while login, MFA, origin checks, and authenticator-setting protection remain enforced");
+console.log("PASS migrated owner password-only login and dashboard actions; customer 2FA, owner role checks, password validation, and origin protection remain enforced");
 
 await pg.close();
 console.log("SECURITY INTEGRATION PASSED; no production database or provider was contacted");

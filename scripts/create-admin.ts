@@ -57,7 +57,7 @@ if (existing) {
 
     await tx
       .update(user)
-      .set({ role: "admin", emailVerified: true })
+      .set({ role: "admin", emailVerified: true, twoFactorEnabled: false })
       .where(eq(user.id, existing.id));
     await tx.delete(session).where(eq(session.userId, existing.id));
   });
@@ -80,7 +80,7 @@ if (!result.user?.id) {
 
 await db
   .update(user)
-  .set({ role: "admin", emailVerified: true })
+  .set({ role: "admin", emailVerified: true, twoFactorEnabled: false })
   .where(eq(user.id, result.user.id));
 
 console.log(`Administrator account created for ${email}.`);
