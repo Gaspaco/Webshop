@@ -44,7 +44,7 @@ export default function OwnerSecurity() {
     } catch { setError("That authenticator code was not accepted. Try the current code."); }
     finally { setBusy(false); }
   };
-  return <AuthFlowShell icon="key" title="Secure your owner account" description="Two-factor authentication is required before opening the owner dashboard." note="Keep recovery codes private. Refunds and account removal require fresh verification.">
+  return <AuthFlowShell icon="key" title="Secure your owner account" description="Two-factor authentication is required before opening the owner dashboard." note="Keep recovery codes private. Once signed in, dashboard actions do not require repeated verification.">
     <Title>Owner security | TCGHaven</Title>
     <p role="alert">{error()}</p>
     <Show when={ready()} fallback={<p>Checking owner access…</p>}>

@@ -15,7 +15,7 @@ import {
 } from "~/lib/admin.server";
 
 export async function DELETE(event: APIEvent) {
-  const guard = await requireAdmin(event, { fresh: true });
+  const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
 
   try {

@@ -16,7 +16,6 @@ import {
 import RemoteCardLibrary from "~/components/admin/RemoteCardLibrary";
 import CardmarketPriceImport from "~/components/admin/CardmarketPriceImport";
 import { authClient } from "~/lib/auth-client";
-import { verifyOwner } from "~/components/admin/OwnerVerification";
 import { csvCell } from "~/lib/csv";
 import { INTERNATIONAL_POSTNL_DESTINATIONS } from "~/lib/shipping";
 import {
@@ -1977,7 +1976,6 @@ function OrderRow(props: {
         },
   ) => {
     if (busy()) return;
-    if (["recover_payment", "resolve_missing_payment", "retry_refund", "resolve_missing_refund"].includes(payload.action) && !await verifyOwner()) return;
     setBusy(true);
     setMessage("");
     try {
@@ -2039,7 +2037,6 @@ function OrderRow(props: {
         `Refund ${formatMoney(amountCents)} through Mollie? This payment action cannot be undone.`,
       )
     ) return;
-    if (!await verifyOwner()) return;
     void runAction({
       action: "refund",
       id: props.order.id,
@@ -2440,7 +2437,6 @@ function CustomerRow(props: {
       return;
     }
 
-    if (!await verifyOwner()) return;
     setRemoving(true);
     const response = await fetch("/api/admin/customers", {
       method: "DELETE",
