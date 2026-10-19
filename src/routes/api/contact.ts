@@ -4,6 +4,8 @@ import { z } from "zod";
 import { db } from "~/db";
 import { contactMessages } from "~/db/schema";
 import {
+  emailDetails,
+  emailMessage,
   escapeEmailHtml,
   renderTransactionalEmail,
   sendTransactionalEmail,
@@ -102,7 +104,14 @@ export async function POST(event: APIEvent) {
             label: "Customer message",
             heading: input.topic,
             intro: `${input.name} contacted TCGHaven through the website.`,
-            contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0b0e0c" style="margin:30px 0 0;background:#0b0e0c;border:1px solid #24312b"><tr><td style="padding:18px;color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px"><strong style="color:#ffffff">From</strong><br>${escapeEmailHtml(input.name)} · <a href="mailto:${escapeEmailHtml(input.email)}" style="color:#5ce5b8">${escapeEmailHtml(input.email)}</a></td></tr></table><div style="margin:24px 0 0;color:#d5ddd8;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:25px;white-space:normal">${escapeEmailHtml(input.message).replaceAll("\n", "<br>")}</div>`,
+            contentHtml:
+              emailDetails([
+                {
+                  label: "From",
+                  valueHtml: `${escapeEmailHtml(input.name)}<br><a href="mailto:${escapeEmailHtml(input.email)}" style="color:#047857;font-weight:600;text-decoration:none">${escapeEmailHtml(input.email)}</a>`,
+                },
+                { label: "Topic", value: input.topic },
+              ]) + emailMessage("Message", input.message),
             action: {
               label: "Reply to customer",
               url: `mailto:${input.email}`,

@@ -115,7 +115,10 @@ The owner order tools now provide:
   ledger to calculate the remaining refundable amount.
 - Recover original refund: same-key recovery, never a second blind refund.
   After the safe window, an owner must inspect Mollie and explicitly resolve a
-  confirmed missing request after one hour. These actions require fresh MFA.
+  confirmed missing request after one hour. Dashboard actions use the signed-in,
+  MFA-verified owner session without repeated five-minute password/code prompts.
+  Confirmation dialogs, authorization, origin checks, rate limits, and audit logs
+  still apply. Changing authenticator settings still requires fresh verification.
 
 Mollie retains idempotency keys for one hour and ties them to the API credential;
 rotating that credential invalidates its key cache. See [Mollie idempotency](https://docs.mollie.com/reference/api-idempotency)

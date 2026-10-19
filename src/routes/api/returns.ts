@@ -7,7 +7,7 @@ import { auth } from "~/lib/auth";
 import { customerOrderAccess } from "~/lib/order-access";
 import { logServerError } from "~/lib/server-log";
 import {
-  escapeEmailHtml,
+  emailDetails,
   renderTransactionalEmail,
   sendTransactionalEmail,
 } from "~/lib/email.server";
@@ -102,7 +102,10 @@ export async function POST(event: APIEvent) {
           label: "Request received",
           heading: "We are reviewing your return",
           intro: "Your request is saved. The shop owner will review the details and contact you with the next step.",
-          contentHtml: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0b0e0c" style="margin:30px 0 0;background:#0b0e0c;border:1px solid #24312b"><tr><td style="padding:19px;color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px"><strong style="color:#ffffff">Order</strong><br>${escapeEmailHtml(order.orderNumber)}<br><br><strong style="color:#ffffff">Return reference</strong><br>${escapeEmailHtml(created.id)}</td></tr></table>`,
+          contentHtml: emailDetails([
+            { label: "Order", value: order.orderNumber },
+            { label: "Return reference", value: created.id },
+          ]),
           notice: "Please do not send anything back yet. Wait until you receive return instructions from TCGHaven.",
         }),
         idempotencyKey: `return-request-${created.id}`,

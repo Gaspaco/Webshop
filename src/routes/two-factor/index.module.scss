@@ -134,10 +134,11 @@
       cursor: not-allowed;
     }
   }
+}
 
-  .digit:nth-of-type(4) {
-    grid-column: 5;
-  }
+// The second group of three starts after the small gap column.
+.digitSecondGroup {
+  grid-column: 5;
 }
 
 .digit {

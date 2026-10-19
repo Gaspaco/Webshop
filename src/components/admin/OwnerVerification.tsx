@@ -1,7 +1,7 @@
 import { createSignal } from "solid-js";
 import { render } from "solid-js/web";
 
-/** Keep the dashboard and unsaved edits in place while verifying a money action. */
+/** Verify session access from the owner security page, not individual dashboard actions. */
 export async function verifyOwner() {
   const response = await fetch("/api/admin/security", { credentials: "same-origin" });
   if (!response.ok) return false;

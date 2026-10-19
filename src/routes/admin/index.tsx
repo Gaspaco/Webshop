@@ -16,7 +16,6 @@ import {
 import RemoteCardLibrary from "~/components/admin/RemoteCardLibrary";
 import CardmarketPriceImport from "~/components/admin/CardmarketPriceImport";
 import { authClient } from "~/lib/auth-client";
-import { verifyOwner } from "~/components/admin/OwnerVerification";
 import { csvCell } from "~/lib/csv";
 import { INTERNATIONAL_POSTNL_DESTINATIONS } from "~/lib/shipping";
 import {
@@ -680,7 +679,24 @@ async function loadDashboard() {
     return new Promise<never>(() => undefined);
   }
   if (!response.ok) throw new Error("Dashboard could not be loaded.");
-  return response.json() as Promise<AdminDashboard>;
+  const data = await response.json() as AdminDashboard & { catalogue?: { total: number; nextOffset: number | null } };
+  // Small responses avoid Vercel's payload limit. Keep fetching the catalogue
+  // so client-side search, pagination and bulk selection still see every item.
+  let offset = data.catalogue?.nextOffset ?? null;
+  const seen = new Set<number>();
+  while (offset !== null) {
+    if (!Number.isSafeInteger(offset) || offset < 0 || seen.has(offset)) throw new Error("Catalogue pagination did not advance. Refresh the dashboard.");
+    seen.add(offset);
+    const pageResponse = await fetch(`/api/admin/dashboard?catalogueOnly=1&offset=${offset}`, {
+      credentials: "same-origin", headers: { Accept: "application/json" },
+    });
+    if (!pageResponse.ok) throw new Error("The catalogue could not be fully loaded. Refresh the dashboard.");
+    const page = await pageResponse.json() as { products: AdminProduct[]; nextOffset: number | null };
+    data.products.push(...page.products);
+    offset = page.nextOffset;
+  }
+  data.products = [...new Map(data.products.map(product => [product.id, product])).values()];
+  return data;
 }
 
 // A count next to a nav item when that section needs the owner.
@@ -1505,7 +1521,7 @@ function ProductRow(props: {
                   <input
                     type="url"
                     placeholder="https://"
-                    value={image().startsWith("data:") ? "" : image()}
+                    value={image().startsWith("data:") || image().startsWith("/api/admin/product-image?") ? "" : image()}
                     onInput={event => setImage(event.currentTarget.value)}
                   />
                 </label>
@@ -1705,7 +1721,7 @@ function ProductRow(props: {
                         <input
                           type="url"
                           placeholder="https://"
-                          value={current().imageUrl.startsWith("data:") ? "" : current().imageUrl}
+                          value={current().imageUrl.startsWith("data:") || current().imageUrl.startsWith("/api/admin/product-image?") ? "" : current().imageUrl}
                           onInput={event => setVariantEditDraft(value => value && ({ ...value, imageUrl: event.currentTarget.value }))}
                         />
                       </label>
@@ -1829,7 +1845,7 @@ function ProductRow(props: {
                       <input
                         type="url"
                         placeholder="https://"
-                        value={variantDraft().imageUrl.startsWith("data:") ? "" : variantDraft().imageUrl}
+                        value={variantDraft().imageUrl.startsWith("data:") || variantDraft().imageUrl.startsWith("/api/admin/product-image?") ? "" : variantDraft().imageUrl}
                         onInput={event => setVariantDraft(current => ({ ...current, imageUrl: event.currentTarget.value }))}
                       />
                     </label>
@@ -1960,7 +1976,6 @@ function OrderRow(props: {
         },
   ) => {
     if (busy()) return;
-    if (["recover_payment", "resolve_missing_payment", "retry_refund", "resolve_missing_refund"].includes(payload.action) && !await verifyOwner()) return;
     setBusy(true);
     setMessage("");
     try {
@@ -2022,7 +2037,6 @@ function OrderRow(props: {
         `Refund ${formatMoney(amountCents)} through Mollie? This payment action cannot be undone.`,
       )
     ) return;
-    if (!await verifyOwner()) return;
     void runAction({
       action: "refund",
       id: props.order.id,
@@ -2423,7 +2437,6 @@ function CustomerRow(props: {
       return;
     }
 
-    if (!await verifyOwner()) return;
     setRemoving(true);
     const response = await fetch("/api/admin/customers", {
       method: "DELETE",

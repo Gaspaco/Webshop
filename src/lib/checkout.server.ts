@@ -14,7 +14,9 @@ import {
 } from "~/db/schema";
 import { getAuthEnv, getEmailEnv } from "~/lib/env.server";
 import {
-  escapeEmailHtml,
+  emailAddress,
+  emailDetails,
+  emailOrderItems,
   renderTransactionalEmail,
   sendTransactionalEmail,
 } from "~/lib/email.server";
@@ -126,14 +128,7 @@ async function sendPaidOrderEmail(orderId: string, audience: string) {
   const itemText = items
     .map(item => `${item.quantity} × ${item.name}: ${formatEuros(item.totalCents)}`)
     .join("\n");
-  const itemHtml = items
-    .map(
-      item =>
-        `<tr><td style="padding:14px 0;border-bottom:1px solid #28322d;color:#bdc7c1;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px"><strong style="color:#ffffff">${item.quantity} ×</strong> ${escapeEmailHtml(item.name)}</td><td style="padding:14px 0;border-bottom:1px solid #28322d;text-align:right;white-space:nowrap;color:#bdc7c1;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px">${escapeEmailHtml(formatEuros(item.totalCents))}</td></tr>`,
-    )
-    .join("");
   const summaryText = `Subtotal: ${formatEuros(order.subtotalCents)}\nShipping: ${formatEuros(order.shippingCents)}\nDiscount: ${formatEuros(order.discountCents)}\nTotal: ${formatEuros(order.totalCents)}`;
-  const summaryHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:18px;color:#929f98;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px"><tr><td style="padding:4px 0">Subtotal</td><td style="padding:4px 0;text-align:right">${escapeEmailHtml(formatEuros(order.subtotalCents))}</td></tr><tr><td style="padding:4px 0">Shipping</td><td style="padding:4px 0;text-align:right">${escapeEmailHtml(formatEuros(order.shippingCents))}</td></tr>${order.discountCents > 0 ? `<tr><td style="padding:4px 0;color:#5ce5b8">Discount</td><td style="padding:4px 0;text-align:right;color:#5ce5b8">−${escapeEmailHtml(formatEuros(order.discountCents))}</td></tr>` : ""}<tr><td style="padding:15px 0 0;border-top:2px solid #35433c;color:#ffffff;font-size:16px;font-weight:800">Total paid</td><td style="padding:15px 0 0;border-top:2px solid #35433c;text-align:right;color:#ffffff;font-size:18px;font-weight:800">${escapeEmailHtml(formatEuros(order.totalCents))}</td></tr></table>`;
   const customerName = [address.firstName, address.lastName].filter(Boolean).join(" ");
   const isPickup = order.shippingMethod === "local_pickup";
   const deliveryText = [
@@ -144,16 +139,29 @@ async function sendPaidOrderEmail(orderId: string, audience: string) {
   ]
     .filter(Boolean)
     .join("\n");
-  const deliveryHtml = [
+  const deliveryLines = [
     customerName,
     address.streetAndHouseNumber,
     [address.postalCode, address.city].filter(Boolean).join(" "),
     address.country,
-  ]
-    .filter(Boolean)
-    .map(value => escapeEmailHtml(value!))
-    .join("<br>");
-  const orderDetailsHtml = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:30px 0 0"><tr><td bgcolor="#0b0e0c" style="padding:16px 18px;border-left:4px solid #19c892;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:19px"><span style="color:#7f8d85">Order reference</span><br><strong style="font-size:16px;letter-spacing:.3px">${escapeEmailHtml(order.orderNumber)}</strong></td></tr><tr><td style="padding:8px 0 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${itemHtml}</table>${summaryHtml}</td></tr></table><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#17201c" style="margin:30px 0 0;background:#17201c"><tr><td style="padding:18px"><strong style="display:block;margin-bottom:7px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px">${isPickup ? "Pickup contact details" : "Delivery address"}</strong><span style="color:#aeb8b2;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px">${deliveryHtml}</span></td></tr></table>`;
+  ].filter((line): line is string => Boolean(line));
+  const orderDetailsHtml =
+    emailDetails([
+      { label: "Order number", value: order.orderNumber },
+      { label: isPickup ? "Collection" : "Delivery", value: isPickup ? "Local pickup" : "PostNL" },
+    ]) +
+    emailOrderItems(
+      items.map(item => ({ name: item.name, quantity: item.quantity, total: formatEuros(item.totalCents) })),
+      [
+        { label: "Subtotal", value: formatEuros(order.subtotalCents) },
+        { label: "Shipping", value: formatEuros(order.shippingCents) },
+        ...(order.discountCents > 0
+          ? [{ label: "Discount", value: `−${formatEuros(order.discountCents)}`, accent: true }]
+          : []),
+        { label: "Total paid", value: formatEuros(order.totalCents), total: true },
+      ],
+    ) +
+    emailAddress(isPickup ? "Pickup contact details" : "Delivery address", deliveryLines);
 
   const messages = [
     {

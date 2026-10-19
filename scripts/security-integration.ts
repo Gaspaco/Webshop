@@ -39,7 +39,10 @@ mock.module("../src/lib/email.server.ts", () => ({ sendTransactionalEmail: async
   deliveredEmails.set(message.idempotencyKey, (deliveredEmails.get(message.idempotencyKey) ?? 0) + 1);
 }, sendNewSignInEmail: noop,
   sendVerificationEmail: noop, sendPasswordResetEmail: noop, sendTwoFactorCodeEmail: noop,
-  escapeEmailHtml: (value: string) => value, renderTransactionalEmail: () => "" }));
+  escapeEmailHtml: (value: string) => value, renderTransactionalEmail: () => "",
+  emailPanel: () => "", emailDetails: () => "", emailHighlight: () => "", emailCode: () => "",
+  emailMessage: () => "", emailParagraphs: () => "", emailAddress: () => "", emailOrderItems: () => "",
+  emailFallbackLink: () => "" }));
 const remotePayments = new Map<string, any>();
 const remoteRefunds = new Map<string, any>();
 let paymentNumber = 0;
@@ -381,20 +384,88 @@ const selfRemoval = await ownerRemoveCustomer(event(new Request("https://shop.te
   body: JSON.stringify({ id: ownerUser.id, confirmation: "REMOVE" }),
 })));
 assert.equal(selfRemoval.status, 400);
+
+// The dashboard must never materialize embedded artwork in its JSON. Display
+// handles must stay private and must not overwrite or break stored images.
+const { GET: ownerDashboard } = await import("../src/routes/api/admin/dashboard");
+const { GET: ownerImage } = await import("../src/routes/api/admin/product-image");
+const { PATCH: editProduct } = await import("../src/routes/api/admin/products");
+const { PATCH: editVariant, POST: addVariant } = await import("../src/routes/api/admin/variants");
+const { loadAdminCatalogue } = await import("../src/lib/admin-catalogue.server");
+const productPhoto = `data:image/png;base64,${Buffer.alloc(150_000, 42).toString("base64")}`;
+const variantPhoto = `data:image/png;base64,${Buffer.alloc(150_000, 43).toString("base64")}`;
+const [imageProduct] = await db.insert(schema.products).values({ name: "Image regression", slug: "image-regression", game: "yugioh", status: "draft", imageUrls: [productPhoto, variantPhoto] }).returning();
+const [imageVariant] = await db.insert(schema.productVariants).values({ productId: imageProduct!.id, name: "English", sku: "IMAGE-TEST", imageUrl: variantPhoto, priceCents: 500, stock: 0, language: "English", condition: "Near Mint", finish: "" }).returning();
+const compactDashboard = await ownerDashboard(event(request("/api/admin/dashboard", undefined, cookie())));
+assert.equal(compactDashboard.status, 200);
+const compactText = await compactDashboard.text();
+assert.ok(!compactText.includes(productPhoto)); assert.ok(!compactText.includes(variantPhoto));
+const compactProduct = JSON.parse(compactText).products.find((product: any) => product.id === imageProduct!.id);
+assert.equal(compactProduct.imageUrls[0], `/api/admin/product-image?product=${imageProduct!.id}&image=0`);
+assert.equal(compactProduct.variants[0].imageUrl, `/api/admin/product-image?variant=${imageVariant!.id}`);
+assert.equal((await ownerImage(event(request(compactProduct.imageUrls[0])))).status, 401);
+const downloadedImage = await ownerImage(event(request(compactProduct.imageUrls[0], undefined, cookie())));
+assert.equal(downloadedImage.status, 200); assert.equal((await downloadedImage.arrayBuffer()).byteLength, 150_000);
+const patch = (path: string, body: unknown) => event(new Request(`https://shop.test${path}`, { method: "PATCH",
+  headers: { "Content-Type": "application/json", Origin: "https://shop.test", Cookie: cookie() }, body: JSON.stringify(body) }));
+assert.equal((await editProduct(patch("/api/admin/products", { id: imageProduct!.id, variantId: imageVariant!.id, image: compactProduct.imageUrls[0], priceCents: 700 }))).status, 200);
+assert.deepEqual((await db.select().from(schema.products).where(eq(schema.products.id, imageProduct!.id)))[0]!.imageUrls, [productPhoto, variantPhoto]);
+assert.equal((await db.select().from(schema.productVariants).where(eq(schema.productVariants.id, imageVariant!.id)))[0]!.imageUrl, variantPhoto);
+const variantInput = { ...imageVariant, barcode: "", language: "English", condition: "Near Mint", finish: "", imageUrl: compactProduct.variants[0].imageUrl, priceCents: 800 };
+assert.equal((await editVariant(patch("/api/admin/variants", variantInput))).status, 200);
+assert.equal((await db.select().from(schema.productVariants).where(eq(schema.productVariants.id, imageVariant!.id)))[0]!.imageUrl, variantPhoto);
+const copied = await addVariant(event(request("/api/admin/variants", { ...variantInput, sku: "IMAGE-TEST-FR", language: "French" }, cookie())));
+assert.equal(copied.status, 201);
+const copiedVariant = (await copied.json()).variant;
+assert.equal(copiedVariant.imageUrl, variantPhoto); assert.ok(!copiedVariant.imageUrl.startsWith("/api/admin/"));
+const allCatalogueIds = new Set<string>(); let catalogueOffset: number | null = 0;
+do {
+  const page = await loadAdminCatalogue({ limit: 2, offset: catalogueOffset });
+  assert.ok(page.products.length <= 2);
+  for (const product of page.products) { assert.ok(!allCatalogueIds.has(product.id)); allCatalogueIds.add(product.id); }
+  catalogueOffset = page.nextOffset;
+} while (catalogueOffset !== null);
+assert.equal(allCatalogueIds.size, (await db.select({ id: schema.products.id }).from(schema.products)).length);
+const catalogueResponse = await ownerDashboard(event(request("/api/admin/dashboard?catalogueOnly=1&offset=0", undefined, cookie())));
+assert.equal(catalogueResponse.status, 200);
+assert.ok((await catalogueResponse.json()).products.every((product: any) => product.variants.every((variant: any) => !variant.imageUrl?.startsWith("data:"))));
+console.log("PASS dashboard catalogue pagination and private image handles preserve galleries, variant photos, and language copies without embedded image payloads");
+
 const ownerSession = await auth.api.getSession({ headers: new Headers({ Cookie: cookie() }) });
 await db.update(schema.adminSessionApprovals).set({ verifiedAt: new Date(Date.now() - 6 * 60_000) }).where(eq(schema.adminSessionApprovals.sessionId, ownerSession!.session.id));
 assert.equal((await requireAdmin(event(request("/api/admin/orders", undefined, cookie())), { fresh: true })).response?.status, 403);
+assert.equal((await requireAdmin(event(request("/api/admin/orders", undefined, cookie())))).response, null);
+const absentOrderId = "00000000-0000-4000-8000-000000000001";
 for (const action of [
-  { action: "recover_payment", id: orphanId },
-  { action: "resolve_missing_payment", id: missingPaymentOrder.id, confirmation: "CHECKED_MOLLIE_NO_PAYMENT" },
-  { action: "retry_refund", id: orphanId, requestId: missingRefund!.id },
-  { action: "resolve_missing_refund", id: orphanId, requestId: expiredRefund.id, confirmation: "CHECKED_MOLLIE_NO_REFUND" },
+  { action: "refund", id: absentOrderId, amountCents: 100, reason: "Test", confirmation: "REFUND" },
+  { action: "recover_payment", id: absentOrderId },
+  { action: "resolve_missing_payment", id: absentOrderId, confirmation: "CHECKED_MOLLIE_NO_PAYMENT" },
+  { action: "retry_refund", id: absentOrderId, requestId: missingRefund!.id },
+  { action: "resolve_missing_refund", id: absentOrderId, requestId: expiredRefund.id, confirmation: "CHECKED_MOLLIE_NO_REFUND" },
 ]) {
-  assert.equal((await ownerOrderAction(event(request("/api/admin/orders", action, cookie())))).status, 403);
+  // A missing order reaches the business handler without asking the signed-in
+  // owner to reauthenticate. No provider operation is performed by this check.
+  assert.equal((await ownerOrderAction(event(request("/api/admin/orders", action, cookie())))).status, 404);
+  assert.equal((await ownerOrderAction(event(request("/api/admin/orders", action)))).status, 401);
+  assert.equal((await ownerOrderAction(event(request("/api/admin/orders", action, oldCookie)))).status, 403);
+  const crossSite = request("/api/admin/orders", action, cookie());
+  crossSite.headers.set("origin", "https://untrusted.test");
+  assert.equal((await ownerOrderAction(event(crossSite))).status, 403);
 }
+const removeCustomerRequest = (cookieValue: string, origin = "https://shop.test") => event(new Request("https://shop.test/api/admin/customers", {
+  method: "DELETE", headers: { "Content-Type": "application/json", Origin: origin, Cookie: cookieValue },
+  body: JSON.stringify({ id: absentOrderId, confirmation: "REMOVE" }),
+}));
+assert.equal((await ownerRemoveCustomer(removeCustomerRequest(cookie()))).status, 404);
+assert.equal((await ownerRemoveCustomer(removeCustomerRequest(""))).status, 401);
+assert.equal((await ownerRemoveCustomer(removeCustomerRequest(oldCookie))).status, 403);
+assert.equal((await ownerRemoveCustomer(removeCustomerRequest(cookie(), "https://untrusted.test"))).status, 403);
+assert.equal((await ownerDashboard(event(request("/api/admin/dashboard", undefined, cookie())))).status, 200);
+// Sensitive authenticator configuration keeps its separate fresh-verification guard.
+assert.equal((await auth.handler(request("/api/auth/two-factor/get-totp-uri", { password }, cookie()))).status, 403);
 const disabled = await auth.handler(request("/api/auth/two-factor/disable", { password }, cookie()));
 assert.equal(disabled.status, 403);
-console.log("PASS owner MFA enrollment, mandatory MFA, password+TOTP reauthentication, expiry, and disable prevention");
+console.log("PASS owner dashboard actions work after freshness expires while login, MFA, origin checks, and authenticator-setting protection remain enforced");
 
 await pg.close();
 console.log("SECURITY INTEGRATION PASSED; no production database or provider was contacted");

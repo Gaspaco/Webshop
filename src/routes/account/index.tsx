@@ -11,6 +11,7 @@ import {
   Switch,
 } from "solid-js";
 import { savedAddressSchema } from "~/lib/address";
+import { matchCountry } from "~/lib/countries";
 import { authClient } from "~/lib/auth-client";
 import {
   meetsPasswordRequirements,
@@ -25,6 +26,7 @@ import {
   PROFILE_IMAGE_MAX_SOURCE_BYTES,
 } from "~/lib/profile-image";
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
+import CountrySelect from "~/components/forms/CountrySelect";
 import styles from "./index.module.scss";
 
 type Section =
@@ -47,7 +49,14 @@ type AccountOrder = {
   trackingNumber: string | null;
   trackingUrl: string | null;
   shippedAt: string | null;
-  items: Array<{ name: string; quantity: number }>;
+  items: OrderItem[];
+};
+
+type OrderItem = {
+  name: string;
+  quantity: number;
+  slug?: string | null;
+  image?: string | null;
 };
 
 type WishlistItem = {
@@ -170,6 +179,53 @@ function deliveryMessage(order: AccountOrder) {
   return "Payment received, ready for packing";
 }
 
+const CLOSED_STATUSES = new Set(["cancelled", "canceled", "expired", "failed", "refunded"]);
+
+function isClosed(order: AccountOrder) {
+  return CLOSED_STATUSES.has(order.status);
+}
+
+// A playful collector rank from the number of orders that went through.
+const RANKS = [
+  { min: 0, name: "Common" },
+  { min: 1, name: "Uncommon" },
+  { min: 3, name: "Rare" },
+  { min: 6, name: "Holo Rare" },
+  { min: 12, name: "Secret Rare" },
+];
+
+function collectorRank(count: number) {
+  let index = 0;
+  RANKS.forEach((rank, position) => {
+    if (count >= rank.min) index = position;
+  });
+  const current = RANKS[index]!;
+  const next = RANKS[index + 1];
+  return {
+    name: current.name,
+    index,
+    next: next?.name ?? null,
+    toNext: next ? next.min - count : 0,
+    progress: next ? (count - current.min) / (next.min - current.min) : 1,
+  };
+}
+
+function greeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+function itemSummary(order: AccountOrder) {
+  if (!order.items.length) return "Order details";
+  const [first, ...rest] = order.items;
+  const firstLabel = first!.quantity > 1 ? `${first!.quantity} × ${first!.name}` : first!.name;
+  return rest.length ? `${firstLabel} and ${rest.length} more` : firstLabel;
+}
+
+const DELIVERY_STEPS = ["Paid", "Packing", "With PostNL", "Delivered"];
+
 async function prepareProfileImage(file: File) {
   if (
     !PROFILE_IMAGE_ACCEPTED_TYPES.includes(
@@ -279,6 +335,7 @@ export default function Account() {
     "idle" | "saving" | "success" | "error"
   >("idle");
   const [twoFactorMessage, setTwoFactorMessage] = createSignal("");
+  const [orderFilter, setOrderFilter] = createSignal<"all" | "active" | "delivered" | "closed">("all");
   let profileInitialized = false;
   let addressInitialized = false;
 
@@ -366,6 +423,71 @@ export default function Account() {
   const deliveries = () => overview()?.orders.filter(isDelivery) ?? [];
   const activeDeliveries = () =>
     deliveries().filter(order => order.status !== "completed");
+  const rank = () =>
+    collectorRank(overview()?.orders.filter(order => !isClosed(order) && order.status !== "pending").length ?? 0);
+
+  const ordersFor = (filter: "all" | "active" | "delivered" | "closed") => {
+    const orders = overview()?.orders ?? [];
+    switch (filter) {
+      case "active":
+        return orders.filter(order => !isClosed(order) && order.status !== "completed");
+      case "delivered":
+        return orders.filter(order => order.status === "completed");
+      case "closed":
+        return orders.filter(isClosed);
+      default:
+        return orders;
+    }
+  };
+  const filteredOrders = () => ordersFor(orderFilter());
+  const orderFilterCount = (filter: "all" | "active" | "delivered" | "closed") =>
+    ordersFor(filter).length;
+
+  // Light tilt and moving foil on the member card, mouse only.
+  const tiltCard = (event: PointerEvent & { currentTarget: HTMLElement }) => {
+    if (event.pointerType !== "mouse") return;
+    const card = event.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width;
+    const y = (event.clientY - rect.top) / rect.height;
+    card.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
+    card.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
+    card.style.setProperty("--rx", `${((0.5 - y) * 9).toFixed(2)}deg`);
+    card.style.setProperty("--ry", `${((x - 0.5) * 12).toFixed(2)}deg`);
+  };
+
+  const resetCard = (event: PointerEvent & { currentTarget: HTMLElement }) => {
+    for (const property of ["--mx", "--my", "--rx", "--ry"]) {
+      event.currentTarget.style.removeProperty(property);
+    }
+  };
+
+  const checklist = () => {
+    const user = session().data?.user as { emailVerified?: boolean; twoFactorEnabled?: boolean } | undefined;
+    return [
+      {
+        done: Boolean(user?.emailVerified),
+        title: "Email verified",
+        todo: "Verify your email",
+        copy: user?.emailVerified ? "Order updates reach you." : "So order updates and recovery reach you.",
+        action: "profile" as Section,
+      },
+      {
+        done: Boolean(overview()?.hasSavedAddress),
+        title: "Address saved",
+        todo: "Save your address",
+        copy: overview()?.hasSavedAddress ? "Checkout fills it in for you." : "Checkout will fill it in for you.",
+        action: "addresses" as Section,
+      },
+      {
+        done: Boolean(user?.twoFactorEnabled),
+        title: "Two-factor on",
+        todo: "Turn on two-factor",
+        copy: user?.twoFactorEnabled ? "A second check protects sign-in." : "Add a second check at sign-in.",
+        action: "security" as Section,
+      },
+    ];
+  };
 
   const selectProfileImage = async (
     event: Event & { currentTarget: HTMLInputElement },
@@ -485,7 +607,7 @@ export default function Account() {
       streetAndHouseNumber: addressStreet(),
       postalCode: addressPostalCode(),
       city: addressCity(),
-      country: addressCountry(),
+      country: matchCountry(addressCountry())?.name ?? addressCountry(),
     });
 
     if (!parsed.success) {
@@ -751,6 +873,11 @@ export default function Account() {
         {data => (
           <div class={styles.account}>
             <aside class={styles.sidebar}>
+              <A href="/" class={styles.brand} aria-label="TCG Haven home">
+                <img src="/images/logo-mark.png" alt="" width="26" height="26" />
+                <span>TCG Haven</span>
+              </A>
+
               <div class={styles.identity}>
                 <span class={styles.avatar}>
                   <Show when={profileImage()} fallback={initials() || "?"}>
@@ -759,28 +886,41 @@ export default function Account() {
                 </span>
                 <div>
                   <strong>{data().user.name}</strong>
-                  <span>{data().user.email}</span>
+                  <span class={styles.rankChip} data-rank={rank().index}>
+                    {rank().name}
+                  </span>
                 </div>
               </div>
 
               <nav class={styles.navigation} aria-label="Account sections">
                 <For each={NAV_ITEMS}>
-                  {item => (
-                    <button
-                      type="button"
-                      class={styles.navItem}
-                      classList={{
-                        [styles.navItemActive]: activeSection() === item.id,
-                      }}
-                      aria-current={
-                        activeSection() === item.id ? "page" : undefined
-                      }
-                      onClick={() => setActiveSection(item.id)}
-                    >
-                      <AccountNavIcon section={item.id} />
-                      {item.label}
-                    </button>
-                  )}
+                  {item => {
+                    const count = () =>
+                      item.id === "deliveries"
+                        ? activeDeliveries().length
+                        : item.id === "wishlist"
+                          ? overview()?.wishlist.length ?? 0
+                          : 0;
+                    return (
+                      <button
+                        type="button"
+                        class={styles.navItem}
+                        classList={{
+                          [styles.navItemActive]: activeSection() === item.id,
+                        }}
+                        aria-current={
+                          activeSection() === item.id ? "page" : undefined
+                        }
+                        onClick={() => setActiveSection(item.id)}
+                      >
+                        <AccountNavIcon section={item.id} />
+                        {item.label}
+                        <Show when={count()}>
+                          <span class={styles.navCount}>{count()}</span>
+                        </Show>
+                      </button>
+                    );
+                  }}
                 </For>
               </nav>
 
@@ -809,22 +949,17 @@ export default function Account() {
             </aside>
 
             <section class={styles.workspace}>
-              <header class={styles.sectionHeader}>
-                <div>
-                  <h1>
-                    {activeSection() === "overview"
-                      ? `Welcome back, ${data().user.name.split(" ")[0]}`
-                      : SECTION_COPY[activeSection()].title}
-                  </h1>
-                  <p>{SECTION_COPY[activeSection()].description}</p>
-                </div>
-                <div class={styles.headerActions}>
+              <Show when={activeSection() !== "overview"}>
+                <header class={styles.sectionHeader}>
+                  <div>
+                    <h1>{SECTION_COPY[activeSection()].title}</h1>
+                    <p>{SECTION_COPY[activeSection()].description}</p>
+                  </div>
                   <Show when={overview.loading}>
                     <span class={styles.syncing}>Syncing</span>
                   </Show>
-                  <A href="/products">Browse shop</A>
-                </div>
-              </header>
+                </header>
+              </Show>
 
                 <Show when={overview.error}>
                   <div class={styles.errorState} role="alert">
@@ -835,110 +970,269 @@ export default function Account() {
 
                 <Switch>
                   <Match when={activeSection() === "overview"}>
-                    <Show when={activeDeliveries()[0]}>
-                      {order => (
-                        <section class={styles.deliverySpotlight}>
-                          <div class={styles.deliverySpotlightIcon} aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z" />
-                              <circle cx="7" cy="18" r="2" />
-                              <circle cx="18" cy="18" r="2" />
-                            </svg>
-                          </div>
-                          <div class={styles.deliverySpotlightCopy}>
-                            <span>Active delivery</span>
-                            <strong>{deliveryMessage(order())}</strong>
+                    <div class={styles.view}>
+                      <section class={styles.hero}>
+                        <div class={styles.heroCopy}>
+                          <span class={styles.heroEyebrow}>{greeting()}</span>
+                          <h1>{data().user.name.split(" ")[0]}</h1>
+                          <p>
+                            <Show
+                              when={activeDeliveries()[0]}
+                              fallback={
+                                overview()?.orders.length
+                                  ? "Everything you ordered has arrived. Time to find the next one?"
+                                  : "Your collection starts here. Save cards you like and they'll wait for you."
+                              }
+                            >
+                              {order => (
+                                <>
+                                  Order <strong>{order().orderNumber}</strong>{" "}
+                                  {order().status === "shipped"
+                                    ? "is on its way with PostNL."
+                                    : order().status === "processing"
+                                      ? "is being packed right now."
+                                      : "is paid and next in line for packing."}
+                                </>
+                              )}
+                            </Show>
+                          </p>
+
+                          <div class={styles.rankProgress}>
+                            <div>
+                              <span>Collector rank</span>
+                              <strong data-rank={rank().index}>{rank().name}</strong>
+                            </div>
+                            <span class={styles.rankBar}>
+                              <span style={{ transform: `scaleX(${Math.max(0.04, rank().progress)})` }} />
+                            </span>
                             <small>
-                              {order().orderNumber}
-                              {activeDeliveries().length > 1
-                                ? ` and ${activeDeliveries().length - 1} more active ${activeDeliveries().length === 2 ? "order" : "orders"}`
-                                : ""}
+                              {rank().next
+                                ? `${rank().toNext} more ${rank().toNext === 1 ? "order" : "orders"} to ${rank().next}`
+                                : "The rarest rank there is"}
                             </small>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => setActiveSection("deliveries")}
-                          >
-                            View delivery
-                          </button>
-                        </section>
-                      )}
-                    </Show>
-
-                    <div class={styles.stats}>
-                      <article>
-                        <span>Orders</span>
-                        <strong>{overview()?.orders.length ?? 0}</strong>
-                        <small>All purchases</small>
-                      </article>
-                      <article>
-                        <span>Wishlist</span>
-                        <strong>{overview()?.wishlist.length ?? 0}</strong>
-                        <small>Saved products</small>
-                      </article>
-                      <article>
-                        <span>Total spent</span>
-                        <strong class={styles.money}>{formatMoney(totalSpent())}</strong>
-                        <small>Across your account</small>
-                      </article>
-                    </div>
-
-                    <div class={styles.overviewGrid}>
-                      <section class={styles.panel}>
-                        <div class={styles.panelHead}>
-                          <div>
-                            <h3>Latest orders</h3>
-                          </div>
-                          <button type="button" onClick={() => setActiveSection("orders")}>
-                            View all
-                          </button>
                         </div>
 
-                        <Show
-                          when={overview()?.orders.length}
-                          fallback={
-                            <div class={styles.compactEmpty}>
-                              <strong>No orders yet</strong>
-                              <span>Your first order will appear here.</span>
-                              <A href="/products">Explore the shop</A>
-                            </div>
-                          }
+                        <div
+                          class={styles.memberCard}
+                          data-rank={rank().index}
+                          onPointerMove={tiltCard}
+                          onPointerLeave={resetCard}
                         >
-                          <div class={styles.recentOrders}>
-                            <For each={overview()?.orders.slice(0, 3)}>
-                              {order => (
-                                <div class={styles.recentOrder}>
-                                  <div>
-                                    <strong>{order.orderNumber}</strong>
-                                    <span>{formatDate(order.createdAt)}</span>
-                                  </div>
-                                  <span class={styles.status} data-status={order.status}>{readableStatus(order.status)}</span>
-                                  <strong>{formatMoney(order.totalCents, order.currency)}</strong>
-                                </div>
-                              )}
-                            </For>
+                          <span class={styles.memberFoil} aria-hidden="true" />
+                          <div class={styles.memberTop}>
+                            <span class={styles.memberBrand}>
+                              <img src="/images/logo-mark.png" alt="" width="22" height="22" />
+                              TCG Haven
+                            </span>
+                            <span class={styles.memberRank}>{rank().name}</span>
                           </div>
-                        </Show>
+                          <div class={styles.memberWho}>
+                            <span class={styles.memberAvatar}>
+                              <Show when={profileImage()} fallback={initials() || "?"}>
+                                {image => <img src={image()} alt="" />}
+                              </Show>
+                            </span>
+                            <div>
+                              <strong>{data().user.name}</strong>
+                              <span>Collector since {new Date(data().user.createdAt).getFullYear()}</span>
+                            </div>
+                          </div>
+                          <dl class={styles.memberStats}>
+                            <div>
+                              <dt>Orders</dt>
+                              <dd>{overview()?.orders.length ?? 0}</dd>
+                            </div>
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>{overview()?.wishlist.length ?? 0}</dd>
+                            </div>
+                            <div>
+                              <dt>Spent</dt>
+                              <dd>{formatMoney(totalSpent())}</dd>
+                            </div>
+                          </dl>
+                          <span class={styles.memberNumber} aria-hidden="true">
+                            No. {data().user.id.replace(/[^a-z0-9]/gi, "").slice(0, 6).toUpperCase()}
+                          </span>
+                        </div>
                       </section>
 
-                      <section class={`${styles.panel} ${styles.quickPanel}`}>
-                        <div class={styles.panelHead}>
-                          <div>
-                            <h3>Quick actions</h3>
+                      <Show when={activeDeliveries()[0]}>
+                        {order => (
+                          <section class={styles.onTheWay}>
+                            <ItemThumbs items={order().items} large />
+                            <div class={styles.onTheWayBody}>
+                              <div class={styles.onTheWayHead}>
+                                <div>
+                                  <span>On its way</span>
+                                  <h2>{deliveryMessage(order())}</h2>
+                                  <p>
+                                    {order().orderNumber} · {itemSummary(order())}
+                                  </p>
+                                </div>
+                                <div class={styles.onTheWayActions}>
+                                  <Show when={order().trackingUrl}>
+                                    {trackingUrl => (
+                                      <a href={trackingUrl()} target="_blank" rel="noopener noreferrer" class={styles.trackButton}>
+                                        Track parcel
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                          <path d="M7 17 17 7M8 7h9v9" />
+                                        </svg>
+                                      </a>
+                                    )}
+                                  </Show>
+                                  <button type="button" class={styles.ghostButton} onClick={() => setActiveSection("deliveries")}>
+                                    {activeDeliveries().length > 1
+                                      ? `All ${activeDeliveries().length} deliveries`
+                                      : "Details"}
+                                  </button>
+                                </div>
+                              </div>
+                              <DeliveryTrack stage={deliveryStage(order().status)} />
+                            </div>
+                          </section>
+                        )}
+                      </Show>
+
+                      <div class={styles.overviewGrid}>
+                        <section class={styles.panel}>
+                          <div class={styles.panelHead}>
+                            <h3>Recent orders</h3>
+                            <Show when={overview()?.orders.length}>
+                              <button type="button" onClick={() => setActiveSection("orders")}>
+                                See all {overview()?.orders.length}
+                              </button>
+                            </Show>
                           </div>
+
+                          <Show
+                            when={overview()?.orders.length}
+                            fallback={
+                              <div class={styles.compactEmpty}>
+                                <strong>No orders yet</strong>
+                                <span>Your first order will show up here, with its parcel tracking.</span>
+                                <A href="/products">Explore the shop</A>
+                              </div>
+                            }
+                          >
+                            <div class={styles.recentOrders}>
+                              <For each={overview()?.orders.slice(0, 4)}>
+                                {order => (
+                                  <button type="button" class={styles.recentOrder} onClick={() => setActiveSection("orders")}>
+                                    <ItemThumbs items={order.items} />
+                                    <span class={styles.recentText}>
+                                      <strong>{itemSummary(order)}</strong>
+                                      <small>
+                                        {order.orderNumber} · {formatDate(order.createdAt)}
+                                      </small>
+                                    </span>
+                                    <span class={styles.status} data-status={order.status}>
+                                      {readableStatus(order.status)}
+                                    </span>
+                                    <strong class={styles.recentTotal}>
+                                      {formatMoney(order.totalCents, order.currency)}
+                                    </strong>
+                                  </button>
+                                )}
+                              </For>
+                            </div>
+                          </Show>
+                        </section>
+
+                        <section class={`${styles.panel} ${styles.wishPanel}`}>
+                          <div class={styles.panelHead}>
+                            <h3>Wishlist</h3>
+                            <Show when={overview()?.wishlist.length}>
+                              <button type="button" onClick={() => setActiveSection("wishlist")}>
+                                Open
+                              </button>
+                            </Show>
+                          </div>
+                          <Show
+                            when={overview()?.wishlist.length}
+                            fallback={
+                              <div class={styles.compactEmpty}>
+                                <strong>Nothing saved yet</strong>
+                                <span>Tap the heart on any product to keep it here.</span>
+                                <A href="/products">Find something</A>
+                              </div>
+                            }
+                          >
+                            <button type="button" class={styles.fan} onClick={() => setActiveSection("wishlist")} aria-label="Open your wishlist">
+                              <For each={overview()?.wishlist.slice(0, 5)}>
+                                {(item, index) => {
+                                  const count = Math.min(5, overview()?.wishlist.length ?? 1);
+                                  const offset = index() - (count - 1) / 2;
+                                  return (
+                                    <span
+                                      class={styles.fanCard}
+                                      style={{
+                                        "--x": `${offset * 3.1}rem`,
+                                        "--y": `${Math.abs(offset) * 0.55}rem`,
+                                        "--r": `${offset * 7}deg`,
+                                        "z-index": String(10 - Math.abs(Math.round(offset))),
+                                      }}
+                                    >
+                                      <img src={item.image ?? "/images/logo-mark.png"} alt="" loading="lazy" />
+                                    </span>
+                                  );
+                                }}
+                              </For>
+                            </button>
+                            <p class={styles.fanCaption}>
+                              <strong>{overview()?.wishlist[0]?.name}</strong>
+                              <span>
+                                {(overview()?.wishlist.length ?? 0) > 1
+                                  ? `and ${(overview()?.wishlist.length ?? 1) - 1} more saved`
+                                  : "saved for later"}
+                              </span>
+                            </p>
+                          </Show>
+                        </section>
+                      </div>
+
+                      <section class={styles.checklist}>
+                        <div class={styles.checklistHead}>
+                          <div>
+                            <h3>Your account</h3>
+                            <p>
+                              {checklist().filter(item => item.done).length === 3
+                                ? "All set. Nice and safe."
+                                : `${checklist().filter(item => item.done).length} of 3 done`}
+                            </p>
+                          </div>
+                          <span
+                            class={styles.checkRing}
+                            style={{ "--done": String(checklist().filter(item => item.done).length / 3) }}
+                            aria-hidden="true"
+                          >
+                            {checklist().filter(item => item.done).length}/3
+                          </span>
                         </div>
-                        <button type="button" onClick={() => setActiveSection("wishlist")}>
-                          Open wishlist
-                        </button>
-                        <button type="button" onClick={() => setActiveSection("deliveries")}>
-                          Track deliveries
-                        </button>
-                        <button type="button" onClick={() => setActiveSection("profile")}>
-                          Edit profile
-                        </button>
-                        <A href="/contact">
-                          Contact support
-                        </A>
+                        <div class={styles.checkItems}>
+                          <For each={checklist()}>
+                            {item => (
+                              <button
+                                type="button"
+                                class={styles.checkItem}
+                                classList={{ [styles.checkItemDone]: item.done }}
+                                onClick={() => setActiveSection(item.action)}
+                              >
+                                <span class={styles.checkMark} aria-hidden="true">
+                                  <Show when={item.done} fallback={<span />}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+                                  </Show>
+                                </span>
+                                <span class={styles.checkText}>
+                                  <strong>{item.done ? item.title : item.todo}</strong>
+                                  <small>{item.copy}</small>
+                                </span>
+                                <svg class={styles.checkArrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+                              </button>
+                            )}
+                          </For>
+                        </div>
                       </section>
                     </div>
                   </Match>
@@ -956,47 +1250,111 @@ export default function Account() {
                         />
                       }
                     >
-                      <div class={styles.orderList}>
-                        <For each={overview()?.orders}>
-                          {order => (
-                            <article class={styles.orderRow}>
-                              <div class={styles.orderMain}>
-                                <span>{formatDate(order.createdAt)}</span>
-                                <strong>{order.orderNumber}</strong>
-                                <small>
-                                  {order.items.length
-                                    ? order.items.map(item => `${item.quantity} x ${item.name}`).join(", ")
-                                    : "Order details"}
-                                </small>
-                              </div>
-                              <span class={styles.status} data-status={order.status}>{readableStatus(order.status)}</span>
-                              <div class={styles.orderActions}>
-                                <strong class={styles.orderTotal}>
-                                  {formatMoney(order.totalCents, order.currency)}
-                                </strong>
-                                <Show when={order.trackingUrl}>
-                                  {trackingUrl => (
-                                    <a
-                                      href={trackingUrl()}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    >
-                                      Track package
-                                    </a>
-                                  )}
-                                </Show>
-                                <A href={`/returns?order=${encodeURIComponent(order.orderNumber)}`}>
-                                  Cancel or return
-                                </A>
-                                <Show when={order.trackingNumber}>
-                                  {trackingNumber => (
-                                    <small>Tracking {trackingNumber()}</small>
-                                  )}
-                                </Show>
-                              </div>
-                            </article>
-                          )}
-                        </For>
+                      <div class={styles.view}>
+                        <div class={styles.filters} role="group" aria-label="Filter orders">
+                          <For
+                            each={[
+                              { id: "all", label: "All" },
+                              { id: "active", label: "On the way" },
+                              { id: "delivered", label: "Delivered" },
+                              { id: "closed", label: "Cancelled" },
+                            ] as const}
+                          >
+                            {filter => (
+                              <Show when={filter.id === "all" || orderFilterCount(filter.id)}>
+                                <button
+                                  type="button"
+                                  class={styles.filter}
+                                  classList={{ [styles.filterActive]: orderFilter() === filter.id }}
+                                  aria-pressed={orderFilter() === filter.id}
+                                  onClick={() => setOrderFilter(filter.id)}
+                                >
+                                  {filter.label}
+                                  <span>{orderFilterCount(filter.id)}</span>
+                                </button>
+                              </Show>
+                            )}
+                          </For>
+                        </div>
+
+                        <div class={styles.orderList}>
+                          <For
+                            each={filteredOrders()}
+                            fallback={<p class={styles.filterEmpty}>No orders here.</p>}
+                          >
+                            {order => (
+                              <article class={styles.orderCard} classList={{ [styles.orderClosed]: isClosed(order) }}>
+                                <header class={styles.orderHead}>
+                                  <div>
+                                    <strong>{order.orderNumber}</strong>
+                                    <span>Placed {formatDate(order.createdAt)}</span>
+                                  </div>
+                                  <span class={styles.status} data-status={order.status}>
+                                    {readableStatus(order.status)}
+                                  </span>
+                                  <strong class={styles.orderTotal}>
+                                    {formatMoney(order.totalCents, order.currency)}
+                                  </strong>
+                                </header>
+
+                                <ul class={styles.orderItems}>
+                                  <For each={order.items}>
+                                    {item => (
+                                      <li>
+                                        <A
+                                          href={item.slug ? `/products/${item.slug}` : "/products"}
+                                          class={styles.orderItem}
+                                        >
+                                          <span class={styles.orderItemImage}>
+                                            <img
+                                              src={item.image ?? "/images/logo-mark.png"}
+                                              alt=""
+                                              loading="lazy"
+                                              classList={{ [styles.imageFallback]: !item.image }}
+                                            />
+                                          </span>
+                                          <span class={styles.orderItemName}>{item.name}</span>
+                                          <Show when={item.quantity > 1}>
+                                            <span class={styles.orderItemQty}>× {item.quantity}</span>
+                                          </Show>
+                                        </A>
+                                      </li>
+                                    )}
+                                  </For>
+                                </ul>
+
+                                <footer class={styles.orderFoot}>
+                                  <Show
+                                    when={isDelivery(order)}
+                                    fallback={
+                                      <span class={styles.orderNote}>
+                                        {isClosed(order)
+                                          ? "This order was not completed. You were not charged for it."
+                                          : "Waiting for payment."}
+                                      </span>
+                                    }
+                                  >
+                                    <DeliveryTrack stage={deliveryStage(order.status)} compact />
+                                  </Show>
+                                  <div class={styles.orderActions}>
+                                    <Show when={order.trackingUrl}>
+                                      {trackingUrl => (
+                                        <a href={trackingUrl()} target="_blank" rel="noopener noreferrer" class={styles.trackButton}>
+                                          Track package
+                                        </a>
+                                      )}
+                                    </Show>
+                                    <Show when={!isClosed(order)}>
+                                      <A href={`/returns?order=${encodeURIComponent(order.orderNumber)}`} class={styles.ghostButton}>
+                                        Cancel or return
+                                      </A>
+                                    </Show>
+                                  </div>
+                                </footer>
+                              </article>
+                            )}
+                          </For>
+                        </div>
                       </div>
                     </Show>
                   </Match>
@@ -1014,117 +1372,68 @@ export default function Account() {
                         />
                       }
                     >
-                      <div class={styles.deliveryList}>
+                      <div class={`${styles.view} ${styles.deliveryList}`}>
                         <For each={deliveries()}>
-                          {order => {
-                            const currentStage = () => deliveryStage(order.status);
-                            return (
-                              <article class={styles.deliveryCard}>
-                                <header class={styles.deliveryHeader}>
-                                  <div>
-                                    <span>
-                                      {order.status === "completed"
-                                        ? "Past delivery"
-                                        : "Active delivery"}
-                                    </span>
-                                    <h2>{deliveryMessage(order)}</h2>
-                                    <p>
-                                      Order {order.orderNumber} placed {formatDate(order.createdAt)}
-                                    </p>
-                                  </div>
-                                  <span
-                                    class={styles.deliveryBadge}
-                                    classList={{
-                                      [styles.deliveryBadgeComplete]:
-                                        order.status === "completed",
-                                    }}
-                                  >
-                                    {readableStatus(order.status)}
+                          {order => (
+                            <article
+                              class={styles.deliveryCard}
+                              classList={{ [styles.deliveryPast]: order.status === "completed" }}
+                            >
+                              <header class={styles.deliveryHeader}>
+                                <ItemThumbs items={order.items} large />
+                                <div>
+                                  <span>
+                                    {order.status === "completed" ? "Delivered" : "On its way"}
                                   </span>
-                                </header>
-
-                                <ol class={styles.deliveryTimeline} aria-label={`Delivery progress for ${order.orderNumber}`}>
-                                  <For
-                                    each={[
-                                      "Payment received",
-                                      "Preparing order",
-                                      "With PostNL",
-                                      "Delivered",
-                                    ]}
-                                  >
-                                    {(label, index) => {
-                                      const step = () => index() + 1;
-                                      return (
-                                        <li
-                                          classList={{
-                                            [styles.deliveryStepDone]: step() < currentStage(),
-                                            [styles.deliveryStepCurrent]: step() === currentStage(),
-                                          }}
-                                          aria-current={
-                                            step() === currentStage() ? "step" : undefined
-                                          }
-                                        >
-                                          <span aria-hidden="true">
-                                            {step() < currentStage() ? "✓" : step()}
-                                          </span>
-                                          <strong>{label}</strong>
-                                        </li>
-                                      );
-                                    }}
-                                  </For>
-                                </ol>
-
-                                <div class={styles.deliveryDetails}>
-                                  <div>
-                                    <span>Inside this order</span>
-                                    <strong>
-                                      {order.items.length
-                                        ? order.items
-                                            .map(item => `${item.quantity} x ${item.name}`)
-                                            .join(", ")
-                                        : "Order details will appear here"}
-                                    </strong>
-                                  </div>
-                                  <Show when={order.shippedAt}>
-                                    {shippedAt => (
-                                      <div>
-                                        <span>Handed to PostNL</span>
-                                        <strong>{formatDate(shippedAt())}</strong>
-                                      </div>
-                                    )}
-                                  </Show>
-                                  <div>
-                                    <span>Tracking code</span>
-                                    <strong>{order.trackingNumber ?? "Added after dispatch"}</strong>
-                                  </div>
-                                </div>
-
-                                <footer class={styles.deliveryFooter}>
+                                  <h2>{deliveryMessage(order)}</h2>
                                   <p>
-                                    {order.trackingUrl
-                                      ? "PostNL has the latest scan and delivery estimate."
-                                      : order.status === "completed"
-                                        ? "This delivery has been completed."
-                                        : "We will add your PostNL link as soon as the parcel leaves us."}
+                                    {order.orderNumber} · placed {formatDate(order.createdAt)}
                                   </p>
-                                  <Show when={order.trackingUrl}>
-                                    {trackingUrl => (
-                                      <a
-                                        href={trackingUrl()}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                      >
-                                        Track with PostNL
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                          <path d="M7 17 17 7M8 7h9v9" />
-                                        </svg>
-                                      </a>
-                                    )}
-                                  </Show>
-                                </footer>
-                              </article>
-                            );
-                          }}
+                                </div>
+                              </header>
+
+                              <DeliveryTrack stage={deliveryStage(order.status)} />
+
+                              <dl class={styles.deliveryDetails}>
+                                <div>
+                                  <dt>Inside</dt>
+                                  <dd>
+                                    {order.items.length
+                                      ? order.items.map(item => `${item.quantity} × ${item.name}`).join(", ")
+                                      : "Order details will appear here"}
+                                  </dd>
+                                </div>
+                                <div>
+                                  <dt>Handed to PostNL</dt>
+                                  <dd>{order.shippedAt ? formatDate(order.shippedAt) : "Not yet"}</dd>
+                                </div>
+                                <div>
+                                  <dt>Tracking code</dt>
+                                  <dd class={styles.mono}>{order.trackingNumber ?? "After dispatch"}</dd>
+                                </div>
+                              </dl>
+
+                              <footer class={styles.deliveryFooter}>
+                                <p>
+                                  {order.trackingUrl
+                                    ? "PostNL has the latest scan and delivery estimate."
+                                    : order.status === "completed"
+                                      ? "This delivery has been completed."
+                                      : "We'll add your PostNL link as soon as the parcel leaves us."}
+                                </p>
+                                <Show when={order.trackingUrl}>
+                                  {trackingUrl => (
+                                    <a href={trackingUrl()} target="_blank" rel="noopener noreferrer" class={styles.trackButton}>
+                                      Track with PostNL
+                                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M7 17 17 7M8 7h9v9" />
+                                      </svg>
+                                    </a>
+                                  )}
+                                </Show>
+                              </footer>
+                            </article>
+                          )}
                         </For>
                       </div>
                     </Show>
@@ -1143,16 +1452,27 @@ export default function Account() {
                         />
                       }
                     >
-                      <div class={styles.wishlistGrid}>
+                      {/* A binder page: every saved product sits in its own sleeve. */}
+                      <div class={`${styles.view} ${styles.binder}`}>
                         <For each={overview()?.wishlist}>
                           {item => (
-                            <A href={`/products/${item.slug}`} class={styles.wishlistItem}>
-                              <div class={styles.wishlistImage}>
-                                <img src={item.image ?? "/images/logo-mark.png"} alt="" />
-                              </div>
-                              <span>{item.game ?? "TCG"}</span>
-                              <strong>{item.name}</strong>
-                              <small>Saved {formatDate(item.createdAt)}</small>
+                            <A href={`/products/${item.slug}`} class={styles.pocket}>
+                              <span class={styles.sleeve}>
+                                <img src={item.image ?? "/images/logo-mark.png"} alt="" loading="lazy" />
+                              </span>
+                              <span class={styles.pocketText}>
+                                <small>{item.game ?? "TCG"}</small>
+                                <strong>{item.name}</strong>
+                              </span>
+                            </A>
+                          )}
+                        </For>
+                        <For each={Array.from({ length: (4 - ((overview()?.wishlist.length ?? 0) % 4)) % 4 })}>
+                          {() => (
+                            <A href="/products" class={`${styles.pocket} ${styles.pocketEmpty}`} aria-label="Find more to save">
+                              <span class={styles.sleeve}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12" /></svg>
+                              </span>
                             </A>
                           )}
                         </For>
@@ -1243,18 +1563,7 @@ export default function Account() {
                           </label>
                         </div>
 
-                        <label class={styles.field}>
-                          <span>Country</span>
-                          <input
-                            value={addressCountry()}
-                            autocomplete="country-name"
-                            maxlength="80"
-                            required
-                            onInput={event =>
-                              setAddressCountry(event.currentTarget.value)
-                            }
-                          />
-                        </label>
+                        <CountrySelect value={addressCountry()} onChange={setAddressCountry} />
 
                         <Show when={addressMessage()}>
                           <p
@@ -1790,6 +2099,65 @@ export default function Account() {
         )}
       </Show>
     </main>
+  );
+}
+
+// Up to three product photos, overlapping like a small stack of cards.
+function ItemThumbs(props: { items: OrderItem[]; large?: boolean }) {
+  const shown = () => (props.items.length ? props.items.slice(0, 3) : [{ name: "", quantity: 1 }]);
+  const extra = () => props.items.length - 3;
+  return (
+    <span class={styles.thumbs} classList={{ [styles.thumbsLarge]: props.large }} aria-hidden="true">
+      <For each={shown()}>
+        {item => (
+          <span class={styles.thumb}>
+            <img
+              src={item.image ?? "/images/logo-mark.png"}
+              alt=""
+              loading="lazy"
+              classList={{ [styles.imageFallback]: !item.image }}
+            />
+          </span>
+        )}
+      </For>
+      <Show when={extra() > 0}>
+        <span class={`${styles.thumb} ${styles.thumbMore}`}>+{extra()}</span>
+      </Show>
+    </span>
+  );
+}
+
+// Paid, packing, with PostNL, delivered: the filled line is how far it got.
+function DeliveryTrack(props: { stage: number; compact?: boolean }) {
+  return (
+    <ol
+      class={styles.track}
+      classList={{ [styles.trackCompact]: props.compact }}
+      style={{ "--progress": String((props.stage - 1) / (DELIVERY_STEPS.length - 1)) }}
+      aria-label="Delivery progress"
+    >
+      <For each={DELIVERY_STEPS}>
+        {(label, index) => {
+          const step = () => index() + 1;
+          return (
+            <li
+              classList={{
+                [styles.trackDone]: step() < props.stage || props.stage === DELIVERY_STEPS.length,
+                [styles.trackNow]: step() === props.stage && props.stage < DELIVERY_STEPS.length,
+              }}
+              aria-current={step() === props.stage ? "step" : undefined}
+            >
+              <span class={styles.trackDot} aria-hidden="true">
+                <Show when={step() < props.stage || props.stage === DELIVERY_STEPS.length}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+                </Show>
+              </span>
+              <strong>{label}</strong>
+            </li>
+          );
+        }}
+      </For>
+    </ol>
   );
 }
 
