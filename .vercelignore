@@ -4,3 +4,5 @@
 .vinxi
 graphify-out
 node_modules
+.env*
+**/.env*

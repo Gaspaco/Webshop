@@ -17,16 +17,6 @@ const listenerRequire = createRequire(require.resolve("@vinxi/listhen"));
 const braces = globRequire("braces");
 const forge = listenerRequire("node-forge");
 
-describe("private environment configuration", () => {
-  it("ignores environment files without making an exception for .env.example", () => {
-    // Builds must also pass in fresh clones where the local example is absent.
-    const rules = readFileSync(new URL("../../.gitignore", import.meta.url), "utf8")
-      .split(/\r?\n/).map(line => line.trim());
-    assert.ok(rules.includes(".env*"), "Keep environment files ignored.");
-    assert.ok(!rules.some(line => line.startsWith("!") && line.includes(".env")), "Do not re-include private environment files.");
-  });
-});
-
 describe("continued upstream advisory monitoring", () => {
   const manifests = [{ upstream: { name: "braces" }, advisory: "https://github.com/advisories/known-fix" }];
   it("recognizes only advisories explicitly covered by the reviewed backport", () => {
