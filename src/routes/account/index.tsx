@@ -926,11 +926,21 @@ export default function Account() {
 
               <div class={styles.sidebarFooter}>
                 <span>Member since {formatDate(data().user.createdAt)}</span>
-                <A href="/" class={styles.backLink}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M19 12H5M11 18l-6-6 6-6" />
+                <A href="/products" class={styles.backLink}>
+                  <span class={styles.backIcon} aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 9.5 5.4 4.8A1 1 0 0 1 6.4 4h11.2a1 1 0 0 1 1 .8L20 9.5" />
+                      <path d="M4 9.5a2.67 2.67 0 0 0 5.33 0 2.67 2.67 0 0 0 5.34 0 2.67 2.67 0 0 0 5.33 0" />
+                      <path d="M5.5 12.2V19a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-6.8M10 20v-4.5h4V20" />
+                    </svg>
+                  </span>
+                  <span class={styles.backText}>
+                    <strong>Back to the shop</strong>
+                    <small>Continue browsing</small>
+                  </span>
+                  <svg class={styles.backArrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
-                  Back to store
                 </A>
                 <button type="button" class={styles.signOut} onClick={signOut}>
                   Sign out

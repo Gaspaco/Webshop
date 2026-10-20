@@ -33,26 +33,36 @@ Schema: `src/db/schema.ts`
 
 ### Yu-Gi-Oh reference catalogue
 
-The admin bulk-import page searches a PostgreSQL copy of YGOPRODeck rather
-than calling the public API for every search. A selected card is added to the
-shop as a private draft with one zero-stock variant per known set/rarity.
+The owner card library uses Yugipedia for card facts, English set lists, and
+printing images. Apply migration `0017_yugipedia_cache` before enabling this
+release. Successful lookups are cached in PostgreSQL for 30 days; empty results
+for 10 minutes. The **Refresh from Yugipedia** button bypasses cached results
+for the current query (limited to once per minute). No full-library crawl or
+background polling runs automatically.
+
+Imports create private drafts with zero stock. Refreshing reference data never
+changes existing products, stock, prices, or uploaded photos. Yugipedia has no
+market-price feed: missing prices are flagged for review, not invented. Existing
+reference prices and owner-managed prices are retained.
 
 ```bash
-bun run db:sync:yugioh                 # reuse the cached snapshot when present
-bun scripts/sync-ygoprodeck.ts --refresh       # intentionally download and sync a new snapshot
-bun scripts/sync-ygoprodeck.ts --download-only # download once without changing the database
+bun run db:sync:yugioh --set="Chaos Origins"
+bun run db:sync:yugioh --set="Chaos Origins" --refresh
+bun run db:sync:yugioh --card="Dark Magician"
 ```
 
-The raw snapshot is stored in `.cache/ygoprodeck/cards.json` and is excluded
-from Git. YGOPRODeck remains the local source for searchable card facts,
-prices, and known printings; new imports do not download its generic artwork.
+Requests identify the shop and contact email, batch pages, and use a shared
+database lease to stay below one API request per second across server instances.
+Provider throttling pauses further requests. Only Yugipedia HTTPS image hosts
+are accepted, with bounded download sizes and no redirects. The old YGOPRODeck
+route remains an alias for existing dashboard tabs, not a data source.
 
 #### Optional printing-specific images
 
-The Yugipedia enrichment job can identify a curated scan for an exact set and
-rarity while keeping YGOPRODeck as the source for card facts, prices, and set
-printings. It is deliberately bounded, cached for 30 days, and throttled to
-less than one request per second:
+The separate, optional image-enrichment job can fill additional exact-printing
+scans for existing reference cards. It is deliberately bounded, cached for 30
+days, and throttled to less than one request per second. Do not run the separate
+legacy enrichment script concurrently with a library refresh:
 
 ```bash
 bun run db:sync:yugioh-images --card="Dark Magician" --limit=1

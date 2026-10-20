@@ -1,6 +1,6 @@
 import { logServerError } from "~/lib/server-log";
 import type { APIEvent } from "@solidjs/start/server";
-import { asc, eq, ilike, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -11,8 +11,11 @@ import {
 } from "~/db/schema";
 import { apiJson, requireAdmin, toSlug, writeAuditLog } from "~/lib/admin.server";
 import { preferredPrintingImage } from "~/lib/yugipedia-image";
+import { searchYugipedia, YugipediaBusyError } from "~/lib/yugipedia.server";
+import { isYugipediaImageUrl } from "~/lib/yugipedia-catalog";
+import { checkRateLimit } from "~/lib/rate-limit.server";
 
-const importCardSchema = z.object({ cardId: z.number().int().positive() });
+const importCardSchema = z.object({ cardId: z.number().int().min(-2147483647).max(2147483647).refine(id => id !== 0) });
 
 type YugiohCardRow = typeof yugiohCards.$inferSelect;
 type YugiohPrintingRow = typeof yugiohPrintings.$inferSelect;
@@ -63,13 +66,14 @@ async function downloadCardImage(source: string | null) {
 
   try {
     const url = new URL(source);
-    if (url.protocol !== "https:" || url.hostname !== "images.ygoprodeck.com") {
-      throw new Error("Unexpected YGOPRODeck image host.");
+    if (!isYugipediaImageUrl(source)) {
+      throw new Error("Only Yugipedia card images may be downloaded.");
     }
 
     const response = await fetch(url, {
       headers: { "User-Agent": "TCGHaven catalogue import (info@tcghaven.com)" },
       signal: AbortSignal.timeout(20_000),
+      redirect: "error",
     });
     if (!response.ok) throw new Error(`Card image returned ${response.status}.`);
 
@@ -78,16 +82,19 @@ async function downloadCardImage(source: string | null) {
       throw new Error("Card image returned an unsupported file type.");
     }
 
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.byteLength > 850_000) {
-      throw new Error("Card image is larger than the catalogue image limit.");
+    const reader = response.body!.getReader(); const parts: Uint8Array[] = []; let size = 0;
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      size += value.byteLength;
+      if (size > 850_000) { await reader.cancel(); throw new Error("Card image is larger than the catalogue image limit."); }
+      parts.push(value);
     }
 
-    return `data:${contentType};base64,${Buffer.from(bytes).toString("base64")}`;
+    return `data:${contentType};base64,${Buffer.concat(parts).toString("base64")}`;
   } catch (error) {
     // A missing fallback must not discard the card or its printings. Exact
     // printing scans can still supply artwork for the variants that have one.
-    console.warn(`YGOPRODeck image unavailable for ${source}`, error);
+    logServerError("Yugipedia card image unavailable.", error);
     return null;
   }
 }
@@ -107,83 +114,46 @@ async function searchResponse(
   const slugs = cardRows.map(productSlug);
   const importedRows = slugs.length
     ? await db
-        .select({ slug: products.slug, status: products.status })
+        .select({ slug: products.slug, status: products.status, metadata: products.metadata })
         .from(products)
-        .where(inArray(products.slug, slugs))
+        .where(or(inArray(products.slug, slugs), and(eq(products.game, "yugioh"), inArray(sql<string>`${products.metadata}->>'sourceCardId'`, cardRows.map(card => String(card.id))))))
     : [];
   const imported = new Map(importedRows.map(row => [row.slug, row.status]));
+  const importedIds = new Map(importedRows.map(row => [String(row.metadata?.sourceCardId ?? ""), row.status]));
 
   return apiJson({
     cards: cardRows.map(card => ({
       ...card,
-      importedStatus: imported.get(productSlug(card)) ?? null,
+      imageSourceUrl: card.imageSourceUrl && isYugipediaImageUrl(card.imageSourceUrl)
+        ? `/card-images/yugipedia/card/${card.id}` : null,
+      importedStatus: importedIds.get(String(card.id)) ?? imported.get(productSlug(card)) ?? null,
       printings: printingsByCard.get(card.id) ?? [],
     })),
     matchedSets,
   });
 }
 
+async function lookup(event: APIEvent, query: string, by: "card" | "set", fresh: boolean, ownerId: string) {
+  if (await checkRateLimit({ event, namespace: fresh ? "yugipedia-refresh" : "yugipedia-search", identity: ownerId, limit: fresh ? 1 : 20, windowMs: 60_000 })) {
+    return apiJson({ error: "Please wait a minute before refreshing Yugipedia again." }, { status: 429 });
+  }
+  const result = await searchYugipedia(query, by, fresh);
+  const cardRows = result.cardIds.length ? await db.select().from(yugiohCards).where(inArray(yugiohCards.id, result.cardIds)).orderBy(asc(yugiohCards.name)) : [];
+  const printingRows = result.cardIds.length ? await db.select().from(yugiohPrintings).where(inArray(yugiohPrintings.cardId, result.cardIds)).orderBy(asc(yugiohPrintings.setName), asc(yugiohPrintings.rarity)) : [];
+  return searchResponse(cardRows, by === "set" ? printingRows.filter(row => result.matchedSets.includes(row.setName)) : printingRows, result.matchedSets);
+}
+
 export async function GET(event: APIEvent) {
   const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
-
   try {
     const url = new URL(event.request.url);
-    const query = url.searchParams.get("q")?.trim().slice(0, 80) ?? "";
-    const searchBy = url.searchParams.get("by") === "set" ? "set" : "card";
-
-    if (searchBy === "set") {
-      if (!query) return apiJson({ cards: [], matchedSets: [] });
-
-      // Search the mirrored printings table only. Even a whole-set lookup
-      // never reaches YGOPRODeck and therefore cannot consume its rate limit.
-      const matchingPrintings = await db
-        .select()
-        .from(yugiohPrintings)
-        .where(ilike(yugiohPrintings.setName, `%${query}%`))
-        .orderBy(asc(yugiohPrintings.setName), asc(yugiohPrintings.cardId))
-        .limit(2500);
-      const cardIds = [...new Set(matchingPrintings.map(row => row.cardId))].slice(0, 300);
-      const cardRows = cardIds.length
-        ? await db
-            .select()
-            .from(yugiohCards)
-            .where(inArray(yugiohCards.id, cardIds))
-            .orderBy(asc(yugiohCards.name))
-        : [];
-      const returnedIds = new Set(cardRows.map(card => card.id));
-      const matchedSets = [...new Set(matchingPrintings.map(row => row.setName))]
-        .sort((a, b) => a.localeCompare(b));
-
-      return searchResponse(
-        cardRows,
-        matchingPrintings.filter(printing => returnedIds.has(printing.cardId)),
-        matchedSets,
-      );
-    }
-
-    const cardRows = await db
-      .select()
-      .from(yugiohCards)
-      .where(query ? ilike(yugiohCards.name, `%${query}%`) : undefined)
-      .orderBy(asc(yugiohCards.name))
-      .limit(40);
-
-    const ids = cardRows.map(card => card.id);
-    const printingRows = ids.length
-      ? await db
-          .select()
-          .from(yugiohPrintings)
-          .where(inArray(yugiohPrintings.cardId, ids))
-          .orderBy(asc(yugiohPrintings.setName), asc(yugiohPrintings.rarity))
-      : [];
-    return searchResponse(cardRows, printingRows);
+    const query = z.string().trim().max(80).parse(url.searchParams.get("q") ?? "");
+    return await lookup(event, query, url.searchParams.get("by") === "set" ? "set" : "card", false, guard.session!.user.id);
   } catch (error) {
-    logServerError("Local YGOPRODeck search failed", error);
-    return apiJson(
-      { error: "The local Yu-Gi-Oh library is not ready. Run its database migration and sync first." },
-      { status: 503 },
-    );
+    if (error instanceof z.ZodError) return apiJson({ error: "Use a card or set name of up to 80 characters." }, { status: 400 });
+    logServerError("Yugipedia library lookup failed.", error);
+    return apiJson({ error: error instanceof YugipediaBusyError ? error.message : "Yugipedia could not be refreshed. Try again shortly; migration 0017 is required for the local cache." }, { status: 503 });
   }
 }
 
@@ -192,7 +162,12 @@ export async function POST(event: APIEvent) {
   if (guard.response) return guard.response;
 
   try {
-    const input = importCardSchema.parse(await event.request.json());
+    const body = await event.request.json();
+    if (body && typeof body === "object" && body.action === "refresh") {
+      const input = z.object({ q: z.string().trim().min(1).max(80), by: z.enum(["card", "set"]) }).parse(body);
+      return await lookup(event, input.q, input.by, true, guard.session!.user.id);
+    }
+    const input = importCardSchema.parse(body);
     const [card] = await db
       .select()
       .from(yugiohCards)
@@ -206,7 +181,7 @@ export async function POST(event: APIEvent) {
     const [existing] = await db
       .select({ id: products.id })
       .from(products)
-      .where(eq(products.slug, slug))
+      .where(or(eq(products.slug, slug), and(eq(products.game, "yugioh"), sql`${products.metadata}->>'sourceCardId' = ${String(card.id)}`)))
       .limit(1);
     if (existing) {
       return apiJson(
@@ -235,7 +210,7 @@ export async function POST(event: APIEvent) {
         }];
     const genericArtwork = await downloadCardImage(card.imageSourceUrl);
     const exactVariantArtwork = variants.map(preferredPrintingImage);
-    const variantArtwork = exactVariantArtwork.map(image => image ?? genericArtwork);
+    const variantArtwork = exactVariantArtwork.map(image => image ?? (printings.length ? null : genericArtwork));
     const printingArtwork = exactVariantArtwork
       .find((image): image is string => Boolean(image)) ?? null;
     const productArtwork = printingArtwork ?? genericArtwork;
@@ -266,7 +241,7 @@ export async function POST(event: APIEvent) {
           status: "draft",
           imageUrls: productArtwork ? [productArtwork] : [],
           metadata: {
-            source: "ygoprodeck",
+            source: "yugipedia",
             sourceCardId: card.id,
             sourceUrl: card.sourceUrl,
             set: variants[0]?.setName ?? null,
@@ -282,7 +257,7 @@ export async function POST(event: APIEvent) {
             printingImageProvider: printingArtwork
               ? "yugipedia"
               : genericArtwork
-                ? "ygoprodeck"
+                ? "yugipedia"
                 : null,
             priceNeedsReview: pricesNeedingReview > 0,
             pricesNeedingReview,
@@ -303,9 +278,8 @@ export async function POST(event: APIEvent) {
           // retained generic card image, including variants with zero stock.
           imageUrl: variantArtwork[index] ?? null,
           isDefault: index === 0,
-          // YGOPRODeck publishes a separate market reference for each set
-          // printing. The former card-level value made every rarity share the
-          // same price (and was often null, producing an unexplained €0.00).
+          // Retain any previously stored market references. Yugipedia itself
+          // provides no prices; new cards stay drafts flagged for price review.
           priceCents: variantPrices[index] ?? 0,
           stock: 0,
           trackInventory: true,
@@ -317,10 +291,10 @@ export async function POST(event: APIEvent) {
     await writeAuditLog({
       event,
       actorId: guard.session!.user.id,
-      action: "catalogue.ygoprodeck_added",
+      action: "catalogue.yugipedia_added",
       entityType: "product",
       entityId: created.id,
-      summary: `${created.name} added from the local YGOPRODeck library as a draft${productArtwork ? "" : " without artwork"}.`,
+      summary: `${created.name} added from the cached Yugipedia library as a draft${productArtwork ? "" : " without artwork"}.`,
       metadata: {
         cardId: card.id,
         variants: variants.length,
@@ -339,7 +313,8 @@ export async function POST(event: APIEvent) {
     if (error instanceof z.ZodError) {
       return apiJson({ error: "Choose a valid Yu-Gi-Oh card." }, { status: 400 });
     }
-    logServerError("YGOPRODeck catalogue import failed", error);
+    if (error instanceof YugipediaBusyError) return apiJson({ error: error.message }, { status: 503 });
+    logServerError("Yugipedia catalogue import failed", error);
     return apiJson(
       { error: "The card could not be added. Check the server log for the reason." },
       { status: 500 },

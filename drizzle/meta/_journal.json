@@ -120,6 +120,13 @@
       "when": 1792396800000,
       "tag": "0016_owner_password_sign_in",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792454400000,
+      "tag": "0017_yugipedia_cache",
+      "breakpoints": true
     }
   ]
 }

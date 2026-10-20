@@ -3736,20 +3736,24 @@ export default function Admin() {
     }
   };
 
-  const searchYugiohCards = async (event: SubmitEvent) => {
+  const searchYugiohCards = async (event: Event, fresh = false) => {
     event.preventDefault();
     yugiohSearchController?.abort();
     const controller = new AbortController();
     yugiohSearchController = controller;
     setYugiohSearching(true);
     setYugiohMessage("");
+    setYugiohCards([]);
+    setYugiohMatchedSets([]);
     setYugiohSelected(new Set<number>());
     try {
       const response = await fetch(
-        `/api/admin/ygoprodeck?by=${yugiohSearchBy()}&q=${encodeURIComponent(yugiohQuery().trim())}`,
+        fresh ? "/api/admin/yugipedia" : `/api/admin/yugipedia?by=${yugiohSearchBy()}&q=${encodeURIComponent(yugiohQuery().trim())}`,
         {
           credentials: "same-origin",
-          headers: { Accept: "application/json" },
+          method: fresh ? "POST" : "GET",
+          headers: { Accept: "application/json", ...(fresh ? { "Content-Type": "application/json" } : {}) },
+          ...(fresh ? { body: JSON.stringify({ action: "refresh", q: yugiohQuery().trim(), by: yugiohSearchBy() }) } : {}),
           signal: controller.signal,
         },
       );
@@ -3764,7 +3768,7 @@ export default function Admin() {
       }
       setYugiohCards(result.cards ?? []);
       setYugiohMatchedSets(result.matchedSets ?? []);
-      if (!result.cards?.length) setYugiohMessage("No matching cards found in the local snapshot.");
+      if (!result.cards?.length) setYugiohMessage("No matching English card printings found on Yugipedia. Try the full set name.");
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
         setYugiohMessage("The local Yu-Gi-Oh database could not be searched.");
@@ -3775,9 +3779,9 @@ export default function Admin() {
   };
 
   // One request per card: the endpoint imports a single card, and running them
-  // in sequence keeps the YGOPRODeck image fetches from being rate limited.
+  // in sequence keeps image downloads and draft creation bounded.
   const importYugiohCard = async (card: YugiohCard) => {
-    const response = await fetch("/api/admin/ygoprodeck", {
+    const response = await fetch("/api/admin/yugipedia", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
@@ -3872,7 +3876,7 @@ export default function Admin() {
     setYugiohImporting(previous => new Set(previous).add(card.id));
     setYugiohMessage("");
     try {
-      const response = await fetch("/api/admin/ygoprodeck", {
+      const response = await fetch("/api/admin/yugipedia", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -5289,10 +5293,10 @@ export default function Admin() {
                       <div>
                         <h2>Yu-Gi-Oh card library</h2>
                         <p>
-                          Search the locally stored YGOPRODeck snapshot. Adding a card creates one private draft with every known set and rarity at zero stock.
+                          Search cards and English sets from Yugipedia, cached locally. Imports are private drafts at zero stock. Review prices before publishing; Yugipedia does not supply market prices.
                         </p>
                       </div>
-                      <span>Local data only</span>
+                      <span>Yugipedia</span>
                     </div>
 
                     <form class={styles.yugiohSearch} onSubmit={searchYugiohCards}>
@@ -5328,6 +5332,7 @@ export default function Admin() {
                           ? "Searching"
                           : yugiohSearchBy() === "set" ? "Find set" : "Find cards"}
                       </button>
+                      <button type="button" disabled={yugiohSearching() || !yugiohQuery().trim()} onClick={event => void searchYugiohCards(event, true)}>Refresh from Yugipedia</button>
                     </form>
 
                     <Show when={yugiohMatchedSets().length}>

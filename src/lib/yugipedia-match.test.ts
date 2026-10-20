@@ -50,4 +50,8 @@ describe("Yugipedia printing image matching", () => {
       rarityCode: "(StR)",
     }, ["CardName-POTE-EN-ScR-1E.png"]), null);
   });
+
+  it("does not substitute another language when the rarity matches", () => {
+    assert.equal(matchYugipediaPrintingFile({ cardName: "Card Name", setCode: "CORI-EN001", rarity: "Secret Rare" }, ["CardName-CORI-JP-ScR.png"]), null);
+  });
 });

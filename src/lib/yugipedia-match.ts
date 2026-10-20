@@ -119,7 +119,8 @@ export function matchYugipediaPrintingFile(
   const languageMatches = language
     ? setMatches.filter(fileName => fileSegments(fileName).includes(language))
     : [];
-  const candidates = languageMatches.length ? languageMatches : setMatches;
+  // Never substitute a Japanese/other-language scan for an English printing.
+  const candidates = language ? languageMatches : setMatches;
   const exact = candidates.filter(fileName => {
     const segments = fileSegments(fileName);
     return rarity.some(token => segments.includes(token));

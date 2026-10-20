@@ -544,6 +544,13 @@ export const importJobs = pgTable(
 // Locally mirrored YGOPRODeck reference data. These rows are deliberately
 // separate from sellable products: the owner searches the complete card
 // library, then creates only the singles the shop actually intends to stock.
+export const yugipediaCache = pgTable("yugipedia_cache", {
+  key: text("key").primaryKey(),
+  payload: jsonb("payload").$type<unknown>().notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, table => [index("yugipedia_cache_expiry_idx").on(table.expiresAt)]);
+
 export const yugiohCards = pgTable(
   "yugioh_cards",
   {

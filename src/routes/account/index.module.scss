@@ -284,7 +284,90 @@ $gutter: 0.75rem;
   }
 }
 
-.backLink,
+// The way back to shopping: a small card, distinct from the nav above.
+.backLink {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.15rem;
+  padding: 0.6rem 0.85rem 0.6rem 0.6rem;
+  border-radius: $radius-tile;
+  background:
+    radial-gradient(ellipse 80% 120% at 0% 50%, rgba($primary, 0.14), transparent 70%),
+    rgba($white, 0.04);
+  box-shadow: inset 0 0 0 1px rgba($white, 0.06);
+  transition: background-color 200ms $ease-out, box-shadow 200ms $ease-out;
+
+  &:hover {
+    background-color: rgba($white, 0.07);
+    box-shadow: inset 0 0 0 1px rgba($primary, 0.3);
+
+    .backIcon {
+      background: $primary;
+      color: #04110b;
+    }
+
+    .backArrow {
+      color: $primary-light;
+      translate: 3px 0;
+    }
+  }
+
+  &:active {
+    scale: 0.985;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
+}
+
+.backIcon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: 0.65rem;
+  background: rgba($primary, 0.16);
+  color: $primary-light;
+  transition: background-color 200ms $ease-out, color 200ms $ease-out;
+
+  svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+}
+
+.backText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+
+  strong {
+    overflow: hidden;
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    color: $gray-500;
+    font-size: 0.75rem;
+  }
+}
+
+.backArrow {
+  width: 1rem;
+  height: 1rem;
+  color: $gray-500;
+  transition: color 200ms $ease-out, translate 220ms $ease-out;
+}
+
 .signOut {
   display: flex;
   min-height: 2.75rem;
@@ -2497,6 +2580,22 @@ $gutter: 0.75rem;
 
   .signOut {
     gap: 0.6rem;
+  }
+
+  .backLink {
+    flex: 1;
+    max-width: 15rem;
+    margin-bottom: 0;
+    padding-block: 0.45rem;
+  }
+
+  .backIcon {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .backText small {
+    display: none;
   }
 
   .workspace {
