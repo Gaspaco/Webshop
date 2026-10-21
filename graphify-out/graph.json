@@ -7575,13 +7575,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/admin.server.ts:82"
     },
     {
-      "id": "file::auth",
-      "label": "auth.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts:1"
-    },
-    {
       "id": "index::signin",
       "label": "signIn",
       "fileType": "code",
@@ -9017,13 +9010,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/app.config.ts:1"
     },
     {
-      "id": "file::create_admin",
-      "label": "create-admin.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/create-admin.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/create-admin.ts:1"
-    },
-    {
       "id": "file::env_server",
       "label": "env.server.ts",
       "fileType": "code",
@@ -9358,6 +9344,20 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-image.test.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-image.test.ts:1"
+    },
+    {
+      "id": "file::create_admin",
+      "label": "create-admin.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/create-admin.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/create-admin.ts:1"
+    },
+    {
+      "id": "file::auth",
+      "label": "auth.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/auth.ts:1"
     }
   ],
   "edges": [
@@ -19182,9 +19182,9 @@
     }
   ],
   "metadata": {
-    "files": 271,
+    "files": 270,
     "nodes": 1337,
     "edges": 1091,
-    "builtAt": "2026-10-20T14:08:33.702Z"
+    "builtAt": "2026-10-21T07:06:23.676Z"
   }
 }

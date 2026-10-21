@@ -40,6 +40,28 @@ and pipe one password line from your secret manager; do not type a password
 into a shell command. Existing accounts have their password reset, admin access
 enabled, and sessions revoked, so only run this when you intend those changes.
 
+### Password and recovery protection
+
+Password sign-in retains its per-IP limit and also allows at most ten attempts
+per normalized account email before a 15-minute cooldown. Successful sign-in
+clears that account counter. The limits apply to both customer and owner
+accounts, without requiring two-factor authentication for owners.
+
+Reset emails are limited independently of client IP: one per recipient per
+minute, three per recipient per hour, thirty across the shop per hour, and two
+hundred per UTC day. Suppressed, unknown-recipient, busy, and SMTP-failure
+requests receive the same generic response. Suppressed/unsent tokens are
+discarded; tokens, passwords and recipient emails are not logged by these
+controls. Counter identities are hashed.
+
+Reset-link issuance, resets, normal password changes and the admin setup script
+share a per-account database lease. A valid reset revokes all other outstanding
+reset links before the password write, and a normal password change revokes all
+reset links after verifying the current password. The used reset link remains
+one-time, and sessions are revoked on reset. Existing role and two-factor
+settings are unchanged. If an unexpected server failure prevents releasing a
+lease, it expires after 90 seconds. No additional migration is required.
+
 ### Guest returns, catalogue images, and card scanning
 
 Signed-in customers can submit returns only for orders they own. Guests receive

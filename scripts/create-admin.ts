@@ -1,6 +1,6 @@
 import { hashPassword } from "better-auth/crypto";
-import { and, eq } from "drizzle-orm";
-import { account, session, user } from "../src/db/schema";
+import { and, eq, like } from "drizzle-orm";
+import { account, session, user, verification } from "../src/db/schema";
 import { meetsPasswordRequirements } from "../src/lib/password";
 import { parseAdminArguments, promptAdminPassword, readPasswordFromStdin } from "./admin-password";
 
@@ -25,39 +25,44 @@ const [existing] = await db
 
 if (existing) {
   const passwordHash = await hashPassword(password);
+  const { claimPasswordOperation, finishPasswordOperation } = await import("../src/lib/password-security.server");
+  const operation = await claimPasswordOperation(existing.id);
 
-  await db.transaction(async tx => {
-    const [credentialAccount] = await tx
-      .select({ id: account.id })
-      .from(account)
-      .where(
-        and(
-          eq(account.userId, existing.id),
-          eq(account.providerId, "credential"),
-        ),
-      )
-      .limit(1);
+  try {
+    await db.transaction(async tx => {
+      await tx.delete(verification).where(and(eq(verification.value, existing.id), like(verification.identifier, "reset-password:%")));
+      const [credentialAccount] = await tx
+        .select({ id: account.id })
+        .from(account)
+        .where(
+          and(
+            eq(account.userId, existing.id),
+            eq(account.providerId, "credential"),
+          ),
+        )
+        .limit(1);
 
-    if (credentialAccount) {
+      if (credentialAccount) {
+        await tx
+          .update(account)
+          .set({ password: passwordHash })
+          .where(eq(account.id, credentialAccount.id));
+      } else {
+        await tx.insert(account).values({
+          userId: existing.id,
+          accountId: existing.id,
+          providerId: "credential",
+          password: passwordHash,
+        });
+      }
+
       await tx
-        .update(account)
-        .set({ password: passwordHash })
-        .where(eq(account.id, credentialAccount.id));
-    } else {
-      await tx.insert(account).values({
-        userId: existing.id,
-        accountId: existing.id,
-        providerId: "credential",
-        password: passwordHash,
-      });
-    }
-
-    await tx
-      .update(user)
-      .set({ role: "admin", emailVerified: true, twoFactorEnabled: false })
-      .where(eq(user.id, existing.id));
-    await tx.delete(session).where(eq(session.userId, existing.id));
-  });
+        .update(user)
+        .set({ role: "admin", emailVerified: true, twoFactorEnabled: false })
+        .where(eq(user.id, existing.id));
+      await tx.delete(session).where(eq(session.userId, existing.id));
+    });
+  } finally { await finishPasswordOperation(operation); }
 
   console.log(`Administrator access enabled for ${email}.`);
   process.exit(0);

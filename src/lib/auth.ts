@@ -16,6 +16,11 @@ import { createAuthSecurityHooks } from "~/lib/auth-security.server";
 import { authRateLimitStorage } from "~/lib/rate-limit.server";
 import { logServerError } from "~/lib/server-log";
 import {
+  allowPasswordResetEmail, beginPasswordOperation, clearAccountPasswordAttempts,
+  discardPasswordResetToken, finishPasswordOperation, limitAccountPasswordAttempts,
+  type PasswordOperation,
+} from "~/lib/password-security.server";
+import {
   meetsPasswordRequirements,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
@@ -62,6 +67,7 @@ export const auth = betterAuth({
   trustedOrigins: [...trustedOrigins],
   hooks: {
     before: createAuthMiddleware(async context => {
+      if (context.path === "/sign-in/email") await limitAccountPasswordAttempts(context.body?.email);
       if (["/two-factor/disable", "/two-factor/enable", "/two-factor/get-totp-uri", "/two-factor/generate-backup-codes"].includes(context.path)) {
         const current = await auth.api.getSession({ headers: context.headers ?? new Headers() });
         if (current?.user.role === "admin" && context.path !== "/two-factor/disable") {
@@ -77,40 +83,61 @@ export const auth = betterAuth({
             : undefined;
 
       if (
-        typeof password === "string" &&
-        !meetsPasswordRequirements(password)
+        ["/sign-up/email", "/reset-password", "/change-password"].includes(context.path) &&
+        (typeof password !== "string" || !meetsPasswordRequirements(password))
       ) {
         throw new APIError("BAD_REQUEST", {
           message: PASSWORD_REQUIREMENTS_MESSAGE,
         });
       }
+      const session = context.path === "/change-password"
+        ? await auth.api.getSession({ headers: context.headers ?? new Headers() }) : null;
+      try {
+        const passwordOperation = await beginPasswordOperation({
+          path: context.path, body: context.body, query: context.query,
+          sessionUserId: session?.user.id, verifyPassword: context.context.password.verify,
+        });
+        if (passwordOperation) return { context: { passwordOperation } };
+      } catch (error) {
+        if (context.path === "/request-password-reset" && error instanceof APIError && error.statusCode === 409) {
+          // A concurrent request must not reveal whether this email exists.
+          return context.json({ status: true, message: "If this email exists in our system, check your email for the reset link" });
+        }
+        throw error;
+      }
     }),
     after: createAuthMiddleware(async context => {
-      const newSession = context.context.newSession;
-      if (!emailEnv) return;
-
-      const completedSignIn =
-        context.path === "/sign-in/email" ||
-        context.path === "/two-factor/verify-totp" ||
-        context.path === "/two-factor/verify-backup-code" ||
-        context.path === "/two-factor/verify-otp" ||
-        context.path.startsWith("/callback/");
-      if (!completedSignIn || !newSession) return;
-
+      const operation = (context as typeof context & { passwordOperation?: PasswordOperation }).passwordOperation;
       try {
-        await sendNewSignInEmail({
-          email: newSession.user.email,
-          name: newSession.user.name,
-          signedInAt: newSession.session.createdAt,
-          ipAddress: newSession.session.ipAddress,
-          userAgent: newSession.session.userAgent,
-          recoveryUrl: new URL("/login?recovery=1", authUrl).toString(),
-          sessionId: newSession.session.id,
-        });
-      } catch {
-        // A mail outage must never prevent a legitimate, completed sign-in.
-        console.error("New sign-in notification delivery failed.");
-      }
+        const newSession = context.context.newSession;
+        if (context.path === "/sign-in/email" && newSession) {
+          await clearAccountPasswordAttempts(newSession.user.email).catch(error => logServerError("Sign-in counter cleanup deferred.", error));
+        }
+        if (!emailEnv) return;
+
+        const completedSignIn =
+          context.path === "/sign-in/email" ||
+          context.path === "/two-factor/verify-totp" ||
+          context.path === "/two-factor/verify-backup-code" ||
+          context.path === "/two-factor/verify-otp" ||
+          context.path.startsWith("/callback/");
+        if (!completedSignIn || !newSession) return;
+
+        try {
+          await sendNewSignInEmail({
+            email: newSession.user.email,
+            name: newSession.user.name,
+            signedInAt: newSession.session.createdAt,
+            ipAddress: newSession.session.ipAddress,
+            userAgent: newSession.session.userAgent,
+            recoveryUrl: new URL("/login?recovery=1", authUrl).toString(),
+            sessionId: newSession.session.id,
+          });
+        } catch {
+          // A mail outage must never prevent a legitimate, completed sign-in.
+          console.error("New sign-in notification delivery failed.");
+        }
+      } finally { await finishPasswordOperation(operation); }
     }),
   },
   ...(emailEnv
@@ -149,6 +176,7 @@ export const auth = betterAuth({
       "/sign-up/email": { window: 600, max: 5 },
       "/request-password-reset": { window: 900, max: 3 },
       "/reset-password": { window: 900, max: 5 },
+      "/change-password": { window: 600, max: 5 },
       "/send-verification-email": { window: 600, max: 3 },
       "/change-email": { window: 600, max: 3 },
       "/two-factor/enable": { window: 600, max: 5 },
@@ -168,16 +196,20 @@ export const auth = betterAuth({
       ? {
           sendResetPassword: async ({ user, url, token }) => {
             try {
+              if (!await allowPasswordResetEmail(user.email)) {
+                await discardPasswordResetToken(token);
+                return;
+              }
               await sendPasswordResetEmail({
                 email: user.email,
                 url,
                 token,
               });
-            } catch {
-              console.error("Password reset email delivery failed.");
-              throw new APIError("INTERNAL_SERVER_ERROR", {
-                message: "Password reset email could not be sent.",
-              });
+            } catch (error) {
+              await discardPasswordResetToken(token);
+              logServerError("Password reset email delivery failed.", error);
+              // Preserve the same generic response for unknown recipients,
+              // suppressed sends, concurrent requests and SMTP outages.
             }
           },
         }
