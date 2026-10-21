@@ -110,6 +110,11 @@
   @include panel-title;
 }
 
+.resetButton {
+  @include btn-secondary;
+  align-self: flex-start;
+}
+
 .consent {
   display: flex;
   align-items: flex-start;

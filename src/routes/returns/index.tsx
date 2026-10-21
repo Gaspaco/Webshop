@@ -1,6 +1,6 @@
 import { Title } from "@solidjs/meta";
 import { A, useSearchParams } from "@solidjs/router";
-import { createSignal, Show } from "solid-js";
+import { createSignal, onMount, Show } from "solid-js";
 import styles from "./index.module.scss";
 
 export default function Returns() {
@@ -14,9 +14,22 @@ export default function Returns() {
   const [status, setStatus] = createSignal<"idle" | "saving" | "success" | "error">("idle");
   const [message, setMessage] = createSignal("");
   const [reference, setReference] = createSignal("");
+  const [confirmationToken, setConfirmationToken] = createSignal("");
+  const [verificationRequired, setVerificationRequired] = createSignal(false);
+
+  onMount(() => {
+    const token = new URLSearchParams(window.location.hash.slice(1)).get("confirm");
+    if (!token) return;
+    // Keep one-time secrets out of server requests, subsequent history entries
+    // and copied page URLs. Merely opening the email never submits a return.
+    window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+    if (/^[a-f0-9-]{36}\.[A-Za-z0-9_-]{43}$/i.test(token)) setConfirmationToken(token);
+    else { setStatus("error"); setMessage("This confirmation link is invalid. Submit the form to request a new one."); }
+  });
 
   const submit = async (event: SubmitEvent) => {
     event.preventDefault();
+    if (status() === "saving") return;
     setStatus("saving");
     setMessage("");
     try {
@@ -24,7 +37,7 @@ export default function Returns() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: JSON.stringify(confirmationToken() ? { action: "confirm", token: confirmationToken() } : {
           orderNumber: orderNumber(),
           email: email() || undefined,
           reason: reason(),
@@ -35,6 +48,8 @@ export default function Returns() {
         error?: string;
         reference?: string;
         confirmationSent?: boolean;
+        verificationRequired?: boolean;
+        message?: string;
       };
       if (!response.ok) {
         setStatus("error");
@@ -42,9 +57,13 @@ export default function Returns() {
         return;
       }
       setReference(result.reference ?? "");
+      setVerificationRequired(result.verificationRequired === true);
+      setConfirmationToken("");
       setStatus("success");
       setMessage(
-        result.confirmationSent === true
+        result.verificationRequired
+          ? result.message ?? "Check your order email for a link to confirm this request. No return has been created yet."
+          : result.confirmationSent === true
           ? "Your request has been recorded. A confirmation was sent by email."
           : result.confirmationSent === false
             ? "Your request is saved, but the confirmation email could not be delivered. Keep this reference and contact the shop if you do not hear back."
@@ -68,7 +87,8 @@ export default function Returns() {
           <ol class={styles.steps}>
             <li><span>1</span>Enter the order number from your confirmation email.</li>
             <li><span>2</span>List the items you want to withdraw or return.</li>
-            <li><span>3</span>We review the request and email you the return details.</li>
+            <li><span>3</span>For guest orders, confirm the one-time link sent to your order email.</li>
+            <li><span>4</span>We review your confirmed request and email you the return details.</li>
           </ol>
           <p class={styles.help}>
             Need help first? <A href="/contact">Contact the shop</A> or read the <A href="/shipping">shipping and returns information</A>.
@@ -83,16 +103,19 @@ export default function Returns() {
                 <span class={styles.successIcon} aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
                 </span>
-                <h2>Request received</h2>
+                <h2>{verificationRequired() ? "Check your email" : "Request received"}</h2>
                 <p>{message()}</p>
                 <Show when={reference()}>
                   <p class={styles.reference}>Reference: <strong>{reference()}</strong></p>
                 </Show>
-                <A href="/account">Open your account</A>
+                <Show when={verificationRequired()} fallback={<A href="/account">Open your account</A>}>
+                  <A href="/contact">Get help with your request</A>
+                </Show>
               </div>
             }
           >
             <form onSubmit={submit}>
+              <Show when={confirmationToken()} fallback={<>
               <div class={styles.formHeading}>
                 <h2>Order details</h2>
               </div>
@@ -103,7 +126,7 @@ export default function Returns() {
               <label>
                 <span>Order email</span>
                 <input type="email" maxlength="254" autocomplete="email" placeholder="you@example.com" value={email()} onInput={event => setEmail(event.currentTarget.value)} />
-                <small>Required for guest orders. Signed-in customers can leave this empty.</small>
+                <small>Guest orders need email confirmation. Signed-in customers can leave this empty for their own orders.</small>
               </label>
               <label>
                 <span>Which items are included? <small>Reason optional</small></span>
@@ -113,11 +136,18 @@ export default function Returns() {
                 <input type="checkbox" required checked={confirmed()} onChange={event => setConfirmed(event.currentTarget.checked)} />
                 <span>I confirm these order details are mine and the information is correct.</span>
               </label>
+              </>}>
+                <div class={styles.formHeading}><h2>Confirm your return request</h2></div>
+                <p>Only confirm if you started the request described in the email. This sends it to the shop for review. It does not issue a refund.</p>
+              </Show>
               <Show when={message()}><p class={styles.error} role="alert">{message()}</p></Show>
               <button type="submit" disabled={status() === "saving"}>
-                {status() === "saving" ? "Submitting request" : "Submit withdrawal request"}
+                {status() === "saving" ? "Submitting request" : confirmationToken() ? "Confirm return request" : "Submit withdrawal request"}
               </button>
-              <p class={styles.privacy}>The form only reveals whether the supplied order details match. Requests are reviewed before any refund or stock change.</p>
+              <Show when={confirmationToken()}>
+                <button type="button" class={styles.resetButton} disabled={status() === "saving"} onClick={() => { setConfirmationToken(""); setStatus("idle"); setMessage(""); }}>Request a new confirmation link</button>
+              </Show>
+              <p class={styles.privacy}>We verify order ownership before saving a return. Requests are reviewed before any refund or stock change.</p>
             </form>
           </Show>
         </section>

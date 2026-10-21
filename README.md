@@ -31,6 +31,48 @@ npm run db:studio    # open Drizzle Studio
 
 Schema: `src/db/schema.ts`
 
+### Administrator setup
+
+Run `bun run admin:create owner@example.com "Owner name"` in a terminal.
+The script asks for a password twice with input hidden. It never accepts a
+password as a command-line argument. For automation, use `--password-stdin`
+and pipe one password line from your secret manager; do not type a password
+into a shell command. Existing accounts have their password reset, admin access
+enabled, and sessions revoked, so only run this when you intend those changes.
+
+### Guest returns, catalogue images, and card scanning
+
+Signed-in customers can submit returns only for orders they own. Guests receive
+a neutral response and must explicitly confirm a one-time email link before a
+return is created. Links expire after 15 minutes, are stored as hashes in the
+existing verification table, and are consumed transactionally. Resending replaces
+the old link. Opening a link alone never creates a return. Pending requests retain
+their original submission time when confirmed. Email challenges are limited per
+order and across the shop; no refund or stock change happens automatically.
+
+The public catalogue image endpoint serves only active products and variants
+whose parent product is active. Responses are not cached so unpublishing takes
+effect on the next request. Owners can still preview private images through the
+authenticated admin image endpoint. This cannot revoke copies already downloaded
+or independent external image URLs.
+
+Google Vision scanning has shared, database-backed limits, in addition to the
+per-visitor limits. Defaults are 20 provider attempts/minute, 200/day (UTC), and
+two concurrent scans, including image processing. These optional server-only
+variables can override the defaults:
+
+```dotenv
+CARD_SCAN_MINUTE_LIMIT=20
+CARD_SCAN_DAILY_LIMIT=200
+CARD_SCAN_MAX_CONCURRENT=2
+```
+
+Failed or timed-out provider calls still count towards the budget because they
+may have been billed. Database outages fail closed; busy and limited responses
+include `Retry-After`. These are application request caps, not a guarantee about
+the provider bill; provider-side quotas should also be configured. No new
+database migration is needed for these protections.
+
 ### Yu-Gi-Oh reference catalogue
 
 The owner card library uses Yugipedia for card facts, English set lists, and
@@ -75,6 +117,15 @@ Matched images are exposed through a validated same-origin route and cached at
 the CDN for 30 days. The sync also updates matching existing catalogue products
 and variants. The storefront never receives a Yugipedia source URL, and
 ambiguous set/rarity matches are skipped rather than guessed.
+
+Both public Yugipedia image routes share a 240-download/minute origin budget
+and a 16-download concurrency limit across server instances. Requests from one
+client are limited to 180/minute at the origin. Duplicate downloads are combined
+within an instance and locked across instances; temporary failures return
+`Retry-After` and are never cached. Image bodies are streamed with enforced
+size limits (2 MB for card previews, 12 MB for printing scans), a timeout, an
+exact HTTPS host allowlist, and redirects disabled. Cached CDN hits do not
+consume the origin download budget.
 
 Permanent optimized object storage is optional. To convert matched scans to
 WebP and upload them to the shop's R2 bucket, first obtain permission covering

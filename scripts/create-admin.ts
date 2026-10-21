@@ -1,24 +1,21 @@
 import { hashPassword } from "better-auth/crypto";
 import { and, eq } from "drizzle-orm";
-import { db } from "../src/db";
 import { account, session, user } from "../src/db/schema";
-import { auth } from "../src/lib/auth";
 import { meetsPasswordRequirements } from "../src/lib/password";
+import { parseAdminArguments, promptAdminPassword, readPasswordFromStdin } from "./admin-password";
 
-const [emailArgument, passwordArgument, nameArgument] = process.argv.slice(2);
-const email = emailArgument?.trim().toLowerCase();
-const password = passwordArgument;
-const name = nameArgument?.trim() || "TCGHaven Owner";
-
-if (!email || !email.includes("@")) {
-  throw new Error("Usage: bun run admin:create <email> <password> [name]");
-}
+const { email, name, stdin } = parseAdminArguments(process.argv.slice(2));
+const password = stdin ? await readPasswordFromStdin(process.stdin) : await promptAdminPassword();
 
 if (!password || !meetsPasswordRequirements(password)) {
   throw new Error(
     "The password must contain at least 8 characters and one special character.",
   );
 }
+
+// Do not initialize the database or authentication service until input has
+// been collected and validated. Tests can exercise input without live access.
+const { db } = await import("../src/db");
 
 const [existing] = await db
   .select({ id: user.id, role: user.role })
@@ -66,6 +63,7 @@ if (existing) {
   process.exit(0);
 }
 
+const { auth } = await import("../src/lib/auth");
 const result = await auth.api.signUpEmail({
   body: {
     name,

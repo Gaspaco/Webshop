@@ -97,6 +97,9 @@ export default defineConfig({
       "/checkout": {
         headers: privateAuthHeaders,
       },
+      "/returns": {
+        headers: privateAuthHeaders,
+      },
       "/admin/**": {
         headers: privateAuthHeaders,
       },

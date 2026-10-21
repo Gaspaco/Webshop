@@ -108,6 +108,9 @@ export const getScrydexEnv = () => scrydexSchema.parse(process.env);
 // Optional: card scanning stays off until a Google Cloud Vision key is set.
 const visionSchema = z.object({
   GOOGLE_VISION_API_KEY: z.string().trim().min(20).max(256),
+  CARD_SCAN_MINUTE_LIMIT: z.coerce.number().int().min(1).max(300).default(20),
+  CARD_SCAN_DAILY_LIMIT: z.coerce.number().int().min(1).max(10_000).default(200),
+  CARD_SCAN_MAX_CONCURRENT: z.coerce.number().int().min(1).max(8).default(2),
 });
 export const getVisionEnv = () => {
   const parsed = visionSchema.safeParse(process.env);
