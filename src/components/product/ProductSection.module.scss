@@ -150,6 +150,11 @@
   background: linear-gradient(155deg, #062a1d 0%, #0c0f0d 75%);
 }
 
+.accessories {
+  background: rgba($primary, 0.08);
+  color: $primary-light;
+}
+
 .yugioh {
   background:
     radial-gradient(ellipse 90% 70% at 100% 0%, rgba(#7c3aed, 0.4) 0%, transparent 65%),

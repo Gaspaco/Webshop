@@ -1728,6 +1728,7 @@ $gutter: 0.75rem;
 }
 
 .introActions > a,
+.introActions > button:not(.primaryAction),
 .sectionIntro > a {
   @include btn-secondary;
 }

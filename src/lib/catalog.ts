@@ -1,10 +1,13 @@
 import type { ShopProduct } from "~/lib/categories";
+import { accessoryBrand, accessoryCategory, accessoryCategoryName } from "./accessories";
 
 export type DatabaseCatalogProduct = {
   id: string;
   slug: string;
   name: string;
   description: string | null;
+  brand?: string | null;
+  categorySlug?: string | null;
   game: string | null;
   productType: string | null;
   imageUrls: string[];
@@ -55,6 +58,7 @@ export function databaseProductToShopProduct(
       ? product.productType
       : undefined;
   const metadata = product.metadata ?? {};
+  const accessoryKind = accessoryCategory(product.categorySlug?.startsWith("accessories-") ? product.categorySlug : metadata.accessoryCategory);
   const availableStock = Math.max(product.stock - product.reservedStock, 0);
 
   return {
@@ -64,15 +68,18 @@ export function databaseProductToShopProduct(
     // A one-variant product may only have a variant photo. Use it as the card
     // cover instead of showing a placeholder until a second variant exists.
     image: product.variantImageUrl ?? product.imageUrls[0] ?? undefined,
-    theme: game,
+    theme: productType === "accessory" ? "accessories" : game,
     priceCents: product.priceCents,
     compareAtPriceCents: product.compareAtPriceCents ?? undefined,
     rating:
       typeof metadata.rating === "number" ? metadata.rating : undefined,
     href: `/products/${product.slug}`,
     badge: typeof metadata.badge === "string" ? metadata.badge : undefined,
-    game: product.game ?? "other",
-    gameName: gameNames[product.game ?? "other"] ?? "Other",
+    game: productType === "accessory" ? "accessories" : product.game ?? "other",
+    gameName: productType === "accessory" ? "Accessories" : gameNames[product.game ?? "other"] ?? "Other",
+    brand: product.brand ? accessoryBrand(product.brand) : undefined,
+    accessoryCategory: productType === "accessory" ? accessoryKind : undefined,
+    accessoryCategoryName: productType === "accessory" ? accessoryCategoryName(accessoryKind) : undefined,
     description: product.description ?? undefined,
     productType,
     condition: product.condition ?? undefined,

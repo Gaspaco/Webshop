@@ -2,6 +2,7 @@ import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "~/db";
 import { orders, payments, refundRequests, returnRequests } from "~/db/schema";
 import { getMollieClient } from "~/lib/mollie.server";
+import { refundOrderCredit } from "~/lib/wallet.server";
 import { acquireOperationLease, releaseOperationLease } from "~/lib/operation-lease.server";
 import { canReplayProviderRequest, mollieCredentialHash, providerDefinitivelyRejected } from "~/lib/provider-recovery.server";
 
@@ -121,6 +122,7 @@ async function recordRefund(requestId: string, refund: ProviderRefund) {
     if (Number(totals?.total ?? 0) >= payment.amountCents) {
       await tx.update(payments).set({ status: "refunded" }).where(eq(payments.id, payment.id));
       await tx.update(orders).set({ status: "refunded" }).where(eq(orders.id, request.orderId));
+      await refundOrderCredit(tx, request.orderId, request.requestedBy ?? undefined);
     }
   });
 }

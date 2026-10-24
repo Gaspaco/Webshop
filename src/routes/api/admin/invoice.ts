@@ -28,6 +28,9 @@ export async function GET(event: APIEvent) {
     .where(eq(orderItems.orderId, order.id));
   const address = order.shippingAddress;
   const profile = await getStoreProfile();
+  const creditSummary = order.creditAppliedCents > 0
+    ? `<p><span>Store credit</span><strong>${money(order.creditAppliedCents)}</strong></p><p><span>Mollie payment</span><strong>${money(order.totalCents - order.creditAppliedCents)}</strong></p>`
+    : "";
 
   const html = `<!doctype html>
 <html><head><meta charset="utf-8"><title>Invoice ${escape(order.orderNumber)}</title>
@@ -35,7 +38,7 @@ export async function GET(event: APIEvent) {
 </head><body><header><div><h1>${escape(profile.companyName)}</h1><p class="muted">KVK ${escape(profile.kvkNumber)} · VAT ${escape(profile.vatId)}<br>${escape(profile.businessAddress || "Business address pending")}<br>${escape(profile.businessEmail)} · ${escape(profile.phone)}<br><br>Invoice ${escape(order.orderNumber)}</p></div><div><strong>${escape(order.email)}</strong><p>${escape(address.firstName)} ${escape(address.lastName)}<br>${escape(address.streetAndHouseNumber)}<br>${escape(address.postalCode)} ${escape(address.city)}<br>${escape(address.country)}</p></div></header>
 <table><thead><tr><th>Item</th><th>SKU</th><th>Qty</th><th>Total</th></tr></thead><tbody>${items.map(item => `<tr><td>${escape(item.name)}</td><td>${escape(item.sku)}</td><td>${item.quantity}</td><td>${money(item.totalCents)}</td></tr>`).join("")}</tbody></table>
 <div class="totals"><p><span>Subtotal</span><strong>${money(order.subtotalCents)}</strong></p><p><span>Shipping</span><strong>${money(order.shippingCents)}</strong></p><p><span>Method</span><strong>${escape(order.shippingMethod.replaceAll("_", " "))}</strong></p>${order.discountCents ? `<p><span>Discount ${escape(order.discountCode)}</span><strong>${money(-order.discountCents)}</strong></p>` : ""}<p class="total"><span>Total</span><strong>${money(order.totalCents)}</strong></p></div>
-<p class="muted">Created ${escape(order.createdAt.toLocaleDateString("en-NL"))}. Status: ${escape(order.status)}.</p><button onclick="window.print()">Print or save as PDF</button></body></html>`;
+${creditSummary ? `<div class="totals">${creditSummary}</div>` : ""}<p class="muted">Created ${escape(order.createdAt.toLocaleDateString("en-NL"))}. Status: ${escape(order.status)}.</p><button onclick="window.print()">Print or save as PDF</button></body></html>`;
 
   return new Response(html, {
     headers: {

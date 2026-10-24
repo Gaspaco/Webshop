@@ -55,6 +55,8 @@ export async function searchCatalog(input: SearchInput): Promise<SearchResult[]>
     const prefix = `${likeEscape(input.text)}%`;
     conditions.push(sql`(
       p.name ilike ${contains}
+      or p.brand ilike ${contains}
+      or (p.product_type = 'accessory' and p.metadata->>'accessoryCategory' ilike ${contains})
       or p.metadata->>'set' ilike ${contains}
       or p.metadata->>'setCode' ilike ${contains}
       or p.metadata->>'cardNumber' ilike ${contains}

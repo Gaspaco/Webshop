@@ -15,6 +15,13 @@ import {
 } from "solid-js";
 import RemoteCardLibrary from "~/components/admin/RemoteCardLibrary";
 import CardmarketPriceImport from "~/components/admin/CardmarketPriceImport";
+import InventoryExport from "~/components/admin/InventoryExport";
+import AccessoryFields from "~/components/admin/AccessoryFields";
+import ProductShippingFields from "~/components/admin/ProductShippingFields";
+import ShippingSettingsFields from "~/components/admin/ShippingSettingsFields";
+import StoreCredit from "~/components/account/StoreCredit";
+import { DEFAULT_SHIPPING_SETTINGS, productShipping, type ProductShipping, type Shipment, type ShippingSettings } from "~/lib/product-shipping";
+import { ACCESSORY_BRANDS, accessoryCategory, type AccessoryCategory } from "~/lib/accessories";
 import { authClient } from "~/lib/auth-client";
 import { csvCell } from "~/lib/csv";
 import { INTERNATIONAL_POSTNL_DESTINATIONS } from "~/lib/shipping";
@@ -64,6 +71,7 @@ type AdminProduct = {
   slug: string;
   description: string | null;
   brand: string | null;
+  categorySlug?: string | null;
   game: string | null;
   productType: string | null;
   status: "draft" | "active" | "archived";
@@ -91,6 +99,9 @@ type AdminOrderItem = {
 };
 
 type AdminOrder = {
+  shipment?: Shipment | null;
+  creditAppliedCents?: number;
+  creditState?: string;
   id: string;
   orderNumber: string;
   email: string;
@@ -328,6 +339,8 @@ type ProductDraft = {
     | "cyberpunk"
     | "other";
   productType: "single" | "sealed" | "graded" | "accessory";
+  accessoryCategory: AccessoryCategory;
+  shipping: ProductShipping;
   set: string;
   sku: string;
   variantName: string;
@@ -379,6 +392,8 @@ const emptyProduct: ProductDraft = {
   brand: "",
   game: "pokemon",
   productType: "single",
+  accessoryCategory: "other-accessories",
+  shipping: productShipping({}),
   set: "",
   sku: "",
   variantName: "Default",
@@ -631,6 +646,7 @@ function matchesCatalogueFilters(
     product.slug,
     product.brand,
     product.game,
+    typeof product.metadata.accessoryCategory === "string" ? product.metadata.accessoryCategory.replaceAll("-", " ") : "",
     typeof product.metadata.set === "string" ? product.metadata.set : "",
     ...product.variants.flatMap(variant => [
       variant.name,
@@ -859,6 +875,7 @@ function parseCsv(text: string): Omit<CsvPreview, "fileName"> {
 }
 
 function ProductRow(props: {
+  shippingSettings?: ShippingSettings;
   product: AdminProduct;
   onSaved: () => unknown;
   selectable?: boolean;
@@ -881,6 +898,8 @@ function ProductRow(props: {
   const [productType, setProductType] = createSignal(
     (props.product.productType ?? "single") as ProductDraft["productType"],
   );
+  const [accessoryKind, setAccessoryKind] = createSignal(accessoryCategory(props.product.categorySlug?.startsWith("accessories-") ? props.product.categorySlug : metadata().accessoryCategory));
+  const [shippingData, setShippingData] = createSignal(productShipping(metadata().shipping));
   const [collection, setCollection] = createSignal(
     typeof metadata().set === "string" ? metadata().set as string : "",
   );
@@ -991,7 +1010,9 @@ function ProductRow(props: {
         slug: slug(),
         brand: brand(),
         description: description(),
-        game: game(),
+        game: productType() === "accessory" ? undefined : game(),
+        accessoryCategory: productType() === "accessory" ? accessoryKind() : undefined,
+        shipping: shippingData(),
         productType: productType(),
         set: collection(),
         badge: badge(),
@@ -1251,7 +1272,7 @@ function ProductRow(props: {
             </div>
           </div>
         </td>
-        <td><span class={styles.gameTag}>{game()}</span></td>
+        <td><span class={styles.gameTag}>{productType() === "accessory" ? brand() || "Accessories" : game()}</span></td>
         <td>
           <input
             class={styles.tableInput}
@@ -1354,6 +1375,7 @@ function ProductRow(props: {
                   <input required placeholder="umbreon-vmax" value={slug()} onInput={event => setSlug(event.currentTarget.value)} />
                   <small>/products/{slug() || "product-name"}</small>
                 </label>
+                <Show when={productType() !== "accessory"}>
                 <label>
                   <span>Brand or manufacturer</span>
                   <input placeholder="The Pokémon Company" value={brand()} onInput={event => setBrand(event.currentTarget.value)} />
@@ -1371,12 +1393,14 @@ function ProductRow(props: {
                     <option value="other">Other</option>
                   </select>
                 </label>
+                </Show>
                 <label>
                   <span>Product type</span>
                   <select value={productType()} onChange={event => {
                     const nextType = event.currentTarget.value as ProductDraft["productType"];
                     setProductType(nextType);
                     if (nextType === "sealed") setCondition("Sealed");
+                    if (nextType === "accessory") setCondition("New");
                   }}>
                     <option value="single">Single</option>
                     <option value="sealed">Sealed</option>
@@ -1384,6 +1408,10 @@ function ProductRow(props: {
                     <option value="accessory">Accessory</option>
                   </select>
                 </label>
+                <Show when={productType() === "accessory"}>
+                  <AccessoryFields category={accessoryKind()} brand={brand()} onCategory={setAccessoryKind} onBrand={setBrand} />
+                </Show>
+                <Show when={productType() !== "accessory"}>
                 <label>
                   <span>Set or collection</span>
                   <input value={collection()} onInput={event => setCollection(event.currentTarget.value)} />
@@ -1393,6 +1421,7 @@ function ProductRow(props: {
                   <input placeholder="MEW, BLCR, MH3" value={setCode()} onInput={event => setSetCode(event.currentTarget.value.toUpperCase())} />
                   <small>The official code printed on products from this set.</small>
                 </label>
+                </Show>
                 <label>
                   <span>Visibility</span>
                   <select value={status()} onChange={event => setStatus(event.currentTarget.value as AdminProduct["status"])}>
@@ -1463,6 +1492,7 @@ function ProductRow(props: {
                   <span>Condition</span>
                   <input value={productType() === "sealed" ? "Sealed" : condition()} disabled={productType() === "sealed"} onInput={event => setCondition(event.currentTarget.value)} />
                 </label>
+                <Show when={productType() !== "accessory"}>
                 <label>
                   <span>Language</span>
                   <LanguageSelect value={language()} onChange={setLanguage} required />
@@ -1503,6 +1533,8 @@ function ProductRow(props: {
                   <span>Certification number</span>
                   <input value={certificationNumber()} onInput={event => setCertificationNumber(event.currentTarget.value)} />
                 </label>
+                </Show>
+                <ProductShippingFields value={shippingData()} settings={props.shippingSettings ?? DEFAULT_SHIPPING_SETTINGS} onChange={setShippingData} />
                 <label>
                   <span>Ships from</span>
                   <input placeholder="NL" value={shipsFrom()} onInput={event => setShipsFrom(event.currentTarget.value)} />
@@ -1903,13 +1935,14 @@ function OrderRow(props: {
     props.order.trackingUrl ?? "",
   );
   const [postnlWeight, setPostnlWeight] = createSignal(
-    props.order.shippingMethod === "postnl_letterbox" ? "500" : "1000",
+    String(props.order.shipment?.weightGrams ?? (props.order.shippingMethod === "postnl_letterbox" ? 500 : 1000)),
   );
+  const [postnlDimensions, setPostnlDimensions] = createSignal({ lengthCm: props.order.shipment?.lengthCm ?? null, widthCm: props.order.shipment?.widthCm ?? null, heightCm: props.order.shipment?.heightCm ?? null });
   const [postnlProductCode, setPostnlProductCode] = createSignal(
     props.order.shippingMethod === "postnl_letterbox" ? "2928" : "3085",
   );
   const [refundAmount, setRefundAmount] = createSignal(
-    (props.order.totalCents / 100).toFixed(2),
+    ((props.order.totalCents - (props.order.creditAppliedCents ?? 0)) / 100).toFixed(2),
   );
   const [refundStatuses, setRefundStatuses] = createSignal<Array<{ id: string; status: string; amountCents: number }>>([]);
   const [reason, setReason] = createSignal("");
@@ -1965,6 +1998,7 @@ function OrderRow(props: {
           id: string;
         }
       | { action: "recover_payment" | "retry_order_emails"; id: string }
+      | { action: "refund_credit"; id: string; confirmation: "REFUND_CREDIT" }
       | { action: "resolve_missing_payment"; id: string; confirmation: "CHECKED_MOLLIE_NO_PAYMENT" }
       | { action: "retry_refund"; id: string; requestId: string }
       | {
@@ -2013,6 +2047,7 @@ function OrderRow(props: {
         : payload.action === "resolve_missing_payment" ? "Missing payment resolved after Mollie review. Order cancelled and stock released."
         : payload.action === "retry_order_emails" ? result.emails?.map(email => `${email.audience}: ${email.status}`).join(" • ") || "No queued confirmation emails. Already-sent emails are not resent."
         : payload.action === "resolve_missing_refund" ? "Missing refund resolved after your Mollie review. Refresh refund status before issuing a replacement."
+        : payload.action === "refund_credit" ? "Store credit refund confirmed; no cash payment was created."
         : payload.action === "refund" || payload.action === "retry_refund"
           ? result.refundStatus === "refunded" ? "Mollie refund confirmed" : "Refund requested. Use Check refund status to confirm completion."
           : payload.action === "sync_refunds" ? result.refunds?.length
@@ -2063,6 +2098,7 @@ function OrderRow(props: {
           action: "postnl_label",
           id: props.order.id,
           weightGrams,
+          ...(Object.values(postnlDimensions()).every(value => value !== null) ? postnlDimensions() : {}),
           productCode: postnlProductCode(),
         }),
       });
@@ -2179,7 +2215,11 @@ function OrderRow(props: {
                       <div><dt>Discount {props.order.discountCode}</dt><dd>{formatMoney(0 - props.order.discountCents)}</dd></div>
                     </Show>
                     <div><dt>Total</dt><dd>{formatMoney(props.order.totalCents)}</dd></div>
-                    <div><dt>Payment</dt><dd>{props.order.payment?.status ?? "No payment"}</dd></div>
+                    <Show when={props.order.creditAppliedCents}>
+                      <div><dt>Store credit</dt><dd>{formatMoney(props.order.creditAppliedCents!)}</dd></div>
+                      <div><dt>Mollie amount</dt><dd>{formatMoney(props.order.totalCents - props.order.creditAppliedCents!)}</dd></div>
+                    </Show>
+                    <div><dt>Payment</dt><dd>{props.order.payment?.status ?? (props.order.creditState === "spent" ? "Paid with store credit" : props.order.creditState === "refunded" ? "Store credit refunded" : "No Mollie payment")}</dd></div>
                   </dl>
                   <A href={`/api/admin/invoice?id=${props.order.id}`} target="_blank">
                     Open printable invoice
@@ -2242,6 +2282,7 @@ function OrderRow(props: {
                   <div class={styles.postnlLabelTools}>
                     <strong>PostNL label</strong>
                     <p>Create the barcode and printable PDF after payment is confirmed.</p>
+                    <Show when={props.order.shipment}><p>{props.order.shipment!.estimated ? "Contains estimated measurements. " : "Calculated from product measurements. "}Check the packed parcel before buying the label.</p></Show>
                     <label>
                       <span>Parcel type</span>
                       <select
@@ -2263,6 +2304,10 @@ function OrderRow(props: {
                         onInput={event => setPostnlWeight(event.currentTarget.value)}
                       />
                     </label>
+                    <For each={["lengthCm", "widthCm", "heightCm"] as const}>{key => <label>
+                      <span>{key === "lengthCm" ? "Length (cm)" : key === "widthCm" ? "Width (cm)" : "Height (cm)"}</span>
+                      <input type="number" min="0.01" max="300" step="0.01" value={postnlDimensions()[key] ?? ""} onInput={event => setPostnlDimensions(current => ({ ...current, [key]: event.currentTarget.value === "" ? null : Number(event.currentTarget.value) }))} />
+                    </label>}</For>
                     <button
                       type="button"
                       class={styles.postnlAction}
@@ -2319,6 +2364,7 @@ function OrderRow(props: {
                   });
                 }}>
                   <h3>Return and refund</h3>
+                  <Show when={(props.order.creditAppliedCents ?? 0) > 0}><p>Store credit: {formatMoney(props.order.creditAppliedCents!)}. Mollie payment: {formatMoney(props.order.totalCents - props.order.creditAppliedCents!)}. For mixed payments, the credit is returned automatically when the entire Mollie payment has been refunded.</p></Show>
                   <Show when={props.order.status === "pending"}>
                     <button type="button" disabled={busy()} onClick={() => void runAction({ action: "recover_payment", id: props.order.id })}>Recover / check payment</button>
                     <button type="button" disabled={busy()} onClick={() => {
@@ -2332,16 +2378,22 @@ function OrderRow(props: {
                     <span>Reason</span>
                     <textarea required rows="3" value={reason()} onInput={event => setReason(event.currentTarget.value)} />
                   </label>
-                  <label>
+                  <Show when={props.order.totalCents > (props.order.creditAppliedCents ?? 0)}><label>
                     <span>Refund amount in EUR</span>
                     <input type="number" min="0.01" step="0.01" value={refundAmount()} onInput={event => setRefundAmount(event.currentTarget.value)} />
-                  </label>
+                  </label></Show>
                   <div>
                     <button type="submit" disabled={busy()}>Record return</button>
+                    <Show when={props.order.totalCents > 0 && props.order.creditAppliedCents === props.order.totalCents} fallback={<Show when={props.order.totalCents > (props.order.creditAppliedCents ?? 0)} fallback={<p>No cash or store credit was charged for this order.</p>}>
                     <button type="button" class={styles.dangerAction} disabled={busy()} onClick={refund}>
                       Refund through Mollie
                     </button>
                     <button type="button" disabled={busy()} onClick={() => void runAction({ action: "sync_refunds", id: props.order.id })}>Check refund status</button>
+                    </Show>}>
+                      <button type="button" class={styles.dangerAction} disabled={busy() || props.order.creditState === "refunded"} onClick={() => {
+                        if (window.confirm(`Return ${formatMoney(props.order.creditAppliedCents!)} to this customer’s store credit? Stock is not automatically restocked.`)) void runAction({ action: "refund_credit", id: props.order.id, confirmation: "REFUND_CREDIT" });
+                      }}>{props.order.creditState === "refunded" ? "Credit already refunded" : "Refund to store credit"}</button>
+                    </Show>
                   </div>
                   <For each={refundStatuses()}>{refund => <div>
                     <p>{formatMoney(refund.amountCents)} · {refund.status}</p>
@@ -2518,6 +2570,7 @@ function CustomerRow(props: {
                   <textarea rows="4" value={notes()} onInput={event => setNotes(event.currentTarget.value)} />
                 </label>
               </div>
+              <StoreCredit userId={props.customer.id} />
               <div class={styles.dangerControls}>
                 <button type="button" onClick={saveControls} disabled={saving()}>
                   {saving() ? "Saving controls" : "Save customer controls"}
@@ -3248,6 +3301,7 @@ function StoreSetupManager(props: {
           </div>
         </section>
 
+        <ShippingSettingsFields value={profile().shippingSettings} onChange={value => patch("shippingSettings", value)} />
         <div class={styles.storeSetupActions}>
           <Show when={message()}><p role="status">{message()}</p></Show>
           <button type="submit" class={styles.primaryAction} disabled={busy()}>
@@ -3267,8 +3321,10 @@ export default function Admin() {
     loadDashboard,
   );
   const [composerOpen, setComposerOpen] = createSignal(false);
+  const [exportOpen, setExportOpen] = createSignal(false);
   const [catalogSearch, setCatalogSearch] = createSignal("");
   const [catalogGame, setCatalogGame] = createSignal("all");
+  const [catalogBrand, setCatalogBrand] = createSignal("");
   const [catalogType, setCatalogType] = createSignal("all");
   const [catalogStatus, setCatalogStatus] = createSignal("all");
   const [catalogPage, setCatalogPage] = createSignal(1);
@@ -3328,11 +3384,12 @@ export default function Admin() {
       matchesCatalogueFilters(
         product,
         catalogSearch(),
-        catalogGame(),
+        catalogType() === "accessory" ? "all" : catalogGame(),
         catalogType(),
         catalogStatus(),
       ),
-    );
+    ).filter(product => catalogType() !== "accessory" || !catalogBrand() || product.brand?.toLowerCase() === catalogBrand().toLowerCase());
+  const catalogBrands = () => [...new Set([...ACCESSORY_BRANDS, ...(dashboard()?.products ?? []).filter(product => product.productType === "accessory").map(product => product.brand).filter((brand): brand is string => !!brand)])].sort();
   const catalogPageCount = () =>
     Math.max(1, Math.ceil(filteredProducts().length / catalogPageSize()));
   const currentCatalogPage = () =>
@@ -3651,6 +3708,8 @@ export default function Admin() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...current,
+        game: current.productType === "accessory" ? undefined : current.game,
+        accessoryCategory: current.productType === "accessory" ? current.accessoryCategory : undefined,
         priceCents: eurosToCents(current.price),
         compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
         stock: Number(current.stock),
@@ -4538,7 +4597,12 @@ export default function Admin() {
                       <p>Live listings appear in the customer shop. Drafts remain private.</p>
                     </div>
                     <div class={styles.introActions}>
-                      <A href="/api/admin/export?type=inventory" target="_blank">Export inventory CSV</A>
+                      <button type="button" onClick={() => { setDraft(current => ({ ...current, productType: "accessory" })); setComposerOpen(true); }}>
+                        Add accessory
+                      </button>
+                      <button type="button" aria-expanded={exportOpen()} aria-controls="inventory-export-options" onClick={() => setExportOpen(value => !value)}>
+                        {exportOpen() ? "Close export options" : "Export inventory CSV"}
+                      </button>
                       <button
                         type="button"
                         class={styles.primaryAction}
@@ -4550,11 +4614,15 @@ export default function Admin() {
                     </div>
                   </section>
 
+                  <Show when={exportOpen()}>
+                    <div id="inventory-export-options"><InventoryExport /></div>
+                  </Show>
+
                   <Show when={composerOpen()}>
                     <form class={styles.productForm} onSubmit={createProduct}>
                       <div class={styles.formLead}>
-                        <h3>New product listing</h3>
-                        <p>Add a single, sealed item, graded card, or accessory.</p>
+                        <h3>{draft().productType === "accessory" ? "New accessory" : "New product listing"}</h3>
+                        <p>{draft().productType === "accessory" ? "Choose a category and brand, then add photos, price, and stock." : "Add a single, sealed item, graded card, or accessory."}</p>
                       </div>
                       <div class={styles.formGrid}>
                         <label class={styles.spanTwo}>
@@ -4565,6 +4633,7 @@ export default function Admin() {
                           <span>URL slug</span>
                           <input placeholder="Created from the name if empty" value={draft().slug} onInput={event => patchDraft("slug", event.currentTarget.value)} />
                         </label>
+                        <Show when={draft().productType !== "accessory"}>
                         <label>
                           <span>Brand or manufacturer</span>
                           <input placeholder="The Pokémon Company" value={draft().brand} onInput={event => patchDraft("brand", event.currentTarget.value)} />
@@ -4582,6 +4651,7 @@ export default function Admin() {
                             <option value="other">Other</option>
                           </select>
                         </label>
+                        </Show>
                         <label>
                           <span>Product type</span>
                           <select value={draft().productType} onChange={event => {
@@ -4601,6 +4671,10 @@ export default function Admin() {
                             <option value="accessory">Accessory</option>
                           </select>
                         </label>
+                        <Show when={draft().productType === "accessory"}>
+                          <AccessoryFields category={draft().accessoryCategory} brand={draft().brand} onCategory={value => patchDraft("accessoryCategory", value)} onBrand={value => patchDraft("brand", value)} />
+                        </Show>
+                        <Show when={draft().productType !== "accessory"}>
                         <label>
                           <span>Set or collection</span>
                           <input value={draft().set} onInput={event => patchDraft("set", event.currentTarget.value)} />
@@ -4609,6 +4683,7 @@ export default function Admin() {
                           <span>Set code</span>
                           <input placeholder="MEW, BLCR, MH3" value={draft().setCode} onInput={event => patchDraft("setCode", event.currentTarget.value.toUpperCase())} />
                         </label>
+                        </Show>
                         <label>
                           <span>SKU</span>
                           <input placeholder="Created automatically if empty" value={draft().sku} onInput={event => patchDraft("sku", event.currentTarget.value)} />
@@ -4641,6 +4716,7 @@ export default function Admin() {
                           <span>Badge</span>
                           <input placeholder="New, Vintage, PSA 10" value={draft().badge} onInput={event => patchDraft("badge", event.currentTarget.value)} />
                         </label>
+                        <Show when={draft().productType !== "accessory"}>
                         <label>
                           <span>Card number</span>
                           <input placeholder="025/165" value={draft().cardNumber} onInput={event => patchDraft("cardNumber", event.currentTarget.value)} />
@@ -4669,6 +4745,8 @@ export default function Admin() {
                           <span>Certification number</span>
                           <input value={draft().certificationNumber} onInput={event => patchDraft("certificationNumber", event.currentTarget.value)} />
                         </label>
+                        </Show>
+                        <ProductShippingFields value={draft().shipping} settings={data().content.business?.shippingSettings ?? DEFAULT_SHIPPING_SETTINGS} onChange={value => patchDraft("shipping", value)} />
                         <label>
                           <span>Ships from</span>
                           <input placeholder="NL" value={draft().shipsFrom} onInput={event => patchDraft("shipsFrom", event.currentTarget.value)} />
@@ -4762,6 +4840,15 @@ export default function Admin() {
                         }}
                       />
                     </label>
+                    <Show when={catalogType() !== "accessory"} fallback={
+                      <label>
+                        <span>Brand</span>
+                        <select value={catalogBrand()} onChange={event => { setCatalogBrand(event.currentTarget.value); setCatalogPage(1); clearSelection(); }}>
+                          <option value="">All brands</option>
+                          <For each={catalogBrands()}>{brand => <option value={brand}>{brand}</option>}</For>
+                        </select>
+                      </label>
+                    }>
                     <label>
                       <span>Game</span>
                       <select value={catalogGame()} onChange={event => {
@@ -4780,6 +4867,7 @@ export default function Admin() {
                         <option value="other">Other</option>
                       </select>
                     </label>
+                    </Show>
                     <label>
                       <span>Product type</span>
                       <select value={catalogType()} onChange={event => {
@@ -4988,7 +5076,7 @@ export default function Admin() {
                       <thead>
                         <tr>
                           <th>Product</th>
-                          <th>Game</th>
+                          <th>Game / brand</th>
                           <th>Price EUR</th>
                           <th>Stock</th>
                           <th>Visibility</th>
@@ -5000,6 +5088,7 @@ export default function Admin() {
                           {row => (
                             <ProductRow
                               product={row.original}
+                              shippingSettings={data().content.business?.shippingSettings ?? DEFAULT_SHIPPING_SETTINGS}
                               onSaved={refetch}
                               selectable={isManaged(row.original)}
                               isSelected={() =>

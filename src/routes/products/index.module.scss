@@ -316,12 +316,12 @@
   }
 }
 
-// Format: a three-way segmented pill.
+// Two rows keep all four formats readable in the narrow filter rail.
 .segmented {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   padding: 0.25rem;
-  border-radius: $radius-full;
+  border-radius: $radius-inner;
   background: rgba($white, 0.05);
 
   button {
@@ -342,6 +342,27 @@
       outline-offset: 1px;
     }
   }
+}
+
+.accessoryFilter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  color: $gray-300;
+  font-size: 0.875rem;
+
+  select {
+    min-width: 0;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid $gray-700;
+    border-radius: $radius-md;
+    background: $surface;
+    color: $white;
+    font: inherit;
+  }
+
+  select:focus-visible { outline: 2px solid $primary; outline-offset: 2px; }
 }
 
 .segmentActive {

@@ -1,4 +1,5 @@
 import { and, asc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { createHash } from "node:crypto";
 import type { Payment, PaymentCreateParams } from "@mollie/api-client";
 import { z } from "zod";
 import { db } from "~/db";
@@ -23,7 +24,6 @@ import {
 import { getMollieClient } from "~/lib/mollie.server";
 import {
   findShippingDestination,
-  getInternationalPostnlPrice,
   isShippingMethodAllowed,
 } from "~/lib/shipping";
 import { getStoreProfile } from "~/lib/store-profile.server";
@@ -32,6 +32,8 @@ import { nextFulfilmentStatus } from "~/lib/payment-state";
 import { logServerError } from "~/lib/server-log";
 import { syncPaymentRefunds } from "~/lib/refunds.server";
 import { acquireOperationLease, releaseOperationLease } from "~/lib/operation-lease.server";
+import { calculateShipment, shipmentQuotes } from "~/lib/product-shipping";
+import { lockWallet, releaseOrderCredit, reserveOrderCredit, WalletError } from "~/lib/wallet.server";
 import { canReplayProviderRequest, mollieCredentialHash, openPaymentParameters, providerDefinitivelyRejected, sealPaymentParameters } from "~/lib/provider-recovery.server";
 
 const shippingMethodSchema = z.enum([
@@ -66,6 +68,8 @@ const checkoutInputSchema = z.object({
   shippingMethod: shippingMethodSchema,
   paymentMethod: paymentMethodSchema,
   discountCode: z.string().trim().max(32).optional().default(""),
+  useStoreCredit: z.boolean().optional().default(false),
+  creditRequestId: z.string().uuid().optional(),
 });
 
 type CheckoutInput = z.infer<typeof checkoutInputSchema>;
@@ -128,7 +132,7 @@ async function sendPaidOrderEmail(orderId: string, audience: string) {
   const itemText = items
     .map(item => `${item.quantity} × ${item.name}: ${formatEuros(item.totalCents)}`)
     .join("\n");
-  const summaryText = `Subtotal: ${formatEuros(order.subtotalCents)}\nShipping: ${formatEuros(order.shippingCents)}\nDiscount: ${formatEuros(order.discountCents)}\nTotal: ${formatEuros(order.totalCents)}`;
+  const summaryText = `Subtotal: ${formatEuros(order.subtotalCents)}\nShipping: ${formatEuros(order.shippingCents)}\nDiscount: ${formatEuros(order.discountCents)}\nTotal: ${formatEuros(order.totalCents)}${order.creditAppliedCents ? `\nStore credit: ${formatEuros(order.creditAppliedCents)}\nMollie payment: ${formatEuros(order.totalCents - order.creditAppliedCents)}` : ""}`;
   const customerName = [address.firstName, address.lastName].filter(Boolean).join(" ");
   const isPickup = order.shippingMethod === "local_pickup";
   const deliveryText = [
@@ -159,6 +163,7 @@ async function sendPaidOrderEmail(orderId: string, audience: string) {
           ? [{ label: "Discount", value: `−${formatEuros(order.discountCents)}`, accent: true }]
           : []),
         { label: "Total paid", value: formatEuros(order.totalCents), total: true },
+        ...(order.creditAppliedCents > 0 ? [{ label: "Paid with store credit", value: formatEuros(order.creditAppliedCents) }, { label: "Paid via Mollie", value: formatEuros(order.totalCents - order.creditAppliedCents) }] : []),
       ],
     ) +
     emailAddress(isPickup ? "Pickup contact details" : "Delivery address", deliveryLines);
@@ -257,6 +262,7 @@ async function releaseOrderReservations(orderId: string) {
 async function releaseOrderReservationsInTransaction(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], orderId: string) {
     const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).limit(1).for("update");
     if (!order || order.status !== "pending") return;
+    await releaseOrderCredit(tx, orderId);
     await releaseDiscountReservation(tx, orderId);
     const reservedItems = await tx
       .select({
@@ -292,7 +298,7 @@ async function releaseDiscountReservation(tx: Parameters<Parameters<typeof db.tr
     .where(eq(discountCodes.code, released.code));
 }
 
-export async function calculateTrustedCheckout(input: unknown) {
+export async function calculateTrustedCheckout(input: unknown, quoteOnly = false) {
   const parsed = checkoutInputSchema.parse(input);
   const destination = findShippingDestination(parsed.customer.country);
   if (!destination) {
@@ -305,14 +311,16 @@ export async function calculateTrustedCheckout(input: unknown) {
             id: products.id,
             slug: products.slug,
             name: products.name,
-            imageUrls: products.imageUrls,
-            variantImageUrl: productVariants.imageUrl,
+            imageUrls: sql<string[]>`case when jsonb_array_length(${products.imageUrls}) > 0 then jsonb_build_array('/api/catalog/image?product=' || ${products.id}::text) else '[]'::jsonb end`,
+            variantImageUrl: sql<string | null>`case when ${productVariants.imageUrl} is not null then '/api/catalog/image?variant=' || ${productVariants.id}::text else null end`,
             variantId: productVariants.id,
             sku: productVariants.sku,
             priceCents: productVariants.priceCents,
             stock: productVariants.stock,
             reservedStock: productVariants.reservedStock,
             status: products.status,
+            productType: products.productType,
+            shipping: sql<unknown>`${products.metadata}->'shipping'`,
           })
           .from(products)
           .innerJoin(productVariants, eq(productVariants.productId, products.id))
@@ -328,7 +336,7 @@ export async function calculateTrustedCheckout(input: unknown) {
 
     if (databaseProduct) {
       if (
-        databaseProduct.status !== "active" ||
+        databaseProduct.status !== "active" || databaseProduct.priceCents <= 0 ||
         databaseProduct.stock - databaseProduct.reservedStock < item.quantity
       ) {
         throw new Error(`Product is not purchasable: ${item.id}`);
@@ -342,6 +350,8 @@ export async function calculateTrustedCheckout(input: unknown) {
         quantity: item.quantity,
         unitPriceCents: databaseProduct.priceCents,
         totalCents: databaseProduct.priceCents * item.quantity,
+        productType: databaseProduct.productType,
+        shipping: databaseProduct.shipping,
       };
     }
 
@@ -379,29 +389,15 @@ export async function calculateTrustedCheckout(input: unknown) {
         : discount.value;
     discountCents = Math.min(discountCents, subtotalCents);
   }
-  const isDutchOrder = destination.code === "NL";
   if (!isShippingMethodAllowed(destination.code, parsed.shippingMethod)) {
     throw new Error("The selected shipping method is not valid for this destination.");
   }
 
-  const selectedShippingCents = parsed.shippingMethod === "local_pickup"
-    ? 0
-    : isDutchOrder
-    ? parsed.shippingMethod === "postnl_letterbox"
-      ? storeProfile.postnlLetterboxCents
-      : storeProfile.postnlParcelCents
-    : getInternationalPostnlPrice(
-        destination.code,
-        storeProfile.internationalPostnlRates,
-      );
-  if (selectedShippingCents === null) {
-    throw new Error("Shipping is not configured for this destination yet.");
-  }
-  const shippingCents =
-    parsed.shippingMethod === "local_pickup" ||
-    subtotalCents >= storeProfile.freeShippingThresholdCents
-      ? 0
-      : selectedShippingCents;
+  const shipment = calculateShipment(lines, storeProfile.shippingSettings);
+  const shippingOptions = shipmentQuotes(shipment, storeProfile, destination.code, subtotalCents);
+  const selectedShipping = shippingOptions.find(option => option.value === parsed.shippingMethod);
+  if (!selectedShipping && !quoteOnly) throw new Error("The selected shipping method does not fit this order’s weight or dimensions. Choose another delivery method.");
+  const shippingCents = selectedShipping?.priceCents ?? 0;
 
   return {
     ...parsed,
@@ -412,12 +408,35 @@ export async function calculateTrustedCheckout(input: unknown) {
     discountSnapshot: discount ? { type: discount.type, value: discount.value } : null,
     discountCents,
     shippingCents,
+    shipment,
+    shippingOptions,
     taxCents: 0,
     totalCents: subtotalCents - discountCents + shippingCents,
   };
 }
 
 export async function createCheckoutPayment(input: unknown, userId?: string) {
+  const parsed = checkoutInputSchema.parse(input);
+  if (!parsed.useStoreCredit) return createPaymentOrder(parsed, userId);
+  if (!userId || !parsed.creditRequestId) throw new WalletError("Sign in and refresh checkout before using store credit.");
+  const key = `credit-checkout:${parsed.creditRequestId}`;
+  const lease = await acquireOperationLease(key, 90_000);
+  if (!lease) throw new WalletError("This checkout is already being processed. Check your orders before trying again.");
+  try {
+    const hash = createHash("sha256").update(JSON.stringify(parsed)).digest("hex");
+    const [existing] = await db.select().from(orders).where(eq(orders.creditRequestId, parsed.creditRequestId)).limit(1);
+    if (existing) {
+      if (existing.userId !== userId || existing.creditRequestHash !== hash) throw new WalletError("This checkout reference was already used for different details. Start a new checkout.");
+      if (["paid", "processing", "shipped", "completed"].includes(existing.status)) return { orderNumber: existing.orderNumber, checkoutUrl: appUrl(`/checkout?order=${existing.orderNumber}`), repeated: true };
+      if (existing.status !== "pending") throw new WalletError("This order was closed. Start a new checkout if you still want to buy these items.", "CHECKOUT_CLOSED");
+      const payment = await recoverCheckoutPayment(existing.id);
+      return { orderNumber: existing.orderNumber, checkoutUrl: payment.getCheckoutUrl(), repeated: true };
+    }
+    return await createPaymentOrder(parsed, userId, hash);
+  } finally { await releaseOperationLease(key, lease); }
+}
+
+async function createPaymentOrder(input: CheckoutInput, userId?: string, creditRequestHash?: string) {
   const checkout = await calculateTrustedCheckout(input);
   const orderNumber = makeOrderNumber();
   const guestToken = makeGuestOrderToken();
@@ -431,6 +450,9 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
   };
 
   const order = await db.transaction(async tx => {
+    const wallet = checkout.useStoreCredit && userId ? await lockWallet(tx, userId) : null;
+    if (checkout.useStoreCredit && !userId) throw new WalletError("Sign in before using store credit.");
+    const creditAppliedCents = wallet ? Math.min(wallet.balanceCents, checkout.totalCents) : 0;
     if (checkout.discountId && checkout.discountSnapshot) {
       const claimed = await tx.update(discountCodes)
         .set({ usedCount: sql`${discountCodes.usedCount} + 1` })
@@ -482,6 +504,11 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
         discountCents: checkout.discountCents,
         shippingMethod: checkout.shippingMethod,
         totalCents: checkout.totalCents,
+        shipment: checkout.shipment,
+        creditAppliedCents,
+        creditState: creditAppliedCents > 0 ? "reserved" : "none",
+        creditRequestId: checkout.useStoreCredit ? checkout.creditRequestId : null,
+        creditRequestHash: creditRequestHash ?? null,
         billingAddress: address,
         shippingAddress: address,
         notes: checkout.customer.notes || null,
@@ -489,16 +516,17 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
       .returning();
 
     if (!createdOrder) throw new Error("Could not create order.");
+    await reserveOrderCredit(tx, createdOrder.id, userId ?? "", creditAppliedCents);
 
     const paymentParameters: PaymentCreateParams = {
-      amount: { currency: "EUR", value: centsToAmount(checkout.totalCents) },
+      amount: { currency: "EUR", value: centsToAmount(checkout.totalCents - creditAppliedCents) },
       description: `TCGHaven order ${createdOrder.orderNumber}`,
       redirectUrl: appUrl(`/checkout?order=${encodeURIComponent(createdOrder.orderNumber)}&access=${guestToken}`),
       webhookUrl: appUrl("/api/payments/mollie-webhook"),
       metadata: { orderId: createdOrder.id, orderNumber: createdOrder.orderNumber, recoveryToken: crypto.randomUUID() },
       idempotencyKey: `checkout-${createdOrder.id}`,
     };
-    await tx.update(orders).set({ paymentCreationState: "creating", paymentCreationStartedAt: new Date(),
+    if (checkout.totalCents > creditAppliedCents) await tx.update(orders).set({ paymentCreationState: "creating", paymentCreationStartedAt: new Date(),
       paymentCredentialHash: mollieCredentialHash(), paymentParametersEncrypted: sealPaymentParameters(paymentParameters) })
       .where(eq(orders.id, createdOrder.id));
 
@@ -514,9 +542,24 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
       })),
     );
 
+    if (checkout.totalCents === creditAppliedCents) {
+      for (const line of checkout.lines) {
+        await tx.update(productVariants).set({ stock: sql`${productVariants.stock} - ${line.quantity}`, reservedStock: sql`${productVariants.reservedStock} - ${line.quantity}` }).where(eq(productVariants.id, line.variantId));
+        await tx.insert(inventoryMovements).values({ variantId: line.variantId, quantity: -line.quantity, reason: "sale", reference: createdOrder.id, note: "Order paid using store credit" });
+      }
+      await tx.update(orders).set({ status: "paid", creditState: creditAppliedCents > 0 ? "spent" : "none" }).where(eq(orders.id, createdOrder.id));
+      await tx.insert(orderEmailJobs).values(["customer", "owner"].map(audience => ({ orderId: createdOrder.id, audience }))).onConflictDoNothing();
+    }
+
     return createdOrder;
   });
 
+  if (order.totalCents === order.creditAppliedCents) {
+    try { await processPaidOrderEmails(order.id); } catch (error) { logServerError("Credit-paid order emails deferred.", error); }
+    return { orderNumber: order.orderNumber,
+    checkoutUrl: appUrl(`/checkout?order=${encodeURIComponent(order.orderNumber)}&access=${guestToken}`),
+    paidWithCredit: true, recalculated: { subtotalCents: checkout.subtotalCents, shippingCents: checkout.shippingCents, discountCents: checkout.discountCents, creditAppliedCents: order.creditAppliedCents, totalCents: 0 } };
+  }
   const molliePayment = await recoverCheckoutPayment(order.id);
 
   return {
@@ -524,13 +567,14 @@ export async function createCheckoutPayment(input: unknown, userId?: string) {
     checkoutUrl: molliePayment.getCheckoutUrl(),
     amount: {
       currency: "EUR",
-      value: centsToAmount(checkout.totalCents),
+      value: centsToAmount(checkout.totalCents - order.creditAppliedCents),
     },
     recalculated: {
       subtotalCents: checkout.subtotalCents,
       shippingCents: checkout.shippingCents,
       discountCents: checkout.discountCents,
-      totalCents: checkout.totalCents,
+      totalCents: checkout.totalCents - order.creditAppliedCents,
+      creditAppliedCents: order.creditAppliedCents,
       lines: checkout.lines,
     },
   };
@@ -544,7 +588,7 @@ async function attachPayment(order: typeof orders.$inferSelect, payment: Provide
   const identity = payment.metadata as { orderId?: string; recoveryToken?: string } | null;
   const expected = parameters.metadata as { recoveryToken: string };
   if (identity?.orderId !== order.id || identity.recoveryToken !== expected.recoveryToken ||
-    payment.amount.currency !== "EUR" || Math.round(Number(payment.amount.value) * 100) !== order.totalCents) {
+    payment.amount.currency !== "EUR" || Math.round(Number(payment.amount.value) * 100) !== order.totalCents - order.creditAppliedCents) {
     throw new Error("Recovered payment identity mismatch.");
   }
   await db.transaction(async tx => {
@@ -552,7 +596,7 @@ async function attachPayment(order: typeof orders.$inferSelect, payment: Provide
     const [existing] = await tx.select().from(payments).where(eq(payments.orderId, order.id)).limit(1);
     if (existing && existing.molliePaymentId !== payment.id) throw new Error("Order already has a different payment.");
     if (!existing) await tx.insert(payments).values({ orderId: order.id, molliePaymentId: payment.id,
-      status: "open", amountCents: order.totalCents, method: payment.method ?? "mollie" });
+      status: "open", amountCents: order.totalCents - order.creditAppliedCents, method: payment.method ?? "mollie" });
     await tx.update(orders).set({ paymentCreationState: "linked" }).where(eq(orders.id, order.id));
   });
 }
@@ -705,7 +749,8 @@ export async function syncMolliePaymentStatus(paymentId: string) {
       );
 
     if (firstPaidTransition || firstReleaseTransition) {
-      if (firstReleaseTransition) await releaseDiscountReservation(tx, storedPayment.orderId);
+      if (firstReleaseTransition) { await releaseOrderCredit(tx, storedPayment.orderId); await releaseDiscountReservation(tx, storedPayment.orderId); }
+      if (firstPaidTransition) await tx.update(orders).set({ creditState: sql`case when ${orders.creditState} = 'reserved' then 'spent' else ${orders.creditState} end` }).where(eq(orders.id, storedPayment.orderId));
       const reservedItems = await tx
         .select({
           variantId: orderItems.variantId,

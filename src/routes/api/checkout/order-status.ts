@@ -58,6 +58,7 @@ export async function GET(event: APIEvent) {
       orderStatus: orders.status,
       paymentStatus: payments.status,
       totalCents: orders.totalCents,
+      creditAppliedCents: orders.creditAppliedCents,
       currency: orders.currency,
       createdAt: orders.createdAt,
     })

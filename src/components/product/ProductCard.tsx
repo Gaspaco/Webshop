@@ -7,6 +7,7 @@ import { flyToCart } from "~/lib/motion";
 import styles from "./ProductSection.module.scss";
 
 export type BoxTheme =
+  | "accessories"
   | "pokemon"
   | "yugioh"
   | "magic"
@@ -47,6 +48,8 @@ export type SectionProduct = {
   preorder?: boolean;
   releaseDate?: string;
   productType?: string;
+  brand?: string;
+  accessoryCategoryName?: string;
   variants?: ProductVariantOption[];
   variantId?: string;
 };
@@ -227,8 +230,8 @@ export default function ProductCard(props: ProductCardProps) {
       <div class={styles.cardBody}>
         <A href={p.href} class={styles.cardInfo}>
           <span class={styles.cardName}>{p.name}</span>
-          <Show when={p.set}>
-            <span class={styles.cardSet}>{p.set}</span>
+          <Show when={p.productType === "accessory" ? p.brand || p.accessoryCategoryName : p.set}>
+            <span class={styles.cardSet}>{p.productType === "accessory" ? [p.brand, p.accessoryCategoryName].filter(Boolean).join(" · ") : p.set}</span>
           </Show>
           <Show when={p.rating}>
             <Stars rating={p.rating!} />

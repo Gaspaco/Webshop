@@ -15,6 +15,7 @@ import {
 } from "~/components/product/ProductCard";
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import type { ShopProduct } from "~/lib/categories";
+import { accessoryShopUrl } from "~/lib/accessories";
 import { formatPrice, useCart } from "~/lib/cart";
 import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
 import { variantRarity } from "~/lib/card-finish";
@@ -24,6 +25,7 @@ import { flyToCart } from "~/lib/motion";
 import styles from "./[id].module.scss";
 
 function isSealedProduct(product: ShopProduct) {
+  if (product.productType === "accessory") return false;
   return product.productType === "sealed" || Boolean(product.priceRangeCents);
 }
 
@@ -45,6 +47,7 @@ function youtubeEmbedUrl(value?: string) {
 
 function describe(product: ShopProduct) {
   if (product.description) return product.description;
+  if (product.productType === "accessory") return `${product.brand ? `${product.brand} ` : ""}${product.accessoryCategoryName ?? "TCG accessory"}, packed carefully and shipped from the Netherlands.`;
   if (isSealedProduct(product)) {
     return `A factory-sealed ${product.gameName} release, stored carefully and shipped tracked from the Netherlands.`;
   }
@@ -53,9 +56,18 @@ function describe(product: ShopProduct) {
 }
 
 function conditionFor(product: ShopProduct) {
+  if (product.productType === "accessory") return product.condition === "Near Mint" ? "New" : product.condition ?? "New";
   if (isSealedProduct(product)) return "Sealed";
   return product.condition ??
     (product.productType === "graded" ? "Professionally graded" : "Near Mint");
+}
+
+function browseProductUrl(product: ShopProduct) {
+  return product.productType === "accessory" ? accessoryShopUrl(product.accessoryCategory) : `/categories/${product.game}/products`;
+}
+
+function productGroupUrl(product: ShopProduct) {
+  return product.productType === "accessory" ? accessoryShopUrl(product.accessoryCategory, product.brand) : `/categories/${product.game}`;
 }
 
 const SERVICE_NOTES = [
@@ -382,7 +394,7 @@ export default function ProductDetail() {
       image: current.image ? [current.image] : undefined,
       sku: current.sku,
       category: current.gameName,
-      brand: { "@type": "Brand", name: "TCGHaven" },
+      brand: { "@type": "Brand", name: current.brand || "TCGHaven" },
       offers: variants.map(variant => ({
         "@type": "Offer",
         sku: variant.sku,
@@ -507,7 +519,7 @@ export default function ProductDetail() {
           <div class={styles.wide}>
             <nav class={styles.breadcrumb} aria-label="Breadcrumb">
               <A
-                href={`/categories/${item().game}/products`}
+                href={browseProductUrl(item())}
                 class={styles.crumbBack}
                 aria-label={`Back to ${item().gameName}`}
               >
@@ -518,8 +530,8 @@ export default function ProductDetail() {
               <ol>
                 <li><A href="/products">Shop</A></li>
                 <li>
-                  <A href={`/categories/${item().game}`} class={styles.crumbGame} data-game={item().game}>
-                    {item().gameName}
+                  <A href={browseProductUrl(item())} class={styles.crumbGame} data-game={item().game}>
+                    {item().accessoryCategoryName ?? item().gameName}
                   </A>
                 </li>
                 <li aria-current="page"><span>{item().name}</span></li>
@@ -591,10 +603,10 @@ export default function ProductDetail() {
               <aside class={styles.purchase}>
                 <header class={styles.purchaseHeader}>
                   <div class={styles.productKicker}>
-                    <A href={`/categories/${item().game}`} class={styles.gameLink} data-game={item().game}>
-                      {item().gameName}
+                    <A href={productGroupUrl(item())} class={styles.gameLink} data-game={item().game}>
+                      {item().productType === "accessory" ? item().brand || "Accessories" : item().gameName}
                     </A>
-                    <Show when={variantSetName(displayVariant()) ?? item().set}>
+                    <Show when={item().productType !== "accessory" && (variantSetName(displayVariant()) ?? item().set)}>
                       {setName => (
                         <A href={`/categories/${item().game}/sets`}>{setName()}</A>
                       )}
@@ -890,8 +902,8 @@ export default function ProductDetail() {
                     <strong>{activeProduct() ? conditionFor(activeProduct()!) : conditionFor(item())}</strong>
                   </div>
                   <div>
-                    <span>Language</span>
-                    <strong>{activeProduct()?.language ?? item().language ?? "English"}</strong>
+                    <span>{item().productType === "accessory" ? "Brand" : "Language"}</span>
+                    <strong>{item().productType === "accessory" ? item().brand || "Not specified" : activeProduct()?.language ?? item().language ?? "English"}</strong>
                   </div>
                   <div>
                     <span>Dispatch</span>
@@ -903,20 +915,26 @@ export default function ProductDetail() {
 
             <section class={styles.detailsSection} id="product-story">
               <div class={styles.detailsIntro}>
-                <h2>{isSealedProduct(item()) ? "About this product" : "About this card"}</h2>
+                <h2>{item().productType === "accessory" || isSealedProduct(item()) ? "About this product" : "About this card"}</h2>
                 <p>{describe(item())}</p>
                 <p>
-                  {isSealedProduct(item())
+                  {item().productType === "accessory" ? "Stored carefully and packed securely for dispatch. See the product description for dimensions, capacity, and compatibility." : isSealedProduct(item())
                     ? "Stored unopened in a smoke-free, climate-stable room until dispatch."
                     : "Stored in a penny sleeve and top loader from the moment it is listed, then packed in a rigid mailer for dispatch."}
                 </p>
               </div>
 
               <dl class={styles.specifications}>
-                <div><dt>Game</dt><dd>{item().gameName}</dd></div>
-                <div><dt>Set</dt><dd>{variantSetName(displayVariant()) ?? item().set ?? "Various"}</dd></div>
+                <Show when={item().productType === "accessory"} fallback={<>
+                  <div><dt>Game</dt><dd>{item().gameName}</dd></div>
+                  <div><dt>Set</dt><dd>{variantSetName(displayVariant()) ?? item().set ?? "Various"}</dd></div>
+                </>}>
+                  <div><dt>Brand</dt><dd>{item().brand || "Not specified"}</dd></div>
+                  <div><dt>Category</dt><dd>{item().accessoryCategoryName}</dd></div>
+                </Show>
                 <div><dt>Product type</dt><dd>{productTypeLabel(item())}</dd></div>
                 <div><dt>Condition</dt><dd>{conditionFor(item())}</dd></div>
+                <Show when={item().productType !== "accessory"}>
                 <div><dt>Language</dt><dd>{item().language ?? "English"}</dd></div>
                 <Show when={item().cardNumber}><div><dt>Card number</dt><dd>{item().cardNumber}</dd></div></Show>
                 <Show when={variantRarity(displayVariant()) ?? item().rarity}>
@@ -929,6 +947,7 @@ export default function ProductDetail() {
                 <Show when={item().gradingCompany}><div><dt>Grading company</dt><dd>{item().gradingCompany}</dd></div></Show>
                 <Show when={item().grade}><div><dt>Grade</dt><dd>{item().grade}</dd></div></Show>
                 <Show when={item().certificationNumber}><div><dt>Certification</dt><dd>{item().certificationNumber}</dd></div></Show>
+                </Show>
               </dl>
             </section>
 
@@ -979,7 +998,7 @@ export default function ProductDetail() {
                 }
                 sub="In stock now, starting with the same set."
                 products={relatedProducts()}
-                viewAllHref={`/categories/${item().game}/products`}
+                viewAllHref={browseProductUrl(item())}
               />
             </div>
           </Show>

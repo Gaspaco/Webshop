@@ -1,6 +1,10 @@
 @use "../../styles/variables" as *;
 @use "../../styles/buttons" as *;
 
+.creditOption { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; color: $gray-200; font-size: 0.9375rem; line-height: 1.5; cursor: pointer; }
+.creditOption input { width: 1.125rem; height: 1.125rem; accent-color: $primary; }
+.creditOption input:focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+
 .page {
   min-height: calc(100dvh - $header-height);
   padding: clamp(1.5rem, 4vh, 3rem) 0 clamp(4rem, 8vh, 6rem);

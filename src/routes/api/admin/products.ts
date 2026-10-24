@@ -16,6 +16,9 @@ import {
 } from "~/lib/admin.server";
 import { findProduct } from "~/lib/categories";
 import { resolveAdminImage } from "~/lib/admin-images.server";
+import { ACCESSORY_CATEGORIES, accessoryBrand, accessoryCategory } from "~/lib/accessories";
+import { ensureAccessoryCategory } from "~/lib/accessories.server";
+import { productShippingSchema } from "~/lib/product-shipping";
 
 const statusSchema = z.enum(["draft", "active", "archived"]);
 const gameSchema = z.enum([
@@ -84,7 +87,9 @@ const createProductSchema = z.object({
   slug: z.string().trim().max(110).optional().default(""),
   description: z.string().trim().max(2400).optional().default(""),
   brand: z.string().trim().max(120).optional().default(""),
-  game: gameSchema,
+  game: gameSchema.optional(),
+  accessoryCategory: z.enum(ACCESSORY_CATEGORIES.map(category => category.slug)).optional(),
+  shipping: productShippingSchema.optional(),
   productType: z.enum(["single", "sealed", "graded", "accessory"]),
   set: z.string().trim().max(120).optional().default(""),
   badge: z.string().trim().max(32).optional().default(""),
@@ -148,6 +153,9 @@ export async function POST(event: APIEvent) {
 
   try {
     const input = createProductSchema.parse(await event.request.json());
+    if (input.productType === "accessory" ? !input.brand : !input.game) {
+      return apiJson({ error: input.productType === "accessory" ? "Choose or enter an accessory brand." : "Choose a game." }, { status: 400 });
+    }
     input.image = await resolveAdminImage(input.image);
     if (input.preorder && !input.releaseDate) {
       return apiJson(
@@ -161,18 +169,24 @@ export async function POST(event: APIEvent) {
     }
 
     const result = await db.transaction(async tx => {
+      const isAccessory = input.productType === "accessory";
+      const category = accessoryCategory(input.accessoryCategory);
+      const categoryId = isAccessory ? await ensureAccessoryCategory(tx, category) : null;
       const [createdProduct] = await tx
         .insert(products)
         .values({
           name: input.name,
           slug,
           description: input.description || null,
-          brand: input.brand || null,
-          game: input.game,
+          brand: accessoryBrand(input.brand) || null,
+          game: isAccessory ? null : input.game,
+          categoryId,
           productType: input.productType,
           status: input.status,
           imageUrls: input.image ? [input.image] : [],
           metadata: {
+            shipping: input.shipping ?? null,
+            accessoryCategory: isAccessory ? category : null,
             set: input.set || null,
             badge: input.badge || null,
             cardNumber: input.cardNumber || null,
@@ -194,7 +208,7 @@ export async function POST(event: APIEvent) {
 
       const sku =
         input.sku ||
-        `${input.game.slice(0, 3).toUpperCase()}-${slug.slice(0, 36).toUpperCase()}`;
+        `${isAccessory ? "ACC" : input.game!.slice(0, 3).toUpperCase()}-${slug.slice(0, 36).toUpperCase()}`;
       const [variant] = await tx
         .insert(productVariants)
         .values({
@@ -206,9 +220,9 @@ export async function POST(event: APIEvent) {
             (input.productType === "sealed" ? "Sealed product" : input.condition) ||
             "Default",
           condition:
-            input.productType === "sealed" ? "Sealed" : input.condition || null,
-          language: input.language || null,
-          finish: input.finish || null,
+            isAccessory ? (input.condition === "Near Mint" ? "New" : input.condition || "New") : input.productType === "sealed" ? "Sealed" : input.condition || null,
+          language: isAccessory ? null : input.language || null,
+          finish: isAccessory ? null : input.finish || null,
           imageUrl: input.image || null,
           isDefault: true,
           priceCents: input.priceCents,
@@ -259,6 +273,9 @@ export async function PATCH(event: APIEvent) {
       payload.id.startsWith("static:")
     ) {
       const input = starterOverrideSchema.parse(payload);
+      if (input.productType === "accessory" ? !input.brand : !input.game) {
+        return apiJson({ error: "Choose a game or enter an accessory brand." }, { status: 400 });
+      }
       input.image = await resolveAdminImage(input.image);
       if (input.preorder && !input.releaseDate) {
         return apiJson(
@@ -276,18 +293,23 @@ export async function PATCH(event: APIEvent) {
       }
 
       const result = await db.transaction(async tx => {
+        const isAccessory = input.productType === "accessory";
+        const category = accessoryCategory(input.accessoryCategory);
         const [createdProduct] = await tx
           .insert(products)
           .values({
             name: input.name,
             slug: starterSlug,
             description: input.description || null,
-            brand: input.brand || null,
-            game: input.game,
+            brand: accessoryBrand(input.brand) || null,
+            game: isAccessory ? null : input.game,
+            categoryId: isAccessory ? await ensureAccessoryCategory(tx, category) : null,
             productType: input.productType,
             status: input.status,
             imageUrls: input.image ? [input.image] : [],
             metadata: {
+              shipping: input.shipping ?? null,
+              accessoryCategory: isAccessory ? category : null,
               set: input.set || null,
               badge: input.badge || null,
               cardNumber: input.cardNumber || null,
@@ -355,7 +377,10 @@ export async function PATCH(event: APIEvent) {
       return apiJson({ ok: true, ...result });
     }
 
-    const input = updateProductSchema.parse(payload);
+    const parsed = updateProductSchema.parse(payload);
+    // Zod applies create-form defaults even inside partial schemas. A stock-
+    // only update must not erase a product's brand, metadata, or description.
+    const input = Object.fromEntries(Object.entries(parsed).filter(([key]) => key === "variantImages" || Object.hasOwn(payload, key))) as typeof parsed;
     // An unchanged display handle is not a replacement image. Keep the full
     // gallery and the primary variant's independent artwork untouched.
     if (input.image === `/api/admin/product-image?product=${input.id}&image=0`) delete input.image;
@@ -383,17 +408,34 @@ export async function PATCH(event: APIEvent) {
     }
 
     await db.transaction(async tx => {
+      const [current] = await tx.select({ productType: products.productType, brand: products.brand, game: products.game, metadata: products.metadata })
+        .from(products).where(eq(products.id, input.id)).for("update").limit(1);
+      if (!current) throw new Error("Product not found.");
+      const nextType = input.productType ?? current.productType;
+      const organizationChanged = input.productType !== undefined || input.accessoryCategory !== undefined || input.brand !== undefined || input.game !== undefined;
+      if (organizationChanged && nextType === "accessory" && !(input.brand ?? current.brand)?.trim()) {
+        throw new z.ZodError([{ code: "custom", path: ["brand"], message: "Choose or enter an accessory brand." }]);
+      }
+      if (nextType !== "accessory" && (input.productType !== undefined || input.game !== undefined) && !(input.game ?? current.game)) {
+        throw new z.ZodError([{ code: "custom", path: ["game"], message: "Choose a game for this product." }]);
+      }
       const productChanges: Partial<typeof products.$inferInsert> = {};
       if (input.name !== undefined) productChanges.name = input.name;
       if (input.slug !== undefined) productChanges.slug = toSlug(input.slug || input.name || "");
       if (input.description !== undefined) productChanges.description = input.description || null;
-      if (input.brand !== undefined) productChanges.brand = input.brand || null;
+      if (input.brand !== undefined) productChanges.brand = accessoryBrand(input.brand) || null;
       if (input.game !== undefined) productChanges.game = input.game;
       if (input.productType !== undefined) productChanges.productType = input.productType;
       if (input.status !== undefined) productChanges.status = input.status;
       if (input.image !== undefined) productChanges.imageUrls = input.image ? [input.image] : [];
+      if (nextType === "accessory" && organizationChanged) {
+        productChanges.game = null;
+        productChanges.categoryId = await ensureAccessoryCategory(tx, accessoryCategory(input.accessoryCategory ?? current.metadata.accessoryCategory));
+      } else if (current.productType === "accessory" && nextType !== "accessory") {
+        productChanges.categoryId = null;
+      }
       if (
-        input.set !== undefined ||
+        input.shipping !== undefined || organizationChanged || input.set !== undefined ||
         input.badge !== undefined ||
         input.cardNumber !== undefined ||
         input.rarity !== undefined ||
@@ -414,6 +456,8 @@ export async function PATCH(event: APIEvent) {
           .limit(1);
         productChanges.metadata = {
           ...(stored?.metadata ?? {}),
+          ...(input.shipping !== undefined ? { shipping: input.shipping } : {}),
+          ...(organizationChanged ? { accessoryCategory: nextType === "accessory" ? accessoryCategory(input.accessoryCategory ?? current.metadata.accessoryCategory) : null } : {}),
           ...(input.set !== undefined ? { set: input.set || null } : {}),
           ...(input.badge !== undefined ? { badge: input.badge || null } : {}),
           ...(input.cardNumber !== undefined
@@ -466,6 +510,11 @@ export async function PATCH(event: APIEvent) {
       }
       if (input.language !== undefined) variantChanges.language = input.language || null;
       if (input.finish !== undefined) variantChanges.finish = input.finish || null;
+      if (nextType === "accessory" && input.productType !== undefined) {
+        variantChanges.condition = input.condition === "Near Mint" ? "New" : input.condition || "New";
+        variantChanges.language = null;
+        variantChanges.finish = null;
+      }
       // The main product editor edits the primary variant shown in the same
       // row. Keep its image in sync so the detail page cannot resurrect the
       // variant's previous photo after the product artwork was replaced.

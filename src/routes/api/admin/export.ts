@@ -3,12 +3,13 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "~/db";
 import {
   orders,
-  products,
-  productVariants,
   user,
 } from "~/db/schema";
-import { requireAdmin } from "~/lib/admin.server";
+import { apiJson, requireAdmin } from "~/lib/admin.server";
 import { csvCell } from "~/lib/csv";
+import { parseInventoryExportOptions } from "~/lib/inventory-export";
+import { inventoryExportResponse } from "~/lib/inventory-export.server";
+import { safeApiResponse } from "~/lib/request-security.server";
 
 const csv = (headers: string[], rows: unknown[][]) =>
   `${headers.map(csvCell).join(",")}\n${rows
@@ -16,6 +17,10 @@ const csv = (headers: string[], rows: unknown[][]) =>
     .join("\n")}\n`;
 
 export async function GET(event: APIEvent) {
+  return safeApiResponse(() => exportCsv(event));
+}
+
+async function exportCsv(event: APIEvent) {
   const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
   const type = new URL(event.request.url).searchParams.get("type");
@@ -57,39 +62,10 @@ export async function GET(event: APIEvent) {
       ]),
     );
   } else {
-    const rows = await db
-      .select({
-        name: products.name,
-        slug: products.slug,
-        game: products.game,
-        type: products.productType,
-        status: products.status,
-        sku: productVariants.sku,
-        condition: productVariants.condition,
-        language: productVariants.language,
-        priceCents: productVariants.priceCents,
-        stock: productVariants.stock,
-        reserved: productVariants.reservedStock,
-      })
-      .from(products)
-      .innerJoin(productVariants, eq(productVariants.productId, products.id));
-    fileName = "tcghaven-inventory.csv";
-    output = csv(
-      ["name", "slug", "game", "type", "status", "sku", "condition", "language", "price", "stock", "reserved"],
-      rows.map(product => [
-        product.name,
-        product.slug,
-        product.game,
-        product.type,
-        product.status,
-        product.sku,
-        product.condition,
-        product.language,
-        product.priceCents / 100,
-        product.stock,
-        product.reserved,
-      ]),
-    );
+    let options;
+    try { options = parseInventoryExportOptions(new URL(event.request.url).searchParams); }
+    catch (error) { return apiJson({ error: (error as Error).message }, { status: 400 }); }
+    return inventoryExportResponse(options, event.request.signal);
   }
 
   return new Response(output, {

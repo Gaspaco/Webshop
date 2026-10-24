@@ -19,6 +19,7 @@ import { CATEGORY_LIST, type ShopProduct } from "~/lib/categories";
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import { useCart } from "~/lib/cart";
 import { isActivePreorder } from "~/lib/game-storefront";
+import { ACCESSORY_BRANDS, ACCESSORY_CATEGORIES, accessoryBrand } from "~/lib/accessories";
 import styles from "./index.module.scss";
 
 const GAME_OPTIONS = [
@@ -30,7 +31,9 @@ const TYPE_OPTIONS = [
   { key: "all", label: "All" },
   { key: "sealed", label: "Sealed" },
   { key: "single", label: "Singles" },
+  { key: "accessory", label: "Accessories" },
 ];
+const ACCESSORY_OPTIONS = [{ key: "all", label: "All accessory categories" }, ...ACCESSORY_CATEGORIES.map(category => ({ key: category.slug, label: category.name }))];
 
 const PRICE_OPTIONS = [
   { key: "all", label: "Any price" },
@@ -98,6 +101,8 @@ function searchableText(product: ShopProduct) {
     product.releaseDate,
     isActivePreorder(product) ? "pre-order upcoming" : "",
     product.productType,
+    product.brand,
+    product.accessoryCategoryName,
     product.condition,
     product.language,
     product.finish,
@@ -130,6 +135,9 @@ export default function Products() {
   );
   const [game, setGame] = createSignal(validOption(searchParams.game, GAME_OPTIONS, "all"));
   const [type, setType] = createSignal(validOption(searchParams.type, TYPE_OPTIONS, "all"));
+  const [accessoryKind, setAccessoryKind] = createSignal(validOption(searchParams.category, ACCESSORY_OPTIONS, "all"));
+  const [brand, setBrand] = createSignal(accessoryBrand(searchValue(searchParams.brand).slice(0, 120)));
+  const accessoryView = () => type() === "accessory";
   const [price, setPrice] = createSignal(validOption(searchParams.price, PRICE_OPTIONS, "all"));
   const [stockOnly, setStockOnly] = createSignal(searchValue(searchParams.stock) === "1");
   const [sort, setSort] = createSignal<SortKey>(
@@ -159,14 +167,18 @@ export default function Products() {
         searchParams.price,
         searchParams.stock,
         searchParams.sort,
+        searchParams.category,
+        searchParams.brand,
       ] as const,
-      ([query, gameFilter, typeFilter, priceFilter, stockFilter, sortFilter]) => {
+      ([query, gameFilter, typeFilter, priceFilter, stockFilter, sortFilter, categoryFilter, brandFilter]) => {
         setSearch(searchValue(query));
         setGame(validOption(gameFilter, GAME_OPTIONS, "all"));
         setType(validOption(typeFilter, TYPE_OPTIONS, "all"));
         setPrice(validOption(priceFilter, PRICE_OPTIONS, "all"));
         setStockOnly(searchValue(stockFilter) === "1");
         setSort(validOption(sortFilter, SORT_OPTIONS, "featured") as SortKey);
+        setAccessoryKind(validOption(categoryFilter, ACCESSORY_OPTIONS, "all"));
+        setBrand(accessoryBrand(searchValue(brandFilter).slice(0, 120)));
       },
       { defer: true },
     ),
@@ -179,11 +191,13 @@ export default function Products() {
     setSearchParams(
       {
         q: search().trim() || undefined,
-        game: game() === "all" ? undefined : game(),
+        game: accessoryView() || game() === "all" ? undefined : game(),
         type: type() === "all" ? undefined : type(),
         price: price() === "all" ? undefined : price(),
         stock: stockOnly() ? "1" : undefined,
         sort: sort() === "featured" ? undefined : sort(),
+        category: accessoryView() && accessoryKind() !== "all" ? accessoryKind() : undefined,
+        brand: accessoryView() && brand() ? brand() : undefined,
       },
       { replace: true },
     );
@@ -194,6 +208,8 @@ export default function Products() {
   const matchesRest = (product: ShopProduct, query: string[]) =>
     query.every(part => searchableText(product).includes(part)) &&
     (type() === "all" || typeOf(product) === type()) &&
+    (!accessoryView() || accessoryKind() === "all" || product.accessoryCategory === accessoryKind()) &&
+    (!accessoryView() || !brand() || accessoryBrand(product.brand ?? "").toLowerCase() === brand().toLowerCase()) &&
     (price() === "all" || priceBucket(product) === price()) &&
     (!stockOnly() || inStock(product));
 
@@ -218,7 +234,7 @@ export default function Products() {
     const parts = queryParts();
     const list = allProducts().filter(
       product =>
-        matchesRest(product, parts) && (game() === "all" || product.game === game()),
+        matchesRest(product, parts) && (accessoryView() || game() === "all" || product.game === game()),
     );
 
     switch (sort()) {
@@ -236,6 +252,11 @@ export default function Products() {
   const clearSearch = () => {
     setSearch("");
   };
+  const accessoryBrands = createMemo(() => [...new Set([
+    ...ACCESSORY_BRANDS,
+    ...allProducts().filter(product => product.productType === "accessory").map(product => product.brand).filter((value): value is string => !!value),
+    ...(brand() ? [brand()] : []),
+  ])].sort((left, right) => left.localeCompare(right)));
 
   // Every active filter as a removable chip, so the current state of the
   // catalogue is never hidden inside a control you have to go looking for.
@@ -244,7 +265,7 @@ export default function Products() {
     if (search().trim()) {
       chips.push({ label: `“${search().trim()}”`, clear: clearSearch });
     }
-    if (game() !== "all") {
+    if (!accessoryView() && game() !== "all") {
       chips.push({
         label: GAME_OPTIONS.find(option => option.key === game())?.label ?? game(),
         clear: () => setGame("all"),
@@ -265,6 +286,8 @@ export default function Products() {
     if (stockOnly()) {
       chips.push({ label: "In stock", clear: () => setStockOnly(false) });
     }
+    if (accessoryView() && accessoryKind() !== "all") chips.push({ label: ACCESSORY_OPTIONS.find(option => option.key === accessoryKind())!.label, clear: () => setAccessoryKind("all") });
+    if (accessoryView() && brand()) chips.push({ label: brand(), clear: () => setBrand("") });
     return chips;
   });
 
@@ -272,6 +295,8 @@ export default function Products() {
     clearSearch();
     setGame("all");
     setType("all");
+    setAccessoryKind("all");
+    setBrand("");
     setPrice("all");
     setStockOnly(false);
   };
@@ -305,12 +330,12 @@ export default function Products() {
 
   return (
     <main class={styles.page}>
-      <Title>Shop | TCGHaven</Title>
+      <Title>{accessoryView() ? "Accessories" : "Shop"} | TCGHaven</Title>
 
       <div class={styles.wide}>
         <header class={styles.head}>
           <div class={styles.titleRow}>
-            <h1>Shop</h1>
+            <h1>{accessoryView() ? "Accessories" : "Shop"}</h1>
             <Show
               when={!catalogPending()}
               fallback={<p class={styles.resultCount}>Loading products</p>}
@@ -323,7 +348,7 @@ export default function Products() {
 
           <div class={styles.searchRow}>
             <label class={styles.searchField}>
-              <span class={styles.srOnly}>Search cards and sets</span>
+              <span class={styles.srOnly}>Search products</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <circle cx="11" cy="11" r="7" />
                 <path d="m20 20-4-4" />
@@ -333,7 +358,7 @@ export default function Products() {
                 type="search"
                 value={search()}
                 onInput={event => setSearch(event.currentTarget.value)}
-                placeholder="Search a card, set, or game…"
+                placeholder={accessoryView() ? "Search accessories or brands…" : "Search a card, set, or game…"}
               />
               <SearchSuggestions query={search} input={() => shopSearchInput} />
               <Show when={search()}>
@@ -361,6 +386,7 @@ export default function Products() {
         </header>
 
         <div class={styles.filterBar}>
+          <Show when={!accessoryView()}>
           <div class={styles.gameTabs} role="group" aria-label="Game">
             <For each={GAME_OPTIONS}>
               {option => (
@@ -377,6 +403,7 @@ export default function Products() {
               )}
             </For>
           </div>
+          </Show>
           <button
             type="button"
             class={styles.filterToggle}
@@ -429,7 +456,7 @@ export default function Products() {
                       type="button"
                       classList={{ [styles.segmentActive]: type() === option.key }}
                       aria-pressed={type() === option.key}
-                      onClick={() => setType(option.key)}
+                      onClick={() => { setType(option.key); if (option.key === "accessory") setGame("all"); }}
                     >
                       {option.label}
                     </button>
@@ -438,6 +465,25 @@ export default function Products() {
               </div>
             </div>
 
+            <Show when={accessoryView()}>
+              <div class={styles.group}>
+                <label class={styles.accessoryFilter}>
+                  <span>Accessory category</span>
+                  <select value={accessoryKind()} onChange={event => setAccessoryKind(event.currentTarget.value)}>
+                    <For each={ACCESSORY_OPTIONS}>{option => <option value={option.key}>{option.label}</option>}</For>
+                  </select>
+                </label>
+              </div>
+              <div class={styles.group}>
+                <label class={styles.accessoryFilter}>
+                  <span>Brand</span>
+                  <select value={brand()} onChange={event => setBrand(event.currentTarget.value)}>
+                    <option value="">All brands</option>
+                    <For each={accessoryBrands()}>{name => <option value={name}>{name}</option>}</For>
+                  </select>
+                </label>
+              </div>
+            </Show>
             <div class={styles.group} role="group" aria-labelledby="filter-price">
               <p id="filter-price">Price</p>
               <div class={styles.priceChips}>

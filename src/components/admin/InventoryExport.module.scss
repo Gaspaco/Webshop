@@ -1,0 +1,33 @@
+@use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+
+.panel {
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border-radius: $radius-tile;
+  background: $surface;
+  color: $gray-300;
+}
+
+.heading h3 { margin: 0; color: $white; font-size: 1rem; }
+.heading p, .note { margin: 0.5rem 0 0; max-width: 75ch; font-size: 0.875rem; line-height: 1.55; }
+.controls { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem 1.5rem; margin: 1.25rem 0 1rem; }
+.scope { display: flex; flex: 1 1 14rem; flex-direction: column; gap: 0.5rem; max-width: 22rem; }
+.scope > span, .images strong { color: $white; font-size: 0.875rem; font-weight: 600; }
+.scope select { width: 100%; min-height: 2.75rem; padding: 0.65rem 0.75rem; border: 1px solid $gray-700; border-radius: $radius-md; background: $background; color: $white; font: inherit; }
+.images { display: flex; flex: 2 1 16rem; align-items: start; gap: 0.65rem; cursor: pointer; }
+.images input { flex-shrink: 0; width: 1.125rem; height: 1.125rem; margin-top: 0.125rem; accent-color: $primary; }
+.images span { display: flex; flex-direction: column; gap: 0.35rem; }
+.images small { max-width: 44ch; font-size: 0.8125rem; line-height: 1.5; }
+.controls button { @include btn-primary; min-height: 2.75rem; }
+.controls :disabled { cursor: wait; opacity: 0.65; }
+.controls :focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+.error { margin-top: 0.75rem; color: #fca5a5; }
+.message { margin: 0; color: $primary; font-size: 0.875rem; }
+.message:not(:empty) { margin-top: 0.75rem; }
+
+@media (max-width: 600px) {
+  .scope { max-width: none; }
+  .controls { flex-direction: column; align-items: stretch; }
+  .scope, .images { flex-basis: auto; }
+}

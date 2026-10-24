@@ -162,6 +162,9 @@ for (const cat of Object.values(CATEGORIES)) {
 export const CATEGORY_LIST = Object.values(CATEGORIES);
 
 export type ShopProduct = CategoryProduct & {
+  brand?: string;
+  accessoryCategory?: string;
+  accessoryCategoryName?: string;
   game: string;
   gameName: string;
   theme: BoxTheme;

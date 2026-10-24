@@ -5,6 +5,7 @@ import { createCheckoutPayment } from "~/lib/checkout.server";
 import { checkRateLimit } from "~/lib/rate-limit.server";
 import { validateJsonRequest } from "~/lib/request-security.server";
 import { logServerError } from "~/lib/server-log";
+import { WalletError } from "~/lib/wallet.server";
 
 function json(data: unknown, init?: ResponseInit) {
   return Response.json(data, {
@@ -40,6 +41,7 @@ export async function POST(event: APIEvent) {
     }
 
     const payload = await event.request.json();
+    if ((payload as { useStoreCredit?: boolean })?.useStoreCredit && !session?.user.emailVerified) return json({ error: "Verify your email before using store credit." }, { status: 403 });
     const result = await createCheckoutPayment(payload, session?.user.id);
 
     if (!result.checkoutUrl) {
@@ -51,6 +53,7 @@ export async function POST(event: APIEvent) {
 
     return json(result, { status: 201 });
   } catch (error) {
+    if (error instanceof WalletError) return json({ error: error.message, code: error.code }, { status: 409 });
     if (error instanceof z.ZodError) {
       return json(
         {

@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/", label: "Home", match: (path: string) => path === "/" },
   { href: "/products", label: "Shop", match: (path: string) => path.startsWith("/products") },
   { href: "/categories", label: "Games", match: (path: string) => path.startsWith("/categories") },
+  { href: "/products?type=accessory", label: "Accessories", match: () => false },
 ];
 
 export default function Navbar() {
@@ -22,7 +23,8 @@ export default function Navbar() {
   let navList: HTMLUListElement | undefined;
   let indicator: HTMLLIElement | undefined;
   let headerRef: HTMLElement | undefined;
-  const activeIndex = () => LINKS.findIndex(link => link.match(location.pathname));
+  const activeIndex = () => location.pathname === "/products" && new URLSearchParams(location.search).get("type") === "accessory"
+    ? LINKS.findIndex(link => link.label === "Accessories") : LINKS.findIndex(link => link.match(location.pathname));
   const session = authClient.useSession();
   const [searchOpen, setSearchOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");

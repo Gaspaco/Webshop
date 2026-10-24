@@ -20,6 +20,7 @@ import {
   sendTransactionalEmail,
 } from "~/lib/email.server";
 import { checkRateLimit } from "~/lib/rate-limit.server";
+import { refundOrderCredit } from "~/lib/wallet.server";
 import {
   createPostnlLabel,
   PostnlError,
@@ -62,7 +63,10 @@ export async function PATCH(event: APIEvent) {
     }
     if (["processing", "shipped", "completed"].includes(input.status)) {
       const [payment] = await db.select({ status: payments.status }).from(payments).where(eq(payments.orderId, input.id)).limit(1);
-      if (payment?.status !== "paid") return apiJson({ error: "Only a confirmed paid order can be fulfilled." }, { status: 409 });
+      const [current] = await db.select().from(orders).where(eq(orders.id, input.id)).limit(1);
+      const coveredWithoutMollie = current && current.totalCents === current.creditAppliedCents &&
+        (current.totalCents === 0 || current.creditState === "spent") && ["paid", "processing", "shipped", "completed"].includes(current.status);
+      if (!current || !["paid", "processing", "shipped", "completed"].includes(current.status) || (payment?.status !== "paid" && !coveredWithoutMollie)) return apiJson({ error: "Only a confirmed paid order can be fulfilled." }, { status: 409 });
     }
     if (input.status === "pending") return apiJson({ error: "Existing orders cannot be reset to pending. Reconcile their payment instead." }, { status: 409 });
     if (input.status === "paid" || input.status === "refunded") {
@@ -72,7 +76,7 @@ export async function PATCH(event: APIEvent) {
     const [updated] = await db
       .update(orders)
       .set({ status: input.status })
-      .where(eq(orders.id, input.id))
+      .where(and(eq(orders.id, input.id), ["processing", "shipped", "completed"].includes(input.status) ? inArray(orders.status, ["paid", "processing", "shipped", "completed"]) : undefined))
       .returning({ id: orders.id, status: orders.status });
 
     if (!updated) {
@@ -99,6 +103,7 @@ export async function PATCH(event: APIEvent) {
 }
 
 const actionSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("refund_credit"), id: z.string().uuid(), confirmation: z.literal("REFUND_CREDIT") }),
   z.object({
     action: z.literal("ship"),
     id: z.string().uuid(),
@@ -122,6 +127,9 @@ const actionSchema = z.discriminatedUnion("action", [
     id: z.string().uuid(),
     weightGrams: z.number().int().min(1).max(30_000),
     productCode: z.string().trim().regex(/^\d{4}$/),
+    lengthCm: z.number().positive().max(300).optional(),
+    widthCm: z.number().positive().max(300).optional(),
+    heightCm: z.number().positive().max(300).optional(),
   }),
   z.object({
     action: z.literal("resend_tracking_email"),
@@ -221,7 +229,7 @@ export async function POST(event: APIEvent) {
 
   try {
     const input = actionSchema.parse(await event.request.json());
-    if (["refund", "retry_refund", "resolve_missing_refund", "recover_payment", "resolve_missing_payment"].includes(input.action)) {
+    if (["refund_credit", "refund", "retry_refund", "resolve_missing_refund", "recover_payment", "resolve_missing_payment"].includes(input.action)) {
       if (await checkRateLimit({ event, namespace: "admin-refunds", identity: guard.session!.user.id, limit: 10, windowMs: 60 * 60_000 })) {
         return apiJson({ error: "Too many refund requests. Check Mollie before continuing." }, { status: 429 });
       }
@@ -236,6 +244,16 @@ export async function POST(event: APIEvent) {
       return apiJson({ error: "Order not found." }, { status: 404 });
     }
 
+    if (input.action === "refund_credit") {
+      const refunded = await db.transaction(async tx => {
+        const [current] = await tx.select().from(orders).where(eq(orders.id, order.id)).for("update");
+        if (!current || current.creditAppliedCents <= 0 || current.creditAppliedCents !== current.totalCents || !["paid", "processing", "shipped", "completed", "refunded"].includes(current.status)) return false;
+        return refundOrderCredit(tx, current.id, guard.session!.user.id);
+      });
+      if (!refunded && order.creditState !== "refunded") return apiJson({ error: "Only an order fully paid with store credit can use this action. Mixed payments return credit after the full Mollie amount is refunded." }, { status: 409 });
+      await writeAuditLog({ event, actorId: guard.session!.user.id, action: "wallet.order_refunded", entityType: "order", entityId: order.id, summary: "Store-credit order refund checked; duplicate credits are prevented." });
+      return apiJson({ ok: true, refundStatus: "refunded" });
+    }
     if (input.action === "recover_payment") {
       const payment = await recoverCheckoutPayment(order.id);
       const result = await syncMolliePaymentStatus(payment.id);
@@ -344,6 +362,9 @@ export async function POST(event: APIEvent) {
           postalCodeAndCity: senderParts[1],
         },
         weightGrams: input.weightGrams,
+        lengthCm: input.lengthCm ?? order.shipment?.lengthCm,
+        widthCm: input.widthCm ?? order.shipment?.widthCm,
+        heightCm: input.heightCm ?? order.shipment?.heightCm,
         productCode: input.productCode,
       }));
       await writeAuditLog({

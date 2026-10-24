@@ -1,6 +1,6 @@
-import { asc, desc, inArray } from "drizzle-orm";
+import { asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "~/db";
-import { products, productVariants } from "~/db/schema";
+import { categories, products, productVariants } from "~/db/schema";
 import { adminProductImages, adminVariantImage, embeddedProductImageCount, variantHasEmbeddedImage } from "~/lib/admin-images.server";
 
 /** Images stay in PostgreSQL. Each paged HTTP response contains only handles. */
@@ -11,9 +11,10 @@ export async function loadAdminCatalogue(options: { limit?: number; offset?: num
   const productRows = await db.select({
     id: products.id, name: products.name, slug: products.slug, description: products.description,
     brand: products.brand, game: products.game, productType: products.productType, status: products.status,
+    categorySlug: categories.slug,
     imageUrls: adminProductImages, embeddedImages: embeddedProductImageCount, metadata: products.metadata,
     createdAt: products.createdAt, updatedAt: products.updatedAt,
-  }).from(products).where(pageIds ? inArray(products.id, pageIds) : undefined)
+  }).from(products).leftJoin(categories, eq(categories.id, products.categoryId)).where(pageIds ? inArray(products.id, pageIds) : undefined)
     .orderBy(desc(products.updatedAt), desc(products.id));
   const hasMore = limit !== undefined && productRows.length > limit;
   const page = limit === undefined ? productRows : productRows.slice(0, limit);

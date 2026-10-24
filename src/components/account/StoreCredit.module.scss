@@ -1,0 +1,17 @@
+@use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+.panel { margin: 1rem 0; padding: 1.25rem; border-radius: $radius-inner; background: $surface; color: $gray-300; }
+.panel header { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 1rem; }
+.panel h3 { margin: 0; color: $white; font-size: 1rem; }
+.panel p { margin: 0.5rem 0 1rem; max-width: 72ch; font-size: 0.875rem; line-height: 1.55; }
+.panel header > strong { color: $white; font-size: 1.75rem; font-variant-numeric: tabular-nums; }
+.form { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin-bottom: 1rem; }
+.form label { display: flex; flex: 1 1 10rem; flex-direction: column; gap: 0.5rem; font-size: 0.875rem; }
+.form input, .form select { width: 100%; min-height: 2.75rem; border: 1px solid $gray-700; border-radius: $radius-md; padding: 0.65rem; background: $background; color: $white; font: inherit; }
+.form button { @include btn-secondary; }
+.form :disabled { opacity: 0.6; }
+.panel :focus-visible { outline: 2px solid $primary; outline-offset: 2px; }
+.history article { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; padding: 0.85rem 0; }
+.history article > div { flex: 1 1 15rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.history strong { color: $white; font-size: 0.875rem; }
+.history small { color: $gray-300; font-size: 0.8125rem; }

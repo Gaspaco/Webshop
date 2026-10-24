@@ -47,6 +47,7 @@ export async function GET(event: APIEvent) {
       status: orders.status,
       currency: orders.currency,
       totalCents: orders.totalCents,
+      creditAppliedCents: orders.creditAppliedCents,
       shippingAddress: orders.shippingAddress,
       trackingNumber: orders.trackingNumber,
       trackingUrl: orders.trackingUrl,

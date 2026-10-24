@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { DEFAULT_INTERNATIONAL_POSTNL_RATES } from "~/lib/shipping";
+import { DEFAULT_SHIPPING_SETTINGS, shippingSettingsSchema } from "./product-shipping";
 
 export const storeProfileSchema = z.object({
+  shippingSettings: shippingSettingsSchema.default(DEFAULT_SHIPPING_SETTINGS),
   companyName: z.string().trim().min(2).max(120),
   kvkNumber: z.string().trim().min(8).max(24),
   vatId: z.string().trim().min(8).max(32),
@@ -27,6 +29,7 @@ export const storeProfileSchema = z.object({
 export type StoreProfile = z.infer<typeof storeProfileSchema>;
 
 export const DEFAULT_STORE_PROFILE: StoreProfile = {
+  shippingSettings: DEFAULT_SHIPPING_SETTINGS,
   companyName: "TCGHaven",
   kvkNumber: "88839621",
   vatId: "NL004659858B77",

@@ -31,6 +31,57 @@ npm run db:studio    # open Drizzle Studio
 
 Schema: `src/db/schema.ts`
 
+### Inventory CSV exports
+
+In **Owner dashboard → Catalogue → Export inventory CSV**, choose all products,
+singles, sealed products, complete sets, or singles and sets, then select whether
+to include images before downloading. The export covers the full catalogue,
+including drafts and archived products, independently of dashboard filters and
+pagination. Each variant gets its own row; products without variants get a row
+with empty variant fields. Prices are in euros and stock/reserved quantities stay
+separate. Order and customer exports are unchanged.
+
+“Sets” means products explicitly typed `set`/`sets` or assigned to a category
+named Set, Sets, Complete sets, or Complete card sets (matching standard slug
+forms too). Expansion membership in `metadata.set` or `setCode` alone does not
+make a product a complete set. Explicitly sealed products always stay in the
+sealed scope, even when categorized under Sets. No product is reclassified by
+exporting; this definition can be adjusted when the owner confirms what they
+mean by sets.
+
+With **Export images** off, the original eleven columns are retained and image
+data is not read from PostgreSQL. With it on, three columns are appended:
+`image` (variant image, falling back to the first product image), `product_images`
+(a JSON array preserving every product image), and `variant_image` (the original
+variant override). External URLs, local paths, and embedded data URIs are
+preserved without downloading images or substituting private preview handles.
+Image-inclusive files may be large. Database reads and CSV output are batched;
+all CSV cells retain spreadsheet-formula protection. Exports require owner access
+and are never publicly cached.
+
+### Accessory products
+
+Use **Owner dashboard → Catalogue → Add accessory**, or choose Accessory in
+the normal product form. The create and edit forms replace the game selector
+with an accessory category and required brand. Categories are Sleeves, Deck
+Boxes, Binders, Playmats, and Other accessories. Dragon Shield and Ultra PRO are
+suggested; custom brands are supported. Card/set/grading fields are hidden.
+
+Accessories save with `game = null`, a canonical brand, a dedicated category
+under Accessories, and `metadata.accessoryCategory`. Category rows are created
+transactionally when first used, so no schema migration is needed. Existing
+category rows are reused without overwriting owner-edited names. Editing or
+duplicating a product preserves its category and brand; switching back to a
+card requires choosing a game and clears the accessory category assignment.
+Existing uncategorized accessories appear under Other accessories until edited.
+
+The webshop's **Accessories** navigation link opens the accessory catalogue.
+Shoppers can filter by accessory category and brand, combined with search,
+price, stock, and sort. Filters remain in the URL for shareable links and Back
+navigation. Accessory details and breadcrumbs use brand/category links rather
+than nonexistent game pages. Accessories are excluded from game-specific
+catalogue API requests, even for legacy products that still have a game value.
+
 ### Administrator setup
 
 Run `bun run admin:create owner@example.com "Owner name"` in a terminal.
@@ -194,6 +245,77 @@ variant details are left unchanged. Automatic ID linking is deliberately
 limited to globally unique Cardmarket names that match exactly one local
 single-variant product. Ambiguous printings must be linked in the variant
 editor instead of being guessed.
+
+## Product shipping and store credit
+
+Apply migrations `0018_shipping_and_store_credit.sql` and
+`0019_credit_checkout_idempotency.sql` with `bun run db:migrate` before deploying
+this version. Migration 0018 adds order shipment snapshots and store-credit
+accounts/ledger; 0019 adds checkout retry references. No existing customer
+receives credit automatically.
+
+In **Dashboard → Store setup → Product shipping presets and rules**, edit
+shipping classes, singles quantity tiers, product presets, packaging weight,
+padding, parcel limits/prices and optional international weight surcharges.
+Save with **Save store setup**. New and edited products have a **Shipping data**
+section. Selecting a preset copies its values; every value can be overridden.
+Updating a preset does not silently change previously saved product measurements.
+
+The default singles class pools quantities across variants: up to 10 cards weigh
+20 g and larger quantities 50 g, plus the configured packaging weight. Other
+classes use per-item weight times quantity. Choose a per-item class to use an
+individual single's weight instead. Screenshot booster-box figures are editable
+starting estimates, not verified measurements. Bundle and ETB presets deliberately
+leave measurements blank. Missing product values use class estimates and flag the
+shipment for review.
+
+Checkout calculates shipping on the server from saved products. Letterbox and
+parcel eligibility depend on dimensions and weight, including packaging. Package
+dimensions use a conservative stacking estimate, not an optimal box-packing
+algorithm. Oversized shipments are not made eligible by free shipping. Dutch
+pickup remains available and must be chosen explicitly when it is the only
+option. Review the packed parcel before creating a label; the order's calculated
+weight/dimensions prefill the label form and can be corrected there. PostNL
+receives grams and dimensions converted from cm to mm.
+Automatic label creation currently supports Dutch addresses only. International
+checkout rates still work, but international labels must be created manually and
+tracking entered in the order dashboard.
+
+This is a custom SolidStart shop, not WooCommerce. The current PostNL integration
+creates labels; it does **not** fetch live contract prices. Checkout uses the
+owner-configured country prices and parcel bands. Enter contract-appropriate
+rates, size limits, packaging allowances and international weight surcharges in
+Store setup. Do not treat example rates or presets as guaranteed carrier quotes.
+
+The wallet is **admin-managed EUR store credit**, not a cash wallet. In
+**Dashboard → Customers**, expand a customer to add/deduct credit with a
+customer-visible reason. Customers see their balance and recent transactions in
+**Account → Store credit**, and can apply it at checkout after verifying their
+email. There are no customer cash top-ups, withdrawals or transfers. Each
+adjustment has an audit record and an idempotent retry reference.
+
+Credit is held transactionally during checkout. Fully covered orders become paid
+without creating a Mollie payment; mixed orders send only the cash remainder to
+Mollie. Confirmed failed/cancelled payments release credit once. Uncertain payment
+creation keeps the hold until reconciliation. Full Mollie refunds restore the
+credit portion once; partial cash refunds do not automatically restore credit.
+Credit-only orders have a separate **Refund store credit** action. Refunds do not
+automatically restock returned merchandise. Gross order totals remain unchanged;
+receipts/invoices show the credit/cash split. Accounts with ledger history cannot
+be hard-deleted through the dashboard; use suspension and an audited anonymisation
+process instead. The owner should approve the intended store-credit policy before
+offering it publicly.
+
+To invite another administrator without sharing a temporary password, run the
+operator-only command against the intended deployment environment:
+
+```bash
+bun run admin:invite recipient@example.com "Recipient name"
+```
+
+The recipient receives email verification (if needed) and a password setup link.
+Existing verification and authenticator settings are not bypassed. A successful
+SMTP response means accepted by the mail server, not confirmed inbox delivery.
 
 ## Railway
 

@@ -127,6 +127,20 @@
       "when": 1792454400000,
       "tag": "0017_yugipedia_cache",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792854136077,
+      "tag": "0018_shipping_and_store_credit",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792854598028,
+      "tag": "0019_credit_checkout_idempotency",
+      "breakpoints": true
     }
   ]
 }

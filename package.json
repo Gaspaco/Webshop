@@ -19,7 +19,8 @@
     "db:studio": "drizzle-kit studio",
     "db:sync:yugioh": "bun scripts/sync-yugipedia.ts",
     "db:sync:yugioh-images": "bun scripts/sync-yugipedia-images.ts",
-    "admin:create": "bun scripts/create-admin.ts"
+    "admin:create": "bun scripts/create-admin.ts",
+    "admin:invite": "bun scripts/invite-admin.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1134.0",

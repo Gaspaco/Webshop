@@ -27,6 +27,7 @@ import {
 } from "~/lib/profile-image";
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import CountrySelect from "~/components/forms/CountrySelect";
+import StoreCredit from "~/components/account/StoreCredit";
 import styles from "./index.module.scss";
 
 type Section =
@@ -36,6 +37,7 @@ type Section =
   | "wishlist"
   | "addresses"
   | "payments"
+  | "credit"
   | "profile"
   | "security";
 
@@ -45,6 +47,7 @@ type AccountOrder = {
   status: string;
   currency: string;
   totalCents: number;
+  creditAppliedCents?: number;
   createdAt: string;
   trackingNumber: string | null;
   trackingUrl: string | null;
@@ -93,11 +96,13 @@ const NAV_ITEMS: Array<{ id: Section; label: string }> = [
   { id: "wishlist", label: "Wishlist" },
   { id: "addresses", label: "Addresses" },
   { id: "payments", label: "Payments" },
+  { id: "credit", label: "Store credit" },
   { id: "profile", label: "Profile" },
   { id: "security", label: "Security" },
 ];
 
 const SECTION_COPY: Record<Section, { title: string; description: string }> = {
+  credit: { title: "Store credit", description: "Your available balance and credit activity." },
   overview: {
     title: "Account overview",
     description: "A quick look at your collection activity.",
@@ -1307,6 +1312,9 @@ export default function Account() {
                                   </strong>
                                 </header>
 
+                                <Show when={order.creditAppliedCents}>
+                                  <p>Store credit: {formatMoney(order.creditAppliedCents!, order.currency)} · Mollie payment: {formatMoney(order.totalCents - order.creditAppliedCents!, order.currency)}</p>
+                                </Show>
                                 <ul class={styles.orderItems}>
                                   <For each={order.items}>
                                     {item => (
@@ -1634,6 +1642,7 @@ export default function Account() {
                     </div>
                   </Match>
 
+                  <Match when={activeSection() === "credit"}><StoreCredit /></Match>
                   <Match when={activeSection() === "payments"}>
                     <div class={styles.paymentLayout}>
                       <section class={styles.paymentHistory}>
@@ -2228,6 +2237,9 @@ function AccountNavIcon(props: { section: Section }) {
         </Match>
         <Match when={props.section === "addresses"}>
           <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" />
+        </Match>
+        <Match when={props.section === "credit"}>
+          <rect x="3" y="5" width="18" height="15" rx="2" /><path d="M3 9h18M16 13h5v4h-5z" />
         </Match>
         <Match when={props.section === "payments"}>
           <rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18M7 15h3" />

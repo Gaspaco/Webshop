@@ -15,7 +15,6 @@ import type { SavedAddress } from "~/lib/address";
 import { formatPrice, useCart } from "~/lib/cart";
 import {
   findShippingDestination,
-  getInternationalPostnlPrice,
   INTERNATIONAL_POSTNL_DESTINATIONS,
   NETHERLANDS,
   type ShippingMethod,
@@ -26,6 +25,7 @@ import {
   type StoreProfile,
 } from "~/lib/store-profile";
 import styles from "./index.module.scss";
+import type { Shipment } from "~/lib/product-shipping";
 
 const checkoutSchema = z.object({
   email: z.string().trim().email().max(254),
@@ -79,53 +79,42 @@ export default function Checkout() {
   const [checkingDiscount, setCheckingDiscount] = createSignal(false);
   const [error, setError] = createSignal("");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
-
-  const subtotalCents = () => cart.subtotalCents();
-  const shippingOptions = createMemo(() => {
-    const profile = storeProfile();
-    const destination = findShippingDestination(country());
-    if (destination && destination.code !== "NL") {
-      return [{
-        value: "postnl_international" as const,
-        label: "PostNL international parcel",
-        detail: `Tracked delivery to ${destination.name}`,
-        priceCents:
-          getInternationalPostnlPrice(
-            destination.code,
-            profile.internationalPostnlRates,
-          ) ?? 0,
-      }];
-    }
-
-    const options: Array<{
-      value: ShippingMethod;
-      label: string;
-      detail: string;
-      priceCents: number;
-    }> = [
-      {
-        value: "local_pickup",
-        label: "Pick up in person",
-        detail: profile.businessAddress
-          ? `Collect after confirmation from ${profile.businessAddress}`
-          : "Collect from TCGHaven after we confirm your order is ready",
-        priceCents: 0,
-      },
-      {
-        value: "postnl_letterbox",
-        label: "PostNL letterbox parcel",
-        detail: "Maximum 38 × 26.5 × 3 cm and 2 kg",
-        priceCents: profile.postnlLetterboxCents,
-      },
-      {
-        value: "postnl_parcel",
-        label: "PostNL parcel",
-        detail: "Tracked parcel up to 100 × 50 × 50 cm and 10 kg",
-        priceCents: profile.postnlParcelCents,
-      },
-    ];
-    return options;
+  const [quote, setQuote] = createSignal<{ shipment: Shipment; subtotalCents: number; options: Array<{ value: ShippingMethod; label: string; detail: string; priceCents: number }> } | null>(null);
+  const [quoteLoading, setQuoteLoading] = createSignal(false);
+  const [quoteError, setQuoteError] = createSignal("");
+  const [quoteRevision, setQuoteRevision] = createSignal(0);
+  const [creditBalance, setCreditBalance] = createSignal(0);
+  const [useStoreCredit, setUseStoreCredit] = createSignal(false);
+  let creditRequestSignature = "", creditRequestId = "";
+  onMount(async () => {
+    try { const response = await fetch("/api/account/wallet", { credentials: "same-origin", cache: "no-store" });
+      if (response.ok) setCreditBalance(Math.max(0, Number((await response.json()).balanceCents) || 0));
+    } catch { /* Credit is optional; guest checkout remains available. */ }
   });
+  createEffect(() => {
+    quoteRevision();
+    const items = cart.items().map(item => ({ id: item.id, variantId: item.variantId, quantity: item.quantity }));
+    const destination = country();
+    if (!items.length) { setQuote(null); setQuoteLoading(false); return; }
+    const controller = new AbortController(); setQuote(null); setQuoteError(""); setQuoteLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch("/api/checkout/shipping-quote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items, country: destination }), signal: controller.signal });
+        const body = await response.json();
+        if (controller.signal.aborted) return;
+        if (!response.ok) { setQuoteError(body.error || "Shipping could not be calculated. Please refresh your cart."); return; }
+        setQuote(body);
+        if (!body.options.some((option: { value: string }) => option.value === shippingMethod())) {
+          const delivery = body.options.find((option: { value: string }) => option.value !== "local_pickup");
+          if (delivery) setShippingMethod(delivery.value);
+        }
+      } catch { if (!controller.signal.aborted) setQuoteError("Shipping could not be calculated. Check your connection and try again."); }
+      finally { if (!controller.signal.aborted) setQuoteLoading(false); }
+    }, 300);
+    onCleanup(() => { clearTimeout(timer); controller.abort(); });
+  });
+  const subtotalCents = () => quote()?.subtotalCents ?? cart.subtotalCents();
+  const shippingOptions = () => quote()?.options ?? [];
 
   createEffect(() => {
     const destination = findShippingDestination(country());
@@ -138,14 +127,11 @@ export default function Checkout() {
     }
   });
   const shippingCents = createMemo(() =>
-    shippingMethod() === "local_pickup" ||
-    subtotalCents() >= storeProfile().freeShippingThresholdCents
-      ? 0
-      : shippingOptions().find(option => option.value === shippingMethod())?.priceCents ?? 0,
+    shippingOptions().find(option => option.value === shippingMethod())?.priceCents ?? 0,
   );
-  const totalCents = createMemo(
-    () => subtotalCents() - discountCents() + shippingCents(),
-  );
+  const grossTotalCents = () => Math.max(0, subtotalCents() - discountCents() + shippingCents());
+  const appliedCreditCents = () => useStoreCredit() ? Math.min(creditBalance(), grossTotalCents()) : 0;
+  const totalCents = createMemo(() => grossTotalCents() - appliedCreditCents());
   const freeShippingRemaining = createMemo(() =>
     Math.max(
       0,
@@ -215,6 +201,10 @@ export default function Checkout() {
 
   const submitOrder = async (event: SubmitEvent) => {
     event.preventDefault();
+    if (isSubmitting()) return;
+    if (quoteLoading() || quoteError() || !shippingOptions().some(option => option.value === shippingMethod())) {
+      setError("Wait for shipping prices and select an available delivery method."); return;
+    }
     setError("");
     const items = cart.items();
 
@@ -270,6 +260,21 @@ export default function Checkout() {
     setIsSubmitting(true);
 
     try {
+      const requestSignature = JSON.stringify({ items: items.map(item => ({ id: item.id, variantId: item.variantId, quantity: item.quantity })), values, shippingMethod: values.shippingMethod, discountCode: discountCode(), useStoreCredit: useStoreCredit() });
+      if (requestSignature !== creditRequestSignature) {
+        creditRequestSignature = requestSignature;
+        creditRequestId = crypto.randomUUID();
+        if (useStoreCredit()) {
+          // Keep retries stable across a reload without storing addresses in browser storage.
+          const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(requestSignature));
+          const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+          try {
+            const previous = JSON.parse(sessionStorage.getItem("tcg-credit-checkout") || "null");
+            if (previous?.fingerprint === fingerprint && /^[0-9a-f-]{36}$/.test(previous.requestId) && Date.now() - previous.at < 86400000) creditRequestId = previous.requestId;
+            sessionStorage.setItem("tcg-credit-checkout", JSON.stringify({ fingerprint, requestId: creditRequestId, at: Date.now() }));
+          } catch { /* In-memory retry identity still works when storage is unavailable. */ }
+        }
+      }
       const response = await fetch("/api/checkout/create-payment", {
         method: "POST",
         headers: {
@@ -285,15 +290,22 @@ export default function Checkout() {
           shippingMethod: values.shippingMethod,
           paymentMethod: values.paymentMethod,
           discountCode: discountCode(),
+          useStoreCredit: useStoreCredit(),
+          creditRequestId: useStoreCredit() ? creditRequestId : undefined,
         }),
       });
-      const result = (await response.json()) as CreatePaymentResponse;
+      const result = (await response.json()) as CreatePaymentResponse & { code?: string };
 
       if (!response.ok || !result.checkoutUrl) {
+        if (result.code === "CHECKOUT_CLOSED") {
+          creditRequestSignature = "";
+          try { sessionStorage.removeItem("tcg-credit-checkout"); } catch { /* Storage is optional. */ }
+        }
         setError(result.error ?? "Payment could not be started. Try again.");
         return;
       }
 
+      try { sessionStorage.removeItem("tcg-credit-checkout"); } catch { /* Storage is optional. */ }
       window.location.assign(result.checkoutUrl);
     } catch {
       setError("Checkout is unavailable right now. Please try again later.");
@@ -447,6 +459,9 @@ export default function Checkout() {
                   description="Choose tracked PostNL delivery or collect from TCGHaven."
                 >
                   <div class={styles.optionStack}>
+                    <Show when={quoteLoading()}><p role="status">Calculating shipping for your order…</p></Show>
+                    <Show when={quoteError()}><p role="alert">{quoteError()} <button type="button" onClick={() => setQuoteRevision(value => value + 1)}>Retry shipping calculation</button></p></Show>
+                    <Show when={!quoteLoading() && !quoteError() && shippingOptions().length === 0}><p>No shipping option fits this order. Contact the shop for a custom shipment.</p></Show>
                     <For each={shippingOptions()}>
                       {option => (
                         <label class={styles.option}>
@@ -595,6 +610,9 @@ export default function Checkout() {
                   </Show>
                 </div>
 
+                <Show when={creditBalance() > 0}>
+                  <label class={styles.creditOption}><input type="checkbox" checked={useStoreCredit()} onChange={event => setUseStoreCredit(event.currentTarget.checked)} /><span>Use store credit · {formatPrice(creditBalance())} available</span></label>
+                </Show>
                 <div class={styles.totals} aria-live="polite">
                   <SummaryRow label="Subtotal" value={formatPrice(subtotalCents())} />
                   <Show when={discountCents() > 0}>
@@ -606,9 +624,10 @@ export default function Checkout() {
                   <SummaryRow
                     label="Shipping"
                     value={
-                      shippingCents() === 0 ? "Free" : formatPrice(shippingCents())
+                      quoteLoading() ? "Calculating…" : quoteError() ? "Unavailable" : shippingCents() === 0 ? "Free" : formatPrice(shippingCents())
                     }
                   />
+                  <Show when={appliedCreditCents() > 0}><SummaryRow label="Store credit" value={`−${formatPrice(appliedCreditCents())}`} /></Show>
                   <div class={styles.total}>
                     <span>Total</span>
                     <strong>{formatPrice(totalCents())}</strong>
@@ -624,11 +643,11 @@ export default function Checkout() {
                 <button
                   type="submit"
                   class={styles.submit}
-                  disabled={isSubmitting()}
+                  disabled={isSubmitting() || quoteLoading() || !!quoteError() || !shippingOptions().some(option => option.value === shippingMethod())}
                 >
                   {isSubmitting()
                     ? "Preparing payment..."
-                    : `Pay ${formatPrice(totalCents())} securely`}
+                    : totalCents() === 0 && useStoreCredit() ? "Place order using store credit" : `Pay ${formatPrice(totalCents())} securely`}
                 </button>
 
                 <p class={styles.legalConsent}>

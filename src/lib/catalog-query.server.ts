@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, gt, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import { db } from "~/db";
-import { products, productVariants } from "~/db/schema";
+import { categories, products, productVariants } from "~/db/schema";
 import type { DatabaseCatalogProduct } from "~/lib/catalog";
 
 export type CatalogQueryOptions = {
@@ -25,6 +25,7 @@ export async function loadDatabaseCatalogRows(
     eq(products.status, "active"),
     options.slug ? eq(products.slug, options.slug) : undefined,
     options.game ? eq(products.game, options.game) : undefined,
+    options.game ? sql`coalesce(${products.productType}, '') <> 'accessory'` : undefined,
   );
   const where = and(
     productWhere,
@@ -53,6 +54,8 @@ export async function loadDatabaseCatalogRows(
             slug: products.slug,
             name: products.name,
             description: products.description,
+            brand: products.brand,
+            categorySlug: categories.slug,
             game: products.game,
             productType: products.productType,
             imageUrls: products.imageUrls,
@@ -72,6 +75,7 @@ export async function loadDatabaseCatalogRows(
           })
           .from(products)
           .innerJoin(productVariants, eq(productVariants.productId, products.id))
+          .leftJoin(categories, eq(categories.id, products.categoryId))
           .where(inArray(products.id, publicProductIds))
           .orderBy(
             asc(products.createdAt),

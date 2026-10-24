@@ -1,0 +1,17 @@
+@use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+.fields, .settings { grid-column: 1 / -1; min-width: 0; padding: 1rem 0; border: 0; color: $gray-300; }
+.fields legend, .settings h3 { color: $white; font-size: 1rem; font-weight: 650; }
+.fields p, .settings p { max-width: 75ch; margin: 0.5rem 0 1rem; font-size: 0.875rem; line-height: 1.55; }
+.settings h4 { margin: 1.75rem 0 0.75rem; color: $white; font-size: 0.9375rem; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.grid label, .rule label { display: flex; min-width: 0; flex-direction: column; gap: 0.5rem; font-size: 0.875rem; }
+.fields input, .fields select, .settings input, .settings select { width: 100%; min-height: 2.75rem; padding: 0.65rem; border: 1px solid $gray-700; border-radius: $radius-md; background: $surface; color: $white; font: inherit; }
+.fields input::placeholder, .settings input::placeholder { color: $gray-400; }
+.fields :focus-visible, .settings :focus-visible { outline: 2px solid $primary; outline-offset: 2px; }
+.record { margin-bottom: 1rem; padding: 1rem; border-radius: $radius-inner; background: rgba($white, 0.025); }
+.settings button { @include btn-secondary; margin-top: 0.75rem; }
+.settings button:disabled { opacity: 0.5; }
+.rule { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin-bottom: 1rem; }
+.rule label { flex: 1 1 12rem; }
+@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .record { padding: 0.75rem; } }

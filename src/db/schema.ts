@@ -1,6 +1,7 @@
 import {
   bigint,
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -12,6 +13,8 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import type { Shipment } from "~/lib/product-shipping";
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -400,6 +403,11 @@ export const orders = pgTable(
     trackingEmailAttempts: integer("tracking_email_attempts").default(0).notNull(),
     trackingEmailError: text("tracking_email_error"),
     totalCents: integer("total_cents").notNull(),
+    shipment: jsonb("shipment").$type<Shipment>(),
+    creditAppliedCents: integer("credit_applied_cents").default(0).notNull(),
+    creditState: text("credit_state").default("none").notNull(),
+    creditRequestId: uuid("credit_request_id"),
+    creditRequestHash: text("credit_request_hash"),
     billingAddress: jsonb("billing_address")
       .$type<Record<string, string>>()
       .notNull(),
@@ -411,10 +419,33 @@ export const orders = pgTable(
   },
   table => [
     uniqueIndex("order_number_idx").on(table.orderNumber),
+    uniqueIndex("order_credit_request_idx").on(table.creditRequestId),
     index("order_user_idx").on(table.userId),
     index("order_status_idx").on(table.status),
+    check("order_credit_valid", sql`${table.creditAppliedCents} >= 0 and ${table.creditAppliedCents} <= ${table.totalCents} and ${table.creditState} in ('none','reserved','spent','released','refunded')`),
   ],
 );
+
+export const walletAccounts = pgTable("wallet_accounts", {
+  userId: uuid("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  balanceCents: integer("balance_cents").default(0).notNull(),
+  ...timestamps,
+}, table => [check("wallet_balance_valid", sql`${table.balanceCents} >= 0 and ${table.balanceCents} <= 100000000`)]);
+
+export const walletEntries = pgTable("wallet_entries", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => user.id, { onDelete: "set null" }),
+  amountCents: integer("amount_cents").notNull(), balanceCents: integer("balance_cents").notNull(),
+  kind: text("kind").notNull(), reason: text("reason").notNull(),
+  requestId: uuid("request_id").notNull(),
+  orderId: uuid("order_id").references(() => orders.id, { onDelete: "set null" }),
+  actorId: uuid("actor_id").references(() => user.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, table => [uniqueIndex("wallet_request_idx").on(table.requestId),
+  uniqueIndex("wallet_order_operation_idx").on(table.orderId, table.kind).where(sql`${table.orderId} is not null`),
+  index("wallet_user_created_idx").on(table.userId, table.createdAt),
+  check("wallet_entry_valid", sql`${table.kind} in ('adjustment','reservation','release','refund') and ${table.amountCents} <> 0 and ${table.balanceCents} >= 0`),
+]);
 
 export const returnRequests = pgTable(
   "return_requests",

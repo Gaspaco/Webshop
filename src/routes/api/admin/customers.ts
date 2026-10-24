@@ -3,10 +3,12 @@ import { and, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { logServerError } from "~/lib/server-log";
+import { lockWallet } from "~/lib/wallet.server";
 import {
   customerAdminProfiles,
   session,
   user,
+  walletEntries,
 } from "~/db/schema";
 import {
   apiJson,
@@ -33,15 +35,17 @@ export async function DELETE(event: APIEvent) {
       );
     }
 
-    const [removed] = await db
-      .delete(user)
-      .where(
-        and(
-          eq(user.id, input.id),
-          ne(user.role, "admin"),
-        ),
-      )
-      .returning({ id: user.id, email: user.email });
+    const removal = await db.transaction(async tx => {
+      const [customer] = await tx.select({ id: user.id }).from(user).where(and(eq(user.id, input.id), ne(user.role, "admin")));
+      if (!customer) return { removed: null, protected: false };
+      await lockWallet(tx, input.id);
+      const [history] = await tx.select({ id: walletEntries.id }).from(walletEntries).where(eq(walletEntries.userId, input.id)).limit(1);
+      if (history) return { removed: null, protected: true };
+      const [removed] = await tx.delete(user).where(and(eq(user.id, input.id), ne(user.role, "admin"))).returning({ id: user.id, email: user.email });
+      return { removed, protected: false };
+    });
+    if (removal.protected) return apiJson({ error: "This account has financial store-credit history. Suspend access instead; account anonymisation needs an audited review." }, { status: 409 });
+    const removed = removal.removed;
 
     if (!removed) {
       return apiJson(

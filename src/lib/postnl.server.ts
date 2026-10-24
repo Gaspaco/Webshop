@@ -58,6 +58,14 @@ function splitPostalCodeAndCity(value: string) {
   return { postalCode: match[1].replaceAll(" ", "").toUpperCase(), city: match[2] };
 }
 
+export function postnlDimensions(input: { lengthCm?: number; widthCm?: number; heightCm?: number }) {
+  const values = [input.lengthCm, input.widthCm, input.heightCm];
+  if (values.every(value => value === undefined)) return {};
+  if (values.some(value => typeof value !== "number" || !Number.isFinite(value) || value <= 0 || value > 300)) throw new PostnlError("Enter all three package dimensions between 0 and 300 cm.");
+  const [Length, Width, Height] = (values as number[]).map(value => Math.ceil(value * 10)).sort((a, b) => b - a);
+  return { Length, Width, Height };
+}
+
 function postnlError(status: number, body: unknown) {
   const parsed = z
     .object({
@@ -84,6 +92,7 @@ async function postnlJson(url: string, init: RequestInit) {
   const response = await fetch(url, {
     ...init,
     signal: AbortSignal.timeout(15_000),
+    redirect: "error",
   });
   const body = await response.json().catch(() => null);
   if (!response.ok) throw postnlError(response.status, body);
@@ -107,8 +116,13 @@ export async function createPostnlLabel(input: {
   senderAddress: SenderAddress;
   weightGrams: number;
   productCode: string;
+  lengthCm?: number;
+  widthCm?: number;
+  heightCm?: number;
 }) {
   validatePostnlAddresses(input.shippingAddress, input.senderAddress);
+  z.number().int().min(1).max(30_000).parse(input.weightGrams);
+  const dimension = postnlDimensions(input);
   const env = getPostnlEnv();
   const baseUrl =
     env.POSTNL_MODE === "production"
@@ -190,7 +204,7 @@ export async function createPostnlLabel(input: {
             Email: input.customerEmail,
           },
         ],
-        Dimension: { Weight: input.weightGrams },
+        Dimension: { Weight: input.weightGrams, ...dimension },
         ProductCodeDelivery: input.productCode,
         Reference: input.orderNumber,
       },
