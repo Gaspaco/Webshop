@@ -13,19 +13,13 @@ import {
   writeAuditLog,
 } from "~/lib/admin.server";
 import { resolveAdminImage } from "~/lib/admin-images.server";
+import { validProductImageSource, PRODUCT_IMAGE_INPUT_ERROR } from "~/lib/product-image-input";
 
 const variantImageSchema = z
   .string()
   .trim()
   .max(1_200_000)
-  .refine(
-    value =>
-      value === "" ||
-      value.startsWith("/") ||
-      value.startsWith("https://") ||
-      /^data:image\/(?:webp|jpeg|png);base64,/i.test(value),
-    "Use an HTTPS image, a local image path, or upload a JPG, PNG, or WebP file.",
-  );
+  .refine(validProductImageSource, PRODUCT_IMAGE_INPUT_ERROR);
 
 const variantSchema = z.object({
   productId: z.string().uuid(),

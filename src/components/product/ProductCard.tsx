@@ -4,6 +4,7 @@ import { Portal } from "solid-js/web";
 import { formatPrice } from "~/lib/cart";
 import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
 import { flyToCart } from "~/lib/motion";
+import { productPreviewVariant } from "~/lib/product-preview";
 import styles from "./ProductSection.module.scss";
 
 export type BoxTheme =
@@ -109,11 +110,7 @@ export default function ProductCard(props: ProductCardProps) {
   const selectedVariant = createMemo(() =>
     p.variants?.find(variant => variant.id === selectedVariantId()),
   );
-  const mainVariant = createMemo(() =>
-    p.variants?.find(variant => variant.isDefault) ??
-    p.variants?.find(variant => variant.id === p.variantId) ??
-    p.variants?.[0],
-  );
+  const mainVariant = createMemo(() => productPreviewVariant(p.variants));
   const displayVariant = createMemo(() => selectedVariant() ?? mainVariant());
   const displayImage = createMemo(() => displayVariant()?.image ?? p.image);
   const orderedVariants = createMemo(() => variantsWithAvailableFirst(p.variants));

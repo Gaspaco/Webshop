@@ -5,6 +5,7 @@ import { formatPrice, useCart } from "~/lib/cart";
 import type { ShopProduct } from "~/lib/categories";
 import { isActivePreorder } from "~/lib/game-storefront";
 import { flyToCart, prefersReducedMotion } from "~/lib/motion";
+import { productPreviewVariant } from "~/lib/product-preview";
 import styles from "./Hero.module.scss";
 
 type Slide = {
@@ -122,11 +123,7 @@ export default function Hero(props: {
     return HERO_GAME_ORDER.map((game, slideIndex): Slide => {
       const product = pools.get(game)?.shift();
       if (product) {
-        const mainVariant =
-          product.variants?.find(variant => variant.isDefault && variant.stock > 0) ??
-          product.variants?.find(variant => variant.stock > 0) ??
-          product.variants?.find(variant => variant.isDefault) ??
-          product.variants?.[0];
+        const mainVariant = productPreviewVariant(product.variants);
         const image = mainVariant?.image || product.image;
         const fallbackImage =
           mainVariant?.image && product.image && mainVariant.image !== product.image
@@ -179,12 +176,7 @@ export default function Hero(props: {
     const live = (props.products ?? [])
       .filter(product => (product.stock ?? 0) > 0)
       .map((product): Product | undefined => {
-        const mainVariant =
-          product.variants?.find(variant => variant.isDefault && variant.stock > 0) ??
-          product.variants?.find(variant => variant.id === product.variantId && variant.stock > 0) ??
-          product.variants?.find(variant => variant.stock > 0) ??
-          product.variants?.find(variant => variant.isDefault) ??
-          product.variants?.[0];
+        const mainVariant = productPreviewVariant(product.variants);
         const image = mainVariant?.image || product.image;
         if (!image) return undefined;
         const hasOwnSet = Boolean(

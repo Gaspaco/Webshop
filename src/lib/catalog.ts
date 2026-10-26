@@ -1,5 +1,6 @@
 import type { ShopProduct } from "~/lib/categories";
 import { accessoryBrand, accessoryCategory, accessoryCategoryName } from "./accessories";
+import { productPreviewVariant } from "./product-preview";
 
 export type DatabaseCatalogProduct = {
   id: string;
@@ -67,7 +68,7 @@ export function databaseProductToShopProduct(
     set: typeof metadata.set === "string" ? metadata.set : undefined,
     // A one-variant product may only have a variant photo. Use it as the card
     // cover instead of showing a placeholder until a second variant exists.
-    image: product.variantImageUrl ?? product.imageUrls[0] ?? undefined,
+    image: product.variantImageUrl || product.imageUrls[0] || undefined,
     theme: productType === "accessory" ? "accessories" : game,
     priceCents: product.priceCents,
     compareAtPriceCents: product.compareAtPriceCents ?? undefined,
@@ -128,7 +129,7 @@ export function databaseProductToShopProduct(
         finish: product.finish ?? undefined,
         // A variation without its own photo inherits the product upload. This
         // keeps every option previewable while preserving exact variant scans.
-        image: product.variantImageUrl ?? product.imageUrls[0] ?? undefined,
+        image: product.variantImageUrl || product.imageUrls[0] || undefined,
         isDefault: product.isDefault,
         priceCents: product.priceCents,
         compareAtPriceCents: product.compareAtPriceCents ?? undefined,
@@ -157,10 +158,7 @@ export function databaseCatalogRowsToState(
     }
 
     const variants = [...(existing.variants ?? []), ...(mapped.variants ?? [])];
-    const mainVariant =
-      variants.find(variant => variant.isDefault) ??
-      variants.find(variant => variant.stock > 0) ??
-      variants[0];
+    const mainVariant = productPreviewVariant(variants);
     grouped.set(mapped.id, {
       ...existing,
       // The product image is the canonical catalogue artwork. A variant image

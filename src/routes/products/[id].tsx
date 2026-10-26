@@ -19,6 +19,7 @@ import { accessoryShopUrl } from "~/lib/accessories";
 import { formatPrice, useCart } from "~/lib/cart";
 import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
 import { variantRarity } from "~/lib/card-finish";
+import { productPreviewVariant } from "~/lib/product-preview";
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import ProductSection from "~/components/product/ProductSection";
 import { flyToCart } from "~/lib/motion";
@@ -293,13 +294,7 @@ export default function ProductDetail() {
   };
 
   const mainVariant = () => {
-    const current = product();
-    const variants = current?.variants ?? [];
-    return (
-      variants.find(variant => variant.isDefault) ??
-      variants.find(variant => variant.id === current?.variantId) ??
-      variants[0]
-    );
+    return productPreviewVariant(product()?.variants);
   };
 
   const displayVariant = () => {

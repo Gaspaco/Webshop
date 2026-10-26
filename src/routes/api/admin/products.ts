@@ -19,6 +19,7 @@ import { resolveAdminImage } from "~/lib/admin-images.server";
 import { ACCESSORY_CATEGORIES, accessoryBrand, accessoryCategory } from "~/lib/accessories";
 import { ensureAccessoryCategory } from "~/lib/accessories.server";
 import { productShippingSchema } from "~/lib/product-shipping";
+import { validProductImageSource, PRODUCT_IMAGE_INPUT_ERROR } from "~/lib/product-image-input";
 
 const statusSchema = z.enum(["draft", "active", "archived"]);
 const gameSchema = z.enum([
@@ -35,14 +36,7 @@ const imageSchema = z
   .string()
   .trim()
   .max(1_200_000)
-  .refine(
-    value =>
-      value === "" ||
-      value.startsWith("/") ||
-      value.startsWith("https://") ||
-      /^data:image\/(?:webp|jpeg|png);base64,/i.test(value),
-    "Use an HTTPS image, a local image path, or upload a JPG, PNG, or WebP file.",
-  );
+  .refine(validProductImageSource, PRODUCT_IMAGE_INPUT_ERROR);
 
 const trailerUrlSchema = z
   .string()

@@ -99,7 +99,7 @@ describe("catalogue image selection", () => {
     assert.equal(product.variants?.[0]?.image, row.variantImageUrl);
   });
 
-  it("uses the default variant image for a grouped product", () => {
+  it("uses the highest-priced available variant image for a grouped product", () => {
     const lower = makeProduct(1);
     lower.slug = "shared-card";
     lower.id = "shared-product";
@@ -119,5 +119,28 @@ describe("catalogue image selection", () => {
     assert.equal(state.products[0]?.image, main.variantImageUrl);
     assert.equal(state.products[0]?.priceCents, 500);
     assert.equal(state.products[0]?.variantId, main.variantId);
+  });
+
+  it("skips more expensive sold-out and fully reserved variants, keeping price and photo together", () => {
+    const rows = [makeProduct(1), makeProduct(2), makeProduct(3), makeProduct(4)];
+    for (const row of rows) { row.id = "shared"; row.slug = "shared"; row.isDefault = false; row.variantImageUrl = `https://images.example.test/${row.variantId}.webp`; }
+    rows[0]!.isDefault = true; rows[0]!.priceCents = 100;
+    rows[1]!.priceCents = 50000; rows[1]!.stock = 0;
+    rows[2]!.priceCents = 30000; rows[2]!.reservedStock = 1;
+    rows[3]!.priceCents = 20000; rows[3]!.condition = "Sealed"; rows[3]!.language = "Japanese";
+    const [product] = databaseCatalogRowsToState(rows, []).products;
+    assert.equal(product!.variantId, rows[3]!.variantId); assert.equal(product!.priceCents, 20000);
+    assert.equal(product!.image, rows[3]!.variantImageUrl); assert.equal(product!.sku, rows[3]!.sku);
+    assert.equal(product!.condition, "Sealed"); assert.equal(product!.language, "Japanese"); assert.equal(product!.stock, 2);
+    assert.equal(product!.variants?.find(row => row.isDefault)?.id, rows[0]!.variantId, "preview selection must not rewrite the owner's main flag");
+  });
+
+  it("uses product artwork when the chosen available option has no photo", () => {
+    const cheap = makeProduct(1), expensive = makeProduct(2);
+    cheap.id = expensive.id = "shared"; cheap.slug = expensive.slug = "shared";
+    cheap.priceCents = 100; expensive.priceCents = 20000; expensive.isDefault = false;
+    cheap.variantImageUrl = "https://images.example.test/cheap.webp";
+    expensive.variantImageUrl = ""; expensive.imageUrls = ["/images/product.webp"];
+    assert.equal(databaseCatalogRowsToState([cheap, expensive], []).products[0]!.image, "/images/product.webp");
   });
 });

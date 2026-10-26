@@ -18,6 +18,7 @@ import CardmarketPriceImport from "~/components/admin/CardmarketPriceImport";
 import InventoryExport from "~/components/admin/InventoryExport";
 import AccessoryFields from "~/components/admin/AccessoryFields";
 import ProductShippingFields from "~/components/admin/ProductShippingFields";
+import ProductImageInput from "~/components/admin/ProductImageInput";
 import ShippingSettingsFields from "~/components/admin/ShippingSettingsFields";
 import StoreCredit from "~/components/account/StoreCredit";
 import { DEFAULT_SHIPPING_SETTINGS, productShipping, type ProductShipping, type Shipment, type ShippingSettings } from "~/lib/product-shipping";
@@ -1108,9 +1109,7 @@ function ProductRow(props: {
     setVariantEditDraft(null);
     setQuickImageDrafts(current => ({
       ...current,
-      [variant.id]: current[variant.id] ?? (
-        variant.imageUrl?.startsWith("https://") ? variant.imageUrl : ""
-      ),
+      [variant.id]: current[variant.id] ?? variant.imageUrl ?? "",
     }));
     setMessage("");
   };
@@ -1549,12 +1548,7 @@ function ProductRow(props: {
                 </label>
                 <label class={styles.spanTwo}>
                   <span>Image URL</span>
-                  <input
-                    type="url"
-                    placeholder="https://"
-                    value={image().startsWith("data:") || image().startsWith("/api/admin/product-image?") ? "" : image()}
-                    onInput={event => setImage(event.currentTarget.value)}
-                  />
+                  <ProductImageInput value={image()} onValueChange={setImage} />
                 </label>
                 <Show when={productType() === "sealed"}>
                   <label class={styles.spanTwo}>
@@ -1649,14 +1643,13 @@ function ProductRow(props: {
                           <div class={styles.quickImageForm}>
                             <label>
                               <span>Variant image URL</span>
-                              <input
-                                type="url"
+                              <ProductImageInput
                                 autofocus
                                 placeholder="https://example.com/card-image.jpg"
                                 value={quickImageDrafts()[variant.id] ?? ""}
-                                onInput={event => setQuickImageDrafts(current => ({
+                                onValueChange={imageUrl => setQuickImageDrafts(current => ({
                                   ...current,
-                                  [variant.id]: event.currentTarget.value,
+                                  [variant.id]: imageUrl,
                                 }))}
                               />
                             </label>
@@ -1749,12 +1742,8 @@ function ProductRow(props: {
                       </label>
                       <label>
                         <span>Variant image URL</span>
-                        <input
-                          type="url"
-                          placeholder="https://"
-                          value={current().imageUrl.startsWith("data:") || current().imageUrl.startsWith("/api/admin/product-image?") ? "" : current().imageUrl}
-                          onInput={event => setVariantEditDraft(value => value && ({ ...value, imageUrl: event.currentTarget.value }))}
-                        />
+                        <ProductImageInput value={current().imageUrl}
+                          onValueChange={imageUrl => setVariantEditDraft(value => value && ({ ...value, imageUrl }))} />
                       </label>
                       <Show when={current().imageUrl}>
                         <img class={styles.variantImagePreview} src={current().imageUrl} alt="Selected variant preview" />
@@ -1770,7 +1759,7 @@ function ProductRow(props: {
                         <small>
                           {current().isDefault
                             ? "Already main. Choose another variant to replace it."
-                            : "This price and image appear first in product lists."}
+                            : "Preferred for equal-price options. Previews show the highest-priced in-stock variant."}
                         </small>
                       </label>
                       <label>
@@ -1873,12 +1862,8 @@ function ProductRow(props: {
                     </label>
                     <label>
                       <span>Variant image URL</span>
-                      <input
-                        type="url"
-                        placeholder="https://"
-                        value={variantDraft().imageUrl.startsWith("data:") || variantDraft().imageUrl.startsWith("/api/admin/product-image?") ? "" : variantDraft().imageUrl}
-                        onInput={event => setVariantDraft(current => ({ ...current, imageUrl: event.currentTarget.value }))}
-                      />
+                      <ProductImageInput value={variantDraft().imageUrl}
+                        onValueChange={imageUrl => setVariantDraft(current => ({ ...current, imageUrl }))} />
                     </label>
                     <Show when={variantDraft().imageUrl}>
                       <img class={styles.variantImagePreview} src={variantDraft().imageUrl} alt="New variant preview" />
@@ -4809,7 +4794,7 @@ export default function Admin() {
                         </label>
                         <label>
                           <span>Or image URL</span>
-                          <input type="url" placeholder="https://" value={draft().image.startsWith("data:") ? "" : draft().image} onInput={event => patchDraft("image", event.currentTarget.value)} />
+                          <ProductImageInput value={draft().image} onValueChange={image => patchDraft("image", image)} />
                         </label>
                       </div>
                       <div class={styles.formActions}>

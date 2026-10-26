@@ -81,6 +81,7 @@ export async function loadDatabaseCatalogRows(
             asc(products.createdAt),
             desc(productVariants.isDefault),
             asc(productVariants.createdAt),
+            asc(productVariants.id),
           )
       : Promise.resolve([]),
     options.includeManagedSlugs === false

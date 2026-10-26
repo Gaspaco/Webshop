@@ -11,6 +11,7 @@ type SearchRow = {
   set_code: string | null;
   card_number: string | null;
   has_image: boolean;
+  variant_image_id: string | null;
   price_cents: number | null;
   in_stock: boolean;
 };
@@ -101,7 +102,9 @@ export async function searchCatalog(input: SearchInput): Promise<SearchResult[]>
            p.metadata->>'setCode' as set_code,
            p.metadata->>'cardNumber' as card_number,
            jsonb_array_length(p.image_urls) > 0 as has_image,
-           min(v.price_cents) as price_cents,
+           coalesce(max(v.price_cents) filter (where v.stock > v.reserved_stock), max(v.price_cents)) as price_cents,
+           (array_agg(case when coalesce(v.image_url, '') <> '' then v.id else null end
+             order by (v.stock > v.reserved_stock) desc, v.price_cents desc, v.is_default desc, v.created_at asc, v.id asc))[1] as variant_image_id,
            bool_or(v.stock > v.reserved_stock) as in_stock
     from products p
     join product_variants v on v.product_id = p.id
@@ -119,7 +122,8 @@ export async function searchCatalog(input: SearchInput): Promise<SearchResult[]>
     set: row.set_name,
     number: [row.set_code, row.card_number].filter(Boolean).join(" ") || null,
     game: row.game ? CATEGORIES[row.game]?.name ?? null : null,
-    image: row.has_image ? `/api/catalog/image?product=${encodeURIComponent(row.id)}` : null,
+    image: row.variant_image_id ? `/api/catalog/image?variant=${encodeURIComponent(row.variant_image_id)}`
+      : row.has_image ? `/api/catalog/image?product=${encodeURIComponent(row.id)}` : null,
     priceCents: row.price_cents,
     inStock: row.in_stock,
   }));
