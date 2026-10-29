@@ -10,6 +10,7 @@
     "web": {
       "root": ".",
       "framework": "solidstart-1",
+      "installCommand": "env -u NPM_CONFIG_REGISTRY -u npm_config_registry npm ci --registry=https://registry.npmjs.org/",
       "buildCommand": "npm run build"
     }
   },

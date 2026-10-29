@@ -2,6 +2,9 @@
 .claude
 .output
 .vinxi
+.build
+.cache
+app.config.timestamp_*.js
 graphify-out
 node_modules
 .env*
