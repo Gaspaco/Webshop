@@ -24,7 +24,7 @@ export function reviewVendorAdvisories(report, manifests) {
 }
 
 async function main() {
-  const manifests = ["braces", "node-forge"].map(name => JSON.parse(readFileSync(
+  const manifests = ["braces", "deepmerge"].map(name => JSON.parse(readFileSync(
     new URL(`../vendor/${name}/security-provenance.json`, import.meta.url), "utf8",
   )));
   const payload = Object.fromEntries(manifests.map(({ upstream }) => [upstream.name, [upstream.version]]));

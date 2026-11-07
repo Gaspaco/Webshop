@@ -5,6 +5,11 @@
   color-scheme: dark;
 }
 
+// Native menus otherwise inherit a white popup on some browser/OS combinations.
+select { color-scheme: dark; background-color: $surface; color: $white; }
+select option, select optgroup { background-color: $surface; color: $white; }
+[hidden] { display: none !important; }
+
 *,
 *::before,
 *::after {

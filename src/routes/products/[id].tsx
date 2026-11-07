@@ -1,5 +1,5 @@
 import { Link, Meta, Title } from "@solidjs/meta";
-import { A, useParams } from "@solidjs/router";
+import { A, useParams, useSearchParams } from "@solidjs/router";
 import {
   createEffect,
   createResource,
@@ -16,18 +16,20 @@ import {
 import { fetchDatabaseCatalogState } from "~/lib/catalog";
 import type { ShopProduct } from "~/lib/categories";
 import { accessoryShopUrl } from "~/lib/accessories";
+import { isTcgType, productTypeConfig } from "~/lib/product-types";
 import { formatPrice, useCart } from "~/lib/cart";
 import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
 import { variantRarity } from "~/lib/card-finish";
 import { productPreviewVariant } from "~/lib/product-preview";
+import { canonicalProductUrl, publicProductImageUrl } from "~/lib/public-site";
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import ProductSection from "~/components/product/ProductSection";
 import { flyToCart } from "~/lib/motion";
 import styles from "./[id].module.scss";
 
 function isSealedProduct(product: ShopProduct) {
-  if (product.productType === "accessory") return false;
-  return product.productType === "sealed" || Boolean(product.priceRangeCents);
+  if (product.productType && !isTcgType(product.productType)) return false;
+  return product.productType ? product.productType === "sealed" : Boolean(product.priceRangeCents);
 }
 
 function youtubeEmbedUrl(value?: string) {
@@ -48,6 +50,7 @@ function youtubeEmbedUrl(value?: string) {
 
 function describe(product: ShopProduct) {
   if (product.description) return product.description;
+  if (product.productType && !isTcgType(product.productType)) return `${product.brand ? `${product.brand} ` : ""}${product.name}. See the specifications below for product details.`;
   if (product.productType === "accessory") return `${product.brand ? `${product.brand} ` : ""}${product.accessoryCategoryName ?? "TCG accessory"}, packed carefully and shipped from the Netherlands.`;
   if (isSealedProduct(product)) {
     return `A factory-sealed ${product.gameName} release, stored carefully and shipped tracked from the Netherlands.`;
@@ -57,18 +60,21 @@ function describe(product: ShopProduct) {
 }
 
 function conditionFor(product: ShopProduct) {
-  if (product.productType === "accessory") return product.condition === "Near Mint" ? "New" : product.condition ?? "New";
+  if (product.productType && !isTcgType(product.productType)) return product.condition === "Near Mint" ? "New" : product.condition ?? "New";
   if (isSealedProduct(product)) return "Sealed";
   return product.condition ??
     (product.productType === "graded" ? "Professionally graded" : "Near Mint");
 }
 
 function browseProductUrl(product: ShopProduct) {
-  return product.productType === "accessory" ? accessoryShopUrl(product.accessoryCategory) : `/categories/${product.game}/products`;
+  if (product.productType && !isTcgType(product.productType)) return `/products?${new URLSearchParams({ type: product.productType })}`;
+  return `/categories/${product.game}/products`;
 }
 
 function productGroupUrl(product: ShopProduct) {
-  return product.productType === "accessory" ? accessoryShopUrl(product.accessoryCategory, product.brand) : `/categories/${product.game}`;
+  if (product.productType === "accessory") return accessoryShopUrl(product.accessoryCategory, product.brand);
+  if (product.productType && !isTcgType(product.productType)) return `/products?${new URLSearchParams({ type: product.productType, ...(product.brand ? { brand: product.brand } : {}) })}`;
+  return `/categories/${product.game}`;
 }
 
 const SERVICE_NOTES = [
@@ -151,11 +157,12 @@ function productTypeLabel(product: ShopProduct) {
     graded: "Graded card",
     accessory: "Accessory",
   };
-  return labels[raw] ?? raw.charAt(0).toUpperCase() + raw.slice(1);
+  return labels[raw] ?? productTypeConfig(raw)?.label ?? raw.charAt(0).toUpperCase() + raw.slice(1);
 }
 
 export default function ProductDetail() {
   const params = useParams();
+  const [searchParams] = useSearchParams();
   const cart = useCart();
   const [clientReady, setClientReady] = createSignal(false);
   const [databaseCatalog] = createResource(
@@ -191,6 +198,10 @@ export default function ProductDetail() {
 
   const [quantity, setQuantity] = createSignal(1);
   const [selectedVariantId, setSelectedVariantId] = createSignal("");
+  createEffect(() => {
+    const requested = searchParams.variant;
+    if (typeof requested === "string" && product()?.variants?.some(variant => variant.id === requested)) setSelectedVariantId(requested);
+  });
   const [detailImageFailed, setDetailImageFailed] = createSignal(false);
   const [added, setAdded] = createSignal(false);
   // Stays up after adding (until another product opens) so the shopper has a
@@ -386,7 +397,7 @@ export default function ProductDetail() {
       "@type": "Product",
       name: current.name,
       description: describe(current),
-      image: current.image ? [current.image] : undefined,
+      image: publicProductImageUrl(current.image) ? [publicProductImageUrl(current.image)] : undefined,
       sku: current.sku,
       category: current.gameName,
       brand: { "@type": "Brand", name: current.brand || "TCGHaven" },
@@ -399,7 +410,7 @@ export default function ProductDetail() {
           variant.stock > 0
             ? "https://schema.org/InStock"
             : "https://schema.org/OutOfStock",
-        url: `https://my-little-tcg-haven.vercel.app/products/${encodeURIComponent(current.id)}`,
+        url: canonicalProductUrl(current.id),
       })),
     };
     return JSON.stringify(data).replaceAll("<", "\\u003c");
@@ -508,7 +519,12 @@ export default function ProductDetail() {
         <main class={styles.page}>
           <Title>{item().name} | TCGHaven</Title>
           <Meta name="description" content={describe(item())} />
-          <Link rel="canonical" href={`https://my-little-tcg-haven.vercel.app/products/${encodeURIComponent(item().id)}`} />
+          <Link rel="canonical" href={canonicalProductUrl(item().id)} />
+          <Meta property="og:type" content="product" />
+          <Meta property="og:title" content={`${item().name} | TCGHaven`} />
+          <Meta property="og:description" content={describe(item())} />
+          <Meta property="og:url" content={canonicalProductUrl(item().id)} />
+          <Show when={publicProductImageUrl(item().image)}>{image => <Meta property="og:image" content={image()} />}</Show>
           <script type="application/ld+json" textContent={productJsonLd()} />
 
           <div class={styles.wide}>
@@ -599,9 +615,9 @@ export default function ProductDetail() {
                 <header class={styles.purchaseHeader}>
                   <div class={styles.productKicker}>
                     <A href={productGroupUrl(item())} class={styles.gameLink} data-game={item().game}>
-                      {item().productType === "accessory" ? item().brand || "Accessories" : item().gameName}
+                      {!isTcgType(item().productType) ? item().brand || "Accessories" : item().gameName}
                     </A>
-                    <Show when={item().productType !== "accessory" && (variantSetName(displayVariant()) ?? item().set)}>
+                    <Show when={isTcgType(item().productType) && (variantSetName(displayVariant()) ?? item().set)}>
                       {setName => (
                         <A href={`/categories/${item().game}/sets`}>{setName()}</A>
                       )}
@@ -897,8 +913,8 @@ export default function ProductDetail() {
                     <strong>{activeProduct() ? conditionFor(activeProduct()!) : conditionFor(item())}</strong>
                   </div>
                   <div>
-                    <span>{item().productType === "accessory" ? "Brand" : "Language"}</span>
-                    <strong>{item().productType === "accessory" ? item().brand || "Not specified" : activeProduct()?.language ?? item().language ?? "English"}</strong>
+                    <span>{!isTcgType(item().productType) ? "Brand" : "Language"}</span>
+                    <strong>{!isTcgType(item().productType) ? item().brand || "Not specified" : activeProduct()?.language ?? item().language ?? "English"}</strong>
                   </div>
                   <div>
                     <span>Dispatch</span>
@@ -910,26 +926,27 @@ export default function ProductDetail() {
 
             <section class={styles.detailsSection} id="product-story">
               <div class={styles.detailsIntro}>
-                <h2>{item().productType === "accessory" || isSealedProduct(item()) ? "About this product" : "About this card"}</h2>
+                <h2>{!isTcgType(item().productType) || isSealedProduct(item()) ? "About this product" : "About this card"}</h2>
                 <p>{describe(item())}</p>
                 <p>
-                  {item().productType === "accessory" ? "Stored carefully and packed securely for dispatch. See the product description for dimensions, capacity, and compatibility." : isSealedProduct(item())
+                  {!isTcgType(item().productType) ? "Stored carefully and packed securely for dispatch. See the product description for dimensions, capacity, and compatibility." : isSealedProduct(item())
                     ? "Stored unopened in a smoke-free, climate-stable room until dispatch."
                     : "Stored in a penny sleeve and top loader from the moment it is listed, then packed in a rigid mailer for dispatch."}
                 </p>
               </div>
 
               <dl class={styles.specifications}>
-                <Show when={item().productType === "accessory"} fallback={<>
+                <For each={productTypeConfig(item().productType)?.fields ?? []}>{field => <Show when={displayVariant()?.attributes?.[field.key] || item().attributes?.[field.key]}>{value => <div><dt>{field.label}</dt><dd>{value()}</dd></div>}</Show>}</For>
+                <Show when={!isTcgType(item().productType)} fallback={<>
                   <div><dt>Game</dt><dd>{item().gameName}</dd></div>
                   <div><dt>Set</dt><dd>{variantSetName(displayVariant()) ?? item().set ?? "Various"}</dd></div>
                 </>}>
                   <div><dt>Brand</dt><dd>{item().brand || "Not specified"}</dd></div>
-                  <div><dt>Category</dt><dd>{item().accessoryCategoryName}</dd></div>
+                  <div><dt>Category</dt><dd>{item().accessoryCategoryName ?? productTypeConfig(item().productType)?.label}</dd></div>
                 </Show>
                 <div><dt>Product type</dt><dd>{productTypeLabel(item())}</dd></div>
                 <div><dt>Condition</dt><dd>{conditionFor(item())}</dd></div>
-                <Show when={item().productType !== "accessory"}>
+                <Show when={isTcgType(item().productType)}>
                 <div><dt>Language</dt><dd>{item().language ?? "English"}</dd></div>
                 <Show when={item().cardNumber}><div><dt>Card number</dt><dd>{item().cardNumber}</dd></div></Show>
                 <Show when={variantRarity(displayVariant()) ?? item().rarity}>

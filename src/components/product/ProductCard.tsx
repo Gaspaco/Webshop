@@ -5,9 +5,13 @@ import { formatPrice } from "~/lib/cart";
 import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
 import { flyToCart } from "~/lib/motion";
 import { productPreviewVariant } from "~/lib/product-preview";
+import { isTcgType } from "~/lib/product-types";
 import styles from "./ProductSection.module.scss";
 
 export type BoxTheme =
+  | "onepiece"
+  | "grandarchive"
+  | "vanguard"
   | "accessories"
   | "pokemon"
   | "yugioh"
@@ -18,6 +22,7 @@ export type BoxTheme =
   | "cyberpunk";
 
 export type ProductVariantOption = {
+  attributes?: Record<string, string>;
   id: string;
   name: string;
   sku: string;
@@ -227,8 +232,8 @@ export default function ProductCard(props: ProductCardProps) {
       <div class={styles.cardBody}>
         <A href={p.href} class={styles.cardInfo}>
           <span class={styles.cardName}>{p.name}</span>
-          <Show when={p.productType === "accessory" ? p.brand || p.accessoryCategoryName : p.set}>
-            <span class={styles.cardSet}>{p.productType === "accessory" ? [p.brand, p.accessoryCategoryName].filter(Boolean).join(" · ") : p.set}</span>
+          <Show when={p.productType && !isTcgType(p.productType) ? p.brand || p.accessoryCategoryName : p.set}>
+            <span class={styles.cardSet}>{p.productType && !isTcgType(p.productType) ? [p.brand, p.accessoryCategoryName].filter(Boolean).join(" · ") : p.set}</span>
           </Show>
           <Show when={p.rating}>
             <Stars rating={p.rating!} />

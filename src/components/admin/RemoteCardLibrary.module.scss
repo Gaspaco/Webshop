@@ -1,5 +1,13 @@
 @use "../../styles/variables" as *;
 
+.libraryChoice { display: flex; flex-direction: column; gap: 0.45rem; max-width: 28rem; margin-top: 1rem; color: $gray-300; font-size: 0.875rem; }
+.libraryChoice select { width: 100%; min-height: 2.75rem; padding: 0.65rem 0.8rem; border: 1px solid $gray-700; border-radius: $radius-inner; background: $surface; color: $white; font: inherit; }
+.sourceOptions { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; }
+.permissions { display: flex; gap: 0.65rem; max-width: 65ch; align-items: start; font-size: 0.875rem; color: $gray-300; }
+.permissions input { width: 1.15rem; height: 1.15rem; flex-shrink: 0; margin-top: 0.15rem; accent-color: $primary; }
+.loadMore { display: block; padding: 0.75rem 1rem; margin: 1rem auto 0; background: $surface; color: $primary-light; border: 1px solid $gray-700; border-radius: $radius-inner; }
+.libraryChoice select:focus-visible, .loadMore:focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+
 .library {
   margin-top: 1.25rem;
   padding: 1.35rem;

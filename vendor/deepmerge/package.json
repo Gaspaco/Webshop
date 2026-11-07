@@ -1,0 +1,11 @@
+{
+  "name": "@tcghaven/deepmerge",
+  "version": "4.3.1-tcghaven.1",
+  "private": true,
+  "description": "Repository-maintained deepmerge 4.3.1 security fork preventing returned-object prototype poisoning (CVE-2026-93753).",
+  "license": "MIT",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": ["index.js", "index.d.ts", "license.txt", "security-provenance.json"],
+  "engines": { "node": ">=22" }
+}

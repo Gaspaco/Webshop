@@ -579,6 +579,17 @@ $gutter: 0.75rem;
   font-weight: 600;
 }
 
+.catalogAttributeFilters {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  order: 1;
+  gap: 0.75rem;
+}
+
+.catalogAttributeFilters:empty { display: none; }
+.catalogAttributeFilters label { flex: 1 1 9rem; max-width: 18rem; }
+
 .catalogToolbar input,
 .catalogToolbar select {
   width: 100%;
@@ -1265,10 +1276,37 @@ $gutter: 0.75rem;
 
 .importActions {
   display: flex;
-  flex: 0 0 auto;
+  flex: 1 1 30rem;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
 }
+
+.libraryPicker {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.libraryPicker label { display: flex; flex-direction: column; gap: 0.5rem; width: min(100%, 28rem); }
+.libraryPicker label > span { color: $white; font-size: 0.875rem; font-weight: 600; }
+.libraryPicker p { max-width: 50ch; color: $gray-300; font-size: 0.875rem; }
+.libraryPicker select { width: 100%; min-height: 2.875rem; padding: 0.7rem 0.85rem; border: 1px solid $gray-700; border-radius: $radius-inner; background: $surface; color: $white; font: inherit; }
+.libraryPicker select:focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+
+.importActions label:not(.primaryAction) { display: flex; flex-direction: column; gap: 0.4rem; }
+.importActions label > span { font-size: 0.8125rem; color: $gray-300; }
+.importActions select {
+  min-height: 2.7rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid $gray-700;
+  border-radius: $radius-inner;
+  background: $surface;
+  color: $white;
+  font: inherit;
+}
+.importActions select:focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
 
 .importActions button {
   min-height: 2.7rem;
@@ -2169,7 +2207,7 @@ $gutter: 0.75rem;
   min-height: 3.5rem;
   align-items: center;
   border-bottom: 1px solid rgba($white, 0.05);
-  grid-template-columns: minmax(9rem, 1.4fr) repeat(6, minmax(5rem, 0.8fr)) auto;
+  grid-template-columns: minmax(12rem, 2fr) repeat(3, minmax(6rem, 1fr));
   gap: 0.65rem;
   color: $gray-400;
   font-size: 0.78rem;
@@ -2206,9 +2244,17 @@ $gutter: 0.75rem;
 }
 
 .variantActions {
+  grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
   gap: 0.6rem;
+}
+
+@media (max-width: 760px) {
+  .variantList > div { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-block: 0.85rem; }
+  .variantList > div > span:first-child { grid-column: 1 / -1; }
+  .variantActions { flex-wrap: wrap; }
+  .variantForm { grid-template-columns: minmax(0, 1fr); }
 }
 
 .variantActions button:last-child {

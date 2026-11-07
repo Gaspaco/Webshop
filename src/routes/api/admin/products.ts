@@ -20,18 +20,12 @@ import { ACCESSORY_CATEGORIES, accessoryBrand, accessoryCategory } from "~/lib/a
 import { ensureAccessoryCategory } from "~/lib/accessories.server";
 import { productShippingSchema } from "~/lib/product-shipping";
 import { validProductImageSource, PRODUCT_IMAGE_INPUT_ERROR } from "~/lib/product-image-input";
+import { PRODUCT_TYPE_VALUES, PRODUCT_GAMES, isTcgType, typeAttributes } from "~/lib/product-types";
+import { productAttributesSchema, validateTypeAttributes } from "~/lib/product-attributes";
+import { ensureProductTypeCategory } from "~/lib/product-types.server";
 
 const statusSchema = z.enum(["draft", "active", "archived"]);
-const gameSchema = z.enum([
-  "pokemon",
-  "yugioh",
-  "magic",
-  "lorcana",
-  "riftbound",
-  "digimon",
-  "cyberpunk",
-  "other",
-]);
+const gameSchema = z.enum(PRODUCT_GAMES);
 const imageSchema = z
   .string()
   .trim()
@@ -84,7 +78,9 @@ const createProductSchema = z.object({
   game: gameSchema.optional(),
   accessoryCategory: z.enum(ACCESSORY_CATEGORIES.map(category => category.slug)).optional(),
   shipping: productShippingSchema.optional(),
-  productType: z.enum(["single", "sealed", "graded", "accessory"]),
+  productType: z.enum(PRODUCT_TYPE_VALUES),
+  attributes: productAttributesSchema.optional(),
+  variantAttributes: productAttributesSchema.optional(),
   set: z.string().trim().max(120).optional().default(""),
   badge: z.string().trim().max(32).optional().default(""),
   trailerUrl: trailerUrlSchema.optional().default(""),
@@ -147,8 +143,8 @@ export async function POST(event: APIEvent) {
 
   try {
     const input = createProductSchema.parse(await event.request.json());
-    if (input.productType === "accessory" ? !input.brand : !input.game) {
-      return apiJson({ error: input.productType === "accessory" ? "Choose or enter an accessory brand." : "Choose a game." }, { status: 400 });
+    if (isTcgType(input.productType) ? !input.game : !input.brand) {
+      return apiJson({ error: isTcgType(input.productType) ? "Choose a game." : "Choose or enter a brand." }, { status: 400 });
     }
     input.image = await resolveAdminImage(input.image);
     if (input.preorder && !input.releaseDate) {
@@ -165,7 +161,7 @@ export async function POST(event: APIEvent) {
     const result = await db.transaction(async tx => {
       const isAccessory = input.productType === "accessory";
       const category = accessoryCategory(input.accessoryCategory);
-      const categoryId = isAccessory ? await ensureAccessoryCategory(tx, category) : null;
+      const categoryId = isAccessory ? await ensureAccessoryCategory(tx, category) : await ensureProductTypeCategory(tx, input.productType);
       const [createdProduct] = await tx
         .insert(products)
         .values({
@@ -173,12 +169,13 @@ export async function POST(event: APIEvent) {
           slug,
           description: input.description || null,
           brand: accessoryBrand(input.brand) || null,
-          game: isAccessory ? null : input.game,
+          game: isTcgType(input.productType) ? input.game : null,
           categoryId,
           productType: input.productType,
           status: input.status,
           imageUrls: input.image ? [input.image] : [],
           metadata: {
+            attributes: validateTypeAttributes(input.productType, input.attributes ?? {}),
             shipping: input.shipping ?? null,
             accessoryCategory: isAccessory ? category : null,
             set: input.set || null,
@@ -202,7 +199,7 @@ export async function POST(event: APIEvent) {
 
       const sku =
         input.sku ||
-        `${isAccessory ? "ACC" : input.game!.slice(0, 3).toUpperCase()}-${slug.slice(0, 36).toUpperCase()}`;
+        `${isTcgType(input.productType) ? input.game!.slice(0, 3).toUpperCase() : input.productType.slice(0, 3).toUpperCase()}-${slug.slice(0, 36).toUpperCase()}`;
       const [variant] = await tx
         .insert(productVariants)
         .values({
@@ -214,9 +211,10 @@ export async function POST(event: APIEvent) {
             (input.productType === "sealed" ? "Sealed product" : input.condition) ||
             "Default",
           condition:
-            isAccessory ? (input.condition === "Near Mint" ? "New" : input.condition || "New") : input.productType === "sealed" ? "Sealed" : input.condition || null,
-          language: isAccessory ? null : input.language || null,
-          finish: isAccessory ? null : input.finish || null,
+            !isTcgType(input.productType) ? (input.condition === "Near Mint" ? "New" : input.condition || "New") : input.productType === "sealed" ? "Sealed" : input.condition || null,
+          language: isTcgType(input.productType) ? input.language || null : null,
+          finish: isTcgType(input.productType) ? input.finish || null : null,
+          attributes: validateTypeAttributes(input.productType, input.variantAttributes ?? {}, true),
           imageUrl: input.image || null,
           isDefault: true,
           priceCents: input.priceCents,
@@ -267,8 +265,8 @@ export async function PATCH(event: APIEvent) {
       payload.id.startsWith("static:")
     ) {
       const input = starterOverrideSchema.parse(payload);
-      if (input.productType === "accessory" ? !input.brand : !input.game) {
-        return apiJson({ error: "Choose a game or enter an accessory brand." }, { status: 400 });
+      if (isTcgType(input.productType) ? !input.game : !input.brand) {
+        return apiJson({ error: "Choose a game or enter a brand." }, { status: 400 });
       }
       input.image = await resolveAdminImage(input.image);
       if (input.preorder && !input.releaseDate) {
@@ -296,12 +294,13 @@ export async function PATCH(event: APIEvent) {
             slug: starterSlug,
             description: input.description || null,
             brand: accessoryBrand(input.brand) || null,
-            game: isAccessory ? null : input.game,
-            categoryId: isAccessory ? await ensureAccessoryCategory(tx, category) : null,
+            game: isTcgType(input.productType) ? input.game : null,
+            categoryId: isAccessory ? await ensureAccessoryCategory(tx, category) : await ensureProductTypeCategory(tx, input.productType),
             productType: input.productType,
             status: input.status,
             imageUrls: input.image ? [input.image] : [],
             metadata: {
+              attributes: validateTypeAttributes(input.productType, input.attributes ?? {}),
               shipping: input.shipping ?? null,
               accessoryCategory: isAccessory ? category : null,
               set: input.set || null,
@@ -335,11 +334,12 @@ export async function PATCH(event: APIEvent) {
               "Default",
             condition:
               input.productType === "sealed" ? "Sealed" : input.condition || null,
-            language: input.language || null,
-            finish: input.finish || null,
+            language: isTcgType(input.productType) ? input.language || null : null,
+            finish: isTcgType(input.productType) ? input.finish || null : null,
             imageUrl: input.image || null,
             isDefault: true,
             priceCents: input.priceCents,
+            attributes: validateTypeAttributes(input.productType, input.variantAttributes ?? {}, true),
             compareAtPriceCents: input.compareAtPriceCents ?? null,
             stock: input.stock,
             trackInventory: input.trackInventory,
@@ -407,10 +407,10 @@ export async function PATCH(event: APIEvent) {
       if (!current) throw new Error("Product not found.");
       const nextType = input.productType ?? current.productType;
       const organizationChanged = input.productType !== undefined || input.accessoryCategory !== undefined || input.brand !== undefined || input.game !== undefined;
-      if (organizationChanged && nextType === "accessory" && !(input.brand ?? current.brand)?.trim()) {
-        throw new z.ZodError([{ code: "custom", path: ["brand"], message: "Choose or enter an accessory brand." }]);
+      if (organizationChanged && !isTcgType(nextType) && !(input.brand ?? current.brand)?.trim()) {
+        throw new z.ZodError([{ code: "custom", path: ["brand"], message: "Choose or enter a brand." }]);
       }
-      if (nextType !== "accessory" && (input.productType !== undefined || input.game !== undefined) && !(input.game ?? current.game)) {
+      if (isTcgType(nextType) && (input.productType !== undefined || input.game !== undefined) && !(input.game ?? current.game)) {
         throw new z.ZodError([{ code: "custom", path: ["game"], message: "Choose a game for this product." }]);
       }
       const productChanges: Partial<typeof products.$inferInsert> = {};
@@ -425,11 +425,12 @@ export async function PATCH(event: APIEvent) {
       if (nextType === "accessory" && organizationChanged) {
         productChanges.game = null;
         productChanges.categoryId = await ensureAccessoryCategory(tx, accessoryCategory(input.accessoryCategory ?? current.metadata.accessoryCategory));
-      } else if (current.productType === "accessory" && nextType !== "accessory") {
-        productChanges.categoryId = null;
+      } else if (input.productType !== undefined && nextType !== current.productType && nextType !== "accessory") {
+        productChanges.categoryId = await ensureProductTypeCategory(tx, nextType!);
       }
+      if (organizationChanged && !isTcgType(nextType)) productChanges.game = null;
       if (
-        input.shipping !== undefined || organizationChanged || input.set !== undefined ||
+        input.attributes !== undefined || input.shipping !== undefined || organizationChanged || input.set !== undefined ||
         input.badge !== undefined ||
         input.cardNumber !== undefined ||
         input.rarity !== undefined ||
@@ -450,6 +451,7 @@ export async function PATCH(event: APIEvent) {
           .limit(1);
         productChanges.metadata = {
           ...(stored?.metadata ?? {}),
+          ...(input.attributes !== undefined || (input.productType !== undefined && nextType !== current.productType) ? { attributes: validateTypeAttributes(nextType, input.attributes ?? typeAttributes(nextType, current.metadata.attributes)) } : {}),
           ...(input.shipping !== undefined ? { shipping: input.shipping } : {}),
           ...(organizationChanged ? { accessoryCategory: nextType === "accessory" ? accessoryCategory(input.accessoryCategory ?? current.metadata.accessoryCategory) : null } : {}),
           ...(input.set !== undefined ? { set: input.set || null } : {}),
@@ -489,6 +491,8 @@ export async function PATCH(event: APIEvent) {
       }
 
       const variantChanges: Partial<typeof productVariants.$inferInsert> = {};
+      if (input.variantAttributes !== undefined) variantChanges.attributes = validateTypeAttributes(nextType, input.variantAttributes, true);
+      if (input.productType !== undefined && !isTcgType(nextType)) { variantChanges.language = null; variantChanges.finish = null; }
       if (input.sku !== undefined) variantChanges.sku = input.sku;
       if (input.barcode !== undefined) variantChanges.barcode = input.barcode || null;
       if (input.variantName !== undefined) {
@@ -502,8 +506,8 @@ export async function PATCH(event: APIEvent) {
       } else if (input.condition !== undefined) {
         variantChanges.condition = input.condition || null;
       }
-      if (input.language !== undefined) variantChanges.language = input.language || null;
-      if (input.finish !== undefined) variantChanges.finish = input.finish || null;
+      if (input.language !== undefined) variantChanges.language = isTcgType(nextType) ? input.language || null : null;
+      if (input.finish !== undefined) variantChanges.finish = isTcgType(nextType) ? input.finish || null : null;
       if (nextType === "accessory" && input.productType !== undefined) {
         variantChanges.condition = input.condition === "Near Mint" ? "New" : input.condition || "New";
         variantChanges.language = null;

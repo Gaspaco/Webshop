@@ -21,6 +21,10 @@ import { useCart } from "~/lib/cart";
 import { isActivePreorder } from "~/lib/game-storefront";
 import { ACCESSORY_BRANDS, ACCESSORY_CATEGORIES, accessoryBrand } from "~/lib/accessories";
 import styles from "./index.module.scss";
+import { PRODUCT_TYPES, isTcgType, productTypeConfig, typeAttributes, type ProductAttributes } from "~/lib/product-types";
+import ProductAttributeFilters, { matchesAttributeFilters } from "~/components/admin/ProductAttributeFilters";
+import SetFilter from "~/components/product/SetFilter";
+import { matchesSetFilter, setFilterOptions, productForSet } from "~/lib/product-sets";
 
 const GAME_OPTIONS = [
   { key: "all", label: "All games" },
@@ -31,7 +35,7 @@ const TYPE_OPTIONS = [
   { key: "all", label: "All" },
   { key: "sealed", label: "Sealed" },
   { key: "single", label: "Singles" },
-  { key: "accessory", label: "Accessories" },
+  ...PRODUCT_TYPES.filter(type => type.value !== "single" && type.value !== "sealed").map(type => ({ key: type.value, label: type.label })),
 ];
 const ACCESSORY_OPTIONS = [{ key: "all", label: "All accessory categories" }, ...ACCESSORY_CATEGORIES.map(category => ({ key: category.slug, label: category.name }))];
 
@@ -134,10 +138,13 @@ export default function Products() {
     searchValue(searchParams.q),
   );
   const [game, setGame] = createSignal(validOption(searchParams.game, GAME_OPTIONS, "all"));
+  const [setFilter, setSetFilter] = createSignal(searchValue(searchParams.set).slice(0, 250));
   const [type, setType] = createSignal(validOption(searchParams.type, TYPE_OPTIONS, "all"));
   const [accessoryKind, setAccessoryKind] = createSignal(validOption(searchParams.category, ACCESSORY_OPTIONS, "all"));
   const [brand, setBrand] = createSignal(accessoryBrand(searchValue(searchParams.brand).slice(0, 120)));
   const accessoryView = () => type() === "accessory";
+  const merchandiseView = () => type() !== "all" && !isTcgType(type());
+  const [attributeFilters, setAttributeFilters] = createSignal<ProductAttributes>({});
   const [price, setPrice] = createSignal(validOption(searchParams.price, PRICE_OPTIONS, "all"));
   const [stockOnly, setStockOnly] = createSignal(searchValue(searchParams.stock) === "1");
   const [sort, setSort] = createSignal<SortKey>(
@@ -184,6 +191,11 @@ export default function Products() {
     ),
   );
 
+  createEffect(on(() => searchValue(searchParams.attrs), value => {
+    try { setAttributeFilters(typeAttributes(type(), JSON.parse(value || "{}"))); } catch { setAttributeFilters({}); }
+  }));
+  createEffect(on(() => searchValue(searchParams.set), value => setSetFilter(value.slice(0, 250))));
+
   // Keep the active catalogue view in the URL. Browser Back then restores the
   // exact search, facets, and sort after somebody opens a product.
   createEffect(() => {
@@ -191,13 +203,15 @@ export default function Products() {
     setSearchParams(
       {
         q: search().trim() || undefined,
-        game: accessoryView() || game() === "all" ? undefined : game(),
+        set: !merchandiseView() && setFilter() ? setFilter() : undefined,
+        attrs: Object.values(attributeFilters()).some(Boolean) ? JSON.stringify(attributeFilters()) : undefined,
+        game: merchandiseView() || game() === "all" ? undefined : game(),
         type: type() === "all" ? undefined : type(),
         price: price() === "all" ? undefined : price(),
         stock: stockOnly() ? "1" : undefined,
         sort: sort() === "featured" ? undefined : sort(),
         category: accessoryView() && accessoryKind() !== "all" ? accessoryKind() : undefined,
-        brand: accessoryView() && brand() ? brand() : undefined,
+        brand: merchandiseView() && brand() ? brand() : undefined,
       },
       { replace: true },
     );
@@ -205,11 +219,13 @@ export default function Products() {
 
   // Everything except the game facet, so the sidebar can show honest counts
   // for each game against the rest of the current filter state.
-  const matchesRest = (product: ShopProduct, query: string[]) =>
+  const matchesRest = (product: ShopProduct, query: string[], includeSet = true) =>
+    (!includeSet || merchandiseView() || matchesSetFilter(product, setFilter())) &&
     query.every(part => searchableText(product).includes(part)) &&
     (type() === "all" || typeOf(product) === type()) &&
     (!accessoryView() || accessoryKind() === "all" || product.accessoryCategory === accessoryKind()) &&
-    (!accessoryView() || !brand() || accessoryBrand(product.brand ?? "").toLowerCase() === brand().toLowerCase()) &&
+    (!merchandiseView() || !brand() || accessoryBrand(product.brand ?? "").toLowerCase() === brand().toLowerCase()) &&
+    matchesAttributeFilters(product, attributeFilters()) &&
     (price() === "all" || priceBucket(product) === price()) &&
     (!stockOnly() || inStock(product));
 
@@ -222,7 +238,7 @@ export default function Products() {
     const counts = new Map<string, number>();
     let total = 0;
     for (const product of allProducts()) {
-      if (!matchesRest(product, parts)) continue;
+      if (!matchesRest(product, parts, false)) continue;
       total += 1;
       counts.set(product.game, (counts.get(product.game) ?? 0) + 1);
     }
@@ -232,9 +248,9 @@ export default function Products() {
 
   const visible = createMemo(() => {
     const parts = queryParts();
-    const list = allProducts().filter(
+    const list = allProducts().map(product => setFilter() && !merchandiseView() ? productForSet(product, setFilter().slice(setFilter().indexOf(":") + 1)) : product).filter(
       product =>
-        matchesRest(product, parts) && (accessoryView() || game() === "all" || product.game === game()),
+        matchesRest(product, parts) && (merchandiseView() || game() === "all" || product.game === game()),
     );
 
     switch (sort()) {
@@ -253,8 +269,8 @@ export default function Products() {
     setSearch("");
   };
   const accessoryBrands = createMemo(() => [...new Set([
-    ...ACCESSORY_BRANDS,
-    ...allProducts().filter(product => product.productType === "accessory").map(product => product.brand).filter((value): value is string => !!value),
+    ...(accessoryView() ? ACCESSORY_BRANDS : []),
+    ...allProducts().filter(product => product.productType === type()).map(product => product.brand).filter((value): value is string => !!value),
     ...(brand() ? [brand()] : []),
   ])].sort((left, right) => left.localeCompare(right)));
 
@@ -262,10 +278,11 @@ export default function Products() {
   // catalogue is never hidden inside a control you have to go looking for.
   const activeChips = createMemo(() => {
     const chips: { label: string; clear: () => void }[] = [];
+    if (setFilter() && !merchandiseView()) chips.push({ label: setFilterOptions(allProducts()).find(set => set.value === setFilter())?.name ?? "Selected set", clear: () => setSetFilter("") });
     if (search().trim()) {
       chips.push({ label: `“${search().trim()}”`, clear: clearSearch });
     }
-    if (!accessoryView() && game() !== "all") {
+    if (!merchandiseView() && game() !== "all") {
       chips.push({
         label: GAME_OPTIONS.find(option => option.key === game())?.label ?? game(),
         clear: () => setGame("all"),
@@ -287,14 +304,16 @@ export default function Products() {
       chips.push({ label: "In stock", clear: () => setStockOnly(false) });
     }
     if (accessoryView() && accessoryKind() !== "all") chips.push({ label: ACCESSORY_OPTIONS.find(option => option.key === accessoryKind())!.label, clear: () => setAccessoryKind("all") });
-    if (accessoryView() && brand()) chips.push({ label: brand(), clear: () => setBrand("") });
+    if (merchandiseView() && brand()) chips.push({ label: brand(), clear: () => setBrand("") });
     return chips;
   });
 
   const clearFilters = () => {
+    setSetFilter("");
     clearSearch();
     setGame("all");
     setType("all");
+    setAttributeFilters({});
     setAccessoryKind("all");
     setBrand("");
     setPrice("all");
@@ -330,12 +349,12 @@ export default function Products() {
 
   return (
     <main class={styles.page}>
-      <Title>{accessoryView() ? "Accessories" : "Shop"} | TCGHaven</Title>
+      <Title>{merchandiseView() ? productTypeConfig(type())?.label : "Shop"} | TCGHaven</Title>
 
       <div class={styles.wide}>
         <header class={styles.head}>
           <div class={styles.titleRow}>
-            <h1>{accessoryView() ? "Accessories" : "Shop"}</h1>
+            <h1>{merchandiseView() ? productTypeConfig(type())?.label : "Shop"}</h1>
             <Show
               when={!catalogPending()}
               fallback={<p class={styles.resultCount}>Loading products</p>}
@@ -386,7 +405,8 @@ export default function Products() {
         </header>
 
         <div class={styles.filterBar}>
-          <Show when={!accessoryView()}>
+          <Show when={!merchandiseView()}><SetFilter class={`${styles.accessoryFilter} ${styles.setFilter}`} products={allProducts()} game={game() === "all" ? undefined : game()} value={setFilter()} onChange={setSetFilter} /></Show>
+          <Show when={!merchandiseView()}>
           <div class={styles.gameTabs} role="group" aria-label="Game">
             <For each={GAME_OPTIONS}>
               {option => (
@@ -396,7 +416,7 @@ export default function Products() {
                   classList={{ [styles.gameTabActive]: game() === option.key }}
                   aria-pressed={game() === option.key}
                   disabled={option.key !== "all" && !gameCounts().get(option.key)}
-                  onClick={() => setGame(option.key)}
+                  onClick={() => { setGame(option.key); setSetFilter(""); }}
                 >
                   {option.key === "all" ? "All games" : option.label}
                 </button>
@@ -456,7 +476,7 @@ export default function Products() {
                       type="button"
                       classList={{ [styles.segmentActive]: type() === option.key }}
                       aria-pressed={type() === option.key}
-                      onClick={() => { setType(option.key); if (option.key === "accessory") setGame("all"); }}
+                      onClick={() => { setType(option.key); setBrand(""); setAttributeFilters({}); if (!isTcgType(option.key)) setGame("all"); }}
                     >
                       {option.label}
                     </button>
@@ -474,6 +494,8 @@ export default function Products() {
                   </select>
                 </label>
               </div>
+            </Show>
+            <Show when={merchandiseView()}>
               <div class={styles.group}>
                 <label class={styles.accessoryFilter}>
                   <span>Brand</span>
@@ -484,6 +506,7 @@ export default function Products() {
                 </label>
               </div>
             </Show>
+            <div class={styles.group}><ProductAttributeFilters type={type()} products={allProducts().filter(product => product.productType === type())} value={attributeFilters()} onChange={setAttributeFilters} class={styles.accessoryFilter} /></div>
             <div class={styles.group} role="group" aria-labelledby="filter-price">
               <p id="filter-price">Price</p>
               <div class={styles.priceChips}>

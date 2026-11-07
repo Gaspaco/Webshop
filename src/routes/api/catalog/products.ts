@@ -27,15 +27,9 @@ export async function GET(event: APIEvent) {
     includeManagedSlugs: false,
   });
 
-  const compactProducts = catalog.products.map(product => ({
-    ...product,
-    imageUrls: product.imageUrls.length
-      ? [`/api/catalog/image?product=${encodeURIComponent(product.id)}`]
-      : [],
-    variantImageUrl: product.variantImageUrl
-      ? `/api/catalog/image?variant=${encodeURIComponent(product.variantId)}`
-      : null,
-  }));
+  // Image sources are compacted into SKU URLs by the database query, before
+  // any embedded image data could be transferred into this process.
+  const compactProducts = catalog.products;
 
   return Response.json(
     {

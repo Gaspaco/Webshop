@@ -271,6 +271,7 @@ export async function POST(event: APIEvent) {
           productId: product.id,
           sku: skus[index]!,
           name: `${printing.setName} · ${printing.rarity}`.slice(0, 120),
+          attributes: { setName: printing.setName, setCode: printing.setCode },
           condition: "Near Mint",
           language: "English",
           finish: printing.rarity,

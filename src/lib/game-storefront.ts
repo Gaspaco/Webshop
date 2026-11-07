@@ -1,4 +1,5 @@
 import type { ShopProduct } from "~/lib/categories";
+import { productSets, setSlug } from "./product-sets";
 
 export type GameIdentity = {
   code: string;
@@ -126,12 +127,7 @@ export function formatReleaseDate(value?: string) {
 }
 
 export function setPathSegment(value: string) {
-  return value
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+  return setSlug(value);
 }
 
 export type GameSetGroup = {
@@ -144,14 +140,16 @@ export type GameSetGroup = {
 export function groupProductsBySet(products: ShopProduct[]): GameSetGroup[] {
   const grouped = new Map<string, GameSetGroup>();
   for (const product of products) {
-    if (!product.set) continue;
-    const current = grouped.get(product.set);
-    grouped.set(product.set, {
-      name: product.set,
-      code: current?.code ?? product.setCode,
+    for (const set of productSets(product)) {
+    const path = setPathSegment(set.name);
+    const current = grouped.get(path);
+    grouped.set(path, {
+      name: current?.name ?? set.name,
+      code: current?.code ?? set.code,
       count: (current?.count ?? 0) + 1,
-      path: setPathSegment(product.set),
+      path,
     });
+    }
   }
   return [...grouped.values()].sort((a, b) => a.name.localeCompare(b.name));
 }

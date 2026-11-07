@@ -3,6 +3,7 @@ import { db } from "~/db";
 import { categories, products, productVariants } from "~/db/schema";
 import {
   inventoryCsvLine, inventoryExportFilename, inventoryExportHeaders, inventoryExportValues,
+  categoryExportHeaders, categoryExportValues,
   type InventoryExportOptions,
 } from "./inventory-export";
 import { logServerError } from "./server-log";
@@ -35,11 +36,15 @@ export async function inventoryExportResponse(options: InventoryExportOptions, s
     status: products.status, sku: productVariants.sku, condition: productVariants.condition,
     language: productVariants.language, priceCents: productVariants.priceCents,
     stock: productVariants.stock, reserved: productVariants.reservedStock,
+    ...(options.productType ? { brand: products.brand, description: products.description, metadata: products.metadata,
+      variantName: productVariants.name, barcode: productVariants.barcode, finish: productVariants.finish,
+      compareAtPriceCents: productVariants.compareAtPriceCents,
+      attributes: productVariants.attributes, trackInventory: productVariants.trackInventory } : {}),
     ...(options.images ? { imageUrls: products.imageUrls, variantImage: productVariants.imageUrl } : {}),
   }).from(products)
     .leftJoin(productVariants, eq(productVariants.productId, products.id))
     .leftJoin(categories, eq(categories.id, products.categoryId))
-    .where(scopeFilter(options.scope))
+    .where(and(scopeFilter(options.scope), options.productType ? eq(products.productType, options.productType) : undefined))
     .orderBy(asc(products.id), asc(productVariants.id)).limit(limit).offset(offset);
 
   // Surface initial database failures as a normal API error, not a CSV download.
@@ -48,11 +53,11 @@ export async function inventoryExportResponse(options: InventoryExportOptions, s
   let finished = false;
   const encoder = new TextEncoder();
   const body = new ReadableStream<Uint8Array>({
-    start(controller) { controller.enqueue(encoder.encode(inventoryCsvLine(inventoryExportHeaders(options.images)))); },
+    start(controller) { controller.enqueue(encoder.encode(inventoryCsvLine(options.productType ? categoryExportHeaders(options.productType, options.images) : inventoryExportHeaders(options.images)))); },
     async pull(controller) {
       if (finished || signal?.aborted) { controller.close(); return; }
       try {
-        controller.enqueue(encoder.encode(rows.map(row => inventoryCsvLine(inventoryExportValues(row, options.images))).join("")));
+        controller.enqueue(encoder.encode(rows.map(row => inventoryCsvLine(options.productType ? categoryExportValues(row, options.productType, options.images) : inventoryExportValues(row, options.images))).join("")));
         if (rows.length < limit) { finished = true; controller.close(); return; }
         offset += rows.length;
         rows = await page(offset);

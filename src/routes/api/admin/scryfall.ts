@@ -443,6 +443,7 @@ export async function POST(event: APIEvent) {
         productId: product.id,
         sku: skuFor(printing, finish),
         name: `${printing.set_name} · ${printing.collector_number} · ${rarityLabel(printing.rarity)} · ${finishLabel(finish)}`.slice(0, 120),
+        attributes: { setName: printing.set_name, setCode: printing.set.toUpperCase() },
         condition: "Near Mint",
         language: languageLabel(printing.lang),
         finish: finishLabel(finish),

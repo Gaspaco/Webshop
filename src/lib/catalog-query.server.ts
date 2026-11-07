@@ -2,6 +2,7 @@ import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import { db } from "~/db";
 import { categories, products, productVariants } from "~/db/schema";
 import type { DatabaseCatalogProduct } from "~/lib/catalog";
+import { publicProductImages, publicVariantImage } from "~/lib/product-image-sql.server";
 
 export type CatalogQueryOptions = {
   slug?: string;
@@ -58,7 +59,7 @@ export async function loadDatabaseCatalogRows(
             categorySlug: categories.slug,
             game: products.game,
             productType: products.productType,
-            imageUrls: products.imageUrls,
+            imageUrls: publicProductImages,
             metadata: products.metadata,
             variantId: productVariants.id,
             variantName: productVariants.name,
@@ -66,7 +67,8 @@ export async function loadDatabaseCatalogRows(
             condition: productVariants.condition,
             language: productVariants.language,
             finish: productVariants.finish,
-            variantImageUrl: productVariants.imageUrl,
+            variantAttributes: productVariants.attributes,
+            variantImageUrl: publicVariantImage,
             isDefault: productVariants.isDefault,
             priceCents: productVariants.priceCents,
             compareAtPriceCents: productVariants.compareAtPriceCents,

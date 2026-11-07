@@ -1,11 +1,13 @@
 import { Title } from "@solidjs/meta";
-import { A, useParams } from "@solidjs/router";
+import { A, useParams, useSearchParams } from "@solidjs/router";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import GameSubpageShell from "~/components/game/GameSubpageShell";
 import ProductGrid from "~/components/product/ProductGrid";
 import { CATEGORIES } from "~/lib/categories";
 import { createGameCatalog } from "~/lib/game-catalog";
 import styles from "./game-pages.module.scss";
+import SetFilter from "~/components/product/SetFilter";
+import { matchesSetFilter, productForSet } from "~/lib/product-sets";
 
 type ProductFilter = "all" | "single" | "sealed" | "graded" | "accessory";
 
@@ -19,6 +21,8 @@ const FILTERS: Array<{ value: ProductFilter; label: string }> = [
 
 export default function GameProductsPage() {
   const params = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedSet = () => typeof searchParams.set === "string" ? searchParams.set : "";
   const game = () => params.game ?? "";
   const category = () => CATEGORIES[game()];
   const { products } = createGameCatalog(game);
@@ -36,7 +40,8 @@ export default function GameProductsPage() {
   });
 
   const visible = createMemo(() =>
-    products().filter(product => filter() === "all" || product.productType === filter()),
+    products().filter(product => (filter() === "all" || product.productType === filter()) && matchesSetFilter(product, selectedSet()))
+      .map(product => selectedSet() ? productForSet(product, selectedSet().slice(selectedSet().indexOf(":") + 1)) : product),
   );
 
   return (
@@ -50,6 +55,7 @@ export default function GameProductsPage() {
         >
           <Title>Shop {cat().name} | TCGHaven</Title>
 
+          <SetFilter products={products()} game={game()} value={selectedSet()} onChange={value => setSearchParams({ set: value || undefined }, { replace: true })} class={styles.setFilter} />
           <div class={styles.filters} role="group" aria-label="Filter products by type">
             <For each={FILTERS}>{item => (
               <Show when={item.value === "all" || counts().get(item.value)}>

@@ -1,6 +1,10 @@
 @use "../../../styles/variables" as *;
 @use "../../../styles/buttons" as *;
 
+.setFilter { display: flex; flex-direction: column; gap: 0.5rem; max-width: 28rem; margin: 1.25rem 0; color: $gray-300; font-size: 0.875rem; }
+.setFilter select { min-height: 2.75rem; padding: 0.65rem 0.8rem; border: 1px solid $gray-700; border-radius: $radius-inner; color: $white; background: $surface; font: inherit; }
+.setFilter select:focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+
 // ---------- Shop: type filters ----------
 // Plain tabs, like the main shop's game tabs.
 

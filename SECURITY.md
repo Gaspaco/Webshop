@@ -7,6 +7,33 @@
 - Run `npm run security:check` before deploys and after dependency changes.
 - `esbuild` is forced to `0.28.1`.
 - `brace-expansion` is forced to `5.0.12`.
+- `follow-redirects` is forced to `1.16.2` and Vite stays on the compatible `6.4.5`
+  security release. Do not replace the security fix with a framework downgrade.
+- Modern `glob` consumers use `14.0.2`, and modern `minimatch` consumers use
+  `11.0.1`. Legacy minimatch below v7 is outside the amplification advisory and
+  retains its function API for `readdir-glob`. Node/CJS compatibility, cancelled
+  filesystem walks and both build/trace consumers must be verified on upgrades.
+- `serialize-javascript` is forced to the official `7.1.3` security release.
+- `node-forge` is forced to the official `1.4.3` security release for every
+  consumer. The former `1.4.0` local RSA backport is retired: it did not cover
+  the subsequently published TLS, certificate, PEM, OID, GCM and arithmetic
+  advisories. RSA forgery, listener-certificate and new security regressions
+  remain in the mandatory build gate.
+- `deepmerge` has no published fix for CVE-2026-93753. Its transitive consumers use
+  the private, repository-maintained `@tcghaven/deepmerge` fork in `vendor/deepmerge`,
+  based on upstream `4.3.1`. It blocks `__proto__`, `constructor`, and `prototype`
+  keys in both copy loops, defines own data properties without invoking inherited
+  setters, and fails closed on throwing proxy safety checks. Normal merge hooks,
+  arrays, symbols, and cloning behavior are covered by regression tests.
+- Local `braces` and `deepmerge` forks are not assessed by npm's
+  advisory database. The mandatory build tests verify their actual consumer
+  resolution, source hashes, and exploit regressions. `security:check` additionally
+  queries npm using each original upstream package name/version and rejects any
+  advisory not explicitly covered by its provenance manifest. It also fails on
+  registry advisories at **any** severity, including low.
+- These are maintained local fixes, not upstream releases. Retire each fork only
+  after a compatible upstream patch has been verified. A clean audit is not proof
+  that the entire application is vulnerability-free.
 
 ## Runtime headers
 

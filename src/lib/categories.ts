@@ -1,6 +1,8 @@
 import type { BoxTheme, SectionProduct } from "~/components/product/ProductCard";
+import type { ProductType } from "./product-types";
 
 export type ShopVariant = {
+  attributes?: Record<string, string>;
   id: string;
   name: string;
   sku: string;
@@ -15,7 +17,7 @@ export type ShopVariant = {
 };
 
 type CategoryProduct = SectionProduct & {
-  productType?: "single" | "sealed" | "graded" | "accessory";
+  productType?: ProductType;
   condition?: string;
   setCode?: string;
   trailerUrl?: string;
@@ -149,6 +151,9 @@ export const CATEGORIES: Record<string, CategoryData> = {
     theme: "cyberpunk",
     products: [],
   },
+  onepiece: { slug: "onepiece", name: "One Piece", tagline: "Singles, decks, and sealed releases.", blurb: "Browse One Piece cards and sealed products.", highlights: ["Singles", "Sealed", "Sets"], theme: "onepiece", products: [] },
+  grandarchive: { slug: "grandarchive", name: "Grand Archive", tagline: "Editions, foils, and sealed sets.", blurb: "Browse Grand Archive cards and releases.", highlights: ["Singles", "Foils", "Sets"], theme: "grandarchive", products: [] },
+  vanguard: { slug: "vanguard", name: "Cardfight!! Vanguard", tagline: "Units, rarities, and sealed sets.", blurb: "Browse Cardfight!! Vanguard singles and products.", highlights: ["Singles", "Sealed", "Sets"], theme: "vanguard", products: [] },
 };
 
 // Point every product at its detail page. Done centrally so the shop,
@@ -162,6 +167,8 @@ for (const cat of Object.values(CATEGORIES)) {
 export const CATEGORY_LIST = Object.values(CATEGORIES);
 
 export type ShopProduct = CategoryProduct & {
+  catalogSource?: string;
+  attributes?: Record<string, string>;
   brand?: string;
   accessoryCategory?: string;
   accessoryCategoryName?: string;

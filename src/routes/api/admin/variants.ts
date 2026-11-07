@@ -1,4 +1,6 @@
 import type { APIEvent } from "@solidjs/start/server";
+import { productAttributesSchema, validateTypeAttributes } from "~/lib/product-attributes";
+import { isTcgType } from "~/lib/product-types";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
@@ -29,6 +31,7 @@ const variantSchema = z.object({
   language: z.string().trim().max(60),
   condition: z.string().trim().max(60),
   finish: z.string().trim().max(60),
+  attributes: productAttributesSchema.optional(),
   imageUrl: variantImageSchema.optional().default(""),
   isDefault: z.boolean().optional().default(false),
   priceCents: z.number().int().min(0).max(100_000_000),
@@ -71,6 +74,9 @@ export async function POST(event: APIEvent) {
         .insert(productVariants)
         .values({
           ...input,
+          attributes: validateTypeAttributes(product.productType, input.attributes ?? {}, true),
+          language: isTcgType(product.productType) ? input.language || null : null,
+          finish: isTcgType(product.productType) ? input.finish || null : null,
           barcode: input.barcode || null,
           imageUrl: input.imageUrl || null,
           cardmarketProductId: input.cardmarketProductId ?? null,
@@ -158,8 +164,9 @@ export async function PATCH(event: APIEvent) {
           barcode: input.barcode || null,
           condition:
             current.productType === "sealed" ? "Sealed" : input.condition || null,
-          language: input.language || null,
-          finish: input.finish || null,
+          language: isTcgType(current.productType) ? input.language || null : null,
+          finish: isTcgType(current.productType) ? input.finish || null : null,
+          ...(input.attributes !== undefined ? { attributes: validateTypeAttributes(current.productType, input.attributes, true) } : {}),
           imageUrl: keepCurrentImage ? undefined : input.imageUrl || null,
           isDefault: input.isDefault,
           priceCents: input.priceCents,

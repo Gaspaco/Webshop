@@ -5,6 +5,7 @@ import GameSubpageShell from "~/components/game/GameSubpageShell";
 import { CATEGORIES } from "~/lib/categories";
 import { createGameCatalog } from "~/lib/game-catalog";
 import { groupProductsBySet } from "~/lib/game-storefront";
+import { productBelongsToSet } from "~/lib/product-sets";
 import styles from "../game-pages.module.scss";
 
 export default function GameSetsPage() {
@@ -37,7 +38,7 @@ export default function GameSetsPage() {
                 <A href={`/categories/${game()}/sets/${set.path}`} class={styles.setLink}>
                   <div class={styles.setArtwork}>
                     <Show
-                      when={products().find(product => product.set === set.name && product.image)?.image}
+                      when={products().find(product => productBelongsToSet(product, set.path) && product.image)?.image}
                       fallback={<span>{set.code ?? "SET"}</span>}
                     >
                       {image => <img src={image()} alt="" loading="lazy" />}

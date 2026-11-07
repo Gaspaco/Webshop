@@ -198,6 +198,7 @@
 
 .filterBar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.25rem;
@@ -206,7 +207,8 @@
 .gameTabs {
   display: flex;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 100%;
+  order: -1;
   gap: 0.25rem;
   overflow-x: auto;
   scrollbar-width: none;
@@ -364,6 +366,10 @@
 
   select:focus-visible { outline: 2px solid $primary; outline-offset: 2px; }
 }
+
+.setFilter { min-width: min(100%, 14rem); max-width: 26rem; flex: 1 1 14rem; gap: 0.35rem; }
+.setFilter > span { font-size: 0.8125rem; color: $gray-300; }
+.setFilter select { padding: 0.6rem 0.75rem; min-height: 2.75rem; }
 
 .segmentActive {
   background: rgba($white, 0.11) !important;

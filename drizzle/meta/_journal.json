@@ -141,6 +141,20 @@
       "when": 1792854598028,
       "tag": "0019_credit_checkout_idempotency",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793836800000,
+      "tag": "0020_product_image_cache",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793923200000,
+      "tag": "0021_product_variant_attributes",
+      "breakpoints": true
     }
   ]
 }

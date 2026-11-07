@@ -1,6 +1,7 @@
 import type { ShopProduct } from "~/lib/categories";
 import { accessoryBrand, accessoryCategory, accessoryCategoryName } from "./accessories";
 import { productPreviewVariant } from "./product-preview";
+import { isTcgType, productTypeConfig, typeAttributes } from "./product-types";
 
 export type DatabaseCatalogProduct = {
   id: string;
@@ -19,6 +20,7 @@ export type DatabaseCatalogProduct = {
   condition: string | null;
   language: string | null;
   finish: string | null;
+  variantAttributes?: Record<string, string>;
   variantImageUrl: string | null;
   isDefault: boolean;
   priceCents: number;
@@ -28,6 +30,7 @@ export type DatabaseCatalogProduct = {
 };
 
 const gameNames: Record<string, string> = {
+  onepiece: "One Piece", grandarchive: "Grand Archive", vanguard: "Cardfight!! Vanguard",
   pokemon: "Pokémon",
   yugioh: "Yu-Gi-Oh!",
   magic: "Magic: The Gathering",
@@ -48,16 +51,12 @@ export function databaseProductToShopProduct(
     product.game === "lorcana" ||
     product.game === "riftbound" ||
     product.game === "digimon" ||
+    product.game === "onepiece" || product.game === "grandarchive" || product.game === "vanguard" ||
     product.game === "cyberpunk"
       ? product.game
       : "pokemon";
-  const productType =
-    product.productType === "single" ||
-    product.productType === "sealed" ||
-    product.productType === "graded" ||
-    product.productType === "accessory"
-      ? product.productType
-      : undefined;
+  const productType = productTypeConfig(product.productType)?.value;
+  const merchandise = !!productType && !isTcgType(productType);
   const metadata = product.metadata ?? {};
   const accessoryKind = accessoryCategory(product.categorySlug?.startsWith("accessories-") ? product.categorySlug : metadata.accessoryCategory);
   const availableStock = Math.max(product.stock - product.reservedStock, 0);
@@ -69,19 +68,21 @@ export function databaseProductToShopProduct(
     // A one-variant product may only have a variant photo. Use it as the card
     // cover instead of showing a placeholder until a second variant exists.
     image: product.variantImageUrl || product.imageUrls[0] || undefined,
-    theme: productType === "accessory" ? "accessories" : game,
+    theme: merchandise ? "accessories" : game,
     priceCents: product.priceCents,
     compareAtPriceCents: product.compareAtPriceCents ?? undefined,
     rating:
       typeof metadata.rating === "number" ? metadata.rating : undefined,
     href: `/products/${product.slug}`,
     badge: typeof metadata.badge === "string" ? metadata.badge : undefined,
-    game: productType === "accessory" ? "accessories" : product.game ?? "other",
-    gameName: productType === "accessory" ? "Accessories" : gameNames[product.game ?? "other"] ?? "Other",
+    game: merchandise ? productType === "accessory" ? "accessories" : productType : product.game ?? "other",
+    gameName: merchandise ? productTypeConfig(productType)!.label : gameNames[product.game ?? "other"] ?? "Other",
+    attributes: typeAttributes(productType, metadata.attributes),
     brand: product.brand ? accessoryBrand(product.brand) : undefined,
     accessoryCategory: productType === "accessory" ? accessoryKind : undefined,
     accessoryCategoryName: productType === "accessory" ? accessoryCategoryName(accessoryKind) : undefined,
     description: product.description ?? undefined,
+    catalogSource: typeof metadata.source === "string" ? metadata.source : undefined,
     productType,
     condition: product.condition ?? undefined,
     language: product.language ?? undefined,
@@ -127,6 +128,7 @@ export function databaseProductToShopProduct(
         condition: product.condition ?? undefined,
         language: product.language ?? undefined,
         finish: product.finish ?? undefined,
+        attributes: typeAttributes(productType, product.variantAttributes, true),
         // A variation without its own photo inherits the product upload. This
         // keeps every option previewable while preserving exact variant scans.
         image: product.variantImageUrl || product.imageUrls[0] || undefined,

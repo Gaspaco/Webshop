@@ -28,6 +28,7 @@ const duplicateSchema = z.object({
 });
 
 type DuplicateVariant = {
+  attributes?: Record<string, string>;
   sku: string;
   barcode: string | null;
   name: string;
@@ -214,6 +215,7 @@ export async function POST(event: APIEvent) {
             language: variant.language,
             condition: variant.condition,
             finish: variant.finish,
+            attributes: variant.attributes ?? {},
             imageUrl: variant.imageUrl,
             isDefault: variant.isDefault,
             priceCents: variant.priceCents,

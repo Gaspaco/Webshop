@@ -238,6 +238,21 @@ export const products = pgTable(
   ],
 );
 
+// API artwork is kept separately from catalogue rows: shared source images are
+// downloaded once, and product lists never load the actual image payloads.
+export const productImageCache = pgTable("product_image_cache", {
+  key: text("key").primaryKey(),
+  data: text("data").notNull(),
+  etag: text("etag").notNull(),
+  bytes: integer("bytes").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, table => [check("product_image_cache_size", sql`${table.bytes} = octet_length(${table.data}) and ${table.bytes} > 0 and ${table.bytes} <= 1400000`)]);
+
+export const productImageCacheUsage = pgTable("product_image_cache_usage", {
+  key: text("key").primaryKey(),
+  bytes: bigint("bytes", { mode: "number" }).notNull().default(0),
+}, table => [check("product_image_cache_usage_nonnegative", sql`${table.bytes} >= 0`)]);
+
 export const productVariants = pgTable(
   "product_variants",
   {
@@ -251,6 +266,7 @@ export const productVariants = pgTable(
     language: text("language"),
     condition: text("condition"),
     finish: text("finish"),
+    attributes: jsonb("attributes").$type<Record<string, string>>().default({}).notNull(),
     imageUrl: text("image_url"),
     isDefault: boolean("is_default").default(false).notNull(),
     priceCents: integer("price_cents").notNull(),

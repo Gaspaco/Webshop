@@ -1,4 +1,4 @@
-import { createSignal, For, onCleanup, Show } from "solid-js";
+import { createEffect, createSignal, For, on, onCleanup, Show } from "solid-js";
 import styles from "./RemoteCardLibrary.module.scss";
 
 type ImportedStatus = "draft" | "active" | "archived" | null;
@@ -26,6 +26,11 @@ type RemoteCardLibraryProps = {
   setPlaceholder: string;
   artworkNote?: string;
   canRefreshSource?: boolean;
+  productMode?: boolean;
+  visible?: boolean;
+  canImport?: boolean;
+  rightsConfirmed?: boolean;
+  onBusyChange?: (busy: boolean) => void;
   onImported: () => unknown;
 };
 
@@ -40,6 +45,10 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
   const [refreshing, setRefreshing] = createSignal(false);
   const [bulkRunning, setBulkRunning] = createSignal(false);
   const [message, setMessage] = createSignal("");
+  const [page, setPage] = createSignal(1);
+  const [hasMore, setHasMore] = createSignal(false);
+  let searchedQuery = "";
+  const requestUrl = (params: URLSearchParams) => `${props.endpoint}${props.endpoint.includes("?") ? "&" : "?"}${params}`;
   const [cooldownSeconds, setCooldownSeconds] = createSignal(0);
   let searchController: AbortController | undefined;
   let cooldownTimer: ReturnType<typeof setInterval> | undefined;
@@ -79,11 +88,15 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
     setMatchedSets([]);
     setSelected(new Set<string>());
     setMessage("");
+    setPage(1); setHasMore(false);
   };
 
-  const searchCards = async (event: SubmitEvent) => {
+  createEffect(on(() => props.endpoint, resetResults, { defer: true }));
+  createEffect(() => props.onBusyChange?.(searching() || refreshing() || bulkRunning() || importing().size > 0));
+
+  const searchCards = async (event: Event, nextPage = 1) => {
     event.preventDefault();
-    const value = query().trim();
+    const value = nextPage > 1 ? searchedQuery : query().trim();
     if (!value) {
       setMessage(`Enter a ${searchBy() === "set" ? "set" : "card"} name first.`);
       return;
@@ -97,7 +110,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
     setSelected(new Set<string>());
     try {
       const response = await fetch(
-        `${props.endpoint}?by=${searchBy()}&q=${encodeURIComponent(value)}`,
+        requestUrl(new URLSearchParams({ by: searchBy(), q: value, page: String(nextPage) })),
         {
           credentials: "same-origin",
           headers: { Accept: "application/json" },
@@ -109,6 +122,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
         matchedSets?: string[];
         error?: string;
         retryAfter?: number;
+        hasMore?: boolean;
       };
       if (!response.ok) {
         if (response.status === 429) {
@@ -117,7 +131,8 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
         setMessage(result.error ?? `${props.gameName} could not be searched.`);
         return;
       }
-      setCards(result.cards ?? []);
+      setCards(previous => nextPage === 1 ? result.cards ?? [] : [...new Map([...previous, ...(result.cards ?? [])].map(card => [card.id, card])).values()]);
+      searchedQuery = value; setPage(nextPage); setHasMore(result.hasMore === true);
       setMatchedSets(result.matchedSets ?? []);
       if (!result.cards?.length) setMessage(`No matching ${props.gameName} cards found.`);
     } catch (error) {
@@ -144,7 +159,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
         params.set("by", searchBy());
         params.set("q", value);
       }
-      const response = await fetch(`${props.endpoint}?${params}`, {
+      const response = await fetch(requestUrl(params), {
         credentials: "same-origin",
         headers: { Accept: "application/json" },
         signal: controller.signal,
@@ -172,7 +187,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
         .join(", ");
       setMessage(
         newest
-          ? `Riftbound is up to date. Newest sets: ${newest}.`
+          ? `${props.gameName} is up to date. Newest sets: ${newest}.`
           : `${props.gameName} is up to date${value ? " and the current search was refreshed" : ""}.`,
       );
     } catch (error) {
@@ -189,7 +204,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cardId: card.id }),
+      body: JSON.stringify({ cardId: card.id, rightsConfirmed: props.rightsConfirmed === true }),
     });
     const result = (await response.json().catch(() => ({}))) as {
       error?: string;
@@ -211,6 +226,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
   };
 
   const addCard = async (card: RemoteCard) => {
+    if (props.canImport === false) { setMessage("Confirm the product-data permissions before importing."); return; }
     setImporting(previous => new Set(previous).add(card.id));
     setMessage("");
     try {
@@ -256,6 +272,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
   };
 
   const runBulkImport = async () => {
+    if (props.canImport === false) { setMessage("Confirm the product-data permissions before importing."); return; }
     const chosen = selected().size
       ? cards().filter(card => selected().has(card.id))
       : searchBy() === "set" ? selectableCards() : [];
@@ -312,7 +329,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
   };
 
   return (
-    <section class={styles.library}>
+    <section class={styles.library} hidden={props.visible === false}>
       <div class={styles.head}>
         <div>
           <h2>{props.title}</h2>
@@ -345,12 +362,12 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
               resetResults();
             }}
           >
-            <option value="card">Card name or number</option>
-            <option value="set">Set name or code</option>
+            <option value="card">{props.productMode ? "Product name" : "Card name or number"}</option>
+            <Show when={!props.productMode}><option value="set">Set name or code</option></Show>
           </select>
         </label>
         <label>
-          <span>{searchBy() === "set" ? "Set" : "Card"}</span>
+          <span>{props.productMode ? "Product" : searchBy() === "set" ? "Set" : "Card"}</span>
           <input
             type="search"
             value={query()}
@@ -394,6 +411,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
             type="button"
             disabled={
               bulkRunning() ||
+              props.canImport === false ||
               cooldownSeconds() > 0 ||
               (!selected().size && searchBy() !== "set")
             }
@@ -443,6 +461,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
                 <button
                   type="button"
                   disabled={
+                    props.canImport === false ||
                     Boolean(card.importedStatus) ||
                     importing().has(card.id) ||
                     cooldownSeconds() > 0
@@ -458,6 +477,9 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
           </For>
         </div>
       </Show>
+      <Show when={hasMore()}><button class={styles.loadMore} type="button" disabled={searching() || bulkRunning() || cooldownSeconds() > 0} onClick={event => void searchCards(event, page() + 1)}>
+        {searching() ? "Loading more…" : "Load more results"}
+      </button></Show>
     </section>
   );
 }

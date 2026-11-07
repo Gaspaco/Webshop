@@ -23,6 +23,7 @@ export async function loadAdminCatalogue(options: { limit?: number; offset?: num
     id: productVariants.id, productId: productVariants.productId, sku: productVariants.sku, barcode: productVariants.barcode,
     name: productVariants.name, condition: productVariants.condition, language: productVariants.language,
     finish: productVariants.finish, imageUrl: adminVariantImage, embeddedImage: variantHasEmbeddedImage,
+    attributes: productVariants.attributes,
     isDefault: productVariants.isDefault, priceCents: productVariants.priceCents,
     compareAtPriceCents: productVariants.compareAtPriceCents, cardmarketProductId: productVariants.cardmarketProductId,
     cardmarketPriceType: productVariants.cardmarketPriceType, stock: productVariants.stock,

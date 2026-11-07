@@ -721,11 +721,18 @@ export default function Account() {
     const { data, error } = await authClient.twoFactor.enable({
       password: twoFactorPassword(),
       issuer: "TCGHaven",
+      method: "totp",
     });
 
     if (error || !data) {
       setTwoFactorStatus("error");
       setTwoFactorMessage("Your password was not accepted. Try again.");
+      return;
+    }
+
+    if (data.method !== "totp") {
+      setTwoFactorStatus("error");
+      setTwoFactorMessage("Authenticator setup could not be started. Please try again.");
       return;
     }
 

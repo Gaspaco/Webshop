@@ -1,0 +1,26 @@
+@use "../../styles/variables" as *;
+
+.category {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  max-width: 36rem;
+}
+
+.category select {
+  min-height: 2.875rem;
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid $gray-700;
+  border-radius: $radius-md;
+  background: $background;
+  color: $white;
+  font: inherit;
+}
+
+.category select:focus-visible {
+  outline: 2px solid $primary;
+  outline-offset: 3px;
+}

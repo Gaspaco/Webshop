@@ -14,9 +14,16 @@ import {
   Show,
 } from "solid-js";
 import RemoteCardLibrary from "~/components/admin/RemoteCardLibrary";
+import ReferenceLibraries from "~/components/admin/ReferenceLibraries";
+import SetFilter from "~/components/product/SetFilter";
+import { matchesSetFilter } from "~/lib/product-sets";
 import CardmarketPriceImport from "~/components/admin/CardmarketPriceImport";
 import InventoryExport from "~/components/admin/InventoryExport";
 import AccessoryFields from "~/components/admin/AccessoryFields";
+import ProductAttributeFilters, { matchesAttributeFilters } from "~/components/admin/ProductAttributeFilters";
+import { ProductTypeSelect, ProductAttributeFields } from "~/components/admin/ProductTypeFields";
+import { PRODUCT_TYPES, isTcgType, hasCardFields, productTypeConfig, typeAttributes, type ProductType, type ProductAttributes } from "~/lib/product-types";
+import { parseProductSpreadsheet, productTemplate, type SpreadsheetRow } from "~/lib/product-spreadsheet";
 import ProductShippingFields from "~/components/admin/ProductShippingFields";
 import ProductImageInput from "~/components/admin/ProductImageInput";
 import ShippingSettingsFields from "~/components/admin/ShippingSettingsFields";
@@ -24,7 +31,7 @@ import StoreCredit from "~/components/account/StoreCredit";
 import { DEFAULT_SHIPPING_SETTINGS, productShipping, type ProductShipping, type Shipment, type ShippingSettings } from "~/lib/product-shipping";
 import { ACCESSORY_BRANDS, accessoryCategory, type AccessoryCategory } from "~/lib/accessories";
 import { authClient } from "~/lib/auth-client";
-import { csvCell } from "~/lib/csv";
+
 import { INTERNATIONAL_POSTNL_DESTINATIONS } from "~/lib/shipping";
 import {
   DEFAULT_STORE_PROFILE,
@@ -45,9 +52,11 @@ type AdminSection =
   | "analytics"
   | "activity"
   | "imports"
+  | "inventory-files"
   | "readiness";
 
 type AdminVariant = {
+  attributes?: ProductAttributes;
   id: string;
   sku: string;
   barcode: string | null;
@@ -214,17 +223,7 @@ type ImportJob = {
   createdAt: string;
 };
 
-type CsvImportRow = {
-  name: string;
-  game: string;
-  productType: string;
-  set: string;
-  sku: string;
-  priceCents: number;
-  stock: number;
-  image: string;
-  status: "draft" | "active";
-};
+type CsvImportRow = SpreadsheetRow;
 
 type CsvPreview = {
   fileName: string;
@@ -338,8 +337,13 @@ type ProductDraft = {
     | "riftbound"
     | "digimon"
     | "cyberpunk"
+    | "onepiece" | "grandarchive" | "vanguard"
     | "other";
-  productType: "single" | "sealed" | "graded" | "accessory";
+  productType: ProductType;
+  attributes: ProductAttributes;
+  variantAttributes: ProductAttributes;
+  language: string;
+  condition: string;
   accessoryCategory: AccessoryCategory;
   shipping: ProductShipping;
   set: string;
@@ -369,6 +373,7 @@ type ProductDraft = {
 };
 
 type VariantDraft = {
+  attributes: ProductAttributes;
   name: string;
   sku: string;
   barcode: string;
@@ -393,6 +398,10 @@ const emptyProduct: ProductDraft = {
   brand: "",
   game: "pokemon",
   productType: "single",
+  attributes: {},
+  variantAttributes: {},
+  language: "English",
+  condition: "Near Mint",
   accessoryCategory: "other-accessories",
   shipping: productShipping({}),
   set: "",
@@ -423,6 +432,7 @@ const emptyProduct: ProductDraft = {
 
 function createEmptyVariantDraft(): VariantDraft {
   return {
+    attributes: {},
     name: "",
     sku: "",
     barcode: "",
@@ -452,8 +462,15 @@ const NAV_ITEMS: Array<{ id: AdminSection; label: string; short: string }> = [
   { id: "analytics", label: "Analytics", short: "How sales are doing." },
   { id: "activity", label: "Activity", short: "Who changed what, and when." },
   { id: "imports", label: "Bulk import", short: "Add many products at once." },
+  { id: "inventory-files", label: "Inventory files", short: "Category templates, import and export." },
   { id: "readiness", label: "Launch readiness", short: "Everything needed before going live." },
 ];
+
+const IMPORT_LIBRARIES = [
+  ["yugioh", "Yu-Gi-Oh!"], ["pokemon", "Pokémon"], ["magic", "Magic: The Gathering"], ["digimon", "Digimon"], ["riftbound", "Riftbound"],
+  ["onepiece", "One Piece"], ["grandarchive", "Grand Archive"], ["vanguard", "Cardfight!! Vanguard"], ["channel3", "Figures, collectibles and merchandise"],
+  ["files", "Excel / CSV files"], ["prices", "Cardmarket price files"],
+] as const;
 
 const READINESS_CATEGORIES = [
   ["commerce", "Commerce core"],
@@ -566,6 +583,7 @@ function centsToEuros(value: number | null | undefined) {
 
 function editableVariantFrom(variant: AdminVariant): EditableVariantDraft {
   return {
+    attributes: variant.attributes ?? {},
     id: variant.id,
     name: variant.name,
     sku: variant.sku,
@@ -732,147 +750,12 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-function escapeCsvCell(value: string) {
-  return csvCell(value);
-}
 
-function downloadTemplate() {
-  const header = [
-    "name",
-    "game",
-    "productType",
-    "set",
-    "sku",
-    "price",
-    "stock",
-    "image",
-  ];
-  const sample = [
-    "Pikachu ex",
-    "pokemon",
-    "single",
-    "Journey Together",
-    "PKM-PIKACHU-001",
-    "12.95",
-    "3",
-    "https://example.com/pikachu.webp",
-  ];
-  const csv = `${header.map(escapeCsvCell).join(",")}\n${sample.map(escapeCsvCell).join(",")}\n`;
-  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+function downloadTemplate(type: ProductType = "single") {
+  const url = URL.createObjectURL(new Blob([productTemplate(type)], { type: "text/csv;charset=utf-8" }));
   const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = "tcghaven-product-import.csv";
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
-
-function parseCsv(text: string): Omit<CsvPreview, "fileName"> {
-  const records: string[][] = [];
-  let field = "";
-  let record: string[] = [];
-  let quoted = false;
-
-  for (let index = 0; index < text.length; index += 1) {
-    const character = text[index];
-    const next = text[index + 1];
-    if (character === '"' && quoted && next === '"') {
-      field += '"';
-      index += 1;
-    } else if (character === '"') {
-      quoted = !quoted;
-    } else if (character === "," && !quoted) {
-      record.push(field);
-      field = "";
-    } else if ((character === "\n" || character === "\r") && !quoted) {
-      if (character === "\r" && next === "\n") index += 1;
-      record.push(field);
-      if (record.some(value => value.trim())) records.push(record);
-      record = [];
-      field = "";
-    } else {
-      field += character;
-    }
-  }
-  record.push(field);
-  if (record.some(value => value.trim())) records.push(record);
-
-  const [headers, ...rows] = records;
-  if (!headers) return { rows: [], issues: ["The CSV is empty."] };
-  const normalizedHeaders = headers.map(header => header.trim().toLowerCase());
-  const indexOf = (name: string) =>
-    normalizedHeaders.indexOf(name.toLowerCase());
-  const requiredHeaders = ["name", "game", "producttype", "sku", "price", "stock"];
-  const missingHeaders = requiredHeaders.filter(header => !normalizedHeaders.includes(header));
-  if (missingHeaders.length) {
-    return {
-      rows: [],
-      issues: [`Missing columns: ${missingHeaders.join(", ")}. Download a fresh template.`],
-    };
-  }
-
-  const allowedGames = new Set([
-    "pokemon",
-    "yugioh",
-    "magic",
-    "lorcana",
-    "riftbound",
-    "digimon",
-    "cyberpunk",
-    "other",
-  ]);
-  const allowedTypes = new Set(["single", "sealed", "graded", "accessory"]);
-  const parsedRows: CsvImportRow[] = [];
-  const issues: string[] = [];
-  const seenSkus = new Map<string, number>();
-
-  rows.forEach((row, index) => {
-    const rowNumber = index + 2;
-    const name = row[indexOf("name")]?.trim() ?? "";
-    const game = row[indexOf("game")]?.trim().toLowerCase() ?? "";
-    const productType = row[indexOf("productType")]?.trim().toLowerCase() ?? "";
-    const set = row[indexOf("set")]?.trim() ?? "";
-    const sku = row[indexOf("sku")]?.trim() ?? "";
-    const price = Number(row[indexOf("price")]?.trim());
-    const stock = Number(row[indexOf("stock")]?.trim());
-    const image = row[indexOf("image")]?.trim() ?? "";
-
-    if (name.length < 2) issues.push(`Row ${rowNumber}: enter a product name.`);
-    if (!allowedGames.has(game)) issues.push(`Row ${rowNumber}: game is not supported.`);
-    if (!allowedTypes.has(productType)) issues.push(`Row ${rowNumber}: productType is not supported.`);
-    if (!sku) issues.push(`Row ${rowNumber}: enter a unique SKU.`);
-    if (!Number.isFinite(price) || price <= 0) issues.push(`Row ${rowNumber}: price must be more than €0.`);
-    if (!Number.isInteger(stock) || stock < 0) issues.push(`Row ${rowNumber}: stock must be a whole number of 0 or more.`);
-    if (image) {
-      try {
-        if (new URL(image).protocol !== "https:") throw new Error();
-      } catch {
-        issues.push(`Row ${rowNumber}: image must be a valid HTTPS address.`);
-      }
-    }
-
-    const normalizedSku = sku.toLocaleLowerCase("en-US");
-    const firstSkuRow = seenSkus.get(normalizedSku);
-    if (sku && firstSkuRow !== undefined) {
-      issues.push(`Row ${rowNumber}: SKU ${sku} is already used on row ${firstSkuRow}.`);
-    } else if (sku) {
-      seenSkus.set(normalizedSku, rowNumber);
-    }
-
-    parsedRows.push({
-      name,
-      game,
-      productType,
-      set,
-      sku,
-      priceCents: Number.isFinite(price) ? Math.round(price * 100) : 0,
-      stock: Number.isFinite(stock) ? stock : -1,
-      image,
-      status: "draft",
-    });
-  });
-
-  if (parsedRows.length > 1000) issues.push("A CSV can contain no more than 1,000 products.");
-  return { rows: parsedRows, issues };
+  anchor.href = url; anchor.download = `tcghaven-${type}-template.csv`;
+  anchor.click(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function ProductRow(props: {
@@ -901,6 +784,8 @@ function ProductRow(props: {
   );
   const [accessoryKind, setAccessoryKind] = createSignal(accessoryCategory(props.product.categorySlug?.startsWith("accessories-") ? props.product.categorySlug : metadata().accessoryCategory));
   const [shippingData, setShippingData] = createSignal(productShipping(metadata().shipping));
+  const [attributes, setAttributes] = createSignal<ProductAttributes>(typeAttributes(productType(), metadata().attributes));
+  const [mainAttributes, setMainAttributes] = createSignal<ProductAttributes>(props.product.variants[0]?.attributes ?? {});
   const [collection, setCollection] = createSignal(
     typeof metadata().set === "string" ? metadata().set as string : "",
   );
@@ -1011,7 +896,9 @@ function ProductRow(props: {
         slug: slug(),
         brand: brand(),
         description: description(),
-        game: productType() === "accessory" ? undefined : game(),
+game: isTcgType(productType()) ? game() : undefined,
+        attributes: typeAttributes(productType(), attributes()),
+        variantAttributes: typeAttributes(productType(), mainAttributes(), true),
         accessoryCategory: productType() === "accessory" ? accessoryKind() : undefined,
         shipping: shippingData(),
         productType: productType(),
@@ -1075,7 +962,8 @@ function ProductRow(props: {
         barcode: current.barcode,
         condition: productType() === "sealed" ? "Sealed" : current.condition,
         language: current.language,
-        finish: current.finish,
+        finish: isTcgType(productType()) ? current.finish : "",
+        attributes: typeAttributes(productType(), current.attributes, true),
         imageUrl: current.imageUrl,
         isDefault: current.isDefault,
         priceCents: eurosToCents(current.price),
@@ -1124,6 +1012,7 @@ function ProductRow(props: {
 
   const addLanguageVariant = (variant: AdminVariant) => {
     setVariantDraft({
+      attributes: variant.attributes ?? {},
       name: variant.name,
       sku: nextLanguageSku(variant.sku, props.product.variants),
       barcode: "",
@@ -1164,7 +1053,8 @@ function ProductRow(props: {
         barcode: current.barcode,
         condition: productType() === "sealed" ? "Sealed" : current.condition,
         language: current.language,
-        finish: current.finish,
+        finish: isTcgType(productType()) ? current.finish : "",
+        attributes: typeAttributes(productType(), current.attributes, true),
         imageUrl: current.imageUrl,
         isDefault: current.isDefault,
         priceCents: eurosToCents(current.price),
@@ -1271,7 +1161,7 @@ function ProductRow(props: {
             </div>
           </div>
         </td>
-        <td><span class={styles.gameTag}>{productType() === "accessory" ? brand() || "Accessories" : game()}</span></td>
+        <td><span class={styles.gameTag}>{!isTcgType(productType()) ? brand() || productTypeConfig(productType())?.label : game()}</span></td>
         <td>
           <input
             class={styles.tableInput}
@@ -1337,6 +1227,7 @@ function ProductRow(props: {
             >
               {editing() ? "Close editor" : "Edit details"}
             </button>
+            <button type="button" onClick={() => { setEditing(true); requestAnimationFrame(() => document.getElementById(`variants-${props.product.id}`)?.scrollIntoView({ block: "start" })); }}>Variants ({props.product.variants.length})</button>
             <button type="button" onClick={save} disabled={saving()}>
               {saving() ? "Saving" : "Save"}
             </button>
@@ -1365,6 +1256,7 @@ function ProductRow(props: {
                   <span>Listing</span>
                   <p>Customer-facing identity, URL, and visibility.</p>
                 </div>
+                <ProductTypeSelect value={productType()} onChange={type => { setProductType(type); setAttributes(typeAttributes(type, attributes())); setMainAttributes(typeAttributes(type, mainAttributes(), true)); setCondition(type === "sealed" ? "Sealed" : isTcgType(type) ? "Near Mint" : "New"); }} />
                 <label class={styles.spanTwo}>
                   <span>Product name</span>
                   <input value={name()} onInput={event => setName(event.currentTarget.value)} />
@@ -1374,7 +1266,7 @@ function ProductRow(props: {
                   <input required placeholder="umbreon-vmax" value={slug()} onInput={event => setSlug(event.currentTarget.value)} />
                   <small>/products/{slug() || "product-name"}</small>
                 </label>
-                <Show when={productType() !== "accessory"}>
+                <Show when={isTcgType(productType())}>
                 <label>
                   <span>Brand or manufacturer</span>
                   <input placeholder="The Pokémon Company" value={brand()} onInput={event => setBrand(event.currentTarget.value)} />
@@ -1389,28 +1281,20 @@ function ProductRow(props: {
                     <option value="riftbound">Riftbound</option>
                     <option value="digimon">Digimon</option>
                     <option value="cyberpunk">Cyberpunk</option>
+                    <option value="onepiece">One Piece</option>
+                    <option value="grandarchive">Grand Archive</option>
+                    <option value="vanguard">Cardfight!! Vanguard</option>
                     <option value="other">Other</option>
                   </select>
                 </label>
                 </Show>
-                <label>
-                  <span>Product type</span>
-                  <select value={productType()} onChange={event => {
-                    const nextType = event.currentTarget.value as ProductDraft["productType"];
-                    setProductType(nextType);
-                    if (nextType === "sealed") setCondition("Sealed");
-                    if (nextType === "accessory") setCondition("New");
-                  }}>
-                    <option value="single">Single</option>
-                    <option value="sealed">Sealed</option>
-                    <option value="graded">Graded</option>
-                    <option value="accessory">Accessory</option>
-                  </select>
-                </label>
+                <Show when={!isTcgType(productType()) && productType() !== "accessory"}><label><span>Brand or manufacturer</span><input required value={brand()} onInput={event => setBrand(event.currentTarget.value)} /></label></Show>
+                <ProductAttributeFields type={productType()} value={attributes()} onChange={setAttributes} />
+                <ProductAttributeFields type={productType()} value={mainAttributes()} onChange={setMainAttributes} variant />
                 <Show when={productType() === "accessory"}>
                   <AccessoryFields category={accessoryKind()} brand={brand()} onCategory={setAccessoryKind} onBrand={setBrand} />
                 </Show>
-                <Show when={productType() !== "accessory"}>
+                <Show when={isTcgType(productType())}>
                 <label>
                   <span>Set or collection</span>
                   <input value={collection()} onInput={event => setCollection(event.currentTarget.value)} />
@@ -1491,7 +1375,7 @@ function ProductRow(props: {
                   <span>Condition</span>
                   <input value={productType() === "sealed" ? "Sealed" : condition()} disabled={productType() === "sealed"} onInput={event => setCondition(event.currentTarget.value)} />
                 </label>
-                <Show when={productType() !== "accessory"}>
+                <Show when={isTcgType(productType())}>
                 <label>
                   <span>Language</span>
                   <LanguageSelect value={language()} onChange={setLanguage} required />
@@ -1500,6 +1384,8 @@ function ProductRow(props: {
                   <span>Finish</span>
                   <input placeholder="Holofoil" value={finish()} onInput={event => setFinish(event.currentTarget.value)} />
                 </label>
+                </Show>
+                <Show when={hasCardFields(productType())}>
                 <div class={styles.editorSectionHeading}>
                   <span>Card and grading details</span>
                   <p>Optional collector data shown on eligible product pages.</p>
@@ -1520,6 +1406,7 @@ function ProductRow(props: {
                   <span>Illustrator</span>
                   <input value={illustrator()} onInput={event => setIllustrator(event.currentTarget.value)} />
                 </label>
+                <Show when={productType() === "graded"}>
                 <label>
                   <span>Grading company</span>
                   <input placeholder="PSA, BGS, CGC" value={gradingCompany()} onInput={event => setGradingCompany(event.currentTarget.value)} />
@@ -1533,6 +1420,8 @@ function ProductRow(props: {
                   <input value={certificationNumber()} onInput={event => setCertificationNumber(event.currentTarget.value)} />
                 </label>
                 </Show>
+                </Show>
+                <Show when={!hasCardFields(productType())}><label><span>Badge</span><input maxLength={32} value={badge()} onInput={event => setBadge(event.currentTarget.value)} /></label></Show>
                 <ProductShippingFields value={shippingData()} settings={props.shippingSettings ?? DEFAULT_SHIPPING_SETTINGS} onChange={setShippingData} />
                 <label>
                   <span>Ships from</span>
@@ -1602,7 +1491,7 @@ function ProductRow(props: {
               >
               <section class={styles.variantManager}>
                 <div class={styles.sectionHead}>
-                  <div>
+                  <div id={`variants-${props.product.id}`} tabIndex={-1}>
                     <h3>Variants</h3>
                     <p>Manage pack, box, language, printing, price, and stock options.</p>
                   </div>
@@ -1624,6 +1513,7 @@ function ProductRow(props: {
                           <small>{variant.sku}</small>
                         </span>
                         <span>{variant.condition ?? "No condition"}</span>
+                        <Show when={isTcgType(productType())} fallback={<span>{Object.values(variant.attributes ?? {}).filter(Boolean).join(" · ") || "Default option"}</span>}>
                         <span>{variant.language ?? "No language"}</span>
                         <span>{variant.finish || "Standard"}</span>
                         <span>
@@ -1631,11 +1521,12 @@ function ProductRow(props: {
                             ? `Cardmarket ${variant.cardmarketProductId}`
                             : "No Cardmarket ID"}
                         </span>
+                        </Show>
                         <span>{formatMoney(variant.priceCents)}</span>
                         <span>{variant.stock - variant.reservedStock} available</span>
                         <span class={styles.variantActions}>
                           <button type="button" onClick={() => openQuickImage(variant)}>Image URL</button>
-                          <button type="button" onClick={() => addLanguageVariant(variant)}>Add language</button>
+                          <Show when={isTcgType(productType())}><button type="button" onClick={() => addLanguageVariant(variant)}>Add language</button></Show>
                           <button type="button" onClick={() => editVariant(variant)}>Edit</button>
                           <button type="button" onClick={() => removeVariant(variant)}>Remove</button>
                         </span>
@@ -1690,6 +1581,8 @@ function ProductRow(props: {
                         <span>Condition</span>
                         <input value={productType() === "sealed" ? "Sealed" : current().condition} disabled={productType() === "sealed"} onInput={event => setVariantEditDraft(value => value && ({ ...value, condition: event.currentTarget.value }))} />
                       </label>
+                      <ProductAttributeFields type={productType()} value={current().attributes} onChange={attributes => setVariantEditDraft(value => value && ({ ...value, attributes }))} variant />
+                      <Show when={isTcgType(productType())}>
                       <label>
                         <span>Language</span>
                         <LanguageSelect
@@ -1728,6 +1621,7 @@ function ProductRow(props: {
                           <option value="foil">Foil</option>
                         </select>
                       </label>
+                      </Show>
                       <label>
                         <span>Variant photo</span>
                         <input
@@ -1810,6 +1704,8 @@ function ProductRow(props: {
                       <span>Condition</span>
                       <input value={productType() === "sealed" ? "Sealed" : variantDraft().condition} disabled={productType() === "sealed"} onInput={event => setVariantDraft(current => ({ ...current, condition: event.currentTarget.value }))} />
                     </label>
+                    <ProductAttributeFields type={productType()} value={variantDraft().attributes} onChange={attributes => setVariantDraft(value => ({ ...value, attributes }))} variant />
+                    <Show when={isTcgType(productType())}>
                     <label>
                       <span>Language</span>
                       <LanguageSelect
@@ -1848,6 +1744,7 @@ function ProductRow(props: {
                         <option value="foil">Foil</option>
                       </select>
                     </label>
+                    </Show>
                     <label>
                       <span>Variant photo</span>
                       <input
@@ -3306,10 +3203,15 @@ export default function Admin() {
     loadDashboard,
   );
   const [composerOpen, setComposerOpen] = createSignal(false);
-  const [exportOpen, setExportOpen] = createSignal(false);
+  const [templateType, setTemplateType] = createSignal<ProductType>("single");
+  const [libraryView, setLibraryView] = createSignal<string>("yugioh");
+  const [libraryBusy, setLibraryBusy] = createSignal<Record<string, boolean>>({});
   const [catalogSearch, setCatalogSearch] = createSignal("");
   const [catalogGame, setCatalogGame] = createSignal("all");
   const [catalogBrand, setCatalogBrand] = createSignal("");
+  const [catalogAttributes, setCatalogAttributes] = createSignal<ProductAttributes>({});
+  const [catalogSet, setCatalogSet] = createSignal("");
+  const productSetData = (product: AdminProduct) => ({ game: product.game, productType: product.productType, set: typeof product.metadata.set === "string" ? product.metadata.set : undefined, setCode: typeof product.metadata.setCode === "string" ? product.metadata.setCode : undefined, catalogSource: typeof product.metadata.source === "string" ? product.metadata.source : undefined, variants: product.variants });
   const [catalogType, setCatalogType] = createSignal("all");
   const [catalogStatus, setCatalogStatus] = createSignal("all");
   const [catalogPage, setCatalogPage] = createSignal(1);
@@ -3369,12 +3271,12 @@ export default function Admin() {
       matchesCatalogueFilters(
         product,
         catalogSearch(),
-        catalogType() === "accessory" ? "all" : catalogGame(),
+        catalogType() !== "all" && !isTcgType(catalogType()) ? "all" : catalogGame(),
         catalogType(),
         catalogStatus(),
       ),
-    ).filter(product => catalogType() !== "accessory" || !catalogBrand() || product.brand?.toLowerCase() === catalogBrand().toLowerCase());
-  const catalogBrands = () => [...new Set([...ACCESSORY_BRANDS, ...(dashboard()?.products ?? []).filter(product => product.productType === "accessory").map(product => product.brand).filter((brand): brand is string => !!brand)])].sort();
+    ).filter(product => isTcgType(catalogType()) || catalogType() === "all" || !catalogBrand() || product.brand?.toLowerCase() === catalogBrand().toLowerCase()).filter(product => matchesAttributeFilters({ attributes: typeAttributes(product.productType, product.metadata.attributes), variants: product.variants }, catalogAttributes())).filter(product => matchesSetFilter(productSetData(product), catalogSet()));
+  const catalogBrands = () => [...new Set([...(catalogType() === "accessory" ? ACCESSORY_BRANDS : []), ...(dashboard()?.products ?? []).filter(product => product.productType === catalogType()).map(product => product.brand).filter((brand): brand is string => !!brand)])].sort();
   const catalogPageCount = () =>
     Math.max(1, Math.ceil(filteredProducts().length / catalogPageSize()));
   const currentCatalogPage = () =>
@@ -3693,7 +3595,9 @@ export default function Admin() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...current,
-        game: current.productType === "accessory" ? undefined : current.game,
+game: isTcgType(current.productType) ? current.game : undefined,
+        attributes: typeAttributes(current.productType, current.attributes),
+        variantAttributes: typeAttributes(current.productType, current.variantAttributes, true),
         accessoryCategory: current.productType === "accessory" ? current.accessoryCategory : undefined,
         priceCents: eurosToCents(current.price),
         compareAtPriceCents: optionalEurosToCents(current.compareAtPrice),
@@ -3722,7 +3626,7 @@ export default function Admin() {
         setImportMessage("The CSV is too large. Use a file smaller than 5 MB.");
         return;
       }
-      const parsed = parseCsv(await file.text());
+      const parsed = parseProductSpreadsheet(await file.text(), section() === "inventory-files" ? templateType() : undefined);
       setCsvPreview({ fileName: file.name, ...parsed });
       if (!parsed.rows.length && !parsed.issues.length) {
         setImportMessage("The CSV has no product rows.");
@@ -3771,7 +3675,7 @@ export default function Admin() {
         ? "Products are now visible in the shop."
         : "Products were saved as private drafts for review.";
       setImportMessage(
-        `${result.createdRows ?? 0} new products created. ${result.updatedRows ?? 0} existing products updated. ${result.failedRows ?? 0} rows were rejected.${rejectedDetails ? ` ${rejectedDetails}` : ""} ${visibilityMessage}`,
+        `${result.createdRows ?? 0} new variants created. ${result.updatedRows ?? 0} existing variants updated. ${result.failedRows ?? 0} rows were rejected.${rejectedDetails ? ` ${rejectedDetails}` : ""} ${visibilityMessage}`,
       );
     } catch {
       setImportMessage("The CSV import could not be completed.");
@@ -4582,12 +4486,10 @@ export default function Admin() {
                       <p>Live listings appear in the customer shop. Drafts remain private.</p>
                     </div>
                     <div class={styles.introActions}>
-                      <button type="button" onClick={() => { setDraft(current => ({ ...current, productType: "accessory" })); setComposerOpen(true); }}>
+                      <button type="button" onClick={() => { setDraft(current => ({ ...current, productType: "accessory", condition: "New", attributes: {}, variantAttributes: {} })); setComposerOpen(true); }}>
                         Add accessory
                       </button>
-                      <button type="button" aria-expanded={exportOpen()} aria-controls="inventory-export-options" onClick={() => setExportOpen(value => !value)}>
-                        {exportOpen() ? "Close export options" : "Export inventory CSV"}
-                      </button>
+                      <button type="button" onClick={() => setSection("inventory-files")}>Inventory import / export</button>
                       <button
                         type="button"
                         class={styles.primaryAction}
@@ -4599,17 +4501,16 @@ export default function Admin() {
                     </div>
                   </section>
 
-                  <Show when={exportOpen()}>
-                    <div id="inventory-export-options"><InventoryExport /></div>
-                  </Show>
+
 
                   <Show when={composerOpen()}>
                     <form class={styles.productForm} onSubmit={createProduct}>
                       <div class={styles.formLead}>
-                        <h3>{draft().productType === "accessory" ? "New accessory" : "New product listing"}</h3>
-                        <p>{draft().productType === "accessory" ? "Choose a category and brand, then add photos, price, and stock." : "Add a single, sealed item, graded card, or accessory."}</p>
+                        <h3>New product</h3>
+                        <p>Choose a category first. Only the fields for that product type are shown.</p>
                       </div>
                       <div class={styles.formGrid}>
+                        <ProductTypeSelect value={draft().productType} onChange={type => setDraft(current => ({ ...current, productType: type, attributes: typeAttributes(type, current.attributes), variantAttributes: typeAttributes(type, current.variantAttributes, true), variantName: "Default", condition: type === "sealed" ? "Sealed" : isTcgType(type) ? "Near Mint" : "New" }))} />
                         <label class={styles.spanTwo}>
                           <span>Product name</span>
                           <input required value={draft().name} onInput={event => patchDraft("name", event.currentTarget.value)} />
@@ -4618,7 +4519,7 @@ export default function Admin() {
                           <span>URL slug</span>
                           <input placeholder="Created from the name if empty" value={draft().slug} onInput={event => patchDraft("slug", event.currentTarget.value)} />
                         </label>
-                        <Show when={draft().productType !== "accessory"}>
+                        <Show when={isTcgType(draft().productType)}>
                         <label>
                           <span>Brand or manufacturer</span>
                           <input placeholder="The Pokémon Company" value={draft().brand} onInput={event => patchDraft("brand", event.currentTarget.value)} />
@@ -4633,33 +4534,20 @@ export default function Admin() {
                             <option value="riftbound">Riftbound</option>
                             <option value="digimon">Digimon</option>
                             <option value="cyberpunk">Cyberpunk</option>
+                    <option value="onepiece">One Piece</option>
+                    <option value="grandarchive">Grand Archive</option>
+                    <option value="vanguard">Cardfight!! Vanguard</option>
                             <option value="other">Other</option>
                           </select>
                         </label>
                         </Show>
-                        <label>
-                          <span>Product type</span>
-                          <select value={draft().productType} onChange={event => {
-                            const nextType = event.currentTarget.value as ProductDraft["productType"];
-                            setDraft(current => ({
-                              ...current,
-                              productType: nextType,
-                              variantName:
-                                nextType === "sealed" && current.variantName === "Default"
-                                  ? "Booster pack"
-                                  : current.variantName,
-                            }));
-                          }}>
-                            <option value="single">Single</option>
-                            <option value="sealed">Sealed</option>
-                            <option value="graded">Graded</option>
-                            <option value="accessory">Accessory</option>
-                          </select>
-                        </label>
+                        <Show when={!isTcgType(draft().productType) && draft().productType !== "accessory"}><label><span>Brand or manufacturer</span><input required value={draft().brand} onInput={event => patchDraft("brand", event.currentTarget.value)} /></label></Show>
+                        <ProductAttributeFields type={draft().productType} value={draft().attributes} onChange={value => patchDraft("attributes", value)} />
+                        <ProductAttributeFields type={draft().productType} value={draft().variantAttributes} onChange={value => patchDraft("variantAttributes", value)} variant />
                         <Show when={draft().productType === "accessory"}>
                           <AccessoryFields category={draft().accessoryCategory} brand={draft().brand} onCategory={value => patchDraft("accessoryCategory", value)} onBrand={value => patchDraft("brand", value)} />
                         </Show>
-                        <Show when={draft().productType !== "accessory"}>
+                        <Show when={isTcgType(draft().productType)}>
                         <label>
                           <span>Set or collection</span>
                           <input value={draft().set} onInput={event => patchDraft("set", event.currentTarget.value)} />
@@ -4701,7 +4589,7 @@ export default function Admin() {
                           <span>Badge</span>
                           <input placeholder="New, Vintage, PSA 10" value={draft().badge} onInput={event => patchDraft("badge", event.currentTarget.value)} />
                         </label>
-                        <Show when={draft().productType !== "accessory"}>
+                        <Show when={hasCardFields(draft().productType)}>
                         <label>
                           <span>Card number</span>
                           <input placeholder="025/165" value={draft().cardNumber} onInput={event => patchDraft("cardNumber", event.currentTarget.value)} />
@@ -4718,6 +4606,7 @@ export default function Admin() {
                           <span>Illustrator</span>
                           <input value={draft().illustrator} onInput={event => patchDraft("illustrator", event.currentTarget.value)} />
                         </label>
+                        <Show when={draft().productType === "graded"}>
                         <label>
                           <span>Grading company</span>
                           <input placeholder="PSA, BGS, CGC" value={draft().gradingCompany} onInput={event => patchDraft("gradingCompany", event.currentTarget.value)} />
@@ -4731,6 +4620,9 @@ export default function Admin() {
                           <input value={draft().certificationNumber} onInput={event => patchDraft("certificationNumber", event.currentTarget.value)} />
                         </label>
                         </Show>
+                        </Show>
+                        <Show when={isTcgType(draft().productType)}><label><span>Language</span><LanguageSelect required value={draft().language} onChange={value => patchDraft("language", value)} /></label></Show>
+                        <label><span>Condition</span><input disabled={draft().productType === "sealed"} value={draft().condition} onInput={event => patchDraft("condition", event.currentTarget.value)} /></label>
                         <ProductShippingFields value={draft().shipping} settings={data().content.business?.shippingSettings ?? DEFAULT_SHIPPING_SETTINGS} onChange={value => patchDraft("shipping", value)} />
                         <label>
                           <span>Ships from</span>
@@ -4812,6 +4704,8 @@ export default function Admin() {
                   </Show>
 
                   <section class={styles.catalogToolbar} aria-label="Catalogue filters">
+                    <SetFilter products={(dashboard()?.products ?? []).map(productSetData)} game={catalogGame() === "all" ? undefined : catalogGame()} value={catalogSet()} onChange={value => { setCatalogSet(value); setCatalogPage(1); clearSelection(); }} />
+                    <div class={styles.catalogAttributeFilters}><ProductAttributeFilters type={catalogType()} products={(dashboard()?.products ?? []).filter(product => product.productType === catalogType()).map(product => ({ attributes: typeAttributes(product.productType, product.metadata.attributes), variants: product.variants }))} value={catalogAttributes()} onChange={value => { setCatalogAttributes(value); setCatalogPage(1); clearSelection(); }} /></div>
                     <label class={styles.catalogSearch}>
                       <span>Search catalogue</span>
                       <input
@@ -4825,7 +4719,7 @@ export default function Admin() {
                         }}
                       />
                     </label>
-                    <Show when={catalogType() !== "accessory"} fallback={
+                    <Show when={catalogType() === "all" || isTcgType(catalogType())} fallback={
                       <label>
                         <span>Brand</span>
                         <select value={catalogBrand()} onChange={event => { setCatalogBrand(event.currentTarget.value); setCatalogPage(1); clearSelection(); }}>
@@ -4837,7 +4731,7 @@ export default function Admin() {
                     <label>
                       <span>Game</span>
                       <select value={catalogGame()} onChange={event => {
-                        setCatalogGame(event.currentTarget.value);
+                        setCatalogSet(""); setCatalogGame(event.currentTarget.value);
                         setCatalogPage(1);
                         clearSelection();
                       }}>
@@ -4849,6 +4743,9 @@ export default function Admin() {
                         <option value="riftbound">Riftbound</option>
                         <option value="digimon">Digimon</option>
                         <option value="cyberpunk">Cyberpunk</option>
+                    <option value="onepiece">One Piece</option>
+                    <option value="grandarchive">Grand Archive</option>
+                    <option value="vanguard">Cardfight!! Vanguard</option>
                         <option value="other">Other</option>
                       </select>
                     </label>
@@ -4856,6 +4753,7 @@ export default function Admin() {
                     <label>
                       <span>Product type</span>
                       <select value={catalogType()} onChange={event => {
+                        setCatalogSet(""); setCatalogAttributes({}); setCatalogBrand("");
                         setCatalogType(event.currentTarget.value);
                         setCatalogPage(1);
                         clearSelection();
@@ -4864,7 +4762,7 @@ export default function Admin() {
                         <option value="sealed">Sealed</option>
                         <option value="single">Singles</option>
                         <option value="graded">Graded</option>
-                        <option value="accessory">Accessories</option>
+                        <For each={PRODUCT_TYPES.filter(type => !["single", "sealed", "graded"].includes(type.value))}>{type => <option value={type.value}>{type.label}</option>}</For>
                       </select>
                     </label>
                     <label>
@@ -5275,16 +5173,22 @@ export default function Admin() {
                   </div>
                 </Show>
 
-                <Show when={section() === "imports"}>
+                <Show when={section() === "imports" || section() === "inventory-files"}>
+                  <Show when={section() === "imports"}><div class={styles.libraryPicker}>
+                    <label><span>Choose a game or import source</span><select value={libraryView()} disabled={Object.values(libraryBusy()).some(Boolean) || yugiohBulkRunning() || pokemonBulkRunning() || magicBulkRunning()} onChange={event => setLibraryView(event.currentTarget.value)}>
+                      <For each={IMPORT_LIBRARIES}>{item => <option value={item[0]}>{item[1]}</option>}</For>
+                    </select></label><p>Only the selected library is shown. Your search stays here when you switch back.</p>
+                  </div></Show>
+                  <Show when={section() === "inventory-files" || libraryView() === "files"}>
+                  <Show when={section() === "inventory-files"}><InventoryExport /></Show>
                   <section class={styles.importHero}>
                     <div>
-                      <h2>Import a full catalogue</h2>
-                      <p>
-                        Check up to 1,000 products, then choose whether they go live immediately or stay private for review.
-                      </p>
+                      <h2>{section() === "inventory-files" ? "Category templates and import" : "Import a full catalogue"}</h2>
+                      <p>Choose a category template, edit it in Excel, then save as CSV UTF-8. Import up to 1,000 variants. Matching SKUs update existing stock and prices; a shared slug groups new variations.</p>
                     </div>
                     <div class={styles.importActions}>
-                      <button type="button" onClick={downloadTemplate}>Download CSV template</button>
+                      <label><span>Template category</span><select value={templateType()} disabled={importing()} onChange={event => { setTemplateType(event.currentTarget.value as ProductType); setCsvPreview(null); }}><For each={PRODUCT_TYPES}>{type => <option value={type.value}>{type.label}</option>}</For></select></label>
+                      <button type="button" onClick={() => downloadTemplate(templateType())}>Download Excel-compatible CSV template</button>
                       <label class={styles.primaryAction}>
                         Choose CSV file
                         <input
@@ -5308,7 +5212,7 @@ export default function Admin() {
                           <div>
                             <strong>{preview().fileName}</strong>
                             <p>
-                              {preview().rows.length} product{preview().rows.length === 1 ? "" : "s"} found. Matching SKUs update the existing product instead of creating duplicates.
+                              {preview().rows.length} variant{preview().rows.length === 1 ? "" : "s"} found. Matching SKUs update the existing product instead of creating duplicates.
                             </p>
                           </div>
                           <span classList={{ [styles.csvReady]: preview().issues.length === 0, [styles.csvBlocked]: preview().issues.length > 0 }}>
@@ -5360,9 +5264,10 @@ export default function Admin() {
                     )}
                   </Show>
 
-                  <CardmarketPriceImport onUpdated={refetch} />
+                  </Show>
+                  <div hidden={section() !== "imports" || libraryView() !== "prices"}><CardmarketPriceImport onUpdated={refetch} /></div>
 
-                  <section class={styles.yugiohLibrary}>
+                  <section class={styles.yugiohLibrary} hidden={section() !== "imports" || libraryView() !== "yugioh"}>
                     <div class={styles.yugiohLibraryHead}>
                       <div>
                         <h2>Yu-Gi-Oh card library</h2>
@@ -5507,7 +5412,7 @@ export default function Admin() {
                     </Show>
                   </section>
 
-                  <section class={styles.yugiohLibrary}>
+                  <section class={styles.yugiohLibrary} hidden={section() !== "imports" || libraryView() !== "pokemon"}>
                     <div class={styles.yugiohLibraryHead}>
                       <div>
                         <h2>Pokémon card library</h2>
@@ -5647,7 +5552,7 @@ export default function Admin() {
                     </Show>
                   </section>
 
-                  <section class={styles.yugiohLibrary}>
+                  <section class={styles.yugiohLibrary} hidden={section() !== "imports" || libraryView() !== "magic"}>
                     <div class={styles.yugiohLibraryHead}>
                       <div>
                         <h2>Magic card library</h2>
@@ -5792,6 +5697,8 @@ export default function Admin() {
                   </section>
 
                   <RemoteCardLibrary
+                    visible={section() === "imports" && libraryView() === "digimon"}
+                    onBusyChange={busy => setLibraryBusy(value => ({ ...value, digimon: busy }))}
                     title="Digimon card library"
                     description="Search DigimonCard by card or set. Imports are saved locally as private, zero-stock drafts so the storefront never depends on the external API."
                     badge="Live DigimonCard data"
@@ -5804,6 +5711,8 @@ export default function Admin() {
                   />
 
                   <RemoteCardLibrary
+                    visible={section() === "imports" && libraryView() === "riftbound"}
+                    onBusyChange={busy => setLibraryBusy(value => ({ ...value, riftbound: busy }))}
                     title="Riftbound card library"
                     description="Search Scrydex by Riftbound card or expansion. Collectible variants and their matching images are saved as private, zero-stock drafts."
                     badge="Cached Scrydex data"
@@ -5816,22 +5725,24 @@ export default function Admin() {
                     onImported={refetch}
                   />
 
-                  <section class={styles.importGuide}>
+                  <For each={["onepiece", "grandarchive", "vanguard", "channel3"] as const}>{provider => <div hidden={section() !== "imports" || libraryView() !== provider}><ReferenceLibraries provider={provider} onImported={refetch} onBusyChange={busy => setLibraryBusy(value => ({ ...value, [provider]: busy }))} /></div>}</For>
+
+                  <section class={styles.importGuide} hidden={section() !== "inventory-files" && libraryView() !== "files"}>
                     <div>
                       <h3>How the product file works</h3>
-                      <p>Download the latest template, keep its header row, and fill one product per line. SKU identifies an existing product. Leave image blank to keep its current photo.</p>
+                      <p>Download a category template and keep its header row. Use one row per variant and a unique SKU. Reuse the product slug to group new variants. Blank optional cells keep existing values and photos.</p>
                     </div>
                     <dl>
-                      <div><dt>game</dt><dd>pokemon, yugioh, magic, lorcana, riftbound, digimon, cyberpunk, or other</dd></div>
-                      <div><dt>productType</dt><dd>single, sealed, graded, or accessory</dd></div>
+                      <div><dt>game / brand</dt><dd>Game is required for TCGs. Non-TCG products use a brand instead.</dd></div>
+                      <div><dt>productType</dt><dd>{PRODUCT_TYPES.map(type => type.value).join(", ")}</dd></div>
                       <div><dt>price</dt><dd>Use euros, for example 12.95</dd></div>
-                      <div><dt>visibility</dt><dd>CSV products always begin as private drafts</dd></div>
+                      <div><dt>visibility</dt><dd>Choose Publish in shop or Keep as private drafts before importing</dd></div>
                       <div><dt>image</dt><dd>Optional HTTPS image address</dd></div>
                       <div><dt>sku</dt><dd>A unique stock code for every row</dd></div>
                     </dl>
                   </section>
 
-                  <section class={styles.importHistory}>
+                  <section class={styles.importHistory} hidden={section() !== "inventory-files" && libraryView() !== "files"}>
                     <div class={styles.sectionHead}>
                       <div><h2>Import history</h2><p>Recent catalogue jobs and rejected rows.</p></div>
                     </div>
@@ -5870,6 +5781,7 @@ const NAV_ICON_PATHS: Record<AdminSection, string> = {
   analytics: "M4 20V10M10 20V4M16 20v-7M22 20H2",
   activity: "M22 12h-4l-3 9L9 3l-3 9H2",
   imports: "M12 3v12M7 10l5 5 5-5M5 21h14",
+  "inventory-files": "M8 3h8l4 4v14H4V3h4M14 3v6h6M8 13h8M8 17h8",
   readiness: "M12 3 5.5 5.7v5.6c0 4.1 2.6 7.8 6.5 9.7 3.9-1.9 6.5-5.6 6.5-9.7V5.7ZM9.2 12.1l1.8 1.8 3.9-4",
 };
 

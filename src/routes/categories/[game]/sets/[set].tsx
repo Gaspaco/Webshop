@@ -5,7 +5,8 @@ import GameSubpageShell from "~/components/game/GameSubpageShell";
 import ProductGrid from "~/components/product/ProductGrid";
 import { CATEGORIES } from "~/lib/categories";
 import { createGameCatalog } from "~/lib/game-catalog";
-import { groupProductsBySet, setPathSegment } from "~/lib/game-storefront";
+import { groupProductsBySet } from "~/lib/game-storefront";
+import { productBelongsToSet, productForSet } from "~/lib/product-sets";
 import styles from "../game-pages.module.scss";
 
 export default function GameSetPage() {
@@ -18,7 +19,7 @@ export default function GameSetPage() {
     groupProductsBySet(products()).find(set => set.path === setPath()),
   );
   const setProducts = createMemo(() =>
-    products().filter(product => product.set && setPathSegment(product.set) === setPath()),
+    products().filter(product => productBelongsToSet(product, setPath())).map(product => productForSet(product, setPath())),
   );
 
   return (
