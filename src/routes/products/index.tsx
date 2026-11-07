@@ -24,6 +24,7 @@ import styles from "./index.module.scss";
 import { PRODUCT_TYPES, isTcgType, productTypeConfig, typeAttributes, type ProductAttributes } from "~/lib/product-types";
 import ProductAttributeFilters, { matchesAttributeFilters } from "~/components/admin/ProductAttributeFilters";
 import SetFilter from "~/components/product/SetFilter";
+import SearchSelect from "~/components/forms/SearchSelect";
 import { matchesSetFilter, setFilterOptions, productForSet } from "~/lib/product-sets";
 
 const GAME_OPTIONS = [
@@ -405,6 +406,9 @@ export default function Products() {
         </header>
 
         <div class={styles.filterBar}>
+          <SearchSelect label="Product type" class={styles.typeFilter} value={type()}
+            options={TYPE_OPTIONS.map(option => ({ value: option.key, label: option.label }))}
+            onChange={value => { setType(value); setBrand(""); setAttributeFilters({}); if (!isTcgType(value)) setGame("all"); }} />
           <Show when={!merchandiseView()}><SetFilter class={`${styles.accessoryFilter} ${styles.setFilter}`} products={allProducts()} game={game() === "all" ? undefined : game()} value={setFilter()} onChange={setSetFilter} /></Show>
           <Show when={!merchandiseView()}>
           <div class={styles.gameTabs} role="group" aria-label="Game">
@@ -428,6 +432,7 @@ export default function Products() {
             type="button"
             class={styles.filterToggle}
             aria-expanded={filtersOpen()}
+            aria-controls="shop-filter-panel"
             onClick={() => setFiltersOpen(open => !open)}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -451,6 +456,7 @@ export default function Products() {
           </Show>
 
           <aside
+            id="shop-filter-panel"
             class={styles.rail}
             classList={{ [styles.railOpen]: filtersOpen() }}
             aria-label="Shop filters"
@@ -466,6 +472,10 @@ export default function Products() {
                 </svg>
               </button>
             </div>
+
+            <Show when={!merchandiseView()}>
+              <SetFilter products={allProducts()} game={game() === "all" ? undefined : game()} value={setFilter()} onChange={setSetFilter} />
+            </Show>
 
             <div class={styles.group} role="group" aria-labelledby="filter-format">
               <p id="filter-format">Format</p>

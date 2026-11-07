@@ -83,7 +83,7 @@ export default function GameProductsPage() {
                   </Show>
                 </p>
                 <Show when={products().length}>
-                  <button type="button" onClick={() => setFilter("all")}>Show everything</button>
+                  <button type="button" onClick={() => { setFilter("all"); setSearchParams({ set: undefined }, { replace: true }); }}>Show everything</button>
                 </Show>
               </div>
             }

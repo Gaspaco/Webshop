@@ -154,6 +154,11 @@ export const CATEGORIES: Record<string, CategoryData> = {
   onepiece: { slug: "onepiece", name: "One Piece", tagline: "Singles, decks, and sealed releases.", blurb: "Browse One Piece cards and sealed products.", highlights: ["Singles", "Sealed", "Sets"], theme: "onepiece", products: [] },
   grandarchive: { slug: "grandarchive", name: "Grand Archive", tagline: "Editions, foils, and sealed sets.", blurb: "Browse Grand Archive cards and releases.", highlights: ["Singles", "Foils", "Sets"], theme: "grandarchive", products: [] },
   vanguard: { slug: "vanguard", name: "Cardfight!! Vanguard", tagline: "Units, rarities, and sealed sets.", blurb: "Browse Cardfight!! Vanguard singles and products.", highlights: ["Singles", "Sealed", "Sets"], theme: "vanguard", products: [] },
+  naruto: { slug: "naruto", name: "Naruto Mythos TCG", tagline: "Singles, sealed products, and sets.", blurb: "Browse Naruto Mythos TCG cards and sealed products by set.", highlights: ["Singles", "Sealed", "Sets"], theme: "naruto", products: [] },
+  weissschwarz: { slug: "weissschwarz", name: "Weiss Schwarz", tagline: "Singles, sealed products, and sets.", blurb: "Browse Weiss Schwarz cards and sealed products by set.", highlights: ["Singles", "Sealed", "Sets"], theme: "weissschwarz", products: [] },
+  sorcery: { slug: "sorcery", name: "Sorcery", tagline: "Singles, sealed products, and sets.", blurb: "Browse Sorcery cards and sealed products by set.", highlights: ["Singles", "Sealed", "Sets"], theme: "sorcery", products: [] },
+  battlespiritsaga: { slug: "battlespiritsaga", name: "Battle Spirit Saga", tagline: "Singles, sealed products, and sets.", blurb: "Browse Battle Spirit Saga cards and sealed products by set.", highlights: ["Singles", "Sealed", "Sets"], theme: "battlespiritsaga", products: [] },
+  palworld: { slug: "palworld", name: "Palworld", tagline: "Singles, sealed products, and sets.", blurb: "Browse Palworld cards and sealed products by set.", highlights: ["Singles", "Sealed", "Sets"], theme: "palworld", products: [] },
 };
 
 // Point every product at its detail page. Done centrally so the shop,

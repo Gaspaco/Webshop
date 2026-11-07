@@ -18,6 +18,23 @@
   @include btn-link;
 }
 
+.moreGames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+
+  a {
+    padding: 0.6rem 0.9rem;
+    border-radius: $radius-inner;
+    background: $surface;
+    color: $gray-200;
+    font-size: 0.875rem;
+    &:hover { background: $surface-raised; color: $white; }
+    &:focus-visible { outline: 2px solid $primary-light; outline-offset: 2px; }
+  }
+}
+
 // ---------- Per-game accent ----------
 
 .pokemon { --frame: #2ed39a; }

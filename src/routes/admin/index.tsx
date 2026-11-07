@@ -16,13 +16,14 @@ import {
 import RemoteCardLibrary from "~/components/admin/RemoteCardLibrary";
 import ReferenceLibraries from "~/components/admin/ReferenceLibraries";
 import SetFilter from "~/components/product/SetFilter";
+import { CATEGORY_LIST } from "~/lib/categories";
 import { matchesSetFilter } from "~/lib/product-sets";
 import CardmarketPriceImport from "~/components/admin/CardmarketPriceImport";
 import InventoryExport from "~/components/admin/InventoryExport";
 import AccessoryFields from "~/components/admin/AccessoryFields";
 import ProductAttributeFilters, { matchesAttributeFilters } from "~/components/admin/ProductAttributeFilters";
 import { ProductTypeSelect, ProductAttributeFields } from "~/components/admin/ProductTypeFields";
-import { PRODUCT_TYPES, isTcgType, hasCardFields, productTypeConfig, typeAttributes, type ProductType, type ProductAttributes } from "~/lib/product-types";
+import { PRODUCT_TYPES, isTcgType, hasCardFields, productTypeConfig, typeAttributes, type ProductType, type ProductAttributes, type ProductGame } from "~/lib/product-types";
 import { parseProductSpreadsheet, productTemplate, type SpreadsheetRow } from "~/lib/product-spreadsheet";
 import ProductShippingFields from "~/components/admin/ProductShippingFields";
 import ProductImageInput from "~/components/admin/ProductImageInput";
@@ -329,16 +330,7 @@ type ProductDraft = {
   name: string;
   slug: string;
   brand: string;
-  game:
-    | "pokemon"
-    | "yugioh"
-    | "magic"
-    | "lorcana"
-    | "riftbound"
-    | "digimon"
-    | "cyberpunk"
-    | "onepiece" | "grandarchive" | "vanguard"
-    | "other";
+  game: ProductGame;
   productType: ProductType;
   attributes: ProductAttributes;
   variantAttributes: ProductAttributes;
@@ -1274,16 +1266,7 @@ game: isTcgType(productType()) ? game() : undefined,
                 <label>
                   <span>Game</span>
                   <select value={game()} onChange={event => setGame(event.currentTarget.value as ProductDraft["game"])}>
-                    <option value="pokemon">Pokémon</option>
-                    <option value="yugioh">Yu-Gi-Oh!</option>
-                    <option value="magic">Magic</option>
-                    <option value="lorcana">Disney Lorcana</option>
-                    <option value="riftbound">Riftbound</option>
-                    <option value="digimon">Digimon</option>
-                    <option value="cyberpunk">Cyberpunk</option>
-                    <option value="onepiece">One Piece</option>
-                    <option value="grandarchive">Grand Archive</option>
-                    <option value="vanguard">Cardfight!! Vanguard</option>
+                    <For each={CATEGORY_LIST}>{category => <option value={category.slug}>{category.name}</option>}</For>
                     <option value="other">Other</option>
                   </select>
                 </label>
@@ -1817,9 +1800,12 @@ function OrderRow(props: {
     props.order.trackingUrl ?? "",
   );
   const [postnlWeight, setPostnlWeight] = createSignal(
-    String(props.order.shipment?.weightGrams ?? (props.order.shippingMethod === "postnl_letterbox" ? 500 : 1000)),
+    props.order.shipment ? String(props.order.shipment.weightGrams) : "",
   );
   const [postnlDimensions, setPostnlDimensions] = createSignal({ lengthCm: props.order.shipment?.lengthCm ?? null, widthCm: props.order.shipment?.widthCm ?? null, heightCm: props.order.shipment?.heightCm ?? null });
+  const [postnlMeasurementNote, setPostnlMeasurementNote] = createSignal(props.order.shipment?.estimated
+    ? "Contains estimated measurements. Check the packed parcel before buying a label."
+    : props.order.shipment ? "Using measurements saved with this order, including packaging." : "Measurements will be calculated from the ordered products and their shipping classes.");
   const [postnlProductCode, setPostnlProductCode] = createSignal(
     props.order.shippingMethod === "postnl_letterbox" ? "2928" : "3085",
   );
@@ -1962,11 +1948,34 @@ function OrderRow(props: {
     });
   };
 
+  const loadPostnlMeasurements = async () => {
+    if (busy()) return;
+    setBusy(true); setMessage("");
+    try {
+      const response = await fetch("/api/admin/orders", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "postnl_measurements", id: props.order.id }) });
+      const result = await response.json() as { error?: string; shipment?: Shipment; source?: string; productCode?: string };
+      if (!response.ok || !result.shipment) { setMessage(result.error ?? "Measurements could not be calculated."); return; }
+      setPostnlWeight(String(result.shipment.weightGrams));
+      setPostnlDimensions({ lengthCm: result.shipment.lengthCm, widthCm: result.shipment.widthCm, heightCm: result.shipment.heightCm });
+      if (result.productCode) setPostnlProductCode(result.productCode);
+      setPostnlMeasurementNote(result.source === "current_catalogue"
+        ? "Older order: calculated using current product measurements and shipping classes. Check the packed parcel."
+        : result.shipment.estimated ? "Saved order measurements contain class estimates. Check the packed parcel." : "Using measurements saved with this order, including packaging.");
+    } catch { setMessage("Measurements could not be loaded. Please try again."); }
+    finally { setBusy(false); }
+  };
+
   const createLabel = async () => {
     if (busy()) return;
     const weightGrams = Number(postnlWeight());
-    if (!Number.isInteger(weightGrams) || weightGrams < 1 || weightGrams > 30_000) {
+    if (postnlWeight().trim() && (!Number.isInteger(weightGrams) || weightGrams < 1 || weightGrams > 30_000)) {
       setMessage("Enter a parcel weight between 1 and 30,000 grams.");
+      return;
+    }
+    const dimensions = Object.values(postnlDimensions());
+    if (dimensions.some(value => value !== null) && !dimensions.every(value => value !== null && Number.isFinite(value) && value > 0 && value <= 300)) {
+      setMessage("Enter all three dimensions between 0 and 300 cm, or leave all three blank to calculate them.");
       return;
     }
     setBusy(true);
@@ -1979,7 +1988,7 @@ function OrderRow(props: {
         body: JSON.stringify({
           action: "postnl_label",
           id: props.order.id,
-          weightGrams,
+          ...(postnlWeight().trim() ? { weightGrams } : {}),
           ...(Object.values(postnlDimensions()).every(value => value !== null) ? postnlDimensions() : {}),
           productCode: postnlProductCode(),
         }),
@@ -2164,7 +2173,8 @@ function OrderRow(props: {
                   <div class={styles.postnlLabelTools}>
                     <strong>PostNL label</strong>
                     <p>Create the barcode and printable PDF after payment is confirmed.</p>
-                    <Show when={props.order.shipment}><p>{props.order.shipment!.estimated ? "Contains estimated measurements. " : "Calculated from product measurements. "}Check the packed parcel before buying the label.</p></Show>
+                    <p>{postnlMeasurementNote()}</p>
+                    <button type="button" disabled={busy() || Boolean(trackingNumber())} onClick={() => void loadPostnlMeasurements()}>Use product measurements</button>
                     <label>
                       <span>Parcel type</span>
                       <select
@@ -2182,6 +2192,7 @@ function OrderRow(props: {
                         min="1"
                         max="30000"
                         step="1"
+                        placeholder="Automatic from ordered products"
                         value={postnlWeight()}
                         onInput={event => setPostnlWeight(event.currentTarget.value)}
                       />
@@ -4527,16 +4538,7 @@ game: isTcgType(current.productType) ? current.game : undefined,
                         <label>
                           <span>Game</span>
                           <select value={draft().game} onChange={event => patchDraft("game", event.currentTarget.value as ProductDraft["game"])}>
-                            <option value="pokemon">Pokémon</option>
-                            <option value="yugioh">Yu-Gi-Oh!</option>
-                            <option value="magic">Magic</option>
-                            <option value="lorcana">Disney Lorcana</option>
-                            <option value="riftbound">Riftbound</option>
-                            <option value="digimon">Digimon</option>
-                            <option value="cyberpunk">Cyberpunk</option>
-                    <option value="onepiece">One Piece</option>
-                    <option value="grandarchive">Grand Archive</option>
-                    <option value="vanguard">Cardfight!! Vanguard</option>
+                            <For each={CATEGORY_LIST}>{category => <option value={category.slug}>{category.name}</option>}</For>
                             <option value="other">Other</option>
                           </select>
                         </label>
@@ -4736,16 +4738,7 @@ game: isTcgType(current.productType) ? current.game : undefined,
                         clearSelection();
                       }}>
                         <option value="all">All games</option>
-                        <option value="pokemon">Pokémon</option>
-                        <option value="yugioh">Yu-Gi-Oh!</option>
-                        <option value="magic">Magic</option>
-                        <option value="lorcana">Disney Lorcana</option>
-                        <option value="riftbound">Riftbound</option>
-                        <option value="digimon">Digimon</option>
-                        <option value="cyberpunk">Cyberpunk</option>
-                    <option value="onepiece">One Piece</option>
-                    <option value="grandarchive">Grand Archive</option>
-                    <option value="vanguard">Cardfight!! Vanguard</option>
+                        <For each={CATEGORY_LIST}>{category => <option value={category.slug}>{category.name}</option>}</For>
                         <option value="other">Other</option>
                       </select>
                     </label>

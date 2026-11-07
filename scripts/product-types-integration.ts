@@ -8,6 +8,8 @@ import { eq, sql } from "drizzle-orm";
 import * as schema from "../src/db/schema";
 import { PRODUCT_TYPES } from "../src/lib/product-types";
 import { parseProductSpreadsheet } from "../src/lib/product-spreadsheet";
+import { CATEGORIES } from "../src/lib/categories";
+import { matchesSetFilter, setFilterOptions } from "../src/lib/product-sets";
 
 if (process.env.TCG_PRODUCT_TYPES_TEST !== "1") throw new Error("Use the isolated product types test wrapper.");
 process.env.NODE_ENV = "production";
@@ -106,6 +108,24 @@ const publicRows = await loadDatabaseCatalogRows({ slug: figure.product.slug });
 const publicFigure = databaseCatalogRowsToState(publicRows.products, []).products[0]!;
 assert.equal(publicFigure.gameName, "Figurines"); assert.equal(publicFigure.attributes!.scale, "1:7");
 assert.ok(publicFigure.variants!.some(row => row.attributes?.edition === "Deluxe"));
+// Every requested game supports the same owner workflow and public set filters.
+const addedGames = ["onepiece", "naruto", "vanguard", "weissschwarz", "sorcery", "battlespiritsaga", "grandarchive", "palworld"];
+for (const game of addedGames) {
+  const created = await ok(await create(event("/api/admin/products", { name: `${CATEGORIES[game]!.name} fixture`, slug: `game-${game}`, game,
+    productType: "single", status: "active", sku: `GAME-${game}`, priceCents: 100, stock: 1, set: "Fixture set", setCode: "TEST" })), 201);
+  await ok(await edit(event("/api/admin/products", { id: created.product.id, variantId: created.variant.id, game }, "PATCH")));
+  await ok(await importRows(event("/api/admin/import", { rows: [{ name: `${CATEGORIES[game]!.name} fixture`, game, productType: "single", sku: `GAME-${game}`, priceCents: 200, stock: 2 }], visibility: "active" })));
+  const rows = await loadDatabaseCatalogRows({ game, includeManagedSlugs: false });
+  const [mapped] = databaseCatalogRowsToState(rows.products, []).products;
+  assert.equal(mapped!.game, game); assert.equal(mapped!.gameName, CATEGORIES[game]!.name); assert.equal(mapped!.theme, game);
+  assert.equal(mapped!.priceCents, 200); assert.equal(mapped!.stock, 2);
+  assert.equal(setFilterOptions([mapped!], game)[0]?.value, `${game}:fixture-set`);
+  assert.equal(matchesSetFilter(mapped!, `${game}:fixture-set`), true);
+}
+const gameExport = parseProductSpreadsheet(await (await exportRows(event("/api/admin/export?type=inventory&productType=single"))).text(), "single");
+assert.deepEqual(gameExport.issues, []);
+for (const game of addedGames) assert.ok(gameExport.rows.some(row => row.game === game && row.sku === `GAME-${game}`));
+
 for (role of [null, "customer"]) {
   assert.equal((await create(event("/api/admin/products", {}))).status, role ? 403 : 401);
   assert.equal((await importRows(event("/api/admin/import", {}))).status, role ? 403 : 401);

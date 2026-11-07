@@ -22,7 +22,8 @@ export function matchesAttributeFilters(product: AttributeFilterProduct, filters
   return candidates.some(variant => Object.entries(filters).every(([key, value]) => !value || (variant.attributes?.[key] || product.attributes?.[key]) === value));
 }
 export const PRODUCT_TYPE_VALUES = PRODUCT_TYPES.map(type => type.value) as [ProductType, ...ProductType[]];
-export const PRODUCT_GAMES = ["pokemon", "yugioh", "magic", "lorcana", "riftbound", "digimon", "cyberpunk", "onepiece", "grandarchive", "vanguard", "other"] as const;
+export const PRODUCT_GAMES = ["pokemon", "yugioh", "magic", "lorcana", "riftbound", "digimon", "cyberpunk", "onepiece", "grandarchive", "vanguard", "naruto", "weissschwarz", "sorcery", "battlespiritsaga", "palworld", "other"] as const;
+export type ProductGame = (typeof PRODUCT_GAMES)[number];
 export function productTypeConfig(value: unknown) { return PRODUCT_TYPES.find(type => type.value === value); }
 export function isTcgType(value: unknown) { return productTypeConfig(value)?.game === true; }
 export function hasCardFields(value: unknown) { return value === "single" || value === "graded"; }

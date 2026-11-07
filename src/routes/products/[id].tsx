@@ -21,9 +21,11 @@ import { formatPrice, useCart } from "~/lib/cart";
 import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
 import { variantRarity } from "~/lib/card-finish";
 import { productPreviewVariant } from "~/lib/product-preview";
+import { setSlug, variantSet } from "~/lib/product-sets";
 import { canonicalProductUrl, publicProductImageUrl } from "~/lib/public-site";
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import ProductSection from "~/components/product/ProductSection";
+import SearchSelect from "~/components/forms/SearchSelect";
 import { flyToCart } from "~/lib/motion";
 import styles from "./[id].module.scss";
 
@@ -126,14 +128,10 @@ function slugPart(value: string) {
   return value.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toUpperCase();
 }
 
-function variantSetName(variant?: { name?: string }) {
-  const part = variant?.name?.split("·")[0]?.trim();
-  return part || undefined;
-}
-
 // SKUs are generated as YGO-<cardId>-<set code>-<rarity>. Peel the two known
 // ends off; anything that does not match that shape falls back to the caller.
-function variantSetCode(variant?: { sku?: string; finish?: string; name?: string }) {
+function variantSetCode(variant?: { sku?: string; finish?: string; name?: string; attributes?: Record<string, string> }) {
+  if (variant?.attributes?.setCode) return variant.attributes.setCode;
   const sku = variant?.sku;
   if (!sku) return undefined;
   const rarity = variantRarity(variant);
@@ -313,6 +311,10 @@ export default function ProductDetail() {
   };
 
   const orderedVariants = () => variantsWithAvailableFirst(product()?.variants);
+  const printingSet = () => {
+    const current = product(), variant = displayVariant();
+    return current && variant ? variantSet(current, variant) : undefined;
+  };
 
   // Thumbnails: the default image, then every printing with its own picture.
   // Picking one selects that printing, so the price and stock follow.
@@ -617,9 +619,9 @@ export default function ProductDetail() {
                     <A href={productGroupUrl(item())} class={styles.gameLink} data-game={item().game}>
                       {!isTcgType(item().productType) ? item().brand || "Accessories" : item().gameName}
                     </A>
-                    <Show when={isTcgType(item().productType) && (variantSetName(displayVariant()) ?? item().set)}>
+                    <Show when={isTcgType(item().productType) && (printingSet()?.name ?? item().set)}>
                       {setName => (
-                        <A href={`/categories/${item().game}/sets`}>{setName()}</A>
+                        <A href={`/categories/${item().game}/sets/${setSlug(setName())}`}>{setName()}</A>
                       )}
                     </Show>
                   </div>
@@ -685,36 +687,12 @@ export default function ProductDetail() {
 
                 <Show when={(item().variants?.length ?? 0) > 1}>
                   <div class={styles.variantPicker}>
-                    <label>
-                      <span>{isSealedProduct(item()) ? "Choose a format" : "Choose your card"}</span>
-                      <select
-                        value={selectedVariantId()}
-                        onChange={event => {
-                          setSelectedVariantId(event.currentTarget.value);
-                          setQuantity(1);
-                        }}
-                      >
-                        <option value="">
-                          {isSealedProduct(item()) ? "Select a format" : "Select a printing"}
-                        </option>
-                        <For each={orderedVariants()}>
-                          {variant => (
-                            <option
-                              value={variant.id}
-                              class={variant.stock > 0 ? styles.variantIn : styles.variantOut}
-                            >
-                              {variant.name}
-                              {" · "}
-                              {formatPrice(variant.priceCents)}
-                              {variant.stock > 0 ? ` · ${variant.stock} in stock` : " · out of stock"}
-                            </option>
-                          )}
-                        </For>
-                      </select>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    </label>
+                    <SearchSelect label={isSealedProduct(item()) ? "Choose a format" : "Choose your card"}
+                      value={selectedVariantId()} onChange={value => { setSelectedVariantId(value); setQuantity(1); }}
+                      options={[{ value: "", label: isSealedProduct(item()) ? "Select a format" : "Select a printing" },
+                        ...orderedVariants().map(variant => ({ value: variant.id, label: variant.name,
+                          detail: [formatPrice(variant.priceCents), variant.condition, variant.language, variant.stock > 0 ? `${variant.stock} in stock` : "Out of stock"].filter(Boolean).join(" · "),
+                          available: variant.stock > 0 }))]} />
 
                     <Show when={selectedVariant()}>
                       {variant => (
@@ -939,7 +917,7 @@ export default function ProductDetail() {
                 <For each={productTypeConfig(item().productType)?.fields ?? []}>{field => <Show when={displayVariant()?.attributes?.[field.key] || item().attributes?.[field.key]}>{value => <div><dt>{field.label}</dt><dd>{value()}</dd></div>}</Show>}</For>
                 <Show when={!isTcgType(item().productType)} fallback={<>
                   <div><dt>Game</dt><dd>{item().gameName}</dd></div>
-                  <div><dt>Set</dt><dd>{variantSetName(displayVariant()) ?? item().set ?? "Various"}</dd></div>
+                  <div><dt>Set</dt><dd>{printingSet()?.name ?? item().set ?? "Various"}</dd></div>
                 </>}>
                   <div><dt>Brand</dt><dd>{item().brand || "Not specified"}</dd></div>
                   <div><dt>Category</dt><dd>{item().accessoryCategoryName ?? productTypeConfig(item().productType)?.label}</dd></div>

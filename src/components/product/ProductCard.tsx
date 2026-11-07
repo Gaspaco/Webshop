@@ -5,21 +5,10 @@ import { formatPrice } from "~/lib/cart";
 import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront";
 import { flyToCart } from "~/lib/motion";
 import { productPreviewVariant } from "~/lib/product-preview";
-import { isTcgType } from "~/lib/product-types";
+import { isTcgType, type ProductGame } from "~/lib/product-types";
 import styles from "./ProductSection.module.scss";
 
-export type BoxTheme =
-  | "onepiece"
-  | "grandarchive"
-  | "vanguard"
-  | "accessories"
-  | "pokemon"
-  | "yugioh"
-  | "magic"
-  | "lorcana"
-  | "riftbound"
-  | "digimon"
-  | "cyberpunk";
+export type BoxTheme = Exclude<ProductGame, "other"> | "accessories";
 
 export type ProductVariantOption = {
   attributes?: Record<string, string>;

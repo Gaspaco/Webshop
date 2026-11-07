@@ -53,9 +53,27 @@ describe("new reference libraries and expansion filters", () => {
     assert.equal(matchesSetFilter(product, "yugioh:second-set"), true); assert.equal(matchesSetFilter(product, "pokemon:second-set"), false);
     const selected = productForSet(product, "second-set"); assert.equal(selected.variantId, "b"); assert.equal(selected.image, "b.jpg");
     assert.equal(selected.priceCents, 9000); assert.match(selected.href, /variant=b/); assert.equal(selected.variants!.length, 2);
+    assert.equal(selected.set, "Second set", "set-page cards must not display the product's other printing set");
     assert.equal(setFilterOptions([product, { ...product, game: "magic" }]).length, 4);
     assert.deepEqual(productSets({ setCode: "CHAO", game: "yugioh" }), [{ name: "CHAO", code: "CHAO" }]);
     assert.deepEqual(productSets({ catalogSource: "custom", variants: [{ name: "Blue · L" }] }), []);
+  });
+  it("keeps structured printing sets, filter counts and set pages consistent", () => {
+    const product = { id: "card", name: "Card", href: "/products/card", game: "onepiece", gameName: "One Piece", theme: "onepiece", productType: "single", set: "Romance Dawn", setCode: "OP-01",
+      variants: [
+        { id: "base", name: "Default", sku: "BASE", priceCents: 100, stock: 2, attributes: { setName: "Romance Dawn", setCode: "OP-01" } },
+        { id: "parallel", name: "Parallel", sku: "PARALLEL", priceCents: 300, stock: 1, attributes: { setName: "Romance Dawn", setCode: "OP-01" } },
+        { id: "second", name: "Reprint", sku: "SECOND", priceCents: 1000, stock: 5, attributes: { setName: "Paramount War", setCode: "OP-02" } },
+      ] } as ShopProduct;
+    const options = setFilterOptions([product]);
+    const groups = groupProductsBySet([product]);
+    assert.deepEqual(options.map(set => ({ name: set.name, count: set.count, code: set.code })), groups.map(set => ({ name: set.name, count: set.count, code: set.code })));
+    assert.equal(options.find(set => set.code === "OP-01")?.count, 1, "three variants must not inflate product counts");
+    assert.equal(matchesSetFilter(product, "onepiece:paramount-war"), true);
+    const selected = productForSet(product, "paramount-war");
+    assert.equal(selected.set, "Paramount War"); assert.equal(selected.setCode, "OP-02"); assert.equal(selected.variantId, "second");
+    assert.equal(selected.variants?.length, 1); assert.equal(selected.stock, 5);
+    assert.deepEqual(productSets({ game: "onepiece", set: "Romance Dawn", setCode: "op-01", variants: [{ name: "Default", attributes: { setCode: "OP-01" } }] }).map(set => set.name), ["Romance Dawn"]);
   });
   it("checks provider guards, cache reuse, quotas and imports against isolated PostgreSQL", { timeout: 45000 }, () => {
     const output = execFileSync("bun", ["--no-env-file", "scripts/reference-providers-integration.ts"], { env: { ...process.env, TCG_REFERENCE_TEST: "1" }, encoding: "utf8", timeout: 40000 });

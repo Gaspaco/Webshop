@@ -217,7 +217,7 @@ assert.equal((await orderAction(event("/api/admin/orders", { action: "refund_cre
 assert.equal((await walletOverview(limitBuyer!.id)).balanceCents, 99_999_900);
 console.log("PASS zero-price placeholders are blocked and refund headroom is preserved at balance limits");
 
-const { createPostnlLabel, postnlDimensions } = await import("../src/lib/postnl.server");
+const { createPostnlLabel, postnlDimensions, preparePostnlPackage, defaultPostnlProductCode } = await import("../src/lib/postnl.server");
 assert.deepEqual(postnlDimensions({ lengthCm: 8, widthCm: 21, heightCm: 13 }), { Length: 210, Width: 130, Height: 80 });
 assert.throws(() => postnlDimensions({ lengthCm: 10 }));
 process.env.POSTNL_API_KEY = "fixture-sandbox-not-a-real-key";
@@ -239,5 +239,41 @@ await createPostnlLabel(labelInput);
 assert.deepEqual(captured.Shipments[0].Dimension, { Weight: 620, Length: 160, Width: 150, Height: 60 });
 assert.equal(postnlCalls, 2);
 console.log("PASS label payload carries grams and millimetres; invalid dimensions fail before provider calls");
+
+// The admin route uses the checkout snapshot, not mutable browser guesses or
+// later catalogue edits. Looking up measurements never purchases a label.
+signedIn = owner;
+assert.equal((await orderAction(event("/api/admin/orders", { action: "postnl_measurements", id: paid.id }))).status, 400, "pickup does not create carrier packages");
+await db.update(schema.orders).set({ status: "paid", shippingMethod: "postnl_parcel", trackingNumber: null, trackingUrl: null, labelState: "none" }).where(eq(schema.orders.id, paid.id));
+signedIn = buyer;
+assert.equal((await orderAction(event("/api/admin/orders", { action: "postnl_measurements", id: paid.id }))).status, 403);
+signedIn = null;
+assert.equal((await orderAction(event("/api/admin/orders", { action: "postnl_measurements", id: paid.id }))).status, 401);
+signedIn = owner;
+assert.equal((await orderAction(event("/api/admin/orders", { action: "postnl_measurements", id: paid.id }, "POST", "https://attacker.invalid"))).status, 403);
+const measured = await orderAction(event("/api/admin/orders", { action: "postnl_measurements", id: paid.id }));
+assert.equal(measured.status, 200);
+const measuredBody = await measured.json();
+assert.equal(measuredBody.source, "checkout"); assert.equal(measuredBody.shipment.weightGrams, 620); assert.equal(measuredBody.productCode, "3085");
+assert.equal(postnlCalls, 2);
+await db.update(schema.orders).set({ shipment: null }).where(eq(schema.orders.id, paid.id));
+const legacy = await (await orderAction(event("/api/admin/orders", { action: "postnl_measurements", id: paid.id }))).json();
+assert.equal(legacy.source, "current_catalogue"); assert.equal(legacy.shipment.weightGrams, 920); assert.equal(legacy.shipment.estimated, true);
+assert.equal((await orderByNumber(paid.orderNumber)).shipment, null, "legacy estimates must not silently rewrite historical order measurements");
+await db.update(schema.orders).set({ shipment: paid.shipment }).where(eq(schema.orders.id, paid.id));
+assert.equal(defaultPostnlProductCode("postnl_letterbox"), "2928");
+assert.throws(() => preparePostnlPackage(paid.shipment!, { productCode: "2928" }, profile.shippingSettings), /letterbox/);
+assert.throws(() => preparePostnlPackage(paid.shipment!, { productCode: "3085", lengthCm: 10 }, profile.shippingSettings), /all three/);
+const invalidPackage = await orderAction(event("/api/admin/orders", { action: "postnl_label", id: paid.id, lengthCm: 10 }));
+assert.equal(invalidPackage.status, 400);
+assert.equal((await orderByNumber(paid.orderNumber)).labelState, "none"); assert.equal(postnlCalls, 2);
+const automatic = await orderAction(event("/api/admin/orders", { action: "postnl_label", id: paid.id }));
+assert.equal(automatic.status, 200, await automatic.clone().text());
+assert.deepEqual(captured.Shipments[0].Dimension, { Weight: 620, Length: 160, Width: 150, Height: 60 });
+assert.equal(captured.Shipments[0].ProductCodeDelivery, "3085"); assert.equal(postnlCalls, 4);
+assert.equal((await orderByNumber(paid.orderNumber)).labelState, "created");
+assert.equal((await orderAction(event("/api/admin/orders", { action: "postnl_label", id: paid.id }))).status, 409);
+assert.equal(postnlCalls, 4, "replaying label creation must not buy a second label");
+console.log("PASS PostNL order measurements, legacy class estimates, authority guards, package validation and exactly-once label creation");
 await pg.close();
 console.log("SHIPPING WALLET INTEGRATION PASSED");

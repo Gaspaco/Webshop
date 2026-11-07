@@ -1,7 +1,36 @@
 import { z } from "zod";
 import { getPostnlEnv } from "~/lib/env.server";
+import { shipmentFits, type Shipment, type ShippingSettings } from "./product-shipping";
 
 export class PostnlError extends Error {}
+export class PostnlPackageError extends PostnlError {}
+
+export const defaultPostnlProductCode = (shippingMethod: string) => shippingMethod === "postnl_letterbox" ? "2928" : "3085";
+
+export function preparePostnlPackage(shipment: Shipment, overrides: {
+  weightGrams?: number; lengthCm?: number; widthCm?: number; heightCm?: number; productCode: string;
+}, settings: ShippingSettings) {
+  const dimensions = [overrides.lengthCm, overrides.widthCm, overrides.heightCm];
+  if (dimensions.some(value => value !== undefined) && dimensions.some(value => value === undefined)) {
+    throw new PostnlPackageError("Enter all three package dimensions, or leave all three blank to use the order measurements.");
+  }
+  const measured = {
+    weightGrams: overrides.weightGrams ?? shipment.weightGrams,
+    lengthCm: overrides.lengthCm ?? shipment.lengthCm,
+    widthCm: overrides.widthCm ?? shipment.widthCm,
+    heightCm: overrides.heightCm ?? shipment.heightCm,
+  };
+  z.number().int().min(1).max(30_000).parse(measured.weightGrams);
+  const mm = postnlDimensions(measured);
+  const packed = { ...shipment, ...measured, lengthCm: mm.Length! / 10, widthCm: mm.Width! / 10, heightCm: mm.Height! / 10 };
+  if (overrides.productCode === "2928" && !shipmentFits(packed, settings.letterbox)) {
+    throw new PostnlPackageError("This package exceeds the configured letterbox limits. Choose a standard parcel or check its measurements.");
+  }
+  if (overrides.productCode === "3085" && !settings.parcelBands.some(limit => shipmentFits(packed, limit))) {
+    throw new PostnlPackageError("This package exceeds the configured parcel limits. Check the packed parcel and your PostNL contract.");
+  }
+  return measured;
+}
 
 const barcodeResponseSchema = z.object({
   Barcode: z.string().trim().min(6).max(64),

@@ -1,4 +1,4 @@
-import type { ShopProduct } from "~/lib/categories";
+import { CATEGORIES, type ShopProduct } from "~/lib/categories";
 import { accessoryBrand, accessoryCategory, accessoryCategoryName } from "./accessories";
 import { productPreviewVariant } from "./product-preview";
 import { isTcgType, productTypeConfig, typeAttributes } from "./product-types";
@@ -29,32 +29,10 @@ export type DatabaseCatalogProduct = {
   reservedStock: number;
 };
 
-const gameNames: Record<string, string> = {
-  onepiece: "One Piece", grandarchive: "Grand Archive", vanguard: "Cardfight!! Vanguard",
-  pokemon: "Pokémon",
-  yugioh: "Yu-Gi-Oh!",
-  magic: "Magic: The Gathering",
-  lorcana: "Disney Lorcana",
-  riftbound: "Riftbound",
-  digimon: "Digimon Card Game",
-  cyberpunk: "Cyberpunk",
-  other: "Other",
-};
-
 export function databaseProductToShopProduct(
   product: DatabaseCatalogProduct,
 ): ShopProduct {
-  const game =
-    product.game === "pokemon" ||
-    product.game === "yugioh" ||
-    product.game === "magic" ||
-    product.game === "lorcana" ||
-    product.game === "riftbound" ||
-    product.game === "digimon" ||
-    product.game === "onepiece" || product.game === "grandarchive" || product.game === "vanguard" ||
-    product.game === "cyberpunk"
-      ? product.game
-      : "pokemon";
+  const game = CATEGORIES[product.game ?? ""]?.theme ?? "pokemon";
   const productType = productTypeConfig(product.productType)?.value;
   const merchandise = !!productType && !isTcgType(productType);
   const metadata = product.metadata ?? {};
@@ -76,7 +54,7 @@ export function databaseProductToShopProduct(
     href: `/products/${product.slug}`,
     badge: typeof metadata.badge === "string" ? metadata.badge : undefined,
     game: merchandise ? productType === "accessory" ? "accessories" : productType : product.game ?? "other",
-    gameName: merchandise ? productTypeConfig(productType)!.label : gameNames[product.game ?? "other"] ?? "Other",
+    gameName: merchandise ? productTypeConfig(productType)!.label : CATEGORIES[product.game ?? ""]?.name ?? "Other",
     attributes: typeAttributes(productType, metadata.attributes),
     brand: product.brand ? accessoryBrand(product.brand) : undefined,
     accessoryCategory: productType === "accessory" ? accessoryKind : undefined,

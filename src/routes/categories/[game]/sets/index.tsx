@@ -2,6 +2,7 @@ import { Title } from "@solidjs/meta";
 import { A, useParams } from "@solidjs/router";
 import { createMemo, For, Show } from "solid-js";
 import GameSubpageShell from "~/components/game/GameSubpageShell";
+import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import { CATEGORIES } from "~/lib/categories";
 import { createGameCatalog } from "~/lib/game-catalog";
 import { groupProductsBySet } from "~/lib/game-storefront";
@@ -12,7 +13,7 @@ export default function GameSetsPage() {
   const params = useParams();
   const game = () => params.game ?? "";
   const category = () => CATEGORIES[game()];
-  const { products } = createGameCatalog(game);
+  const { products, loading } = createGameCatalog(game);
   const sets = createMemo(() => groupProductsBySet(products()));
 
   return (
@@ -26,6 +27,7 @@ export default function GameSetsPage() {
           artwork={products().find(product => product.image)?.image}
         >
           <Title>{cat().name} sets | TCGHaven</Title>
+          <Show when={!loading()} fallback={<RouteSkeleton variant="subpage" inline />}>
           <Show when={sets().length}>
             <p class={styles.resultCount}>
               <strong>{sets().length}</strong>
@@ -54,6 +56,7 @@ export default function GameSetsPage() {
                 </A>
               )}</For>
             </div>
+          </Show>
           </Show>
         </GameSubpageShell>
       )}

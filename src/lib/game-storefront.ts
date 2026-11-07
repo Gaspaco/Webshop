@@ -1,4 +1,4 @@
-import type { ShopProduct } from "~/lib/categories";
+import { CATEGORIES, type ShopProduct } from "~/lib/categories";
 import { productSets, setSlug } from "./product-sets";
 
 export type GameIdentity = {
@@ -79,7 +79,13 @@ export const DEFAULT_GAME_IDENTITY: GameIdentity = {
 };
 
 export function getGameIdentity(slug: string) {
-  return GAME_IDENTITIES[slug] ?? DEFAULT_GAME_IDENTITY;
+  const category = CATEGORIES[slug];
+  return GAME_IDENTITIES[slug] ?? (category ? {
+    ...DEFAULT_GAME_IDENTITY,
+    code: slug.slice(0, 3).toUpperCase(),
+    descriptor: category.tagline,
+    releaseCopy: `${category.name} releases, restocks, and preorder windows.`,
+  } : DEFAULT_GAME_IDENTITY);
 }
 
 export function releaseTime(product: Pick<ShopProduct, "releaseDate">) {

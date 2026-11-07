@@ -11,6 +11,9 @@ it("pools single quantities across products and applies editable boundary weight
   assert.equal(calculateShipment([single(4), single(6)], settings).weightGrams, 40);
   const eleven = calculateShipment([single(6), single(5)], settings);
   assert.equal(eleven.productWeightGrams, 50); assert.equal(eleven.singlesQuantity, 11);
+  settings.classes.push({ ...settings.classes[0]!, id: "singles-extra", name: "Other singles" });
+  const multiClass = calculateShipment([single(6), { ...single(5), shipping: { classId: "singles-extra" } }], settings);
+  assert.equal(multiClass.productWeightGrams, 50, "the tier uses all pooled singles, even across two singles classes");
   settings.singlesTiers = [{ maxQuantity: 5, weightGrams: 25 }, { maxQuantity: null, weightGrams: 80 }];
   assert.equal(calculateShipment([single(6)], settings).weightGrams, 100);
   assert.throws(() => calculateShipment([single(-1)], settings));

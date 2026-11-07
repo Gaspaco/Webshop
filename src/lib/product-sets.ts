@@ -9,7 +9,7 @@ export function variantSet(product: ProductSetSource, variant: Pick<ShopVariant,
   const explicit = variant.attributes?.setName?.trim();
   if (explicit) return { name: explicit, code: variant.attributes?.setCode };
   const code = variant.attributes?.setCode?.trim();
-  if (code) return { name: product.setCode === code && product.set ? product.set : code, code };
+  if (code) return { name: product.setCode?.trim().toLowerCase() === code.toLowerCase() && product.set ? product.set.trim() : code, code };
   // Earlier library imports encoded the actual printing set in the variant name.
   // Restrict this fallback to known provider formats, not custom colour/size names.
   if (["yugipedia", "ygoprodeck", "scryfall", "digimoncard"].includes(product.catalogSource ?? "") && variant.name.includes("·")) {
@@ -33,12 +33,13 @@ export function productSets(product: ProductSetSource): ProductSet[] {
 }
 export function productBelongsToSet(product: ProductSetSource, path: string) { return productSets(product).some(set => setSlug(set.name) === path); }
 export function setFilterOptions(products: ProductSetSource[], game?: string) {
-  const options = new Map<string, { value: string; name: string; game: string }>();
+  const options = new Map<string, { value: string; name: string; game: string; code?: string; count: number }>();
   for (const product of products) {
     if (!product.game || (game && product.game !== game)) continue;
     for (const set of productSets(product)) {
       const value = `${product.game}:${setSlug(set.name)}`;
-      options.set(value, { value, name: set.name, game: product.game });
+      const previous = options.get(value);
+      options.set(value, { value, name: previous?.name ?? set.name, game: product.game, code: previous?.code || set.code, count: (previous?.count ?? 0) + 1 });
     }
   }
   return [...options.values()].sort((a, b) => a.name.localeCompare(b.name) || a.game.localeCompare(b.game));
@@ -49,12 +50,15 @@ export function matchesSetFilter(product: ProductSetSource, value: string) {
   return colon > 0 && product.game === value.slice(0, colon) && productBelongsToSet(product, value.slice(colon + 1));
 }
 export function productForSet(product: ShopProduct, path: string): ShopProduct {
+  const printing = productSets(product).find(set => setSlug(set.name) === path);
   const variants = product.variants?.filter(variant => {
-    const set = variantSet(product, variant); return set ? setSlug(set.name) === path : !!product.set && setSlug(product.set) === path;
+    const set = variantSet(product, variant); return set ? setSlug(set.name) === path : setSlug(product.set || product.setCode || "") === path;
   });
   if (!variants?.length) return product;
   const main = productPreviewVariant(variants);
-  return { ...product, variants, variantId: main?.id, sku: main?.sku, priceCents: main?.priceCents,
+  return { ...product, set: printing?.name ?? product.set, setCode: printing?.code ?? product.setCode,
+    variants, variantId: main?.id, sku: main?.sku, priceCents: main?.priceCents,
+    condition: main?.condition ?? product.condition, language: main?.language ?? product.language, finish: main?.finish ?? product.finish,
     image: main?.image || product.image, stock: variants.reduce((total, variant) => total + variant.stock, 0),
     href: main ? `${product.href.split("?")[0]}?variant=${encodeURIComponent(main.id)}` : product.href };
 }

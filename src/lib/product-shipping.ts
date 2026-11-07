@@ -73,7 +73,7 @@ export type Shipment = { version: 1; weightGrams: number; productWeightGrams: nu
 export type ShipmentLine = { productType: string | null; quantity: number; shipping?: unknown };
 export function calculateShipment(lines: ShipmentLine[], settings: ShippingSettings): Shipment {
   let grams = 0, length = 0, width = 0, height = 0, singlesQuantity = 0;
-  const grouped = new Map<string, number>(); const warnings = new Set<string>();
+  const warnings = new Set<string>();
   for (const line of lines) {
     if (!Number.isSafeInteger(line.quantity) || line.quantity < 1 || line.quantity > 9900) throw new Error("Invalid shipment quantity.");
     const item = productShipping(line.shipping);
@@ -81,7 +81,7 @@ export function calculateShipment(lines: ShipmentLine[], settings: ShippingSetti
     let cls = settings.classes.find(row => row.id === (item.classId === "auto" ? autoClass : item.classId));
     if (!cls) { cls = settings.classes.find(row => row.id === "standard")!; warnings.add("A removed shipping class used the standard fallback."); }
     const pooled = cls.mode === "singles" && line.productType === "single";
-    if (pooled) { grouped.set(cls.id, (grouped.get(cls.id) ?? 0) + line.quantity); singlesQuantity += line.quantity; }
+    if (pooled) singlesQuantity += line.quantity;
     else {
       grams += (item.weightGrams ?? cls.weightGrams) * line.quantity;
       if (!item.weightGrams) warnings.add("Some products use estimated class weights.");
@@ -90,14 +90,14 @@ export function calculateShipment(lines: ShipmentLine[], settings: ShippingSetti
     if (!pooled && (!item.lengthCm || !item.widthCm || !item.heightCm)) warnings.add("Some products use estimated class dimensions.");
     length = Math.max(length, dims[0]!); width = Math.max(width, dims[1]!); height += dims[2]! * line.quantity;
   }
-  for (const quantity of grouped.values()) grams += settings.singlesTiers.find(tier => tier.maxQuantity === null || quantity <= tier.maxQuantity)!.weightGrams;
+  if (singlesQuantity) grams += settings.singlesTiers.find(tier => tier.maxQuantity === null || singlesQuantity <= tier.maxQuantity)!.weightGrams;
   const dims = [Math.max(16, length + settings.paddingCm), Math.max(11, width + settings.paddingCm), Math.max(0.4, height + settings.paddingCm)].sort((a, b) => b - a);
   return { version: 1, weightGrams: grams + settings.packagingWeightGrams, productWeightGrams: grams,
     packagingWeightGrams: settings.packagingWeightGrams, lengthCm: Math.ceil(dims[0]! * 100) / 100,
     widthCm: Math.ceil(dims[1]! * 100) / 100, heightCm: Math.ceil(dims[2]! * 100) / 100,
     singlesQuantity, estimated: warnings.size > 0, warnings: [...warnings] };
 }
-function fits(shipment: Shipment, limit: { weightGrams: number; lengthCm: number; widthCm: number; heightCm: number }) {
+export function shipmentFits(shipment: Shipment, limit: { weightGrams: number; lengthCm: number; widthCm: number; heightCm: number }) {
   const sides = [limit.lengthCm, limit.widthCm, limit.heightCm].sort((a, b) => b - a);
   return shipment.weightGrams <= limit.weightGrams && shipment.lengthCm <= sides[0]! && shipment.widthCm <= sides[1]! && shipment.heightCm <= sides[2]!;
 }
@@ -108,10 +108,10 @@ export function shipmentQuotes(shipment: Shipment, profile: StoreProfile, countr
   const price = (cents: number) => subtotalCents >= profile.freeShippingThresholdCents ? 0 : cents;
   if (destination.code === "NL") {
     quotes.push({ value: "local_pickup", label: "Pick up in person", priceCents: 0, detail: "Collect after confirmation from TCGHaven" });
-    if (fits(shipment, settings.letterbox)) quotes.push({ value: "postnl_letterbox", label: "PostNL letterbox parcel", priceCents: price(profile.postnlLetterboxCents), detail: "Fits the configured letterbox size and weight limits" });
-    const band = settings.parcelBands.find(band => fits(shipment, band));
+    if (shipmentFits(shipment, settings.letterbox)) quotes.push({ value: "postnl_letterbox", label: "PostNL letterbox parcel", priceCents: price(profile.postnlLetterboxCents), detail: "Fits the configured letterbox size and weight limits" });
+    const band = settings.parcelBands.find(band => shipmentFits(shipment, band));
     if (band) quotes.push({ value: "postnl_parcel", label: `PostNL ${band.name.toLowerCase()}`, priceCents: price(band.priceCents ?? profile[band.priceKey]), detail: `${shipment.weightGrams} g including packaging` });
-  } else if (fits(shipment, settings.international)) {
+  } else if (shipmentFits(shipment, settings.international)) {
     const base = getInternationalPostnlPrice(destination.code, profile.internationalPostnlRates);
     const band = [...settings.internationalBands].sort((a, b) => a.weightGrams - b.weightGrams).find(band => shipment.weightGrams <= band.weightGrams);
     if (base !== null && (!settings.internationalBands.length || band)) quotes.push({ value: "postnl_international", label: "PostNL international parcel", priceCents: price(base + (band?.surchargeCents ?? 0)), detail: `Tracked delivery to ${destination.name}` });

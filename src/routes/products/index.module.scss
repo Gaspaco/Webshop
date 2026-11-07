@@ -166,6 +166,11 @@
 
 .filterToggle {
   @include btn-secondary;
+  align-self: flex-end;
+  min-height: 2.875rem;
+  background: $surface-raised;
+  color: $white;
+  box-shadow: inset 0 0 0 1px $gray-600;
   padding-inline: 1.1rem;
 
   svg {
@@ -368,6 +373,7 @@
 }
 
 .setFilter { min-width: min(100%, 14rem); max-width: 26rem; flex: 1 1 14rem; gap: 0.35rem; }
+.typeFilter { flex: 0 1 14rem; min-width: min(100%, 12rem); }
 .setFilter > span { font-size: 0.8125rem; color: $gray-300; }
 .setFilter select { padding: 0.6rem 0.75rem; min-height: 2.75rem; }
 

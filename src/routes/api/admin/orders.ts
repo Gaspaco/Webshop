@@ -24,8 +24,13 @@ import { refundOrderCredit } from "~/lib/wallet.server";
 import {
   createPostnlLabel,
   PostnlError,
+  PostnlPackageError,
   validatePostnlAddresses,
+  preparePostnlPackage,
+  defaultPostnlProductCode,
 } from "~/lib/postnl.server";
+import { orderShipment } from "~/lib/order-shipping.server";
+import { getPostnlEnv } from "~/lib/env.server";
 import { findShippingDestination, usesPostnlFulfilment } from "~/lib/shipping";
 import { getStoreProfile } from "~/lib/store-profile.server";
 import { createLabelOnce, LabelAlreadyRequested } from "~/lib/fulfilment.server";
@@ -103,6 +108,7 @@ export async function PATCH(event: APIEvent) {
 }
 
 const actionSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("postnl_measurements"), id: z.string().uuid() }),
   z.object({ action: z.literal("refund_credit"), id: z.string().uuid(), confirmation: z.literal("REFUND_CREDIT") }),
   z.object({
     action: z.literal("ship"),
@@ -125,8 +131,8 @@ const actionSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("postnl_label"),
     id: z.string().uuid(),
-    weightGrams: z.number().int().min(1).max(30_000),
-    productCode: z.string().trim().regex(/^\d{4}$/),
+    weightGrams: z.number().int().min(1).max(30_000).optional(),
+    productCode: z.string().trim().regex(/^\d{4}$/).optional(),
     lengthCm: z.number().positive().max(300).optional(),
     widthCm: z.number().positive().max(300).optional(),
     heightCm: z.number().positive().max(300).optional(),
@@ -283,7 +289,7 @@ export async function POST(event: APIEvent) {
 
     if (
       !usesPostnlFulfilment(order.shippingMethod) &&
-      (input.action === "postnl_label" ||
+      (input.action === "postnl_label" || input.action === "postnl_measurements" ||
         input.action === "ship" ||
         input.action === "resend_tracking_email")
     ) {
@@ -291,6 +297,11 @@ export async function POST(event: APIEvent) {
         { error: "Pickup orders do not use PostNL labels or tracking emails." },
         { status: 400 },
       );
+    }
+
+    if (input.action === "postnl_measurements") {
+      const profile = await getStoreProfile();
+      return apiJson({ ...await orderShipment(order.id, order.shipment, profile.shippingSettings), productCode: defaultPostnlProductCode(order.shippingMethod) });
     }
 
     if (input.action === "postnl_label") {
@@ -330,6 +341,11 @@ export async function POST(event: APIEvent) {
         );
       }
       const profile = await getStoreProfile();
+      const measurements = await orderShipment(order.id, order.shipment, profile.shippingSettings);
+      const productCode = input.productCode ?? defaultPostnlProductCode(order.shippingMethod);
+      const parcel = preparePostnlPackage(measurements.shipment, { ...input, productCode }, profile.shippingSettings);
+      // Invalid configuration or measurements must fail before claiming a label.
+      getPostnlEnv();
       const senderParts = profile.businessAddress
         .split(",")
         .map(part => part.trim())
@@ -361,11 +377,8 @@ export async function POST(event: APIEvent) {
           streetAndHouseNumber: senderParts[0],
           postalCodeAndCity: senderParts[1],
         },
-        weightGrams: input.weightGrams,
-        lengthCm: input.lengthCm ?? order.shipment?.lengthCm,
-        widthCm: input.widthCm ?? order.shipment?.widthCm,
-        heightCm: input.heightCm ?? order.shipment?.heightCm,
-        productCode: input.productCode,
+        ...parcel,
+        productCode,
       }));
       await writeAuditLog({
         event,
@@ -377,8 +390,10 @@ export async function POST(event: APIEvent) {
         metadata: {
           mode: label.mode,
           confirmed: label.confirmed,
-          productCode: input.productCode,
-          weightGrams: input.weightGrams,
+          productCode,
+          ...parcel,
+          measurementsSource: measurements.source,
+          estimated: measurements.shipment.estimated,
         },
       });
 
@@ -524,6 +539,7 @@ export async function POST(event: APIEvent) {
     }
     if (error instanceof LabelAlreadyRequested) return apiJson({ error: error.message }, { status: 409 });
     if (error instanceof RefundRequestError) return apiJson({ error: error.message }, { status: 409 });
+    if (error instanceof PostnlPackageError) return apiJson({ error: error.message }, { status: 400 });
     if (error instanceof PostnlError) {
       return apiJson({ error: error.message }, { status: 502 });
     }

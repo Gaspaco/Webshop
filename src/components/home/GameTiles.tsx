@@ -1,6 +1,7 @@
 import { A } from "@solidjs/router";
 import { For, onCleanup, onMount, Show } from "solid-js";
 import { revealCards } from "~/lib/motion";
+import { CATEGORY_LIST } from "~/lib/categories";
 import styles from "./ShopByGameDirectory.module.scss";
 
 type Game = {
@@ -66,6 +67,7 @@ const GAMES: Game[] = [
 ];
 
 const [FEATURED, ...REST] = GAMES;
+const additionalGames = CATEGORY_LIST.filter(category => !GAMES.some(game => game.theme === category.slug));
 
 export default function GameTiles() {
   let rootRef: HTMLDivElement | undefined;
@@ -75,6 +77,7 @@ export default function GameTiles() {
   });
 
   return (
+    <>
     <div class={styles.directory} ref={rootRef}>
       <A href={FEATURED.href} data-motion-card="10" class={`${styles.feature} ${styles[FEATURED.theme]}`}>
         <div class={styles.featureBody}>
@@ -100,5 +103,9 @@ export default function GameTiles() {
         </For>
       </ul>
     </div>
+    <nav class={styles.moreGames} aria-label="More trading card games">
+      <For each={additionalGames}>{game => <A href={`/categories/${game.slug}`}>{game.name}</A>}</For>
+    </nav>
+    </>
   );
 }
