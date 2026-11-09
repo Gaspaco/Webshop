@@ -8,6 +8,22 @@
 .loadMore { display: block; padding: 0.75rem 1rem; margin: 1rem auto 0; background: $surface; color: $primary-light; border: 1px solid $gray-700; border-radius: $radius-inner; }
 .libraryChoice select:focus-visible, .loadMore:focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
 
+.channelFilters { margin-top: 1.25rem; padding: 1rem; border: 0; border-radius: $radius-inner; background: rgba($white, 0.025); }
+.channelFilters legend { padding-inline: 0.25rem; font-size: 0.9rem; font-weight: 600; color: $gray-200; }
+.channelFilters p, .productLookup p { color: $gray-300; font-size: 0.8125rem; max-width: 75ch; line-height: 1.6; }
+.channelFilterGrid { display: flex; flex-wrap: wrap; align-items: start; gap: 1rem; margin-top: 0.75rem; }
+.channelFilterGrid > div { flex: 1 1 19rem; min-width: 0; }
+.channelFilterGrid .libraryChoice { flex: 1 1 14rem; margin-top: 0; }
+.filterSearch, .productLookup { display: flex; flex-wrap: wrap; align-items: end; gap: 0.6rem; }
+.filterSearch label, .productLookup label { display: grid; flex: 1 1 12rem; min-width: 0; gap: 0.4rem; color: $gray-300; font-size: 0.8125rem; }
+.filterSearch input, .productLookup input { width: 100%; min-height: 2.75rem; padding: 0.65rem 0.8rem; border: 0; border-radius: $radius-inner; background: $surface; color: $white; font: inherit; outline: 1px solid $gray-700; }
+.filterSearch input::placeholder, .productLookup input::placeholder { color: $gray-400; }
+.filterSearch button, .productLookup button { min-height: 2.75rem; padding: 0.65rem 0.8rem; border-radius: $radius-inner; background: $surface; color: $primary-light; font-size: 0.8125rem; }
+.filterSearch input:focus-visible, .productLookup input:focus-visible, .filterSearch button:focus-visible, .productLookup button:focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+.filterSearch button:disabled, .productLookup button:disabled { opacity: 0.5; cursor: not-allowed; }
+.productLookup { margin-top: 1.25rem; }
+.productLookup p { flex-basis: 100%; }
+
 .library {
   margin-top: 1.25rem;
   padding: 1.35rem;

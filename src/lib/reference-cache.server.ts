@@ -41,7 +41,7 @@ export async function boundedReferenceBody(response: Response, max = 8_000_000) 
 const hosts: Record<string, string> = { onepiece: "optcgapi.com", grandarchive: "api.gatcg.com", vanguard: "api.pokewallet.io", channel3: "api.trychannel3.com" };
 
 /** Cached, bounded, authenticated only server-side; budgets are shared by all instances. */
-export async function referenceJson(provider: string, target: string, init: { key?: string; body?: unknown; binary?: boolean } = {}) {
+export async function referenceJson(provider: string, target: string, init: { key?: string; body?: unknown; binary?: boolean; ttlMs?: number } = {}) {
   const url = new URL(target);
   if (url.protocol !== "https:" || url.hostname !== hosts[provider] || url.username || url.password || url.port) throw new ReferenceError("Unexpected provider address.");
   const key = referenceKey(provider, [target, init.body ?? null, init.binary ?? false]);
@@ -64,6 +64,10 @@ export async function referenceJson(provider: string, target: string, init: { ke
       throw new ReferenceError("The provider requested a pause. Please try again later.", 429, Math.ceil(cooldown / 1000));
     }
     if (response.status === 401 || response.status === 403) throw new ReferenceError("The provider rejected the API key or this account does not have access.", 503);
+    if (provider === "channel3" && response.status === 422) throw new ReferenceError(url.pathname.endsWith("/lookup")
+      ? "Channel3 could not read this product link. Use a direct product page rather than a homepage or collection."
+      : "Channel3 could not use these search options. Run a new search or select the filters again.", 400);
+    if (provider === "channel3" && response.status === 504) throw new ReferenceError("Channel3 took too long to read this product. Try again later or add it manually.", 503);
     if (response.status === 404) return null;
     if (!response.ok) throw new ReferenceError("The provider is temporarily unavailable.");
     const bytes = await boundedReferenceBody(response, init.binary ? 4_000_000 : 8_000_000);
@@ -78,6 +82,6 @@ export async function referenceJson(provider: string, target: string, init: { ke
       try { data = JSON.parse(bytes.toString("utf8")); }
       catch { throw new ReferenceError("The provider returned an unreadable response. Try again later."); }
     }
-    await storeReference(key, data); return data;
+    await storeReference(key, data, init.ttlMs ?? 86400_000); return data;
   } finally { await releaseOperationLease(leaseKey, token, cooldown); }
 }

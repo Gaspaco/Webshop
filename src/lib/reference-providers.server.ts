@@ -1,9 +1,11 @@
 import { referenceJson, ReferenceError } from "./reference-cache.server";
-import { onePieceProducts, grandArchiveProducts, vanguardProducts, channel3Products, list, object, text, type ReferenceProduct } from "./reference-products";
+import { onePieceProducts, grandArchiveProducts, vanguardProducts, list, object, text, type ReferenceProduct } from "./reference-products";
+import { searchChannel3 } from "./channel3.server";
+import type { Channel3Filters } from "./channel3";
 
 export const REFERENCE_PROVIDERS = ["onepiece", "grandarchive", "vanguard", "channel3"] as const;
 export type ReferenceProvider = (typeof REFERENCE_PROVIDERS)[number];
-export type ReferenceQuery = { q: string; by: "card" | "set"; page: number; family: "sets" | "decks" | "promos"; kind: string; game: string };
+export type ReferenceQuery = Channel3Filters & { q: string; by: "card" | "set"; page: number; family: "sets" | "decks" | "promos"; kind: string; game: string };
 export function providerKey(provider: ReferenceProvider) {
   const name = provider === "vanguard" ? "POKEWALLET_API_KEY" : provider === "channel3" ? "CHANNEL3_API_KEY" : null;
   if (!name) return undefined;
@@ -65,9 +67,7 @@ export async function searchReferenceProvider(provider: ReferenceProvider, query
     const data = await referenceJson(provider, target, { key }); const cards = vanguardProducts(data);
     return { cards, matchedSets: [...new Set(cards.map(card => card.setName))], hasMore: Number(object(object(data).pagination).total_pages) > query.page };
   }
-  if (query.page > 1) throw new ReferenceError("Narrow this product search to see different results.", 400);
-  const data = await referenceJson(provider, "https://api.trychannel3.com/v1/search", { key, body: { query: query.q, limit: 30, config: { country: "NL", currency: "EUR", language: "en" } } });
-  return { cards: channel3Products(data, query.kind, query.game), matchedSets: [], hasMore: false };
+  return searchChannel3(query, key!);
 }
 
 export async function vanguardArtwork(id: string) {

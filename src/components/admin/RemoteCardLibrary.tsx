@@ -30,6 +30,7 @@ type RemoteCardLibraryProps = {
   visible?: boolean;
   canImport?: boolean;
   rightsConfirmed?: boolean;
+  disabled?: boolean;
   onBusyChange?: (busy: boolean) => void;
   onImported: () => unknown;
 };
@@ -47,6 +48,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
   const [message, setMessage] = createSignal("");
   const [page, setPage] = createSignal(1);
   const [hasMore, setHasMore] = createSignal(false);
+  const [productUrl, setProductUrl] = createSignal("");
   let searchedQuery = "";
   const requestUrl = (params: URLSearchParams) => `${props.endpoint}${props.endpoint.includes("?") ? "&" : "?"}${params}`;
   const [cooldownSeconds, setCooldownSeconds] = createSignal(0);
@@ -96,9 +98,10 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
 
   const searchCards = async (event: Event, nextPage = 1) => {
     event.preventDefault();
+    if (props.disabled) return;
     const value = nextPage > 1 ? searchedQuery : query().trim();
     if (!value) {
-      setMessage(`Enter a ${searchBy() === "set" ? "set" : "card"} name first.`);
+      setMessage(`Enter a ${props.productMode ? "product" : searchBy() === "set" ? "set" : "card"} name first.`);
       return;
     }
 
@@ -124,6 +127,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
         retryAfter?: number;
         hasMore?: boolean;
       };
+      if (searchController !== controller || controller.signal.aborted) return;
       if (!response.ok) {
         if (response.status === 429) {
           startCooldown(retryDelay(response, result.retryAfter));
@@ -134,7 +138,9 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
       setCards(previous => nextPage === 1 ? result.cards ?? [] : [...new Map([...previous, ...(result.cards ?? [])].map(card => [card.id, card])).values()]);
       searchedQuery = value; setPage(nextPage); setHasMore(result.hasMore === true);
       setMatchedSets(result.matchedSets ?? []);
-      if (!result.cards?.length) setMessage(`No matching ${props.gameName} cards found.`);
+      if (!result.cards?.length) setMessage(props.productMode
+        ? "No matching products on this page. Try Load more if available, related matches, another brand/category, or preview a product link."
+        : `No matching ${props.gameName} cards found.`);
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
         setMessage(`${props.gameName} could not be searched. Check the connection and try again.`);
@@ -142,6 +148,29 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
     } finally {
       if (searchController === controller) setSearching(false);
     }
+  };
+
+  const lookupProduct = async (event: Event) => {
+    event.preventDefault();
+    if (searching() || bulkRunning() || props.disabled) return;
+    searchController?.abort();
+    const controller = new AbortController(); searchController = controller;
+    setSearching(true); setMessage(""); setCards([]); setSelected(new Set<string>()); setHasMore(false); setMatchedSets([]);
+    try {
+      const response = await fetch(props.endpoint, { method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" }, signal: controller.signal,
+        body: JSON.stringify({ action: "lookup", url: productUrl().trim() }) });
+      const result = await response.json() as { cards?: RemoteCard[]; error?: string; retryAfter?: number };
+      if (searchController !== controller || controller.signal.aborted) return;
+      if (!response.ok) {
+        if (response.status === 429) startCooldown(retryDelay(response, result.retryAfter));
+        setMessage(result.error ?? "This product link could not be read."); return;
+      }
+      setCards(result.cards ?? []);
+      setMessage("Preview only. Check the product and image permissions, then choose Add as draft. Price and stock will start at zero.");
+    } catch {
+      if (!controller.signal.aborted) setMessage("This product link could not be read. Try again later or add the item manually.");
+    } finally { if (searchController === controller) setSearching(false); }
   };
 
   const refreshSource = async () => {
@@ -226,6 +255,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
   };
 
   const addCard = async (card: RemoteCard) => {
+    if (props.disabled) return;
     if (props.canImport === false) { setMessage("Confirm the product-data permissions before importing."); return; }
     setImporting(previous => new Set(previous).add(card.id));
     setMessage("");
@@ -272,6 +302,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
   };
 
   const runBulkImport = async () => {
+    if (props.disabled) return;
     if (props.canImport === false) { setMessage("Confirm the product-data permissions before importing."); return; }
     const chosen = selected().size
       ? cards().filter(card => selected().has(card.id))
@@ -315,13 +346,13 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
     setBulkRunning(false);
     setMessage(
       [
-        `Added ${added} of ${chosen.length} cards as zero-stock drafts.`,
+        `Added ${added} of ${chosen.length} ${props.productMode ? "products" : "cards"} as zero-stock drafts.`,
         withoutArt ? `${withoutArt} need artwork before publishing.` : "",
         failed.length
           ? `Skipped: ${failed.slice(0, 3).join("; ")}${failed.length > 3 ? ` and ${failed.length - 3} more` : ""}.`
           : "",
         stoppedForLimit
-          ? `${stoppedForLimit} remaining card${stoppedForLimit === 1 ? " was" : "s were"} not attempted to protect the provider limit.`
+          ? `${stoppedForLimit} remaining ${props.productMode ? "product" : "card"}${stoppedForLimit === 1 ? " was" : "s were"} not attempted to protect the provider limit.`
           : "",
       ].filter(Boolean).join(" "),
     );
@@ -377,15 +408,23 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
         </label>
         <button
           type="submit"
-          disabled={searching() || bulkRunning() || cooldownSeconds() > 0}
+          disabled={props.disabled || searching() || bulkRunning() || cooldownSeconds() > 0}
         >
           {cooldownSeconds() > 0
             ? `Try again in ${cooldownSeconds()}s`
             : searching()
               ? "Searching"
-              : searchBy() === "set" ? "Find set" : "Find cards"}
+              : props.productMode ? "Find products" : searchBy() === "set" ? "Find set" : "Find cards"}
         </button>
       </form>
+
+      <Show when={props.productMode}>
+        <form class={styles.productLookup} onSubmit={event => void lookupProduct(event)}>
+          <label><span>Or preview a retailer's product link</span><input type="url" value={productUrl()} onInput={event => setProductUrl(event.currentTarget.value)} placeholder="https://shop.example/product-name" required maxlength={2000} /></label>
+          <button type="submit" disabled={props.disabled || searching() || bulkRunning() || cooldownSeconds() > 0}>Preview product link</button>
+          <p>Use a public product page, not a homepage or collection. Nothing is added until you confirm the preview.</p>
+        </form>
+      </Show>
 
       <Show when={matchedSets().length}>
         <p class={styles.setMatch}>
@@ -410,6 +449,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
           <button
             type="button"
             disabled={
+              props.disabled ||
               bulkRunning() ||
               props.canImport === false ||
               cooldownSeconds() > 0 ||
@@ -418,12 +458,12 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
             onClick={() => void runBulkImport()}
           >
             {bulkRunning()
-              ? "Adding cards..."
+              ? props.productMode ? "Adding products…" : "Adding cards…"
               : selected().size
                 ? `Import ${selected().size} selected as drafts`
                 : searchBy() === "set"
                   ? `Import all ${selectableCards().length} cards as drafts`
-                  : "Select cards to import"}
+                  : props.productMode ? "Select products to import" : "Select cards to import"}
           </button>
         </div>
       </Show>
@@ -461,6 +501,7 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
                 <button
                   type="button"
                   disabled={
+                    props.disabled ||
                     props.canImport === false ||
                     Boolean(card.importedStatus) ||
                     importing().has(card.id) ||
@@ -470,14 +511,14 @@ export default function RemoteCardLibrary(props: RemoteCardLibraryProps) {
                 >
                   {card.importedStatus
                     ? card.importedStatus === "active" ? "Live" : "Already added"
-                    : importing().has(card.id) ? "Adding card" : "Add as draft"}
+                    : importing().has(card.id) ? "Adding draft" : "Add as draft"}
                 </button>
               </article>
             )}
           </For>
         </div>
       </Show>
-      <Show when={hasMore()}><button class={styles.loadMore} type="button" disabled={searching() || bulkRunning() || cooldownSeconds() > 0} onClick={event => void searchCards(event, page() + 1)}>
+      <Show when={hasMore()}><button class={styles.loadMore} type="button" disabled={props.disabled || searching() || bulkRunning() || cooldownSeconds() > 0} onClick={event => void searchCards(event, page() + 1)}>
         {searching() ? "Loading more…" : "Load more results"}
       </button></Show>
     </section>

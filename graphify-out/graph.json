@@ -7491,97 +7491,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/InventoryExport.tsx:16"
     },
     {
-      "id": "file::remotecardlibrary",
-      "label": "RemoteCardLibrary.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:1"
-    },
-    {
-      "id": "RemoteCardLibrary::requesturl",
-      "label": "requestUrl",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:51"
-    },
-    {
-      "id": "RemoteCardLibrary::startcooldown",
-      "label": "startCooldown",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:61"
-    },
-    {
-      "id": "RemoteCardLibrary::retrydelay",
-      "label": "retryDelay",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:77"
-    },
-    {
-      "id": "RemoteCardLibrary::selectablecards",
-      "label": "selectableCards",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:83"
-    },
-    {
-      "id": "RemoteCardLibrary::resetresults",
-      "label": "resetResults",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:85"
-    },
-    {
-      "id": "RemoteCardLibrary::searchcards",
-      "label": "searchCards",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:97"
-    },
-    {
-      "id": "RemoteCardLibrary::refreshsource",
-      "label": "refreshSource",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:147"
-    },
-    {
-      "id": "RemoteCardLibrary::importcard",
-      "label": "importCard",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:202"
-    },
-    {
-      "id": "RemoteCardLibrary::addcard",
-      "label": "addCard",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:228"
-    },
-    {
-      "id": "RemoteCardLibrary::togglecard",
-      "label": "toggleCard",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:256"
-    },
-    {
-      "id": "RemoteCardLibrary::toggleall",
-      "label": "toggleAll",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:265"
-    },
-    {
-      "id": "RemoteCardLibrary::runbulkimport",
-      "label": "runBulkImport",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:274"
-    },
-    {
       "id": "file::schema",
       "label": "schema.ts",
       "fileType": "code",
@@ -8303,34 +8212,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:119"
     },
     {
-      "id": "file::reference_providers_integration",
-      "label": "reference-providers-integration.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:1"
-    },
-    {
-      "id": "reference-providers-integration::json",
-      "label": "json",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:21"
-    },
-    {
-      "id": "reference-providers-integration::event",
-      "label": "event",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:47"
-    },
-    {
-      "id": "reference-providers-integration::ok",
-      "label": "ok",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:48"
-    },
-    {
       "id": "file::producttypefields",
       "label": "ProductTypeFields.tsx",
       "fileType": "code",
@@ -8343,27 +8224,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ProductTypeFields.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ProductTypeFields.tsx:13"
-    },
-    {
-      "id": "file::referencelibraries",
-      "label": "ReferenceLibraries.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx:1"
-    },
-    {
-      "id": "ReferenceLibraries::config",
-      "label": "config",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx:13"
-    },
-    {
-      "id": "ReferenceLibraries::endpoint",
-      "label": "endpoint",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx:19"
     },
     {
       "id": "file::auth_upgrade_test",
@@ -8639,69 +8499,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/public-site.ts:7"
     },
     {
-      "id": "file::reference_cache_server",
-      "label": "reference-cache.server.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:1"
-    },
-    {
-      "id": "reference_cache_server::referenceerror",
-      "label": "ReferenceError",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:9"
-    },
-    {
-      "id": "reference_cache_server::referenceerror::constructor",
-      "label": ".constructor",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:10"
-    },
-    {
-      "id": "reference_cache_server::referencekey",
-      "label": "referenceKey",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:12"
-    },
-    {
-      "id": "reference_cache_server::readreference",
-      "label": "readReference",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:15"
-    },
-    {
-      "id": "reference_cache_server::storereference",
-      "label": "storeReference",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:19"
-    },
-    {
-      "id": "reference_cache_server::storereferences",
-      "label": "storeReferences",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:22"
-    },
-    {
-      "id": "reference_cache_server::boundedreferencebody",
-      "label": "boundedReferenceBody",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:32"
-    },
-    {
-      "id": "reference_cache_server::referencejson",
-      "label": "referenceJson",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:44"
-    },
-    {
       "id": "file::reference_products",
       "label": "reference-products.ts",
       "fileType": "code",
@@ -8779,48 +8576,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-products.ts:80"
     },
     {
-      "id": "file::reference_providers_server",
-      "label": "reference-providers.server.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:1"
-    },
-    {
-      "id": "reference_providers_server::providerkey",
-      "label": "providerKey",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:7"
-    },
-    {
-      "id": "reference-providers.server::searchkey",
-      "label": "searchKey",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:14"
-    },
-    {
-      "id": "reference_providers_server::matchset",
-      "label": "matchSet",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:15"
-    },
-    {
-      "id": "reference_providers_server::searchreferenceprovider",
-      "label": "searchReferenceProvider",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:25"
-    },
-    {
-      "id": "reference_providers_server::vanguardartwork",
-      "label": "vanguardArtwork",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:73"
-    },
-    {
       "id": "file::image_cache",
       "label": "image-cache.ts",
       "fileType": "code",
@@ -8833,55 +8588,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/image-cache.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/image-cache.ts:9"
-    },
-    {
-      "id": "file::_provider_",
-      "label": "[provider].ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:1"
-    },
-    {
-      "id": "[provider]::digest",
-      "label": "digest",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:18"
-    },
-    {
-      "id": "[provider]::slug",
-      "label": "slug",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:19"
-    },
-    {
-      "id": "[provider]::cardkey",
-      "label": "cardKey",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:20"
-    },
-    {
-      "id": "_provider_::fail",
-      "label": "fail",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:21"
-    },
-    {
-      "id": "_provider_::get",
-      "label": "GET",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:27"
-    },
-    {
-      "id": "_provider_::post",
-      "label": "POST",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:42"
     },
     {
       "id": "file::_filename_",
@@ -11234,6 +10940,384 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-sets.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-sets.ts:4"
+    },
+    {
+      "id": "file::reference_providers_integration",
+      "label": "reference-providers-integration.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:1"
+    },
+    {
+      "id": "reference-providers-integration::json",
+      "label": "json",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:21"
+    },
+    {
+      "id": "reference-providers-integration::fixture",
+      "label": "fixture",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:43"
+    },
+    {
+      "id": "reference-providers-integration::event",
+      "label": "event",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:67"
+    },
+    {
+      "id": "reference-providers-integration::ok",
+      "label": "ok",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:68"
+    },
+    {
+      "id": "file::referencelibraries",
+      "label": "ReferenceLibraries.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx:1"
+    },
+    {
+      "id": "referencelibraries::referencelibraries",
+      "label": "ReferenceLibraries",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx:9"
+    },
+    {
+      "id": "file::remotecardlibrary",
+      "label": "RemoteCardLibrary.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:1"
+    },
+    {
+      "id": "RemoteCardLibrary::requesturl",
+      "label": "requestUrl",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:53"
+    },
+    {
+      "id": "RemoteCardLibrary::startcooldown",
+      "label": "startCooldown",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:63"
+    },
+    {
+      "id": "RemoteCardLibrary::retrydelay",
+      "label": "retryDelay",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:79"
+    },
+    {
+      "id": "RemoteCardLibrary::selectablecards",
+      "label": "selectableCards",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:85"
+    },
+    {
+      "id": "RemoteCardLibrary::resetresults",
+      "label": "resetResults",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:87"
+    },
+    {
+      "id": "RemoteCardLibrary::searchcards",
+      "label": "searchCards",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:99"
+    },
+    {
+      "id": "RemoteCardLibrary::lookupproduct",
+      "label": "lookupProduct",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:153"
+    },
+    {
+      "id": "RemoteCardLibrary::refreshsource",
+      "label": "refreshSource",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:176"
+    },
+    {
+      "id": "RemoteCardLibrary::importcard",
+      "label": "importCard",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:231"
+    },
+    {
+      "id": "RemoteCardLibrary::addcard",
+      "label": "addCard",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:257"
+    },
+    {
+      "id": "RemoteCardLibrary::togglecard",
+      "label": "toggleCard",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:286"
+    },
+    {
+      "id": "RemoteCardLibrary::toggleall",
+      "label": "toggleAll",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:295"
+    },
+    {
+      "id": "RemoteCardLibrary::runbulkimport",
+      "label": "runBulkImport",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:304"
+    },
+    {
+      "id": "file::reference_cache_server",
+      "label": "reference-cache.server.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:1"
+    },
+    {
+      "id": "reference_cache_server::referenceerror",
+      "label": "ReferenceError",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:9"
+    },
+    {
+      "id": "reference_cache_server::referenceerror::constructor",
+      "label": ".constructor",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:10"
+    },
+    {
+      "id": "reference_cache_server::referencekey",
+      "label": "referenceKey",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:12"
+    },
+    {
+      "id": "reference_cache_server::readreference",
+      "label": "readReference",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:15"
+    },
+    {
+      "id": "reference_cache_server::storereference",
+      "label": "storeReference",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:19"
+    },
+    {
+      "id": "reference_cache_server::storereferences",
+      "label": "storeReferences",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:22"
+    },
+    {
+      "id": "reference_cache_server::boundedreferencebody",
+      "label": "boundedReferenceBody",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:32"
+    },
+    {
+      "id": "reference_cache_server::referencejson",
+      "label": "referenceJson",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:44"
+    },
+    {
+      "id": "file::reference_providers_server",
+      "label": "reference-providers.server.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:1"
+    },
+    {
+      "id": "reference_providers_server::providerkey",
+      "label": "providerKey",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:9"
+    },
+    {
+      "id": "reference-providers.server::searchkey",
+      "label": "searchKey",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:16"
+    },
+    {
+      "id": "reference_providers_server::matchset",
+      "label": "matchSet",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:17"
+    },
+    {
+      "id": "reference_providers_server::searchreferenceprovider",
+      "label": "searchReferenceProvider",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:27"
+    },
+    {
+      "id": "reference_providers_server::vanguardartwork",
+      "label": "vanguardArtwork",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:73"
+    },
+    {
+      "id": "file::_provider_",
+      "label": "[provider].ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:1"
+    },
+    {
+      "id": "[provider]::digest",
+      "label": "digest",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:21"
+    },
+    {
+      "id": "[provider]::slug",
+      "label": "slug",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:22"
+    },
+    {
+      "id": "[provider]::cardkey",
+      "label": "cardKey",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:23"
+    },
+    {
+      "id": "_provider_::fail",
+      "label": "fail",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:24"
+    },
+    {
+      "id": "_provider_::get",
+      "label": "GET",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:30"
+    },
+    {
+      "id": "_provider_::post",
+      "label": "POST",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:50"
+    },
+    {
+      "id": "file::channel3filters",
+      "label": "Channel3Filters.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/Channel3Filters.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/Channel3Filters.tsx:1"
+    },
+    {
+      "id": "Channel3Filters::findoptions",
+      "label": "findOptions",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/Channel3Filters.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/Channel3Filters.tsx:27"
+    },
+    {
+      "id": "file::channel3_server",
+      "label": "channel3.server.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:1"
+    },
+    {
+      "id": "channel3.server::optionkey",
+      "label": "optionKey",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:7"
+    },
+    {
+      "id": "channel3_server::channel3options",
+      "label": "channel3Options",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:9"
+    },
+    {
+      "id": "channel3_server::selectedoption",
+      "label": "selectedOption",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:20"
+    },
+    {
+      "id": "channel3_server::searchchannel3",
+      "label": "searchChannel3",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:27"
+    },
+    {
+      "id": "channel3_server::lookupchannel3",
+      "label": "lookupChannel3",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:65"
+    },
+    {
+      "id": "file::channel3_test",
+      "label": "channel3.test.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.test.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.test.ts:1"
+    },
+    {
+      "id": "file::channel3",
+      "label": "channel3.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.ts:1"
+    },
+    {
+      "id": "channel3::channel3lookupurl",
+      "label": "channel3LookupUrl",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.ts:13"
     }
   ],
   "edges": [
@@ -18690,114 +18774,6 @@
       "weight": 1
     },
     {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::requesturl",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:51",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::startcooldown",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:61",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::retrydelay",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:77",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::selectablecards",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:83",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::resetresults",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:85",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::searchcards",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:97",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::refreshsource",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:147",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::importcard",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:202",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::addcard",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:228",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::togglecard",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:256",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::toggleall",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:265",
-      "weight": 1
-    },
-    {
-      "source": "file::remotecardlibrary",
-      "target": "RemoteCardLibrary::runbulkimport",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:274",
-      "weight": 1
-    },
-    {
       "source": "file::admin_catalogue_server",
       "target": "admin_catalogue_server::loadadmincatalogue",
       "relation": "contains",
@@ -19662,57 +19638,12 @@
       "weight": 1
     },
     {
-      "source": "file::reference_providers_integration",
-      "target": "reference-providers-integration::json",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:21",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_providers_integration",
-      "target": "reference-providers-integration::event",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:47",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_providers_integration",
-      "target": "reference-providers-integration::ok",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:48",
-      "weight": 1
-    },
-    {
       "source": "file::producttypefields",
       "target": "ProductTypeFields::fields",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ProductTypeFields.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ProductTypeFields.tsx:13",
-      "weight": 1
-    },
-    {
-      "source": "file::referencelibraries",
-      "target": "ReferenceLibraries::config",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx:13",
-      "weight": 1
-    },
-    {
-      "source": "file::referencelibraries",
-      "target": "ReferenceLibraries::endpoint",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx:19",
       "weight": 1
     },
     {
@@ -19959,78 +19890,6 @@
       "weight": 1
     },
     {
-      "source": "file::reference_cache_server",
-      "target": "reference_cache_server::referenceerror",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:9",
-      "weight": 1
-    },
-    {
-      "source": "reference_cache_server::referenceerror",
-      "target": "reference_cache_server::referenceerror::constructor",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:10",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_cache_server",
-      "target": "reference_cache_server::referencekey",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:12",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_cache_server",
-      "target": "reference_cache_server::readreference",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:15",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_cache_server",
-      "target": "reference_cache_server::storereference",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:19",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_cache_server",
-      "target": "reference_cache_server::storereferences",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:22",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_cache_server",
-      "target": "reference_cache_server::boundedreferencebody",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:32",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_cache_server",
-      "target": "reference_cache_server::referencejson",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:44",
-      "weight": 1
-    },
-    {
       "source": "file::reference_products",
       "target": "reference-products::object",
       "relation": "contains",
@@ -20121,111 +19980,12 @@
       "weight": 1
     },
     {
-      "source": "file::reference_providers_server",
-      "target": "reference_providers_server::providerkey",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:7",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_providers_server",
-      "target": "reference-providers.server::searchkey",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:14",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_providers_server",
-      "target": "reference_providers_server::matchset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:15",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_providers_server",
-      "target": "reference_providers_server::searchreferenceprovider",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:25",
-      "weight": 1
-    },
-    {
-      "source": "file::reference_providers_server",
-      "target": "reference_providers_server::vanguardartwork",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:73",
-      "weight": 1
-    },
-    {
       "source": "file::image_cache",
       "target": "image_cache::get",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/image-cache.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/image-cache.ts:9",
-      "weight": 1
-    },
-    {
-      "source": "file::_provider_",
-      "target": "[provider]::digest",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:18",
-      "weight": 1
-    },
-    {
-      "source": "file::_provider_",
-      "target": "[provider]::slug",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:19",
-      "weight": 1
-    },
-    {
-      "source": "file::_provider_",
-      "target": "[provider]::cardkey",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:20",
-      "weight": 1
-    },
-    {
-      "source": "file::_provider_",
-      "target": "_provider_::fail",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:21",
-      "weight": 1
-    },
-    {
-      "source": "file::_provider_",
-      "target": "_provider_::get",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:27",
-      "weight": 1
-    },
-    {
-      "source": "file::_provider_",
-      "target": "_provider_::post",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:42",
       "weight": 1
     },
     {
@@ -22873,12 +22633,408 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-sets.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-sets.ts:4",
       "weight": 1
+    },
+    {
+      "source": "file::reference_providers_integration",
+      "target": "reference-providers-integration::json",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:21",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_providers_integration",
+      "target": "reference-providers-integration::fixture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:43",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_providers_integration",
+      "target": "reference-providers-integration::event",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:67",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_providers_integration",
+      "target": "reference-providers-integration::ok",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/reference-providers-integration.ts:68",
+      "weight": 1
+    },
+    {
+      "source": "file::referencelibraries",
+      "target": "referencelibraries::referencelibraries",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/ReferenceLibraries.tsx:9",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::requesturl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:53",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::startcooldown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:63",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::retrydelay",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:79",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::selectablecards",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:85",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::resetresults",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:87",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::searchcards",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:99",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::lookupproduct",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:153",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::refreshsource",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:176",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::importcard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:231",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::addcard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:257",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::togglecard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:286",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::toggleall",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:295",
+      "weight": 1
+    },
+    {
+      "source": "file::remotecardlibrary",
+      "target": "RemoteCardLibrary::runbulkimport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/RemoteCardLibrary.tsx:304",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_cache_server",
+      "target": "reference_cache_server::referenceerror",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:9",
+      "weight": 1
+    },
+    {
+      "source": "reference_cache_server::referenceerror",
+      "target": "reference_cache_server::referenceerror::constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:10",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_cache_server",
+      "target": "reference_cache_server::referencekey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:12",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_cache_server",
+      "target": "reference_cache_server::readreference",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:15",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_cache_server",
+      "target": "reference_cache_server::storereference",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:19",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_cache_server",
+      "target": "reference_cache_server::storereferences",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:22",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_cache_server",
+      "target": "reference_cache_server::boundedreferencebody",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:32",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_cache_server",
+      "target": "reference_cache_server::referencejson",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-cache.server.ts:44",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_providers_server",
+      "target": "reference_providers_server::providerkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:9",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_providers_server",
+      "target": "reference-providers.server::searchkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:16",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_providers_server",
+      "target": "reference_providers_server::matchset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:17",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_providers_server",
+      "target": "reference_providers_server::searchreferenceprovider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:27",
+      "weight": 1
+    },
+    {
+      "source": "file::reference_providers_server",
+      "target": "reference_providers_server::vanguardartwork",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/reference-providers.server.ts:73",
+      "weight": 1
+    },
+    {
+      "source": "file::_provider_",
+      "target": "[provider]::digest",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:21",
+      "weight": 1
+    },
+    {
+      "source": "file::_provider_",
+      "target": "[provider]::slug",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:22",
+      "weight": 1
+    },
+    {
+      "source": "file::_provider_",
+      "target": "[provider]::cardkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:23",
+      "weight": 1
+    },
+    {
+      "source": "file::_provider_",
+      "target": "_provider_::fail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:24",
+      "weight": 1
+    },
+    {
+      "source": "file::_provider_",
+      "target": "_provider_::get",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:30",
+      "weight": 1
+    },
+    {
+      "source": "file::_provider_",
+      "target": "_provider_::post",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/reference/[provider].ts:50",
+      "weight": 1
+    },
+    {
+      "source": "file::channel3filters",
+      "target": "Channel3Filters::findoptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/admin/Channel3Filters.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/admin/Channel3Filters.tsx:27",
+      "weight": 1
+    },
+    {
+      "source": "file::channel3_server",
+      "target": "channel3.server::optionkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:7",
+      "weight": 1
+    },
+    {
+      "source": "file::channel3_server",
+      "target": "channel3_server::channel3options",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:9",
+      "weight": 1
+    },
+    {
+      "source": "file::channel3_server",
+      "target": "channel3_server::selectedoption",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:20",
+      "weight": 1
+    },
+    {
+      "source": "file::channel3_server",
+      "target": "channel3_server::searchchannel3",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:27",
+      "weight": 1
+    },
+    {
+      "source": "file::channel3_server",
+      "target": "channel3_server::lookupchannel3",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.server.ts:65",
+      "weight": 1
+    },
+    {
+      "source": "file::channel3",
+      "target": "channel3::channel3lookupurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/channel3.ts:13",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 337,
-    "nodes": 1605,
-    "edges": 1293,
-    "builtAt": "2026-11-09T08:22:22.897Z"
+    "files": 341,
+    "nodes": 1617,
+    "edges": 1301,
+    "builtAt": "2026-11-09T10:00:07.633Z"
   }
 }

@@ -25,6 +25,43 @@ All imports are private drafts with zero physical stock. Existing imports are no
 
 Channel3's advertised option lists are not expanded into every possible colour/size combination. Only the resolved configuration is imported, avoiding invented variants and stock. Use the normal variation editor for additional verified options.
 
+### Channel3 search and product links
+
+In **Bulk import → Collectibles and merchandise**, choose the product type to import.
+Search automatically resolves a toy/card category from Channel3's category API;
+Funko searches also resolve the actual Funko brand IDs, excluding similarly named
+brands such as Funko Games. Returned products are checked against the requested
+brand as well, so a relaxed provider match cannot appear as a Funko result.
+No guessed taxonomy IDs are sent. If the automatic
+category cannot be resolved, choose one using **Find categories**. Category paths
+are shown so home décor figurines can be distinguished from toy figures.
+
+Use **Find brands / Find categories**, then choose a result, to apply explicit
+provider filters. The type selector controls the draft's type; the catalogue
+category selector controls which Channel3 products are searched. **Exact words**
+is the default. **Related matches** enables Channel3's broader search, but keeps
+brand/category filters. Retailer coverage defaults to all available markets with
+EUR references, rather than limiting the search to Netherlands offers. NL-only
+coverage is still selectable. Neither option guarantees coverage of a product.
+
+**Load more results** follows Channel3's pagination cursor. Cursors stay on the
+server, are tied to the original query/type/game/filters/mode/market, and expire
+after five minutes; expired results require a new search. A page loads at most 30
+products and never automatically fetches subsequent pages. Changing filters clears
+old results and selections.
+
+When search fails, paste a public HTTPS product URL into **Preview product link**.
+The server sends it to Channel3's fixed `/v1/lookup` endpoint, not to an unrestricted
+URL downloader. IP literals, private/local hostnames, credentials, custom ports and
+fragments are rejected. Preview does not create any product. Check the exact item,
+image rights and chosen import type, then **Add as draft**. The existing permission
+confirmation, source-ID deduplication, zero price/stock, and manual publication
+remain required. Unsupported links, category pages and timeouts show actionable
+errors; manual creation remains available. Brand discovery, search, pagination and
+lookup all share the existing Channel3 request budgets and server-side cache.
+Channel3 search pages/cursors are cached for five minutes, and product links for
+three hours, rather than the general one-day provider-response lifetime.
+
 Vanguard artwork is downloaded on import, resized to bounded WebP and stored locally as an upload. Searching does not spend image calls. API keys are never placed in image URLs. One Piece and Grand Archive retain their exact source URLs, supported by the SKU image cache. Unknown merchandise image hosts retain the existing safe image fallback; they are not added to an unrestricted server-side downloader.
 
 ## Request protection
