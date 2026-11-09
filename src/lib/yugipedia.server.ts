@@ -5,13 +5,14 @@ import { yugipediaCache, yugiohCards, yugiohPrintings } from "~/db/schema";
 import { acquireOperationLease, releaseOperationLease } from "./operation-lease.server";
 import { isYugipediaImageUrl, parseSetList, parseWikiCard, wikiText, type WikiPage, type WikiPrinting } from "./yugipedia-catalog";
 import { isExactCardImageFile, matchYugipediaPrintingFile } from "./yugipedia-match";
+import { recentEnglishSets, type RecentYugipediaSet } from "./yugipedia-sets";
 
 const MONTH = 30 * 86400_000;
 const API = "https://yugipedia.com/api.php";
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 type WikiResponse = {
   error?: { code?: string }; continue?: Record<string, string>;
-  query?: { pages?: WikiPage[]; redirects?: Array<{ from: string; to: string }>; search?: Array<{ title: string }>; prefixsearch?: Array<{ title: string }> };
+  query?: { pages?: WikiPage[]; redirects?: Array<{ from: string; to: string }>; search?: Array<{ title: string }>; prefixsearch?: Array<{ title: string }>; recentchanges?: Array<{ title: string; timestamp: string }> };
 };
 type Manifest = { cardIds: number[]; matchedSets: string[]; syncedAt: string };
 export class YugipediaBusyError extends Error {}
@@ -55,6 +56,10 @@ export async function yugipediaRequest(params: Record<string, string>, options: 
       headers: { Accept: "application/json", "User-Agent": `TCGHaven card library (${process.env.YUGIPEDIA_CONTACT_EMAIL || "info@tcghaven.com"})` },
       redirect: "error", signal: AbortSignal.timeout(Math.max(1, Math.min(15_000, deadline - Date.now()))),
     });
+    if (response.status === 403) {
+      cooldown = 300_000;
+      throw new YugipediaBusyError("Yugipedia refused access (403). Requests are paused for five minutes. If this continues, contact Yugipedia; refreshing repeatedly will not fix it.");
+    }
     if (response.status === 429 || response.status >= 500) {
       cooldown = Math.max(60_000, Math.min(300_000, Number(response.headers.get("retry-after") || 60) * 1000 || 60_000));
       throw new YugipediaBusyError("Yugipedia requested a pause. Try again in a few minutes.");
@@ -79,6 +84,24 @@ export async function yugipediaRequest(params: Record<string, string>, options: 
 
 function batches<T>(items: T[], size = 25) {
   return Array.from({ length: Math.ceil(items.length / size) }, (_, i) => items.slice(i * size, (i + 1) * size));
+}
+
+/** One bounded recent-changes request, shared and cached across dashboard users. */
+export async function discoverYugipediaSets(): Promise<{ sets: RecentYugipediaSet[]; checkedAt: string }> {
+  const key = "yugipedia:recent-sets-v1";
+  const existing = await cached<{ sets: RecentYugipediaSet[]; checkedAt: string }>(key);
+  if (existing) return existing;
+  const token = await acquireOperationLease(key, 55_000);
+  if (!token) throw new YugipediaBusyError("New sets are already being checked. Try again shortly.");
+  try {
+    const response = await yugipediaRequest({
+      action: "query", list: "recentchanges", rcnamespace: "3006",
+      rctype: "new|edit", rcprop: "title|timestamp", rclimit: "500",
+    }, { fresh: true });
+    const result = { sets: recentEnglishSets(response.query?.recentchanges ?? []), checkedAt: new Date().toISOString() };
+    await store(key, result, 60 * 60_000);
+    return result;
+  } finally { await releaseOperationLease(key, token); }
 }
 
 export async function searchYugipedia(query: string, by: "card" | "set", fresh = false): Promise<Manifest> {

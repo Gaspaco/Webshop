@@ -32,6 +32,7 @@ import StoreCredit from "~/components/account/StoreCredit";
 import { DEFAULT_SHIPPING_SETTINGS, productShipping, type ProductShipping, type Shipment, type ShippingSettings } from "~/lib/product-shipping";
 import { ACCESSORY_BRANDS, accessoryCategory, type AccessoryCategory } from "~/lib/accessories";
 import { authClient } from "~/lib/auth-client";
+import type { RecentYugipediaSet } from "~/lib/yugipedia-sets";
 
 import { INTERNATIONAL_POSTNL_DESTINATIONS } from "~/lib/shipping";
 import {
@@ -3239,6 +3240,9 @@ export default function Admin() {
   const [yugiohMatchedSets, setYugiohMatchedSets] = createSignal<string[]>([]);
   const [yugiohCards, setYugiohCards] = createSignal<YugiohCard[]>([]);
   const [yugiohSearching, setYugiohSearching] = createSignal(false);
+  const [yugiohCheckingSets, setYugiohCheckingSets] = createSignal(false);
+  const [yugiohRecentSets, setYugiohRecentSets] = createSignal<RecentYugipediaSet[]>([]);
+  const [yugiohSetMessage, setYugiohSetMessage] = createSignal("");
   const [yugiohImporting, setYugiohImporting] = createSignal<Set<number>>(new Set());
   const [yugiohMessage, setYugiohMessage] = createSignal("");
   const [yugiohSelected, setYugiohSelected] = createSignal<Set<number>>(new Set());
@@ -3693,6 +3697,31 @@ game: isTcgType(current.productType) ? current.game : undefined,
     } finally {
       setImporting(false);
     }
+  };
+
+  const checkYugiohSets = async () => {
+    if (yugiohCheckingSets()) return;
+    setYugiohCheckingSets(true);
+    setYugiohSetMessage("");
+    try {
+      const response = await fetch("/api/admin/yugipedia", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ action: "discover_sets" }),
+        signal: AbortSignal.timeout(55_000),
+      });
+      const result = await response.json() as { sets?: RecentYugipediaSet[]; error?: string };
+      if (!response.ok) {
+        setYugiohSetMessage(result.error ?? "Could not check Yugipedia. Try again shortly.");
+        return;
+      }
+      setYugiohRecentSets(result.sets ?? []);
+      setYugiohSetMessage(result.sets?.length
+        ? "Recently updated English sets, not release-date order. Choose a set to load its cards. Checks are cached for one hour."
+        : "No English sets appeared in Yugipedia's recent updates. You can still search by the full set name.");
+    } catch {
+      setYugiohSetMessage("Could not check Yugipedia. Try again shortly.");
+    } finally { setYugiohCheckingSets(false); }
   };
 
   const searchYugiohCards = async (event: Event, fresh = false) => {
@@ -5306,6 +5335,24 @@ game: isTcgType(current.productType) ? current.game : undefined,
                       </button>
                       <button type="button" disabled={yugiohSearching() || !yugiohQuery().trim()} onClick={event => void searchYugiohCards(event, true)}>Refresh from Yugipedia</button>
                     </form>
+
+                    <div class={styles.yugiohDiscovery}>
+                      <button type="button" onClick={() => void checkYugiohSets()} disabled={yugiohCheckingSets()} aria-busy={yugiohCheckingSets()}>
+                        {yugiohCheckingSets() ? "Checking Yugipedia" : "Check for new sets"}
+                      </button>
+                      <Show when={yugiohSetMessage()}><p role="status">{yugiohSetMessage()}</p></Show>
+                      <Show when={yugiohRecentSets().length}>
+                        <ul aria-label="Recently updated English Yu-Gi-Oh sets">
+                          <For each={yugiohRecentSets()}>{set => <li>
+                            <button type="button" disabled={yugiohSearching() || yugiohBulkRunning()} onClick={event => {
+                              setYugiohSearchBy("set");
+                              setYugiohQuery(set.name);
+                              void searchYugiohCards(event, true);
+                            }}>Load {set.name}</button>
+                          </li>}</For>
+                        </ul>
+                      </Show>
+                    </div>
 
                     <Show when={yugiohMatchedSets().length}>
                       <p class={styles.yugiohSetMatch}>

@@ -25,6 +25,7 @@ import { setSlug, variantSet } from "~/lib/product-sets";
 import { canonicalProductUrl, publicProductImageUrl } from "~/lib/public-site";
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import ProductSection from "~/components/product/ProductSection";
+import ProductImage from "~/components/product/ProductImage";
 import SearchSelect from "~/components/forms/SearchSelect";
 import { flyToCart } from "~/lib/motion";
 import styles from "./[id].module.scss";
@@ -200,7 +201,6 @@ export default function ProductDetail() {
     const requested = searchParams.variant;
     if (typeof requested === "string" && product()?.variants?.some(variant => variant.id === requested)) setSelectedVariantId(requested);
   });
-  const [detailImageFailed, setDetailImageFailed] = createSignal(false);
   const [added, setAdded] = createSignal(false);
   // Stays up after adding (until another product opens) so the shopper has a
   // clear next step instead of a link that was always there.
@@ -336,7 +336,6 @@ export default function ProductDetail() {
   const showGalleryImage = (variantId?: string) => {
     setSelectedVariantId(variantId ?? "");
     setQuantity(1);
-    setDetailImageFailed(false);
   };
 
   const moveDetailCard = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
@@ -375,11 +374,6 @@ export default function ProductDetail() {
       stock: variant.stock,
     };
   };
-
-  createEffect(() => {
-    activeProduct()?.image;
-    setDetailImageFailed(false);
-  });
 
   const productJsonLd = () => {
     const current = product();
@@ -562,18 +556,15 @@ export default function ProductDetail() {
               <div class={styles.mediaPanel}>
                 <div class={styles.productMedia}>
                   <span class={styles.floor} aria-hidden="true" />
-                  <Show
-                    when={activeProduct()?.image && !detailImageFailed()}
-                    fallback={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
-                  >
                     <Show
                       when={!isSealedProduct(item())}
                       fallback={
-                        <img
-                          src={activeProduct()!.image}
+                        <ProductImage
+                          src={activeProduct()?.image}
+                          fallbackSources={item().productImages}
+                          placeholder={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
                           alt={item().set ? `${item().name}, ${item().set}` : item().name}
                           draggable={false}
-                          onError={() => setDetailImageFailed(true)}
                         />
                       }
                     >
@@ -582,15 +573,15 @@ export default function ProductDetail() {
                         onPointerMove={moveDetailCard}
                         onPointerLeave={resetDetailCard}
                       >
-                        <img
-                          src={activeProduct()!.image}
+                        <ProductImage
+                          src={activeProduct()?.image}
+                          fallbackSources={item().productImages}
+                          placeholder={<BoxArt theme={item().theme} label={item().set ?? item().name} />}
                           alt={item().set ? `${item().name}, ${item().set}` : item().name}
                           draggable={false}
-                          onError={() => setDetailImageFailed(true)}
                         />
                       </div>
                     </Show>
-                  </Show>
                 </div>
 
                 <Show when={galleryImages().length > 1}>
@@ -605,7 +596,7 @@ export default function ProductDetail() {
                           aria-pressed={activeProduct()?.image === thumb.image}
                           onClick={() => showGalleryImage(thumb.variantId)}
                         >
-                          <img src={thumb.image} alt="" loading="lazy" draggable={false} />
+                          <ProductImage src={thumb.image} alt="" loading="lazy" draggable={false} />
                         </button>
                       )}
                     </For>

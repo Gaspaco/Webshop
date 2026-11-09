@@ -11,7 +11,7 @@ import {
 } from "~/db/schema";
 import { apiJson, requireAdmin, toSlug, writeAuditLog } from "~/lib/admin.server";
 import { preferredPrintingImage } from "~/lib/yugipedia-image";
-import { searchYugipedia, YugipediaBusyError } from "~/lib/yugipedia.server";
+import { discoverYugipediaSets, searchYugipedia, YugipediaBusyError } from "~/lib/yugipedia.server";
 import { isYugipediaImageUrl } from "~/lib/yugipedia-catalog";
 import { checkRateLimit } from "~/lib/rate-limit.server";
 
@@ -163,6 +163,12 @@ export async function POST(event: APIEvent) {
 
   try {
     const body = await event.request.json();
+    if (body && typeof body === "object" && body.action === "discover_sets") {
+      if (await checkRateLimit({ event, namespace: "yugipedia-discover", identity: guard.session!.user.id, limit: 1, windowMs: 60_000 })) {
+        return apiJson({ error: "Please wait a minute before checking for new sets again." }, { status: 429, headers: { "Retry-After": "60" } });
+      }
+      return apiJson(await discoverYugipediaSets());
+    }
     if (body && typeof body === "object" && body.action === "refresh") {
       const input = z.object({ q: z.string().trim().min(1).max(80), by: z.enum(["card", "set"]) }).parse(body);
       return await lookup(event, input.q, input.by, true, guard.session!.user.id);
@@ -317,7 +323,7 @@ export async function POST(event: APIEvent) {
     if (error instanceof YugipediaBusyError) return apiJson({ error: error.message }, { status: 503 });
     logServerError("Yugipedia catalogue import failed", error);
     return apiJson(
-      { error: "The card could not be added. Check the server log for the reason." },
+      { error: "The Yu-Gi-Oh library request could not be completed. Check the server log for the reason." },
       { status: 500 },
     );
   }

@@ -99,6 +99,19 @@ describe("catalogue image selection", () => {
     assert.equal(product.variants?.[0]?.image, row.variantImageUrl);
   });
 
+  it("retains canonical product photos separately from the selected variant's cover", () => {
+    const row = makeProduct(1);
+    row.variantImageUrl = "/variant.webp";
+    row.imageUrls = ["/product.webp", "/back.webp"];
+    const product = databaseProductToShopProduct(row);
+    assert.equal(product.image, "/variant.webp");
+    assert.deepEqual(product.productImages, ["/product.webp", "/back.webp"]);
+    const second = { ...row, variantId: "second", priceCents: 500, variantImageUrl: "/second.webp" };
+    const grouped = databaseCatalogRowsToState([row, second], []).products[0]!;
+    assert.equal(grouped.image, "/second.webp");
+    assert.deepEqual(grouped.productImages, ["/product.webp", "/back.webp"]);
+  });
+
   it("uses the highest-priced available variant image for a grouped product", () => {
     const lower = makeProduct(1);
     lower.slug = "shared-card";

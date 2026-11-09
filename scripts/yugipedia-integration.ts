@@ -26,6 +26,7 @@ const live = process.env.TCG_YUGIPEDIA_LIVE_CHECK === "1";
 const nativeFetch = globalThis.fetch;
 const callTimes: number[] = [];
 let limited = false;
+let forbidden = false;
 globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = new URL(String(input));
   if (live) {
@@ -37,7 +38,17 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   assert.equal(url.origin, "https://yugipedia.com");
   assert.ok(new Headers(init?.headers).get("User-Agent")?.includes("info@tcghaven.com"));
   callTimes.push(Date.now());
+  if (forbidden) return new Response("", { status: 403 });
   if (limited) return new Response("", { status: 429, headers: { "Retry-After": "60" } });
+  if (url.searchParams.get("list") === "recentchanges") {
+    assert.equal(url.searchParams.get("rclimit"), "500");
+    assert.equal(url.searchParams.get("rcnamespace"), "3006");
+    return Response.json({ query: { recentchanges: [
+      { title: "Set Card Lists:Chaos Origins (TCG-EN)", timestamp: "2026-11-07T00:00:00Z" },
+      { title: "Set Card Lists:Chaos Origins (TCG-EN)", timestamp: "2026-11-06T00:00:00Z" },
+      { title: "Set Card Lists:Other Language (TCG-DE)", timestamp: "2026-11-07T00:00:00Z" },
+    ] } });
+  }
   const titles = url.searchParams.get("titles") ?? "";
   const prop = url.searchParams.get("prop");
   const pages = prop === "imageinfo" ? titles.split("|").map(title => ({ title, imageinfo: [{ url: `https://ms.yugipedia.com/${title.slice(5)}`, mime: "image/png", size: 200 }] }))
@@ -71,7 +82,21 @@ if (!live) {
   const { GET, POST } = await import("../src/routes/api/admin/yugipedia");
   signedIn = false;
   assert.equal((await GET({ request: new Request("https://shop.test/api/admin/yugipedia?q=Chaos%20Origins&by=set") } as any)).status, 401);
+  const discoveryRequest = (origin = "https://shop.test") => ({ request: new Request("https://shop.test/api/admin/yugipedia", {
+    method: "POST", headers: { Origin: origin, "Content-Type": "application/json" }, body: JSON.stringify({ action: "discover_sets" }),
+  }) } as any);
+  assert.equal((await POST(discoveryRequest())).status, 401);
   signedIn = true;
+  assert.equal((await POST(discoveryRequest("https://evil.invalid"))).status, 403);
+  const beforeDiscovery = callTimes.length;
+  const discovered = await POST(discoveryRequest());
+  assert.equal(discovered.status, 200);
+  assert.equal(callTimes.length, beforeDiscovery + 1);
+  assert.deepEqual((await discovered.json()).sets, [{ name: "Chaos Origins", updatedAt: "2026-11-07T00:00:00Z" }]);
+  const { discoverYugipediaSets } = await import("../src/lib/yugipedia.server");
+  assert.equal((await discoverYugipediaSets()).sets.length, 1);
+  assert.equal(callTimes.length, beforeDiscovery + 1, "Repeated discovery must use the shared cache");
+  assert.equal((await POST(discoveryRequest())).status, 429);
   const imported = await POST({ request: new Request("https://shop.test/api/admin/yugipedia", { method: "POST", headers: { Origin: "https://shop.test", "Content-Type": "application/json" }, body: JSON.stringify({ cardId: -1002 }) }) } as any);
   assert.equal(imported.status, 201);
   const newProduct = (await imported.json()).product;
@@ -89,6 +114,12 @@ if (!live) {
   assert.equal(updatedCards.find((card: any) => card.id === 98684220)?.importedStatus, "active");
   assert.equal((await POST(refreshRequest())).status, 429);
   assert.deepEqual(await db.select().from(schema.productVariants).where(eq(schema.productVariants.productId, product!.id)), variantsBefore);
+  forbidden = true;
+  await assert.rejects(() => yugipediaRequest({ action: "query", titles: "Forbidden test" }, { fresh: true }), /refused access \(403\)/);
+  assert.ok((await db.select().from(schema.providerOperationLeases).where(eq(schema.providerOperationLeases.key, "yugipedia:request")))[0]!.leaseUntil.getTime() > Date.now() + 290000);
+  // Advance only the isolated test lease; production cooldowns are never reset.
+  await db.update(schema.providerOperationLeases).set({ leaseUntil: new Date(0) }).where(eq(schema.providerOperationLeases.key, "yugipedia:request"));
+  forbidden = false;
   limited = true;
   await assert.rejects(() => yugipediaRequest({ action: "query", titles: "Rate limit test" }, { fresh: true }), /pause/);
   assert.ok((await db.select().from(schema.providerOperationLeases).where(eq(schema.providerOperationLeases.key, "yugipedia:request")))[0]!.leaseUntil.getTime() > Date.now() + 50000);

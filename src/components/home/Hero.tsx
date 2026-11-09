@@ -6,6 +6,7 @@ import type { ShopProduct } from "~/lib/categories";
 import { isActivePreorder } from "~/lib/game-storefront";
 import { flyToCart, prefersReducedMotion } from "~/lib/motion";
 import { productPreviewVariant } from "~/lib/product-preview";
+import ProductImage from "~/components/product/ProductImage";
 import styles from "./Hero.module.scss";
 
 type Slide = {
@@ -85,14 +86,6 @@ type Product = {
   variantId?: string;
 };
 
-function useFallbackImage(event: Event) {
-  const image = event.currentTarget as HTMLImageElement;
-  const fallback = image.dataset.fallback;
-  if (!fallback || image.src === fallback) return;
-  image.dataset.fallback = "/images/logo-mark.png";
-  image.src = fallback;
-}
-
 export default function Hero(props: {
   managedTitle?: string;
   managedCopy?: string;
@@ -126,9 +119,9 @@ export default function Hero(props: {
         const mainVariant = productPreviewVariant(product.variants);
         const image = mainVariant?.image || product.image;
         const fallbackImage =
-          mainVariant?.image && product.image && mainVariant.image !== product.image
+          product.productImages?.find(photo => photo !== image) || (mainVariant?.image && product.image && mainVariant.image !== product.image
             ? product.image
-            : "/images/logo-mark.png";
+            : "/images/logo-mark.png");
         return {
           id: product.id,
           set: product.set ?? product.gameName,
@@ -183,9 +176,9 @@ export default function Hero(props: {
           product.set && product.set.trim().toLowerCase() !== product.name.trim().toLowerCase(),
         );
         const fallbackImage =
-          mainVariant?.image && product.image && mainVariant.image !== product.image
+          product.productImages?.find(photo => photo !== image) || (mainVariant?.image && product.image && mainVariant.image !== product.image
             ? product.image
-            : "/images/logo-mark.png";
+            : "/images/logo-mark.png");
         return {
           id: product.id,
           name: product.name,
@@ -426,15 +419,14 @@ export default function Hero(props: {
                       }
                     >
                       {image => (
-                        <img
+                        <ProductImage
                           class={styles.artImage}
                           src={image()}
-                          data-fallback={slide.fallbackImage}
+                          fallbackSources={[slide.fallbackImage, "/images/logo-mark.png"]}
                           alt={slide.alt}
                           draggable={false}
                           loading="eager"
                           decoding="async"
-                          onError={useFallbackImage}
                         />
                       )}
                     </Show>
@@ -515,15 +507,14 @@ export default function Hero(props: {
                   <li class={styles.shelfItem} data-motion-card="10">
                     <A href={product.href} class={styles.shelfLink}>
                       <span class={styles.thumb}>
-                        <img
+                        <ProductImage
                           data-motion-art
                           src={product.image}
-                          data-fallback={product.fallbackImage}
+                          fallbackSources={[product.fallbackImage, "/images/logo-mark.png"]}
                           alt=""
                           draggable={false}
                           loading="eager"
                           decoding="async"
-                          onError={useFallbackImage}
                         />
                       </span>
                       <span class={styles.itemInfo}>

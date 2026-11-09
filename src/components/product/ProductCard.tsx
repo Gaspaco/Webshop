@@ -6,6 +6,7 @@ import { formatReleaseCountdown, isActivePreorder } from "~/lib/game-storefront"
 import { flyToCart } from "~/lib/motion";
 import { productPreviewVariant } from "~/lib/product-preview";
 import { isTcgType, type ProductGame } from "~/lib/product-types";
+import ProductImage from "./ProductImage";
 import styles from "./ProductSection.module.scss";
 
 export type BoxTheme = Exclude<ProductGame, "other"> | "accessories";
@@ -31,6 +32,7 @@ export type SectionProduct = {
   set?: string;
   image?: string;
   theme?: BoxTheme;
+  productImages?: string[];
   priceCents?: number;
   compareAtPriceCents?: number;
   priceRangeCents?: [number, number];
@@ -98,8 +100,6 @@ export default function ProductCard(props: ProductCardProps) {
   const p = props.product;
   const [quickViewOpen, setQuickViewOpen] = createSignal(false);
   const [selectedVariantId, setSelectedVariantId] = createSignal("");
-  const [imageFailed, setImageFailed] = createSignal(false);
-  const [imageLoaded, setImageLoaded] = createSignal(false);
   const [now, setNow] = createSignal(Date.now());
   const selectedVariant = createMemo(() =>
     p.variants?.find(variant => variant.id === selectedVariantId()),
@@ -148,12 +148,6 @@ export default function ProductCard(props: ProductCardProps) {
   };
 
   createEffect(() => {
-    displayImage();
-    setImageFailed(false);
-    setImageLoaded(false);
-  });
-
-  createEffect(() => {
     if (!quickViewOpen()) return;
     const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -179,31 +173,22 @@ export default function ProductCard(props: ProductCardProps) {
         href={p.href}
         class={styles.cardMedia}
       >
-        <Show when={displayImage() && !imageFailed()} fallback={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}>
-          {/* Database artwork arrives as a base64 data URL and can take seconds
-              to decode. Hold the themed placeholder until it has, so the card is
-              never an empty grey box. */}
-          <Show when={!imageLoaded()}>
-            <span class={styles.mediaPending}>
-              <BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />
-            </span>
-          </Show>
-          <span
-            class={styles.cardArtwork}
-            classList={{ [styles.cardArtworkTilt]: hasCardTilt() }}
-          >
-            <img
-              ref={artRef}
-              data-motion-art
-              src={displayImage()}
-              alt={p.set ? `${p.name}, ${p.set}` : p.name}
-              draggable={false}
-              loading="lazy"
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageFailed(true)}
-            />
-          </span>
-        </Show>
+        <span
+          class={styles.cardArtwork}
+          classList={{ [styles.cardArtworkTilt]: hasCardTilt() }}
+        >
+          <ProductImage
+            ref={image => { artRef = image; }}
+            data-motion-art
+            src={displayImage()}
+            fallbackSources={p.productImages ?? [p.image]}
+            placeholder={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}
+            pending={<span class={styles.mediaPending}><BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} /></span>}
+            alt={p.set ? `${p.name}, ${p.set}` : p.name}
+            draggable={false}
+            loading="lazy"
+          />
+        </span>
         <Show when={displayBadge()}>
           {badge => (
             <span class={styles.badge} classList={{ [styles.badgePreorder]: activePreorder() }}>
@@ -312,12 +297,8 @@ export default function ProductCard(props: ProductCardProps) {
               </button>
 
               <div class={styles.quickViewMedia}>
-                <Show
-                  when={displayVariant()?.image ?? p.image}
-                  fallback={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />}
-                >
-                  {image => <img src={image()} alt="" />}
-                </Show>
+                <ProductImage src={displayImage()} fallbackSources={p.productImages ?? [p.image]}
+                  placeholder={<BoxArt theme={p.theme ?? "pokemon"} label={p.set ?? p.name} />} alt={p.name} />
               </div>
 
               <div class={styles.quickViewBody}>

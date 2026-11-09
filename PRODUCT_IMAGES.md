@@ -15,6 +15,15 @@ uploads and Yugipedia printing references use this same pipeline. Entire externa
 card libraries are **not** downloaded: only pictures for published catalogue products.
 Original source references remain available privately to the dashboard/import tools.
 
+Storefront image rendering keeps the original product gallery available separately
+from the selected variant cover. If a variant photo fails, the shop, quick view and
+detail page try that product's saved gallery photos once each, without substituting
+another variant's artwork or changing the selected price/stock. Cached images that
+loaded (or failed) before hydration are detected without waiting for another load
+event. The loading artwork stays behind the photo rather than covering it. Missing
+or permanently unavailable source photos still need a replacement upload/URL; the
+renderer does not invent product photography or retry providers indefinitely.
+
 The default budget is **256 MiB of stored base64 payload**, with atomic accounting
 across instances. This is not a measurement of total PostgreSQL disk usage: indexes,
 WAL and backups use additional space. `PRODUCT_IMAGE_CACHE_MAX_MB` may be set to an

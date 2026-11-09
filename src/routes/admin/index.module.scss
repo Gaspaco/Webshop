@@ -1555,6 +1555,42 @@ $gutter: 0.75rem;
   line-height: 1.5;
 }
 
+.yugiohDiscovery {
+  margin-top: 1rem;
+
+  p {
+    margin-top: 0.5rem;
+    color: $gray-400;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    max-width: 75ch;
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin-top: 0.75rem;
+  }
+
+  button {
+    min-height: 2.75rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: $radius-inner;
+    background: rgba($white, 0.06);
+    color: $gray-200;
+    font-size: 0.8125rem;
+    text-align: left;
+    overflow-wrap: anywhere;
+
+    &:hover:not(:disabled) { background: rgba($primary, 0.12); color: $primary-light; }
+    &:focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+    &:disabled { cursor: not-allowed; opacity: 0.48; }
+  }
+}
+
 .yugiohSearch button,
 .yugiohResults article > button {
   min-height: 2.75rem;

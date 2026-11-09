@@ -2,7 +2,15 @@
 
 Use **Bulk import → Choose a game or import source**. Only that library is shown, without scrolling past other games. Switching libraries preserves their current searches. **Inventory files** remains a separate area for CSV templates and exports.
 
-## New integrations
+## Yu-Gi-Oh updates
+
+Use **Bulk import → Yu-Gi-Oh → Check for new sets** to see English TCG set lists recently changed on Yugipedia. Choose **Load [set name]** to refresh that set into the reference library, then select cards to import as zero-stock private drafts. This does not change published products, prices or inventory. You can also enter any full set name and use **Refresh from Yugipedia**.
+
+Discovery makes one bounded request for up to 500 recent changes, shows up to 20 unique English sets and caches the suggestions for one hour across all admins. Recent edits are not release-date order and this is not a complete upcoming-release calendar. Checks require admin access and are limited to once per minute per admin; all Yugipedia requests share the existing one-request-per-second gate and provider cooldowns. There is no unattended crawl or automatic publishing.
+
+Command line: `bun run db:sync:yugioh --recent-sets`, then `bun run db:sync:yugioh --set="Full Set Name" --refresh`. The script needs the database environment loaded by your runtime. A provider access error must be resolved with Yugipedia, not by repeatedly retrying.
+
+## Other integrations
 
 | Source | Configuration | Imported data |
 | --- | --- | --- |

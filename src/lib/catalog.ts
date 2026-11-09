@@ -46,6 +46,7 @@ export function databaseProductToShopProduct(
     // A one-variant product may only have a variant photo. Use it as the card
     // cover instead of showing a placeholder until a second variant exists.
     image: product.variantImageUrl || product.imageUrls[0] || undefined,
+    productImages: product.imageUrls.filter(Boolean),
     theme: merchandise ? "accessories" : game,
     priceCents: product.priceCents,
     compareAtPriceCents: product.compareAtPriceCents ?? undefined,
