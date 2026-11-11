@@ -1,12 +1,13 @@
 import { A } from "@solidjs/router";
 import { gsap } from "gsap";
-import { createEffect, createMemo, createSignal, For, on, onCleanup, onMount, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, createUniqueId, For, on, onCleanup, onMount, Show } from "solid-js";
 import { formatPrice, useCart } from "~/lib/cart";
 import type { ShopProduct } from "~/lib/categories";
 import { isActivePreorder } from "~/lib/game-storefront";
 import { flyToCart, prefersReducedMotion } from "~/lib/motion";
 import { productPreviewVariant } from "~/lib/product-preview";
 import ProductImage from "~/components/product/ProductImage";
+import { heroProductCopy, heroSlideIndex, heroSlideKey } from "~/lib/hero-slider";
 import styles from "./Hero.module.scss";
 
 type Slide = {
@@ -93,8 +94,12 @@ export default function Hero(props: {
   loading?: boolean;
 }) {
   const cart = useCart();
+  const sliderId = createUniqueId();
   const [active, setActive] = createSignal(0);
-  const [paused, setPaused] = createSignal(false);
+  const [pointerInside, setPointerInside] = createSignal(false);
+  const [focusInside, setFocusInside] = createSignal(false);
+  const [userPaused, setUserPaused] = createSignal(false);
+  const paused = () => pointerInside() || focusInside() || userPaused();
   const [autoplay, setAutoplay] = createSignal(false);
   const [justAdded, setJustAdded] = createSignal<Set<string>>(new Set());
   const [now, setNow] = createSignal(Date.now());
@@ -129,8 +134,7 @@ export default function Hero(props: {
           tag: isActivePreorder(product, now())
             ? "Pre-order"
             : product.badge ?? (product.productType === "sealed" ? "Sealed" : "Single card"),
-          title: product.name,
-          blurb: product.description ?? `Available now from our ${product.gameName} catalogue.`,
+          ...heroProductCopy(product),
           priceCents: mainVariant?.priceCents ?? product.priceCents ?? 0,
           href: product.href,
           image,
@@ -201,13 +205,19 @@ export default function Hero(props: {
     onCleanup(() => window.clearInterval(clockId));
     // The progress bar's animation is the timer, so the bar and the slide
     // change can never drift apart. Reduced motion: no autoplay at all.
-    setAutoplay(!window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMotion = () => setAutoplay(!motion.matches);
+    updateMotion();
+    motion.addEventListener("change", updateMotion);
+    onCleanup(() => motion.removeEventListener("change", updateMotion));
   });
 
   const advance = () => {
     const count = slides().length;
-    if (count > 1) setActive(i => (i + 1) % count);
+    if (count > 1) setActive(i => heroSlideIndex(i, 1, count));
   };
+
+  const navigate = (offset: number) => setActive(index => heroSlideIndex(index, offset, slides().length));
 
   let stageRef: HTMLDivElement | undefined;
 
@@ -221,7 +231,7 @@ export default function Hero(props: {
     timeline
       .from(slide.querySelectorAll(`.${styles.copy} > *`), {
         autoAlpha: 0,
-        y: 18,
+        y: 12,
         duration: 0.75,
         stagger: 0.07,
         ease: "expo.out",
@@ -266,7 +276,7 @@ export default function Hero(props: {
     pointerFrame = 0;
     event.currentTarget.style.removeProperty("--mx");
     event.currentTarget.style.removeProperty("--my");
-    setPaused(false);
+    setPointerInside(false);
   };
 
   const flashAdded = (id: string) => {
@@ -330,15 +340,20 @@ export default function Hero(props: {
         <div
           ref={stageRef}
           class={styles.stage}
-          data-motion-card="5"
-          onPointerEnter={() => setPaused(true)}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Featured sealed products"
+          onPointerEnter={() => setPointerInside(true)}
           onPointerMove={trackPointer}
           onPointerLeave={resetPointer}
-          onFocusIn={() => setPaused(true)}
-          onFocusOut={() => setPaused(false)}
+          onFocusIn={() => setFocusInside(true)}
+          onFocusOut={event => {
+            if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) setFocusInside(false);
+          }}
         >
           <div class={styles.spotlight} aria-hidden="true" />
 
+          <div class={styles.slides}>
           <Show
             when={slides().length}
             fallback={
@@ -367,11 +382,15 @@ export default function Hero(props: {
             <For each={slides()}>
               {(slide, i) => (
                 <article
+                  id={`${sliderId}-slide-${i()}`}
                   class={styles.slide}
                   classList={{ [styles.slideActive]: i() === active() }}
                   style={{ "--theme": slide.theme }}
                   aria-hidden={i() === active() ? "false" : "true"}
                   inert={i() !== active()}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${i() + 1} of ${slides().length}`}
                 >
                   <div class={styles.copy}>
                     <p class={styles.meta}>
@@ -380,14 +399,14 @@ export default function Hero(props: {
                         {slide.tag}
                       </span>
                     </p>
-                    <h2 class={styles.title}>
-                      {i() === 0 && props.managedTitle ? props.managedTitle : slide.title}
-                    </h2>
+                    <h2 class={styles.title} title={slide.title}>{slide.title}</h2>
                     <p class={styles.blurb}>
-                      {i() === 0 && props.managedCopy ? props.managedCopy : slide.blurb}
+                      {slide.blurb}
                     </p>
                     <div class={styles.actions}>
-                      <A href={slide.href} class={styles.primaryCta}>Shop {slide.set}</A>
+                      <A href={slide.href} class={styles.primaryCta} aria-label={slide.id.startsWith("sealed-placeholder-") ? `Shop ${slide.game} sealed products` : `View ${slide.title}`}>
+                        {slide.id.startsWith("sealed-placeholder-") ? "Browse sealed products" : "View product"}
+                      </A>
                       <Show when={slide.purchasable && slide.priceCents !== undefined}>
                         <button
                           type="button"
@@ -436,21 +455,29 @@ export default function Hero(props: {
               )}
             </For>
           </Show>
+          </div>
 
           <Show when={slides().length > 1}>
-            <div class={styles.progress} role="tablist" aria-label="Featured products">
+            <div class={styles.carouselControls}>
+            <div class={styles.progress} role="group" aria-label="Choose a featured slide" onKeyDown={event => {
+              const next = heroSlideKey(event.key, active(), slides().length);
+              if (next === undefined) return;
+              event.preventDefault();
+              setActive(next);
+              event.currentTarget.querySelectorAll<HTMLButtonElement>("button")[next]?.focus();
+            }}>
               <For each={slides()}>
                 {(slide, i) => (
                   <button
                     type="button"
-                    role="tab"
                     class={styles.segment}
                     classList={{
                       [styles.segmentDone]: i() < active(),
                       [styles.segmentActive]: i() === active(),
                     }}
-                    aria-selected={i() === active() ? "true" : "false"}
-                    aria-label={`Show ${slide.title}`}
+                    aria-pressed={i() === active()}
+                    aria-controls={`${sliderId}-slide-${i()}`}
+                    aria-label={`Show slide ${i() + 1}: ${slide.title}`}
                     onClick={() => setActive(i())}
                   >
                     {/* The fill's CSS animation is the autoplay timer, so the
@@ -460,12 +487,28 @@ export default function Hero(props: {
                       classList={{ [styles.segmentTimed]: autoplay() && i() === active() }}
                       style={{ "animation-play-state": paused() ? "paused" : "running" }}
                       onAnimationEnd={() => {
-                        if (autoplay() && i() === active()) advance();
+                        if (autoplay() && !paused() && i() === active()) advance();
                       }}
                     />
                   </button>
                 )}
               </For>
+            </div>
+            <div class={styles.controlActions}>
+              <button class={styles.controlButton} type="button" aria-label="Previous featured slide" onClick={() => navigate(-1)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg>
+              </button>
+              <button class={styles.controlButton} type="button" aria-label="Next featured slide" onClick={() => navigate(1)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg>
+              </button>
+              <Show when={autoplay()}>
+                <button class={styles.controlButton} type="button" aria-label={userPaused() ? "Resume automatic slides" : "Pause automatic slides"} aria-pressed={userPaused()} onClick={() => setUserPaused(value => !value)}>
+                  <Show when={userPaused()} fallback={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 5v14M15 5v14" /></svg>}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 10 7-10 7Z" /></svg>
+                  </Show>
+                </button>
+              </Show>
+            </div>
             </div>
           </Show>
         </div>

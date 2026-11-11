@@ -14,8 +14,9 @@ import { preferredPrintingImage } from "~/lib/yugipedia-image";
 import { discoverYugipediaSets, searchYugipedia, YugipediaBusyError } from "~/lib/yugipedia.server";
 import { isYugipediaImageUrl } from "~/lib/yugipedia-catalog";
 import { checkRateLimit } from "~/lib/rate-limit.server";
+import { printingAlreadyListed } from "~/lib/yugipedia-import";
 
-const importCardSchema = z.object({ cardId: z.number().int().min(-2147483647).max(2147483647).refine(id => id !== 0) });
+const importCardSchema = z.object({ cardId: z.number().int().min(-2147483647).max(2147483647).refine(id => id !== 0), setName: z.string().trim().min(1).max(160).optional(), appendMissing: z.boolean().optional() });
 
 type YugiohCardRow = typeof yugiohCards.$inferSelect;
 type YugiohPrintingRow = typeof yugiohPrintings.$inferSelect;
@@ -39,9 +40,9 @@ function skuFor(cardId: number, setCode: string, rarity: string, index: number) 
 
 // Belt and braces: suffix anything that still repeats within this import or
 // already exists in the catalogue, so one clash cannot lose the whole card.
-async function uniqueSkus(candidates: string[]) {
+async function uniqueSkus(candidates: string[], executor: Pick<typeof db, "select"> = db) {
   const taken = new Set(
-    (await db
+    (await executor
       .select({ sku: productVariants.sku })
       .from(productVariants)
       .where(inArray(productVariants.sku, candidates)))
@@ -103,6 +104,7 @@ async function searchResponse(
   cardRows: YugiohCardRow[],
   printingRows: YugiohPrintingRow[],
   matchedSets: string[] = [],
+  coverage?: { expectedCards?: number; setSlots?: number; missingCards?: string[]; warnings?: string[] },
 ) {
   const printingsByCard = new Map<number, YugiohPrintingRow[]>();
   for (const printing of printingRows) {
@@ -114,22 +116,28 @@ async function searchResponse(
   const slugs = cardRows.map(productSlug);
   const importedRows = slugs.length
     ? await db
-        .select({ slug: products.slug, status: products.status, metadata: products.metadata })
+        .select({ id: products.id, slug: products.slug, status: products.status, metadata: products.metadata })
         .from(products)
         .where(or(inArray(products.slug, slugs), and(eq(products.game, "yugioh"), inArray(sql<string>`${products.metadata}->>'sourceCardId'`, cardRows.map(card => String(card.id))))))
     : [];
-  const imported = new Map(importedRows.map(row => [row.slug, row.status]));
-  const importedIds = new Map(importedRows.map(row => [String(row.metadata?.sourceCardId ?? ""), row.status]));
+  const listedVariants = matchedSets.length && importedRows.length ? await db.select({ productId: productVariants.productId, name: productVariants.name, sku: productVariants.sku, finish: productVariants.finish, attributes: productVariants.attributes })
+    .from(productVariants).where(inArray(productVariants.productId, importedRows.map(row => row.id))) : [];
 
   return apiJson({
-    cards: cardRows.map(card => ({
+    cards: cardRows.map(card => {
+      const existing = importedRows.find(row => row.slug === productSlug(card)) ?? importedRows.find(row => String(row.metadata?.sourceCardId) === String(card.id));
+      const printings = printingsByCard.get(card.id) ?? [];
+      const missingPrintings = existing && matchedSets.length ? printings.filter(printing => !printingAlreadyListed(printing, listedVariants.filter(row => row.productId === existing.id))).length : 0;
+      return ({
       ...card,
       imageSourceUrl: card.imageSourceUrl && isYugipediaImageUrl(card.imageSourceUrl)
         ? `/card-images/yugipedia/card/${card.id}` : null,
-      importedStatus: importedIds.get(String(card.id)) ?? imported.get(productSlug(card)) ?? null,
-      printings: printingsByCard.get(card.id) ?? [],
-    })),
+      importedStatus: missingPrintings ? null : existing?.status ?? null,
+      existingProduct: Boolean(existing), missingPrintings,
+      printings,
+    }); }),
     matchedSets,
+    coverage,
   });
 }
 
@@ -139,8 +147,8 @@ async function lookup(event: APIEvent, query: string, by: "card" | "set", fresh:
   }
   const result = await searchYugipedia(query, by, fresh);
   const cardRows = result.cardIds.length ? await db.select().from(yugiohCards).where(inArray(yugiohCards.id, result.cardIds)).orderBy(asc(yugiohCards.name)) : [];
-  const printingRows = result.cardIds.length ? await db.select().from(yugiohPrintings).where(inArray(yugiohPrintings.cardId, result.cardIds)).orderBy(asc(yugiohPrintings.setName), asc(yugiohPrintings.rarity)) : [];
-  return searchResponse(cardRows, by === "set" ? printingRows.filter(row => result.matchedSets.includes(row.setName)) : printingRows, result.matchedSets);
+  const printingRows = result.cardIds.length ? await db.select().from(yugiohPrintings).where(and(inArray(yugiohPrintings.cardId, result.cardIds), by === "set" && result.matchedSets.length ? inArray(yugiohPrintings.setName, result.matchedSets) : undefined)).orderBy(asc(yugiohPrintings.setName), asc(yugiohPrintings.rarity)) : [];
+  return searchResponse(cardRows, printingRows, result.matchedSets, by === "set" ? { expectedCards: result.expectedCards, setSlots: result.setSlots, missingCards: result.missingCards, warnings: result.warnings } : undefined);
 }
 
 export async function GET(event: APIEvent) {
@@ -185,11 +193,11 @@ export async function POST(event: APIEvent) {
 
     const slug = productSlug(card);
     const [existing] = await db
-      .select({ id: products.id })
+      .select({ id: products.id, status: products.status })
       .from(products)
       .where(or(eq(products.slug, slug), and(eq(products.game, "yugioh"), sql`${products.metadata}->>'sourceCardId' = ${String(card.id)}`)))
       .limit(1);
-    if (existing) {
+    if (existing && (!input.setName || !input.appendMissing)) {
       return apiJson(
         { error: "This card is already in the catalogue." },
         { status: 409 },
@@ -199,8 +207,26 @@ export async function POST(event: APIEvent) {
     const printings = await db
       .select()
       .from(yugiohPrintings)
-      .where(eq(yugiohPrintings.cardId, card.id))
+      .where(and(eq(yugiohPrintings.cardId, card.id), input.setName ? eq(yugiohPrintings.setName, input.setName) : undefined))
       .orderBy(asc(yugiohPrintings.setName), asc(yugiohPrintings.rarity));
+    if (input.setName && !printings.length) return apiJson({ error: "This card has no cached printings in the selected set. Search the set again." }, { status: 400 });
+    if (existing) {
+      const added = await db.transaction(async tx => {
+        const [parent] = await tx.select({ id: products.id }).from(products).where(eq(products.id, existing.id)).for("update");
+        if (!parent) throw new Error("The original product no longer exists.");
+        const listed = await tx.select({ name: productVariants.name, sku: productVariants.sku, finish: productVariants.finish, attributes: productVariants.attributes }).from(productVariants).where(eq(productVariants.productId, parent.id));
+        const missing = printings.filter(printing => !printingAlreadyListed(printing, listed));
+        if (!missing.length) return 0;
+        const skus = await uniqueSkus(missing.map((printing, index) => skuFor(card.id, printing.setCode, printing.rarity, index)), tx);
+        await tx.insert(productVariants).values(missing.map((printing, index) => ({ productId: parent.id, sku: skus[index]!, name: `${printing.setName} · ${printing.rarity}`.slice(0, 120),
+          attributes: { setName: printing.setName, setCode: printing.setCode }, condition: "Near Mint", language: "English", finish: printing.rarity,
+          imageUrl: preferredPrintingImage(printing), priceCents: 0, stock: 0, trackInventory: true, isDefault: false })));
+        return missing.length;
+      });
+      if (added) await writeAuditLog({ event, actorId: guard.session!.user.id, action: "catalogue.yugipedia_printings_added", entityType: "product", entityId: existing.id,
+        summary: `${added} zero-stock ${input.setName} printings added to ${card.name}; existing variants were preserved.`, metadata: { cardId: card.id, setName: input.setName, added } });
+      return apiJson({ product: { id: existing.id }, productStatus: existing.status, variants: added, appended: true, hasImage: printings.some(printing => Boolean(preferredPrintingImage(printing))) });
+    }
     const variants = printings.length
       ? printings
       : [{
@@ -313,7 +339,7 @@ export async function POST(event: APIEvent) {
     });
 
     return apiJson(
-      { product: created, variants: variants.length, hasImage: Boolean(productArtwork) },
+      { product: created, productStatus: "draft", variants: variants.length, hasImage: Boolean(productArtwork) },
       { status: 201 },
     );
   } catch (error) {

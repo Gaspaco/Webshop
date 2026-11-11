@@ -250,6 +250,8 @@ type YugiohCard = {
   attribute: string | null;
   cardmarketPriceCents: number | null;
   importedStatus: "draft" | "active" | "archived" | null;
+  existingProduct?: boolean;
+  missingPrintings?: number;
   printings: YugiohPrinting[];
 };
 
@@ -3748,15 +3750,24 @@ game: isTcgType(current.productType) ? current.game : undefined,
       const result = (await response.json().catch(() => ({}))) as {
         cards?: YugiohCard[];
         matchedSets?: string[];
+        coverage?: { expectedCards?: number; setSlots?: number; missingCards?: string[]; warnings?: string[] };
         error?: string;
       };
+      if (yugiohSearchController !== controller || controller.signal.aborted) return;
       if (!response.ok) {
         setYugiohMessage(result.error ?? "The local Yu-Gi-Oh database could not be searched.");
         return;
       }
       setYugiohCards(result.cards ?? []);
       setYugiohMatchedSets(result.matchedSets ?? []);
-      if (!result.cards?.length) setYugiohMessage("No matching English card printings found on Yugipedia. Try the full set name.");
+      if (result.coverage?.expectedCards) {
+        const coverage = result.coverage;
+        setYugiohMessage([
+          `Loaded ${result.cards?.length ?? 0} of ${coverage.expectedCards} card names across ${coverage.setSlots ?? 0} set numbers.`,
+          coverage.missingCards?.length ? `Not available yet: ${coverage.missingCards.slice(0, 8).join(", ")}${coverage.missingCards.length > 8 ? ", …" : ""}.` : "",
+          ...(coverage.warnings ?? []),
+        ].filter(Boolean).join(" "));
+      } else if (!result.cards?.length) setYugiohMessage("No matching English card printings found on Yugipedia. Try the full set name.");
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
         setYugiohMessage("The local Yu-Gi-Oh database could not be searched.");
@@ -3768,21 +3779,23 @@ game: isTcgType(current.productType) ? current.game : undefined,
 
   // One request per card: the endpoint imports a single card, and running them
   // in sequence keeps image downloads and draft creation bounded.
-  const importYugiohCard = async (card: YugiohCard) => {
+  const importYugiohCard = async (card: YugiohCard, setName = yugiohSearchBy() === "set" ? yugiohMatchedSets()[0] : undefined) => {
     const response = await fetch("/api/admin/yugipedia", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cardId: card.id }),
+      body: JSON.stringify({ cardId: card.id, ...(setName ? { setName, appendMissing: card.existingProduct === true } : {}) }),
     });
     const result = (await response.json().catch(() => ({}))) as {
       error?: string;
       variants?: number;
       hasImage?: boolean;
+      productStatus?: "draft" | "active" | "archived";
+      appended?: boolean;
     };
     if (response.ok) {
       setYugiohCards(cards => cards.map(item =>
-        item.id === card.id ? { ...item, importedStatus: "draft" } : item,
+        item.id === card.id ? { ...item, importedStatus: result.productStatus ?? "draft" } : item,
       ));
     }
     return { ok: response.ok, ...result };
@@ -3811,6 +3824,9 @@ game: isTcgType(current.productType) ? current.game : undefined,
 
   const runYugiohBulkImport = async (chosen: YugiohCard[]) => {
     if (!chosen.length) return;
+    const setName = yugiohSearchBy() === "set" ? yugiohMatchedSets()[0] : undefined;
+    const existing = chosen.filter(card => card.existingProduct && card.missingPrintings);
+    if (existing.length && !window.confirm(`Add missing ${setName ?? "set"} printings to ${existing.length} existing products? Existing images, prices and stock stay unchanged. New variations start at €0 and zero stock; they follow the existing product's visibility.`)) return;
     setYugiohBulkRunning(true);
     setYugiohMessage(`Adding ${chosen.length} cards...`);
 
@@ -3822,7 +3838,7 @@ game: isTcgType(current.productType) ? current.game : undefined,
       setYugiohMessage(`Adding ${index + 1} of ${chosen.length}: ${card.name}`);
       setYugiohImporting(previous => new Set(previous).add(card.id));
       try {
-        const result = await importYugiohCard(card);
+        const result = await importYugiohCard(card, setName);
         if (result.ok) {
           added += 1;
           if (result.hasImage === false) withoutArt += 1;
@@ -3861,29 +3877,18 @@ game: isTcgType(current.productType) ? current.game : undefined,
     runYugiohBulkImport(selectableYugiohCards());
 
   const addYugiohCard = async (card: YugiohCard) => {
+    const setName = yugiohSearchBy() === "set" ? yugiohMatchedSets()[0] : undefined;
+    if (card.existingProduct && card.missingPrintings && !window.confirm(`Add ${card.missingPrintings} missing ${setName ?? "set"} printings to this existing product? Existing images, prices and stock stay unchanged. New variations start at €0 and zero stock; they follow the existing product's visibility.`)) return;
     setYugiohImporting(previous => new Set(previous).add(card.id));
     setYugiohMessage("");
     try {
-      const response = await fetch("/api/admin/yugipedia", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cardId: card.id }),
-      });
-      const result = (await response.json().catch(() => ({}))) as {
-        error?: string;
-        variants?: number;
-        hasImage?: boolean;
-      };
-      if (!response.ok) {
+      const result = await importYugiohCard(card, setName);
+      if (!result.ok) {
         setYugiohMessage(result.error ?? "The card could not be added.");
         return;
       }
-      setYugiohCards(cards => cards.map(item =>
-        item.id === card.id ? { ...item, importedStatus: "draft" } : item,
-      ));
       setYugiohMessage(
-        `${card.name} added as a draft with ${result.variants ?? card.printings.length} zero-stock variants.${
+        `${card.name}: ${result.variants ?? card.printings.length} zero-stock variants ${result.appended ? "added without changing existing variants" : "saved as a draft"}.${
           result.hasImage === false ? " No artwork was available, so add an image before publishing." : ""
         }`,
       );
@@ -5443,7 +5448,7 @@ game: isTcgType(current.productType) ? current.game : undefined,
                               >
                                 {card.importedStatus
                                   ? card.importedStatus === "active" ? "Live" : "Already added"
-                                  : yugiohImporting().has(card.id) ? "Adding card" : "Add as draft"}
+                                  : yugiohImporting().has(card.id) ? "Adding card" : card.existingProduct && card.missingPrintings ? `Add ${card.missingPrintings} missing printings` : "Add as draft"}
                               </button>
                             </article>
                           )}

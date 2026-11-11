@@ -4,6 +4,26 @@ Use **Bulk import → Choose a game or import source**. Only that library is sho
 
 ## Yu-Gi-Oh updates
 
+Set results report distinct card names separately from set numbers. Magnificent
+Maestros has 124 distinct card names across 125 numbers; the repeated card is
+retained as separate numbered printings. Old unversioned partial search caches
+are rebuilt, newer cached set-list revisions invalidate older search manifests,
+and missing card pages are reported explicitly with a short retry cache rather
+than silently storing an incomplete list for a month. Set facts are loaded in
+bounded 25-title batches separately from artwork; image continuation is followed
+with a fixed page limit. A scan outage does not discard a complete card list or
+clear existing reference photos. Bulk database writes avoid hundreds of round trips.
+
+Set imports include only that set's printings. If a card is already listed but
+is missing those set-number/rarity combinations, **Add missing printings** offers
+an explicit confirmation before appending zero-price, zero-stock variations.
+Existing product fields, default flags, photos, stock and prices stay unchanged.
+New options follow their parent product's visibility, including live products;
+the confirmation explains this. Repeated imports do not duplicate printings.
+New products still start as private drafts. Identical card/set-number/rarity rows
+are deduplicated; extended-art differences sharing all three fields are not yet
+separate reference variants and may require owner-managed variations/images.
+
 Use **Bulk import → Yu-Gi-Oh → Check for new sets** to see English TCG set lists recently changed on Yugipedia. Choose **Load [set name]** to refresh that set into the reference library, then select cards to import as zero-stock private drafts. This does not change published products, prices or inventory. You can also enter any full set name and use **Refresh from Yugipedia**.
 
 Discovery makes one bounded request for up to 500 recent changes, shows up to 20 unique English sets and caches the suggestions for one hour across all admins. Recent edits are not release-date order and this is not a complete upcoming-release calendar. Checks require admin access and are limited to once per minute per admin; all Yugipedia requests share the existing one-request-per-second gate and provider cooldowns. There is no unattended crawl or automatic publishing.
