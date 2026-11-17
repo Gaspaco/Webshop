@@ -1,5 +1,7 @@
 // @refresh reload
 import { createHandler, StartServer } from "@solidjs/start/server";
+import { randomBytes } from "node:crypto";
+import { contentSecurityPolicy } from "~/lib/content-security-policy";
 
 export default createHandler(() => (
   <StartServer
@@ -24,4 +26,22 @@ export default createHandler(() => (
       </html>
     )}
   />
-));
+), event => {
+  const nonce = randomBytes(18).toString("base64");
+  event.response.headers.set("Content-Security-Policy", contentSecurityPolicy(process.env.NODE_ENV === "production", nonce));
+  // A nonce-bearing document must never be shared between requests by a CDN.
+  event.response.headers.set("Cache-Control", "private, no-store, max-age=0");
+  return {
+    nonce,
+    onCompleteAll: ({ write }) => {
+      // SolidStart's late streaming redirect currently lacks a nonce. Supply
+      // an authorized equivalent; its unnonced fallback remains blocked.
+      const location = event.response.headers.get("Location");
+      if (location) write(`<script nonce="${nonce}">window.location.replace(${JSON.stringify(location).replace(/</g, "\\u003c")})</script>`);
+    },
+  };
+}, async event => {
+  // API/HTML downloads run before the render options callback. They use a
+  // policy with no inline script permission; rendered pages add their nonce.
+  event.response.headers.set("Content-Security-Policy", contentSecurityPolicy(process.env.NODE_ENV === "production"));
+});

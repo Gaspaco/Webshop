@@ -26,6 +26,7 @@ import {
 } from "~/lib/store-profile";
 import styles from "./index.module.scss";
 import type { Shipment } from "~/lib/product-shipping";
+import SavedCards from "~/components/account/SavedCards";
 
 const checkoutSchema = z.object({
   email: z.string().trim().email().max(254),
@@ -85,6 +86,8 @@ export default function Checkout() {
   const [quoteRevision, setQuoteRevision] = createSignal(0);
   const [creditBalance, setCreditBalance] = createSignal(0);
   const [useStoreCredit, setUseStoreCredit] = createSignal(false);
+  const [savedCardId, setSavedCardId] = createSignal("");
+  const [rememberCard, setRememberCard] = createSignal(false);
   let creditRequestSignature = "", creditRequestId = "";
   onMount(async () => {
     try { const response = await fetch("/api/account/wallet", { credentials: "same-origin", cache: "no-store" });
@@ -260,11 +263,13 @@ export default function Checkout() {
     setIsSubmitting(true);
 
     try {
-      const requestSignature = JSON.stringify({ items: items.map(item => ({ id: item.id, variantId: item.variantId, quantity: item.quantity })), values, shippingMethod: values.shippingMethod, discountCode: discountCode(), useStoreCredit: useStoreCredit() });
+      const requestSignature = JSON.stringify({ items: items.map(item => ({ id: item.id, variantId: item.variantId, quantity: item.quantity })), values, shippingMethod: values.shippingMethod, discountCode: discountCode(), useStoreCredit: useStoreCredit(),
+        ...(rememberCard() ? { rememberCard: true } : {}), ...(savedCardId() ? { savedCardId: savedCardId() } : {}),
+      });
       if (requestSignature !== creditRequestSignature) {
         creditRequestSignature = requestSignature;
         creditRequestId = crypto.randomUUID();
-        if (useStoreCredit()) {
+        if (useStoreCredit() || rememberCard() || savedCardId()) {
           // Keep retries stable across a reload without storing addresses in browser storage.
           const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(requestSignature));
           const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
@@ -291,7 +296,9 @@ export default function Checkout() {
           paymentMethod: values.paymentMethod,
           discountCode: discountCode(),
           useStoreCredit: useStoreCredit(),
-          creditRequestId: useStoreCredit() ? creditRequestId : undefined,
+          creditRequestId: useStoreCredit() || rememberCard() || savedCardId() ? creditRequestId : undefined,
+          savedCardId: savedCardId() || undefined,
+          rememberCard: rememberCard(),
         }),
       });
       const result = (await response.json()) as CreatePaymentResponse & { code?: string };
@@ -506,6 +513,7 @@ export default function Checkout() {
                     </span>
                     <em>Selected</em>
                   </div>
+                  <SavedCards checkout selected={savedCardId()} onSelect={setSavedCardId} remember={rememberCard()} onRemember={setRememberCard} />
                 </CheckoutSection>
 
                 <details class={styles.orderNote}>

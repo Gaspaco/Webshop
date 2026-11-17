@@ -1,0 +1,417 @@
+@use "../../styles/variables" as *;
+@use "../../styles/admin" as *;
+
+.discounts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.composer,
+.codes {
+  @include admin-panel;
+  min-width: 0;
+}
+
+.head {
+  @include admin-panel-head;
+  padding: 1.35rem 1.5rem 0;
+}
+
+// ---------- New code form ----------
+
+.fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.9fr);
+  gap: 1.1rem 1rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+
+  label,
+  fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  label > span,
+  legend {
+    @include admin-label;
+    padding: 0;
+  }
+
+  input {
+    @include admin-control;
+  }
+
+  small {
+    @include admin-hint;
+  }
+}
+
+.codeInput {
+  font-family: $font-display !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+}
+
+.amount {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.typeSwitch {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 0.2rem;
+  border-radius: $radius-inner;
+  background: $admin-fill;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+
+  button {
+    min-height: 2.2rem;
+    padding: 0 0.8rem;
+    border: 0;
+    border-radius: calc(#{$radius-inner} - 0.15rem);
+    background: transparent;
+    color: $admin-muted;
+    font-family: $font-display;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 150ms $ease-out, background-color 150ms $ease-out;
+
+    &:hover {
+      color: $white;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $primary-light;
+      outline-offset: -2px;
+    }
+
+    &[aria-pressed="true"] {
+      background: rgba($white, 0.1);
+      color: $white;
+    }
+  }
+}
+
+// An input with a fixed unit (€ or %) drawn inside its frame.
+.affixed {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+
+  b {
+    position: absolute;
+    top: 50%;
+    color: $admin-muted;
+    font-size: 0.875rem;
+    font-weight: 500;
+    pointer-events: none;
+    transform: translateY(-50%);
+
+    &:first-child {
+      left: 0.8rem;
+    }
+
+    &:last-child:not(:first-child) {
+      right: 0.8rem;
+    }
+  }
+
+  b:first-child + input {
+    padding-left: 1.75rem;
+  }
+
+  input:has(+ b) {
+    padding-right: 2rem;
+  }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid $admin-line;
+
+  p {
+    color: $admin-muted;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+}
+
+.create {
+  @include admin-btn-primary;
+}
+
+.notice {
+  padding: 0.75rem 1rem;
+  border-radius: $radius-inner;
+  background: rgba($primary, 0.1);
+  color: $primary-light;
+  font-size: 0.875rem;
+
+  &[data-tone="error"] {
+    background: rgba($admin-danger, 0.1);
+    color: $admin-danger-ink;
+  }
+}
+
+// ---------- Codes list ----------
+
+.table {
+  display: grid;
+  padding: 0.75rem 0.4rem 0.4rem;
+}
+
+.row {
+  display: grid;
+  min-height: 4rem;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: $radius-tile;
+  grid-template-columns: minmax(9rem, 1.2fr) minmax(8rem, 1.1fr) minmax(7rem, 1fr) minmax(6.5rem, 0.8fr) 6rem 5.5rem;
+
+  & + & {
+    box-shadow: 0 -1px 0 $admin-line;
+  }
+
+  &:not([data-head]):hover {
+    background: $admin-hover;
+  }
+
+  &[data-head] {
+    min-height: 0;
+    padding-block: 0 0.6rem;
+
+    > span {
+      color: $admin-muted;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+  }
+
+  > span {
+    min-width: 0;
+  }
+
+  strong,
+  small {
+    display: block;
+  }
+
+  strong {
+    color: $white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  small {
+    margin-top: 0.1rem;
+    color: $admin-muted;
+    font-size: 0.78rem;
+  }
+
+  &[data-tone="ended"] .code strong,
+  &[data-tone="off"] .code strong {
+    color: $gray-400;
+  }
+}
+
+.code strong {
+  overflow: hidden;
+  color: $white;
+  font-family: $font-display;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+}
+
+.expiry {
+  color: $gray-200;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+
+  &[data-none] {
+    color: $admin-muted;
+  }
+}
+
+.usage {
+  strong small {
+    display: inline;
+    margin: 0;
+    font-weight: 400;
+  }
+
+  i {
+    display: block;
+    max-width: 8rem;
+    height: 4px;
+    margin-top: 0.45rem;
+    overflow: hidden;
+    border-radius: $radius-full;
+    background: rgba($primary, 0.14);
+  }
+
+  b {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: $primary;
+  }
+
+  .row[data-tone="ended"] & i {
+    background: rgba($white, 0.08);
+  }
+
+  .row[data-tone="ended"] & b {
+    background: $gray-500;
+  }
+}
+
+.state {
+  @include admin-pill;
+
+  &::before {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: currentColor;
+    content: "";
+  }
+
+  &[data-tone="live"] {
+    background: rgba($primary, 0.13);
+    color: $primary-light;
+  }
+
+  &[data-tone="ended"] {
+    background: rgba($accent-gold, 0.12);
+    color: $accent-gold;
+  }
+}
+
+.action {
+  text-align: right;
+
+  button {
+    @include admin-btn-text;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.empty {
+  @include admin-empty;
+}
+
+@media (max-width: 1050px) {
+  .fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 0.6rem 1rem;
+
+    &[data-head] {
+      display: none;
+    }
+
+    & + & {
+      box-shadow: none;
+    }
+
+    &:not([data-head]) + & {
+      box-shadow: 0 -1px 0 $admin-line;
+    }
+
+    > span:nth-child(5) {
+      grid-row: 1;
+      grid-column: 3;
+      justify-self: end;
+    }
+
+    > span:nth-child(2) {
+      grid-row: 1;
+      grid-column: 2;
+    }
+
+    > span:nth-child(3) {
+      grid-column: 1;
+    }
+
+    > span:nth-child(4) {
+      grid-column: 2;
+    }
+
+    > span:nth-child(6) {
+      grid-column: 3;
+    }
+  }
+}
+
+@media (max-width: 760px) {
+  .head {
+    padding: 1.15rem 1.1rem 0;
+  }
+
+  .fields {
+    grid-template-columns: 1fr;
+    padding: 1.1rem;
+  }
+
+  .footer {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 1rem 1.1rem;
+  }
+
+  .table {
+    padding-top: 0.5rem;
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-inline: 0.75rem;
+
+    > span:nth-child(1) {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    > span:nth-child(5) {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    > span:nth-child(2),
+    > span:nth-child(3),
+    > span:nth-child(4) {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    > span:nth-child(6) {
+      grid-column: 2;
+      grid-row: 2 / span 3;
+      align-self: end;
+    }
+  }
+}

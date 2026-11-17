@@ -1,0 +1,90 @@
+@use "../../styles/variables" as *;
+@use "../../styles/admin" as *;
+
+.section {
+  @include admin-settings-section;
+}
+
+.pair {
+  display: grid;
+  max-width: 34rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  @include admin-field;
+}
+
+// A number input with its unit written inside the frame.
+.unit {
+  position: relative;
+
+  input {
+    padding-right: 6.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  b {
+    position: absolute;
+    top: 50%;
+    right: 0.8rem;
+    color: $admin-muted;
+    font-size: 0.82rem;
+    font-weight: 500;
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+}
+
+// Wide record tables scroll sideways inside the section rather than pushing
+// the page wider. The padding keeps focus rings from being clipped.
+.scroller {
+  margin: -4px;
+  padding: 4px;
+  overflow-x: auto;
+}
+
+.rows {
+  @include admin-edit-rows;
+}
+
+.rowName {
+  color: $gray-200;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.remove {
+  @include admin-btn-icon;
+}
+
+.add {
+  @include admin-add-row;
+}
+
+.note {
+  margin-top: 0.5rem;
+  color: $admin-muted;
+  font-size: 0.78rem;
+}
+
+.emptyRows {
+  padding: 0.75rem 0;
+  color: $admin-muted;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 760px) {
+  .pair {
+    grid-template-columns: 1fr;
+  }
+
+  .scroller {
+    overflow-x: visible;
+  }
+
+  .rowName {
+    grid-column: 1 / -1;
+  }
+}

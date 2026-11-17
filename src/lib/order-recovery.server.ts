@@ -14,7 +14,7 @@ export async function runOrderRecovery() {
   let recovered = 0;
   try {
     const attempts = await db.select({ id: orders.id }).from(orders).where(and(
-      eq(orders.status, "pending"), inArray(orders.paymentCreationState, ["creating", "unknown"]),
+      eq(orders.status, "pending"), inArray(orders.paymentCreationState, ["preparing", "creating", "unknown"]),
       gt(orders.paymentCreationStartedAt, new Date(Date.now() - IDEMPOTENT_RETRY_MS)),
       lt(orders.updatedAt, new Date(Date.now() - 60_000)),
     )).orderBy(asc(orders.createdAt)).limit(5);

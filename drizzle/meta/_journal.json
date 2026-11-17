@@ -155,6 +155,13 @@
       "when": 1793923200000,
       "tag": "0021_product_variant_attributes",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794873600000,
+      "tag": "0022_saved_payment_customers",
+      "breakpoints": true
     }
   ]
 }

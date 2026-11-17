@@ -12,6 +12,7 @@ import {
   payments,
   products,
   productVariants,
+  providerOperationLeases,
 } from "~/db/schema";
 import { getAuthEnv, getEmailEnv } from "~/lib/env.server";
 import {
@@ -35,6 +36,8 @@ import { acquireOperationLease, releaseOperationLease } from "~/lib/operation-le
 import { calculateShipment, shipmentQuotes } from "~/lib/product-shipping";
 import { lockWallet, releaseOrderCredit, reserveOrderCredit, WalletError } from "~/lib/wallet.server";
 import { canReplayProviderRequest, mollieCredentialHash, openPaymentParameters, providerDefinitivelyRejected, sealPaymentParameters } from "~/lib/provider-recovery.server";
+import { savedCardPaymentParameters, SavedCardError } from "~/lib/saved-cards.server";
+import { CARD_CONSENT_VERSION } from "~/lib/saved-cards";
 
 const shippingMethodSchema = z.enum([
   "postnl_letterbox",
@@ -70,7 +73,9 @@ const checkoutInputSchema = z.object({
   discountCode: z.string().trim().max(32).optional().default(""),
   useStoreCredit: z.boolean().optional().default(false),
   creditRequestId: z.string().uuid().optional(),
-});
+  rememberCard: z.boolean().optional().default(false),
+  savedCardId: z.string().regex(/^mdt_[A-Za-z0-9]{1,80}$/).optional(),
+}).refine(input => !input.rememberCard || !input.savedCardId, { message: "Choose a saved card or save a new card, not both." });
 
 type CheckoutInput = z.infer<typeof checkoutInputSchema>;
 type MolliePaymentStatus =
@@ -84,6 +89,8 @@ type MolliePaymentStatus =
   | "expired";
 
 const centsToAmount = (cents: number) => (cents / 100).toFixed(2);
+const paymentCheckoutUrl = (payment: Payment, fallback: string) => payment.getCheckoutUrl()
+  ?? (["paid", "authorized"].includes(payment.status) ? fallback : null);
 
 const formatEuros = (cents: number) =>
   new Intl.NumberFormat("en-NL", {
@@ -255,8 +262,19 @@ export async function retryPaidOrderEmails(orderId: string) {
   return db.select({ audience: orderEmailJobs.audience, status: orderEmailJobs.status }).from(orderEmailJobs).where(eq(orderEmailJobs.orderId, orderId));
 }
 
-async function releaseOrderReservations(orderId: string) {
-  await db.transaction(tx => releaseOrderReservationsInTransaction(tx, orderId));
+/** A late worker must never undo a payment created by its lease replacement. */
+async function recordCreationFailure(orderId: string, token: string, expectedState: "preparing" | "creating", definitive: boolean) {
+  await db.transaction(async tx => {
+    const [current] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update");
+    if (!current || current.status !== "pending" || current.paymentCreationState !== expectedState) return;
+    const [lease] = await tx.select().from(providerOperationLeases).where(eq(providerOperationLeases.key, `checkout-create:${orderId}`)).for("update");
+    if (!lease || lease.token !== token || lease.leaseUntil.getTime() <= Date.now()) return;
+    const [linked] = await tx.select({ id: payments.id }).from(payments).where(eq(payments.orderId, orderId)).limit(1);
+    if (linked) return;
+    const changed = await tx.update(orders).set({ paymentCreationState: definitive ? "failed" : "unknown" })
+      .where(and(eq(orders.id, orderId), eq(orders.paymentCreationState, expectedState))).returning({ id: orders.id });
+    if (changed.length && definitive) await releaseOrderReservationsInTransaction(tx, orderId);
+  });
 }
 
 async function releaseOrderReservationsInTransaction(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], orderId: string) {
@@ -417,20 +435,24 @@ export async function calculateTrustedCheckout(input: unknown, quoteOnly = false
 
 export async function createCheckoutPayment(input: unknown, userId?: string) {
   const parsed = checkoutInputSchema.parse(input);
-  if (!parsed.useStoreCredit) return createPaymentOrder(parsed, userId);
-  if (!userId || !parsed.creditRequestId) throw new WalletError("Sign in and refresh checkout before using store credit.");
+  if (!parsed.useStoreCredit && !parsed.rememberCard && !parsed.savedCardId) return createPaymentOrder(parsed, userId);
+  if (!userId || !parsed.creditRequestId) throw new WalletError("Sign in and refresh checkout before using store credit or saved cards.");
   const key = `credit-checkout:${parsed.creditRequestId}`;
   const lease = await acquireOperationLease(key, 90_000);
   if (!lease) throw new WalletError("This checkout is already being processed. Check your orders before trying again.");
   try {
-    const hash = createHash("sha256").update(JSON.stringify(parsed)).digest("hex");
+    // Preserve retry identities for orders created before saved-card support.
+    const { rememberCard, savedCardId, ...base } = parsed;
+    const hash = createHash("sha256").update(JSON.stringify({ ...base,
+      ...(rememberCard ? { rememberCard: true } : {}), ...(savedCardId ? { savedCardId } : {}),
+    })).digest("hex");
     const [existing] = await db.select().from(orders).where(eq(orders.creditRequestId, parsed.creditRequestId)).limit(1);
     if (existing) {
       if (existing.userId !== userId || existing.creditRequestHash !== hash) throw new WalletError("This checkout reference was already used for different details. Start a new checkout.");
       if (["paid", "processing", "shipped", "completed"].includes(existing.status)) return { orderNumber: existing.orderNumber, checkoutUrl: appUrl(`/checkout?order=${existing.orderNumber}`), repeated: true };
       if (existing.status !== "pending") throw new WalletError("This order was closed. Start a new checkout if you still want to buy these items.", "CHECKOUT_CLOSED");
       const payment = await recoverCheckoutPayment(existing.id);
-      return { orderNumber: existing.orderNumber, checkoutUrl: payment.getCheckoutUrl(), repeated: true };
+      return { orderNumber: existing.orderNumber, checkoutUrl: paymentCheckoutUrl(payment, appUrl(`/checkout?order=${existing.orderNumber}`)), repeated: true };
     }
     return await createPaymentOrder(parsed, userId, hash);
   } finally { await releaseOperationLease(key, lease); }
@@ -507,7 +529,7 @@ async function createPaymentOrder(input: CheckoutInput, userId?: string, creditR
         shipment: checkout.shipment,
         creditAppliedCents,
         creditState: creditAppliedCents > 0 ? "reserved" : "none",
-        creditRequestId: checkout.useStoreCredit ? checkout.creditRequestId : null,
+        creditRequestId: checkout.useStoreCredit || checkout.rememberCard || checkout.savedCardId ? checkout.creditRequestId : null,
         creditRequestHash: creditRequestHash ?? null,
         billingAddress: address,
         shippingAddress: address,
@@ -518,15 +540,19 @@ async function createPaymentOrder(input: CheckoutInput, userId?: string, creditR
     if (!createdOrder) throw new Error("Could not create order.");
     await reserveOrderCredit(tx, createdOrder.id, userId ?? "", creditAppliedCents);
 
+    const cardRequest = checkout.totalCents > creditAppliedCents && (input.rememberCard || input.savedCardId)
+      ? { rememberCard: input.rememberCard, ...(input.savedCardId ? { savedCardId: input.savedCardId } : {}) } : null;
     const paymentParameters: PaymentCreateParams = {
       amount: { currency: "EUR", value: centsToAmount(checkout.totalCents - creditAppliedCents) },
       description: `TCGHaven order ${createdOrder.orderNumber}`,
       redirectUrl: appUrl(`/checkout?order=${encodeURIComponent(createdOrder.orderNumber)}&access=${guestToken}`),
       webhookUrl: appUrl("/api/payments/mollie-webhook"),
-      metadata: { orderId: createdOrder.id, orderNumber: createdOrder.orderNumber, recoveryToken: crypto.randomUUID() },
+      metadata: { orderId: createdOrder.id, orderNumber: createdOrder.orderNumber, recoveryToken: crypto.randomUUID(),
+        ...(cardRequest ? { cardRequest } : {}),
+        ...(cardRequest?.rememberCard ? { cardConsent: { version: CARD_CONSENT_VERSION, at: new Date().toISOString() } } : {}) },
       idempotencyKey: `checkout-${createdOrder.id}`,
     };
-    if (checkout.totalCents > creditAppliedCents) await tx.update(orders).set({ paymentCreationState: "creating", paymentCreationStartedAt: new Date(),
+    if (checkout.totalCents > creditAppliedCents) await tx.update(orders).set({ paymentCreationState: cardRequest ? "preparing" : "creating", paymentCreationStartedAt: new Date(),
       paymentCredentialHash: mollieCredentialHash(), paymentParametersEncrypted: sealPaymentParameters(paymentParameters) })
       .where(eq(orders.id, createdOrder.id));
 
@@ -564,7 +590,7 @@ async function createPaymentOrder(input: CheckoutInput, userId?: string, creditR
 
   return {
     orderNumber: order.orderNumber,
-    checkoutUrl: molliePayment.getCheckoutUrl(),
+    checkoutUrl: paymentCheckoutUrl(molliePayment, appUrl(`/checkout?order=${encodeURIComponent(order.orderNumber)}&access=${guestToken}`)),
     amount: {
       currency: "EUR",
       value: centsToAmount(checkout.totalCents - order.creditAppliedCents),
@@ -606,21 +632,48 @@ export async function recoverCheckoutPayment(orderId: string) {
   const token = await acquireOperationLease(key);
   if (!token) throw new Error("Payment recovery is already running. Try again shortly.");
   try {
-    const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+    let [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
     if (!order) throw new Error("Order not found.");
     const [existing] = await db.select().from(payments).where(eq(payments.orderId, orderId)).limit(1);
     if (existing) return await getMollieClient().payments.get(existing.molliePaymentId);
     if (!order.paymentParametersEncrypted || !order.paymentCreationStartedAt || order.paymentCreationState === "failed") {
       throw new Error("This order has no recoverable payment attempt.");
     }
+    if (order.paymentCreationState === "preparing") {
+      // Stock/credit reservation is already committed. Resolve card references
+      // without holding stock or wallet locks, and persist the exact result
+      // BEFORE any payment request. A fully credit-funded order never gets here.
+      const parameters = openPaymentParameters<PaymentCreateParams>(order.paymentParametersEncrypted);
+      const metadata = { ...(parameters.metadata as Record<string, unknown>) };
+      const request = z.object({ rememberCard: z.boolean(), savedCardId: z.string().regex(/^mdt_[A-Za-z0-9]{1,80}$/).optional() }).parse(metadata.cardRequest);
+      let cardParameters: Partial<PaymentCreateParams>;
+      try { cardParameters = await savedCardPaymentParameters(order.userId ?? undefined, request); }
+      catch (error) {
+        if ((error instanceof SavedCardError && error.definitive) || providerDefinitivelyRejected(error)) {
+          // Preparation has never sent a payment request, so these stock and
+          // credit holds can be safely returned on a definitive rejection.
+          await recordCreationFailure(order.id, token, "preparing", true);
+        }
+        throw error;
+      }
+      delete metadata.cardRequest;
+      const [prepared] = await db.update(orders).set({
+        paymentParametersEncrypted: sealPaymentParameters({ ...parameters, ...cardParameters, metadata }),
+        paymentCreationState: "creating", paymentCreationStartedAt: new Date(), paymentCredentialHash: mollieCredentialHash(),
+      }).where(and(eq(orders.id, order.id), eq(orders.paymentCreationState, "preparing"))).returning();
+      if (!prepared) throw new Error("Payment preparation changed. Try again shortly.");
+      order = prepared;
+    }
+    const encryptedParameters = order.paymentParametersEncrypted;
+    const startedAt = order.paymentCreationStartedAt;
+    if (!encryptedParameters || !startedAt) throw new Error("Missing prepared payment parameters.");
     let payment: ProviderPayment;
-    if (canReplayProviderRequest(order.paymentCreationStartedAt, order.paymentCredentialHash)) {
+    if (canReplayProviderRequest(startedAt, order.paymentCredentialHash)) {
       // Exact same parameters, same key, same API credential, within Mollie's
       // one-hour cache. Never blindly replay after a credential rotation.
-      try { payment = await getMollieClient().payments.create(openPaymentParameters<PaymentCreateParams>(order.paymentParametersEncrypted)); }
+      try { payment = await getMollieClient().payments.create(openPaymentParameters<PaymentCreateParams>(encryptedParameters)); }
       catch (error) {
-        await db.update(orders).set({ paymentCreationState: providerDefinitivelyRejected(error) ? "failed" : "unknown" }).where(eq(orders.id, orderId));
-        if (providerDefinitivelyRejected(error)) await releaseOrderReservations(orderId);
+        await recordCreationFailure(orderId, token, "creating", providerDefinitivelyRejected(error));
         throw error;
       }
     } else {

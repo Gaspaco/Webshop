@@ -1,0 +1,133 @@
+@use "../../styles/variables" as *;
+@use "../../styles/admin" as *;
+
+.activity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.filters {
+  @include admin-segmented;
+  justify-self: start;
+  margin-bottom: 0.25rem;
+}
+
+.day {
+  @include admin-panel;
+  padding-bottom: 0.4rem;
+
+  h2 {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.5rem 0.6rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+
+    span {
+      color: $admin-muted;
+      font-family: $font-body;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+  }
+
+  ol {
+    display: grid;
+  }
+
+  li {
+    display: grid;
+    min-height: 3.75rem;
+    align-items: center;
+    gap: 0.9rem;
+    margin-inline: 0.4rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: $radius-tile;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    transition: background-color 150ms $ease-out;
+
+    &:hover {
+      background: $admin-hover;
+    }
+
+    > div {
+      min-width: 0;
+    }
+
+    strong {
+      display: block;
+      color: $white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    p {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 0.15rem;
+      color: $admin-muted;
+      font-size: 0.8rem;
+
+      span + span::before {
+        margin-inline: 0.45rem;
+        color: $gray-600;
+        content: "·";
+      }
+    }
+  }
+
+  time {
+    color: $admin-muted;
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+}
+
+.icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: $radius-inner;
+  background: rgba($white, 0.05);
+  color: $gray-300;
+
+  svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+}
+
+.empty {
+  @include admin-panel;
+  @include admin-empty;
+}
+
+@media (max-width: 760px) {
+  .day {
+    h2 {
+      padding-inline: 1.1rem;
+    }
+
+    li {
+      align-items: start;
+      margin-inline: 0.2rem;
+      padding-inline: 0.85rem;
+      grid-template-columns: 2rem minmax(0, 1fr) auto;
+    }
+  }
+
+  .icon {
+    width: 2rem;
+    height: 2rem;
+  }
+}

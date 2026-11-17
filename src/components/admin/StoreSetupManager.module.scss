@@ -1,0 +1,253 @@
+@use "../../styles/variables" as *;
+@use "../../styles/admin" as *;
+
+.setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.toolbar {
+  @include admin-toolbar;
+  margin-bottom: 0.25rem;
+
+  p {
+    color: $admin-muted;
+    font-size: 0.875rem;
+  }
+
+  a {
+    @include admin-btn-quiet;
+  }
+}
+
+.warning {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.9rem 1.15rem;
+  border-radius: $radius-tile;
+  background: rgba($accent-gold, 0.08);
+  box-shadow: inset 0 0 0 1px rgba($accent-gold, 0.22);
+
+  strong {
+    color: $accent-gold;
+    font-size: 0.875rem;
+  }
+
+  p {
+    color: $gray-300;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+}
+
+.section {
+  @include admin-settings-section;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem 1rem;
+}
+
+.field {
+  @include admin-field;
+}
+
+.wide {
+  grid-column: 1 / -1;
+  max-width: calc(50% - 0.5rem);
+}
+
+// A euro amount: the sign sits inside the frame, the figure aligns right.
+.money {
+  position: relative;
+  width: 7.5rem;
+  flex-shrink: 0;
+
+  b {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    color: $admin-muted;
+    font-size: 0.85rem;
+    font-weight: 500;
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  input {
+    @include admin-control;
+    min-height: 2.35rem;
+    padding-left: 1.6rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+}
+
+// ---------- Dutch rates ----------
+
+.rates {
+  display: grid;
+  overflow: hidden;
+  border-radius: $radius-tile;
+  box-shadow: inset 0 0 0 1px $admin-line;
+}
+
+.rate,
+.freeShipping {
+  display: flex;
+  min-height: 3.6rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.6rem 0.55rem 1rem;
+
+  > span {
+    min-width: 0;
+  }
+
+  strong {
+    display: block;
+    color: $white;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  small {
+    display: block;
+    margin-top: 0.1rem;
+    color: $admin-muted;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+}
+
+.rate + .rate {
+  box-shadow: 0 -1px 0 $admin-line;
+}
+
+.freeShipping {
+  margin-top: 0.75rem;
+  border-radius: $radius-tile;
+  background: rgba($primary, 0.06);
+  box-shadow: inset 0 0 0 1px rgba($primary, 0.18);
+}
+
+// ---------- International ----------
+
+.zones {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.zoneHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  margin-bottom: 0.6rem;
+
+  h3 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    span {
+      color: $admin-muted;
+      font-family: $font-body;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+  }
+}
+
+.zoneFill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    color: $admin-muted;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .money {
+    width: 6.5rem;
+  }
+
+  button {
+    @include admin-btn-text;
+    color: $primary-light;
+
+    &:hover:not(:disabled) {
+      background: rgba($primary, 0.1);
+      color: $primary-light;
+    }
+  }
+}
+
+.countries {
+  display: grid;
+  overflow: hidden;
+  border-radius: $radius-tile;
+  box-shadow: inset 0 0 0 1px $admin-line;
+  grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+}
+
+.country {
+  display: flex;
+  min-height: 3.1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0.4rem 0.35rem 0.9rem;
+  box-shadow: 1px 0 0 $admin-line, 0 1px 0 $admin-line;
+
+  > span {
+    overflow: hidden;
+    color: $gray-200;
+    font-size: 0.85rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .money {
+    width: 6.5rem;
+  }
+}
+
+// ---------- Save ----------
+
+.saveBar {
+  @include admin-save-bar;
+}
+
+.discard {
+  @include admin-btn-text;
+}
+
+.save {
+  @include admin-btn-primary;
+}
+
+@media (max-width: 760px) {
+  .fields {
+    grid-template-columns: 1fr;
+  }
+
+  .wide {
+    max-width: none;
+  }
+
+  .countries {
+    grid-template-columns: 1fr;
+  }
+}

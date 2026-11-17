@@ -1,0 +1,15 @@
+@use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+.page { width: min(100% - 2rem, 42rem); margin: 3rem auto 6rem; color: $gray-300; }
+.page h1 { color: $white; font-size: 1.75rem; margin: 2rem 0 0.75rem; }
+.page p { line-height: 1.6; max-width: 65ch; }
+.page a { color: $primary; text-underline-offset: 0.2em; }
+.page form { display: flex; flex-direction: column; gap: 1rem; margin: 1.5rem 0; }
+.page label { display: flex; flex-direction: column; gap: 0.5rem; color: $white; font-size: 0.9375rem; }
+.page input { min-height: 2.75rem; padding: 0.75rem; border: 1px solid $gray-700; border-radius: $radius-md; color: $white; background: $surface; font: inherit; }
+.page button { @include btn-primary; align-self: start; min-height: 2.75rem; }
+.page button:disabled { opacity: 0.65; cursor: wait; }
+.page :focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+.qr { display: block; width: 220px; height: 220px; margin: 1rem 0; border-radius: $radius-md; }
+.codes { padding: 1rem; background: $surface; border-radius: $radius-md; }
+.codes ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; padding: 0; list-style: none; font-family: monospace; color: $white; }

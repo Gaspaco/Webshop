@@ -1,10 +1,14 @@
 import type { APIEvent } from "@solidjs/start/server";
 import { CATEGORIES } from "~/lib/categories";
 import { loadDatabaseCatalogRows } from "~/lib/catalog-query.server";
+import { limitCatalogRead } from "~/lib/catalog-rate-limit.server";
+import { safeApiResponse } from "~/lib/request-security.server";
 
 export async function GET(event: APIEvent) {
+  return safeApiResponse(async () => {
   const url = new URL(event.request.url);
   const slug = url.searchParams.get("slug")?.trim();
+  if (slug && slug.length > 200) return Response.json({ error: "Invalid product slug." }, { status: 400 });
   const availableOnly = url.searchParams.get("available") === "1";
   // Only known game slugs are accepted, so the filter can never be used to
   // probe arbitrary values.
@@ -18,6 +22,9 @@ export async function GET(event: APIEvent) {
   const offset = Number.isSafeInteger(requestedOffset) && requestedOffset >= 0
     ? requestedOffset
     : 0;
+  if (offset > 100_000) return Response.json({ error: "This catalogue page is beyond the supported range." }, { status: 400 });
+  const limited = await limitCatalogRead(event, "products");
+  if (limited) return limited;
   const catalog = await loadDatabaseCatalogRows({
     slug,
     game,
@@ -48,4 +55,5 @@ export async function GET(event: APIEvent) {
       },
     },
   );
+  });
 }

@@ -1,0 +1,579 @@
+@use "./variables" as *;
+@use "./buttons" as *;
+
+// Owner admin vocabulary. Every form, filter, list and panel in the dashboard
+// draws from these so a field, a save button or a section heading looks the
+// same on every screen.
+
+// Hairline used between rows and inside panels.
+$admin-line: rgba($white, 0.06);
+// Control fill and the row hover tint, one step off the panel surface.
+$admin-fill: rgba($white, 0.045);
+$admin-hover: rgba($white, 0.035);
+// Secondary text. Gray-500 and darker fail AA on $surface at small sizes.
+$admin-muted: $gray-400;
+
+$admin-danger: #f87171;
+$admin-danger-ink: #fca5a5;
+$admin-info: #60a5fa;
+$admin-info-ink: #93c5fd;
+
+@mixin admin-control {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.6rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: $radius-inner;
+  outline: none;
+  background: $admin-fill;
+  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+  color: $white;
+  font: inherit;
+  font-size: 0.875rem;
+  transition: box-shadow 160ms $ease-out, background-color 160ms $ease-out;
+
+  &::placeholder {
+    color: $gray-500;
+  }
+
+  &:hover:not(:disabled):not(:focus) {
+    box-shadow: inset 0 0 0 1px rgba($white, 0.14);
+  }
+
+  &:focus {
+    box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 3px rgba($primary, 0.16);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  &[aria-invalid="true"] {
+    box-shadow: inset 0 0 0 1px rgba($admin-danger, 0.6);
+  }
+}
+
+@mixin admin-textarea {
+  @include admin-control;
+  min-height: 5.5rem;
+  padding: 0.65rem 0.75rem;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+// Label text that sits above a control.
+@mixin admin-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: $gray-300;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+// Helper text under a control.
+@mixin admin-hint {
+  display: block;
+  margin-top: 0.4rem;
+  color: $admin-muted;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+@mixin admin-panel {
+  border-radius: $radius-panel;
+  background: $surface;
+}
+
+// A panel's heading row: title and one-line description, actions on the right.
+@mixin admin-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+
+  h2,
+  h3 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  p {
+    max-width: 65ch;
+    margin-top: 0.3rem;
+    color: $admin-muted;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+}
+
+@mixin admin-btn-primary {
+  @include btn-primary(sm);
+}
+
+@mixin admin-btn-quiet {
+  @include btn-secondary(sm);
+}
+
+// Text-weight action inside rows and panels.
+@mixin admin-btn-text {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.6rem;
+  border: 0;
+  border-radius: $radius-full;
+  background: transparent;
+  color: $gray-300;
+  font-family: $font-display;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 160ms $ease-out, background-color 160ms $ease-out;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba($white, 0.06);
+    color: $white;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+@mixin admin-btn-danger {
+  @include admin-btn-text;
+  color: $admin-danger-ink;
+
+  &:hover:not(:disabled) {
+    background: rgba($admin-danger, 0.1);
+    color: $admin-danger-ink;
+  }
+}
+
+// Square icon-only button for row actions such as "remove".
+@mixin admin-btn-icon {
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  place-items: center;
+  border: 0;
+  border-radius: $radius-inner;
+  background: transparent;
+  color: $gray-400;
+  cursor: pointer;
+  transition: color 160ms $ease-out, background-color 160ms $ease-out;
+
+  svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba($admin-danger, 0.1);
+    color: $admin-danger-ink;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-light;
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+  }
+}
+
+// Small rounded state label. Colour comes from a modifier.
+@mixin admin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: $radius-full;
+  background: rgba($white, 0.07);
+  color: $gray-300;
+  font-family: $font-display;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+// Segmented filter: a row of mutually exclusive views with counts.
+@mixin admin-segmented {
+  display: inline-flex;
+  max-width: 100%;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  overflow-x: auto;
+  border-radius: $radius-full;
+  background: $surface;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  button {
+    display: inline-flex;
+    flex-shrink: 0;
+    white-space: nowrap;
+    min-height: 2.1rem;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0 0.85rem;
+    border: 0;
+    border-radius: $radius-full;
+    background: transparent;
+    color: $gray-400;
+    font-family: $font-display;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 160ms $ease-out, background-color 160ms $ease-out;
+
+    &:hover {
+      color: $white;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $primary-light;
+      outline-offset: -2px;
+    }
+
+    &[aria-pressed="true"] {
+      background: rgba($white, 0.09);
+      color: $white;
+    }
+
+    span {
+      color: $gray-500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    &[aria-pressed="true"] span {
+      color: $gray-300;
+    }
+  }
+}
+
+// The row under the page title: live counts or filters on the left, the
+// section's actions on the right.
+@mixin admin-toolbar {
+  display: flex;
+  min-height: 2.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+// "12 products · 10 live · 1 draft": counts that summarise the section.
+@mixin admin-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 1.4rem;
+  color: $admin-muted;
+  font-size: 0.875rem;
+
+  strong {
+    margin-right: 0.3em;
+    color: $white;
+    font-family: $font-display;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// A strip of headline totals inside one surface, as on the overview.
+@mixin admin-kpis($columns: 4) {
+  display: grid;
+  grid-template-columns: repeat($columns, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: $radius-panel;
+  background: $surface;
+
+  article {
+    min-width: 0;
+    padding: 1.15rem 1.35rem;
+  }
+
+  span,
+  strong,
+  small {
+    display: block;
+  }
+
+  span {
+    color: $admin-muted;
+    font-size: 0.85rem;
+  }
+
+  strong {
+    margin-top: 0.45rem;
+    color: $white;
+    font-family: $font-display;
+    font-size: clamp(1.45rem, 2.2vw, 1.85rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  small {
+    margin-top: 0.3rem;
+    color: $admin-muted;
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 1050px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@mixin admin-empty {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+
+  strong {
+    display: block;
+    color: $white;
+    font-family: $font-display;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  p {
+    max-width: 46ch;
+    margin: 0.35rem auto 0;
+    color: $admin-muted;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+}
+
+// Settings page section: what it is on the left, the controls on the right.
+@mixin admin-settings-section {
+  @include admin-panel;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(12rem, 17rem) minmax(0, 1fr);
+  gap: 1.25rem 2.5rem;
+  padding: 1.6rem 1.6rem 1.75rem;
+
+  > header {
+    h2 {
+      color: $white;
+      font-family: $font-display;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      margin-top: 0.4rem;
+      color: $admin-muted;
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+  }
+
+  > div {
+    min-width: 0;
+  }
+
+  @media (max-width: 1050px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1.25rem 1.25rem 1.4rem;
+  }
+}
+
+// Labelled field stacked above its control.
+@mixin admin-field {
+  display: block;
+  min-width: 0;
+
+  > span {
+    @include admin-label;
+  }
+
+  input,
+  select {
+    @include admin-control;
+  }
+
+  textarea {
+    @include admin-textarea;
+  }
+
+  small {
+    @include admin-hint;
+  }
+}
+
+// A list of records edited inline as table rows. Set --cols on the element.
+// Each cell is a <label> with a .cellLabel that only shows on small screens.
+@mixin admin-edit-rows {
+  display: grid;
+  min-width: 0;
+
+  .rowHead,
+  .row {
+    display: grid;
+    align-items: center;
+    gap: 0.5rem;
+    grid-template-columns: var(--cols);
+  }
+
+  .rowHead {
+    padding: 0 0 0.45rem;
+
+    span {
+      color: $admin-muted;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  }
+
+  .row {
+    padding: 0.35rem 0;
+
+    & + .row {
+      border-top: 1px solid $admin-line;
+    }
+
+    label {
+      min-width: 0;
+    }
+
+    input,
+    select {
+      @include admin-control;
+      min-height: 2.35rem;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .cellLabel {
+    display: none;
+  }
+
+  @media (max-width: 760px) {
+    .rowHead {
+      display: none;
+    }
+
+    .row {
+      align-items: end;
+      gap: 0.6rem;
+      padding: 0.85rem 0;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      > label:first-child {
+        grid-column: 1 / -1;
+      }
+
+      > button:last-child {
+        grid-column: 2;
+        grid-row: auto;
+        justify-self: end;
+      }
+    }
+
+    .cellLabel {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: $admin-muted;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  }
+}
+
+@mixin admin-add-row {
+  @include admin-btn-text;
+  margin-top: 0.5rem;
+  margin-left: -0.6rem;
+  color: $primary-light;
+
+  &:hover:not(:disabled) {
+    background: rgba($primary, 0.1);
+    color: $primary-light;
+  }
+}
+
+// Bottom bar that holds a form's save action. Floats only while there are
+// unsaved changes, so a clean form doesn't carry a bar over its content.
+@mixin admin-save-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.6rem 0.6rem 1.25rem;
+  border-radius: $radius-full;
+  background: $surface;
+
+  p {
+    margin-right: auto;
+    color: $admin-muted;
+    font-size: 0.85rem;
+  }
+
+  span[data-tone="ok"] {
+    color: $primary-light;
+  }
+
+  span[data-tone="error"] {
+    color: $admin-danger-ink;
+  }
+
+  &[data-dirty] {
+    position: sticky;
+    z-index: $z-sticky;
+    bottom: 0.75rem;
+    background: $surface-raised;
+    box-shadow: 0 0 0 1px rgba($primary, 0.45), 0 6px 8px rgba(0, 0, 0, 0.3);
+
+    p {
+      color: $gray-200;
+    }
+  }
+
+  @media (max-width: 760px) {
+    flex-wrap: wrap;
+    border-radius: $radius-tile;
+
+    p {
+      flex-basis: 100%;
+      margin-bottom: 0.25rem;
+    }
+
+    button[type="submit"] {
+      flex: 1;
+    }
+  }
+}

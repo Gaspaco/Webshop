@@ -1,0 +1,435 @@
+@use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+@use "../../styles/admin" as *;
+
+.analytics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.toolbar {
+  @include admin-toolbar;
+  margin-bottom: 0.25rem;
+
+  p {
+    color: $admin-muted;
+    font-size: 0.875rem;
+  }
+
+  a {
+    @include admin-btn-quiet;
+  }
+}
+
+.kpis {
+  @include admin-kpis;
+}
+
+.panel {
+  @include admin-panel;
+  min-width: 0;
+}
+
+.panelHead {
+  @include admin-panel-head;
+  padding: 1.35rem 1.5rem 0.5rem;
+}
+
+.bestDay {
+  display: grid;
+  flex-shrink: 0;
+  justify-items: end;
+  margin-top: 0 !important;
+  color: $admin-muted;
+  font-size: 0.8rem !important;
+  text-align: right;
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  span {
+    font-size: 0.78rem;
+  }
+}
+
+// ---------- Column chart ----------
+
+$plot-height: 15rem;
+
+.chart {
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr);
+  grid-template-rows: $plot-height auto;
+  padding: 1.75rem 1.5rem 0.75rem 0.75rem;
+}
+
+.yAxis {
+  position: relative;
+
+  span {
+    position: absolute;
+    right: 0.75rem;
+    color: $gray-500;
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    transform: translateY(50%);
+    white-space: nowrap;
+  }
+}
+
+.plot {
+  position: relative;
+}
+
+.gridline {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: $admin-line;
+
+  &:first-child {
+    background: rgba($white, 0.14);
+  }
+}
+
+.columns {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+
+  li {
+    position: relative;
+    display: flex;
+    height: 100%;
+    align-items: flex-end;
+    justify-content: center;
+    padding-inline: 1px;
+    outline: none;
+    cursor: default;
+
+    // The whole slot is the hover target, not just the bar.
+    &::before {
+      position: absolute;
+      inset: 0 1px;
+      border-radius: 4px 4px 0 0;
+      background: transparent;
+      content: "";
+      transition: background-color 150ms $ease-out;
+    }
+
+    &:hover::before,
+    &:focus-visible::before {
+      background: rgba($white, 0.04);
+    }
+
+    &:focus-visible::before {
+      box-shadow: inset 0 0 0 2px rgba($primary-light, 0.7);
+    }
+  }
+}
+
+.bar {
+  position: relative;
+  width: 100%;
+  max-width: 1.5rem;
+  border-radius: 4px 4px 0 0;
+  background: $primary;
+  transition: height 250ms $ease-out, background-color 150ms $ease-out;
+
+  li:hover &,
+  li:focus-visible & {
+    background: $primary-light;
+  }
+}
+
+.tip {
+  position: absolute;
+  z-index: $z-tooltip;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  display: grid;
+  min-width: 8.5rem;
+  gap: 0.1rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: $radius-inner;
+  background: $surface-raised;
+  box-shadow: 0 0 0 1px rgba($white, 0.1), 0 6px 8px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition: opacity 150ms $ease-out, transform 150ms $ease-out;
+  white-space: nowrap;
+
+  b {
+    color: $admin-muted;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  strong {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  small {
+    color: $admin-muted;
+    font-size: 0.75rem;
+  }
+
+  li:hover &,
+  li:focus-visible & {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  .tipStart & {
+    left: 0;
+    transform: translate(0, 4px);
+  }
+
+  .tipEnd & {
+    right: 0;
+    left: auto;
+    transform: translate(0, 4px);
+  }
+
+  .tipStart:hover &,
+  .tipStart:focus-visible &,
+  .tipEnd:hover &,
+  .tipEnd:focus-visible & {
+    transform: translate(0, 0);
+  }
+}
+
+.xAxis {
+  display: grid;
+  grid-column: 2;
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+  padding-top: 0.6rem;
+
+  li {
+    display: flex;
+    justify-content: center;
+    overflow: visible;
+    color: $gray-500;
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+
+  // Anchor the final label to the plot edge so it never spills past it.
+  li:last-child {
+    justify-content: flex-end;
+  }
+}
+
+// ---------- Table views ----------
+
+.tableView {
+  margin: 0.25rem 1.5rem 1.25rem;
+
+  summary {
+    display: inline-flex;
+    width: fit-content;
+    @include admin-btn-text;
+    margin-left: -0.6rem;
+    color: $admin-muted;
+  }
+
+  table {
+    width: 100%;
+    max-width: 32rem;
+    margin-top: 0.5rem;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th,
+  td {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid $admin-line;
+    text-align: left;
+  }
+
+  thead th {
+    color: $admin-muted;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  tbody th {
+    color: $gray-200;
+    font-weight: 500;
+  }
+
+  td {
+    color: $gray-300;
+    text-align: right;
+  }
+}
+
+.sellers {
+  width: 100%;
+  margin: 0.5rem 0 0.75rem;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 0.8rem 1.5rem;
+    border-bottom: 1px solid $admin-line;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  thead th {
+    padding-block: 0.5rem;
+    color: $admin-muted;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  thead th + th,
+  td {
+    width: 8rem;
+    text-align: right;
+  }
+
+  td {
+    color: $gray-200;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  td:last-child {
+    color: $white;
+    font-weight: 600;
+  }
+
+  tbody th {
+    font-weight: 400;
+
+    strong,
+    span {
+      display: block;
+    }
+
+    strong {
+      color: $white;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    span {
+      margin-top: 0.1rem;
+      color: $admin-muted;
+      font-size: 0.78rem;
+    }
+  }
+
+  // Share of the top seller's revenue: a thin meter on a lighter track.
+  .shareCol {
+    width: 30%;
+    text-align: left;
+
+    i {
+      display: block;
+      height: 4px;
+      overflow: hidden;
+      border-radius: $radius-full;
+      background: rgba($primary, 0.14);
+    }
+
+    b {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: $primary;
+    }
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.empty {
+  @include admin-empty;
+}
+
+@media (max-width: 760px) {
+  .panelHead {
+    flex-direction: column;
+    padding: 1.15rem 1.1rem 0.25rem;
+  }
+
+  .bestDay {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .chart {
+    grid-template-columns: 2.9rem minmax(0, 1fr);
+    padding: 1.5rem 0.9rem 0.5rem 0.25rem;
+  }
+
+  .yAxis span {
+    right: 0.45rem;
+    font-size: 0.68rem;
+  }
+
+  .columns li {
+    padding-inline: 0.5px;
+  }
+
+  .xAxis li {
+    font-size: 0.66rem;
+  }
+
+  .tableView {
+    margin-inline: 1.1rem;
+  }
+
+  .sellers {
+    th,
+    td {
+      padding-inline: 1.1rem;
+    }
+
+    thead th + th,
+    td {
+      width: 4.5rem;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .tip {
+    transition: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .sellers .shareCol {
+    display: none;
+  }
+}

@@ -1,5 +1,6 @@
 @use "../../styles/variables" as *;
 @use "../../styles/buttons" as *;
+@use "../../styles/admin" as *;
 
 $gutter: 0.75rem;
 
@@ -392,7 +393,7 @@ $gutter: 0.75rem;
 .importHistory h2 {
   color: $white;
   font-family: $font-display;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -534,11 +535,10 @@ $gutter: 0.75rem;
   }
 }
 
-// The page title already names the section; the intro keeps its one-line
-// note and the section's actions.
+// The page title and subtitle already describe the section, so the row under
+// them carries live counts and the section's actions.
 .sectionIntro {
-  align-items: center;
-  margin-bottom: 1rem;
+  @include admin-toolbar;
 
   > div:first-child > h2 {
     display: none;
@@ -548,6 +548,11 @@ $gutter: 0.75rem;
     margin-top: 0;
     font-size: 0.9375rem;
   }
+}
+
+.sectionIntro > .summary {
+  @include admin-summary;
+  margin-top: 0;
 }
 
 .primaryAction,
@@ -562,21 +567,44 @@ $gutter: 0.75rem;
 
 .catalogToolbar {
   display: grid;
-  margin-bottom: 0.85rem;
-  padding: 0.85rem;
-  border-radius: $radius-tile;
-  grid-template-columns: minmax(15rem, 1fr) repeat(3, 9rem) 8rem auto;
+  margin-bottom: 0.75rem;
+  padding: 1rem 1.1rem 0.75rem;
+  border-radius: $radius-panel;
+  grid-template-columns: minmax(14rem, 1.5fr) minmax(12rem, 1.3fr) repeat(3, minmax(8.5rem, 1fr)) minmax(8rem, 0.85fr);
   align-items: end;
   gap: 0.75rem;
   background: $surface;
 }
 
 .catalogToolbar label > span {
-  display: block;
-  margin-bottom: 0.3rem;
-  color: $gray-500;
-  font-size: 0.75rem;
-  font-weight: 600;
+  @include admin-label;
+}
+
+.catalogSearch {
+  order: -2;
+}
+
+// The shared set picker, sized to match the other filters.
+.catalogSetFilter {
+  order: -1;
+  gap: 0 !important;
+
+  > span {
+    @include admin-label;
+  }
+
+  > button {
+    min-height: 2.6rem;
+    padding-block: 0.4rem;
+    border: 0;
+    background: $admin-fill;
+    box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+    font-size: 0.875rem;
+
+    &:hover {
+      box-shadow: inset 0 0 0 1px rgba($white, 0.14);
+    }
+  }
 }
 
 .catalogAttributeFilters {
@@ -593,32 +621,27 @@ $gutter: 0.75rem;
 
 .catalogToolbar input,
 .catalogToolbar select {
-  width: 100%;
-  min-height: 2.5rem;
-  padding: 0 0.7rem;
-  border: 0;
-  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
-  border-radius: $radius-inner;
-  outline: none;
-  background: rgba($white, 0.05);
-  color: $white;
-  font-size: 0.8125rem;
+  @include admin-control;
 }
 
-.catalogToolbar input:focus,
-.catalogToolbar select:focus {
-  box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
+.catalogMeta {
+  display: flex;
+  min-height: 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  grid-column: 1 / -1;
+  order: 2;
+  padding-top: 0.6rem;
+  border-top: 1px solid $admin-line;
 }
 
 .catalogResultCount {
-  min-width: max-content;
-  padding-bottom: 0.62rem;
-  color: $gray-500;
-  font-size: 0.78rem;
-  text-align: right;
+  color: $admin-muted;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
 }
-
-
 
 .productForm {
   display: grid;
@@ -773,7 +796,8 @@ $gutter: 0.75rem;
   height: 2.9rem;
   padding: 0 1rem;
   border-bottom: 1px solid rgba($white, 0.05);
-  color: $gray-600;
+  color: $admin-muted;
+  white-space: nowrap;
   font-size: 0.76rem;
   font-weight: 600;
   text-align: left;
@@ -796,7 +820,7 @@ $gutter: 0.75rem;
 }
 
 .tableWrap tbody tr:hover {
-  background: rgba($white, 0.018);
+  background: $admin-hover;
 }
 
 .catalogPagination {
@@ -867,8 +891,8 @@ $gutter: 0.75rem;
   font-weight: 800;
 }
 
-.productIdentity strong,
-.productIdentity span {
+.productIdentity div strong,
+.productIdentity div span {
   display: block;
 }
 
@@ -883,8 +907,36 @@ $gutter: 0.75rem;
 
 .productIdentity div span {
   margin-top: 0.15rem;
-  color: $gray-600;
-  font-size: 0.75rem;
+  color: $admin-muted;
+  font-size: 0.78rem;
+}
+
+// "2 variants" under the SKU opens the editor at the variant list.
+.variantsLink {
+  margin-left: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $primary-light;
+  font: inherit;
+  cursor: pointer;
+
+  &::before {
+    margin-right: 0.5rem;
+    color: $gray-600;
+    content: "·";
+  }
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  &:focus-visible {
+    border-radius: 2px;
+    outline: 2px solid $primary-light;
+    outline-offset: 2px;
+  }
 }
 
 .productIdentity div .priceReview {
@@ -914,12 +966,13 @@ $gutter: 0.75rem;
 
 // Wide enough for a full price such as 1.249,99.
 .tableInput {
-  min-width: 6.5rem;
-  max-width: 7.5rem;
+  min-width: 6.25rem;
+  max-width: 7rem;
 }
 
 .stockInput {
-  max-width: 5rem;
+  min-width: 4.5rem;
+  max-width: 5.5rem;
 }
 
 .tableSelect,
@@ -937,37 +990,14 @@ $gutter: 0.75rem;
 }
 
 .tableSelect {
-  max-width: 9rem;
+  max-width: 8.5rem;
 }
 
 .visibilityEditor {
   display: flex;
-  min-width: 10.5rem;
+  min-width: 7.5rem;
   align-items: center;
   gap: 0.45rem;
-}
-
-.visibilitySave {
-  min-height: 2.2rem;
-  padding: 0 0.65rem;
-  border: 0;
-  box-shadow: inset 0 0 0 1px rgba($primary, 0.255);
-  border-radius: $radius-inner;
-  background: rgba($primary, 0.08);
-  color: $primary-light;
-  font-size: 0.8rem;
-  font-weight: 700;
-
-  &:hover:not(:disabled),
-  &:focus-visible {
-    box-shadow: inset 0 0 0 1px rgba($primary, 0.62);
-    background: rgba($primary, 0.14);
-  }
-
-  &:disabled {
-    cursor: wait;
-    opacity: 0.55;
-  }
 }
 
 .orderSelect {
@@ -976,51 +1006,48 @@ $gutter: 0.75rem;
 
 .rowActions {
   display: flex;
-  min-width: 22rem;
+  min-width: 13.5rem;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.55rem;
+  justify-content: flex-end;
+  gap: 0.3rem;
 }
 
-.rowActions a {
-  color: $gray-500;
+.rowSave {
+  @include admin-btn-primary;
+
+  &:disabled {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba($white, 0.08);
+    color: $gray-500;
+    opacity: 1;
+  }
 }
 
-.rowActions button {
-  color: $primary-light;
-  font-weight: 600;
+// Secondary row actions (Edit, Open order, Manage) share one quiet pill.
+.editAction {
+  @include admin-btn-quiet;
+
+  &[aria-expanded="true"] {
+    background: rgba($white, 0.12);
+  }
 }
 
-.rowActions .editAction {
-  min-height: 2rem;
-  padding: 0 0.65rem;
-  border: 0;
-  box-shadow: inset 0 0 0 1px rgba($primary, 0.3);
-  border-radius: $radius-full;
-  background: rgba($primary, 0.07);
-}
-
-.rowActions .duplicateAction {
-  min-height: 2rem;
-  padding: 0 0.65rem;
-  border: 0;
-  box-shadow: inset 0 0 0 1px rgba($white, 0.098);
-  border-radius: $radius-inner;
-  color: $gray-300;
+.rowIcon {
+  @include admin-btn-icon;
+  color: $gray-400;
 
   &:hover:not(:disabled) {
-    box-shadow: inset 0 0 0 1px rgba($primary, 0.45);
+    background: rgba($white, 0.07);
     color: $white;
   }
 }
 
-.rowActions button:disabled {
-  cursor: wait;
-  opacity: 0.5;
-}
-
-.rowActions span {
-  color: $gray-600;
+.rowMessage {
+  flex-basis: 100%;
+  color: $admin-muted;
   font-size: 0.75rem;
+  text-align: right;
 }
 
 .editorRow:hover {
@@ -1259,66 +1286,81 @@ $gutter: 0.75rem;
 }
 
 .importHero {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  padding: 1.75rem;
-  border: 0;
-  box-shadow: inset 0 0 0 1px rgba($primary, 0.22);
-  border-radius: $radius-panel;
-  background: rgba($primary, 0.045);
-}
+  @include admin-panel;
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 0.75rem;
+  padding: 1.35rem 1.5rem 1.5rem;
 
-.importHero p {
-  max-width: 60ch;
-  line-height: 1.55;
+  h2 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  p {
+    max-width: 72ch;
+    margin-top: 0.3rem;
+    color: $admin-muted;
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
 }
 
 .importActions {
   display: flex;
-  flex: 1 1 30rem;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
+  align-items: flex-end;
+  gap: 0.6rem;
 }
 
+// Bulk import: the library switcher above the selected source.
 .libraryPicker {
-  display: flex;
-  align-items: end;
-  flex-wrap: wrap;
-  gap: 1rem 1.5rem;
-  margin-bottom: 1.25rem;
-}
-.libraryPicker label { display: flex; flex-direction: column; gap: 0.5rem; width: min(100%, 28rem); }
-.libraryPicker label > span { color: $white; font-size: 0.875rem; font-weight: 600; }
-.libraryPicker p { max-width: 50ch; color: $gray-300; font-size: 0.875rem; }
-.libraryPicker select { width: 100%; min-height: 2.875rem; padding: 0.7rem 0.85rem; border: 1px solid $gray-700; border-radius: $radius-inner; background: $surface; color: $white; font: inherit; }
-.libraryPicker select:focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+  display: grid;
+  max-width: 28rem;
+  margin-bottom: 1rem;
 
-.importActions label:not(.primaryAction) { display: flex; flex-direction: column; gap: 0.4rem; }
-.importActions label > span { font-size: 0.8125rem; color: $gray-300; }
-.importActions select {
-  min-height: 2.7rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid $gray-700;
-  border-radius: $radius-inner;
-  background: $surface;
-  color: $white;
-  font: inherit;
+  label > span {
+    @include admin-label;
+  }
+
+  select {
+    @include admin-control;
+  }
+
+  p {
+    @include admin-hint;
+  }
 }
-.importActions select:focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+
+.importActions label:not(.primaryAction) {
+  display: grid;
+  min-width: 13rem;
+
+  > span {
+    @include admin-label;
+  }
+}
+
+.importActions select {
+  @include admin-control;
+}
 
 .importActions button {
-  min-height: 2.7rem;
-  padding: 0 0.9rem;
-  border: 0;
-  background-color: rgba($white, 0.05);
-  box-shadow: inset 0 0 0 1px rgba($white, 0.08);
-  border-radius: $radius-full;
-  color: $gray-300;
-  font-size: 0.84rem;
-  font-weight: 600;
+  @include admin-btn-quiet;
+}
+
+.importActions .primaryAction {
+  @include admin-btn-primary;
+  position: relative;
+  cursor: pointer;
+
+  &:focus-within {
+    outline: 2px solid $primary-light;
+    outline-offset: 3px;
+  }
 }
 
 .importActions input {
@@ -1702,72 +1744,89 @@ $gutter: 0.75rem;
 }
 
 .importGuide {
+  @include admin-panel;
   display: grid;
-  margin-top: 1.25rem;
-  padding: 1.25rem 1.35rem;
-  border-radius: $radius-panel;
-  grid-template-columns: minmax(13rem, 0.65fr) minmax(0, 1.35fr);
-  gap: 2rem;
-  background: $surface;
-}
+  margin-top: 0.75rem;
+  padding: 1.35rem 1.5rem 1.5rem;
+  grid-template-columns: minmax(14rem, 0.7fr) minmax(0, 1.3fr);
+  gap: 1.5rem 2.5rem;
 
-.importGuide h3 {
-  font-family: $font-body;
-  font-size: 0.8rem;
-}
+  h2 {
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
 
-.importGuide p {
-  max-width: 42ch;
-  margin-top: 0.4rem;
-  color: $gray-500;
-  font-size: 0.82rem;
-  line-height: 1.55;
-}
+  p {
+    max-width: 46ch;
+    margin-top: 0.3rem;
+    color: $admin-muted;
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
 
-.importGuide dl {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 1.5rem;
-}
+  dl {
+    display: grid;
+    align-self: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.5rem;
+  }
 
-.importGuide dl div {
-  display: grid;
-  min-height: 2.4rem;
-  align-items: center;
-  border-bottom: 1px solid rgba($white, 0.05);
-  grid-template-columns: 6rem 1fr;
-  gap: 0.75rem;
-}
+  dl div {
+    display: grid;
+    min-height: 2.6rem;
+    align-items: baseline;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid $admin-line;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 0.75rem;
+  }
 
-.importGuide dt {
-  color: $primary-light;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
+  dt {
+    color: $primary-light;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+  }
 
-.importGuide dd {
-  color: $gray-500;
-  font-size: 0.78rem;
+  dd {
+    color: $gray-300;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
 }
 
 .importHistory {
-  margin-top: 1.25rem;
+  margin-top: 0.75rem;
+  padding-bottom: 0.4rem;
 }
 
 .importRow {
   display: grid;
-  min-height: 4.25rem;
+  min-height: 3.75rem;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem 1.35rem;
-  border-bottom: 1px solid rgba($white, 0.05);
-  grid-template-columns: minmax(12rem, 1fr) auto 7rem 7rem;
-  color: $gray-400;
+  margin-inline: 0.4rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: $radius-tile;
+  grid-template-columns: minmax(12rem, 1fr) 11rem 7.5rem 7.5rem;
+  color: $admin-muted;
   font-size: 0.84rem;
-}
 
-.importRow:last-child {
-  border-bottom: 0;
+  & + & {
+    box-shadow: 0 -1px 0 $admin-line;
+  }
+
+  b {
+    color: $gray-200;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  [data-warn] b {
+    color: $accent-gold;
+  }
 }
 
 .importRow div strong,
@@ -1776,18 +1835,48 @@ $gutter: 0.75rem;
 }
 
 .importRow div strong {
+  overflow: hidden;
   color: $white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .importRow div span {
-  margin-top: 0.15rem;
-  color: $gray-600;
-  font-size: 0.76rem;
+  margin-top: 0.1rem;
+  color: $admin-muted;
+  font-size: 0.78rem;
+}
+
+.importState {
+  @include admin-pill;
+  justify-self: start;
+
+  &[data-tone="ok"] {
+    background: rgba($primary, 0.13);
+    color: $primary-light;
+  }
+
+  &[data-tone="warn"],
+  &[data-tone="pending"] {
+    background: rgba($accent-gold, 0.12);
+    color: $accent-gold;
+  }
+
+  &[data-tone="error"] {
+    background: rgba($admin-danger, 0.12);
+    color: $admin-danger-ink;
+  }
+}
+
+.emptyState {
+  @include admin-empty;
 }
 
 .empty {
   padding: 2rem 1.35rem;
-  color: $gray-600;
+  color: $admin-muted;
   font-size: 0.875rem;
 }
 
@@ -1802,14 +1891,22 @@ $gutter: 0.75rem;
   gap: 0.75rem;
 }
 
+.introActions {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .introActions > a,
 .introActions > button:not(.primaryAction),
 .sectionIntro > a {
-  @include btn-secondary;
+  @include admin-btn-quiet;
 }
 
-.lowStockCenter,
-.salesChart {
+.introActions > .primaryAction {
+  @include admin-btn-primary;
+}
+
+.lowStockCenter {
   margin-top: 1.25rem;
   overflow: hidden;
   border-radius: $radius-panel;
@@ -1896,8 +1993,7 @@ $gutter: 0.75rem;
 
 .orderSummaryGrid > section,
 .orderActionGrid > form,
-.orderActionGrid > .pickupFulfilment,
-.contentForm > section {
+.orderActionGrid > .pickupFulfilment {
   padding: 1rem;
   border-radius: $radius-tile;
   background: $surface;
@@ -1913,9 +2009,7 @@ $gutter: 0.75rem;
 
 .orderEditor h3,
 .customerEditor h3,
-.variantManager h3,
-.discountForm h3,
-.contentForm h3 {
+.variantManager h3 {
   color: $white;
   font-family: $font-body;
   font-size: 0.9rem;
@@ -1998,18 +2092,14 @@ $gutter: 0.75rem;
 
 .orderActionGrid label,
 .customerControlGrid label,
-.variantForm label,
-.discountForm label,
-.contentForm label {
+.variantForm label {
   display: block;
   margin-top: 0.7rem;
 }
 
 .orderActionGrid label > span,
 .customerControlGrid label > span,
-.variantForm label > span,
-.discountForm label > span,
-.contentForm label > span {
+.variantForm label > span {
   display: block;
   margin-bottom: 0.35rem;
   color: $gray-400;
@@ -2023,11 +2113,7 @@ $gutter: 0.75rem;
 .customerControlGrid input,
 .customerControlGrid textarea,
 .variantForm input,
-.variantForm select,
-.discountForm input,
-.discountForm select,
-.contentForm input,
-.contentForm textarea {
+.variantForm select {
   width: 100%;
   border: 0;
   box-shadow: inset 0 0 0 1px rgba($white, 0.08);
@@ -2042,25 +2128,20 @@ $gutter: 0.75rem;
 .orderActionGrid select,
 .customerControlGrid input,
 .variantForm input,
-.variantForm select,
-.discountForm input,
-.discountForm select,
-.contentForm input {
+.variantForm select {
   height: 2.55rem;
   padding: 0 0.7rem;
 }
 
 .orderActionGrid textarea,
-.customerControlGrid textarea,
-.contentForm textarea {
+.customerControlGrid textarea {
   padding: 0.7rem;
   resize: vertical;
 }
 
 .orderActionGrid button,
 .dangerControls button,
-.variantManager button,
-.discountGrid button {
+.variantManager button {
   min-height: 2.45rem;
   margin-top: 0.75rem;
   padding: 0 0.75rem;
@@ -2448,206 +2529,6 @@ $gutter: 0.75rem;
   font-size: 0.55rem;
 }
 
-.discountForm,
-.contentForm {
-  padding: 1.25rem;
-  border-radius: $radius-panel;
-  background: $surface;
-}
-
-.discountForm {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
-}
-
-.discountForm label {
-  margin: 0;
-}
-
-.discountForm > button {
-  align-self: end;
-}
-
-.discountGrid {
-  display: grid;
-  margin-top: 1.25rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.85rem;
-}
-
-.discountGrid article {
-  padding: 1rem;
-  border-radius: $radius-tile;
-  background: $surface;
-}
-
-.discountGrid header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.discountGrid header strong {
-  color: $primary-light;
-  font-size: 0.875rem;
-  letter-spacing: 0;
-}
-
-.discountGrid h3 {
-  margin-top: 1.1rem;
-  color: $white;
-  font-family: $font-body;
-  font-size: 1.15rem;
-}
-
-.discountGrid p,
-.discountGrid small {
-  display: block;
-  margin-top: 0.3rem;
-  color: $gray-500;
-  font-size: 0.8rem;
-}
-
-.contentForm {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.contentForm > .formActions {
-  grid-column: 1 / -1;
-}
-
-.publishNote {
-  margin-top: 1rem;
-  padding: 0.9rem;
-  border: 0;
-  box-shadow: inset 0 0 0 1px rgba($primary, 0.18);
-  border-radius: $radius-inner;
-  background: rgba($primary, 0.05);
-}
-
-.publishNote strong {
-  color: $primary-light;
-  font-size: 0.8125rem;
-}
-
-.publishNote p {
-  margin-top: 0.25rem;
-  color: $gray-500;
-  font-size: 0.78rem;
-  line-height: 1.5;
-}
-
-.analyticsMetrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.8rem;
-}
-
-.analyticsMetrics article {
-  padding: 1.1rem;
-  border-radius: $radius-tile;
-  background: $surface;
-}
-
-.analyticsMetrics span,
-.analyticsMetrics strong,
-.analyticsMetrics small {
-  display: block;
-}
-
-.analyticsMetrics span {
-  color: $gray-500;
-  font-size: 0.8rem;
-}
-
-.analyticsMetrics strong {
-  margin-top: 0.65rem;
-  color: $white;
-  font-size: 1.35rem;
-}
-
-.analyticsMetrics small {
-  margin-top: 0.25rem;
-  color: $gray-600;
-  font-size: 0.75rem;
-}
-
-.chartRows {
-  padding: 0.75rem 1.25rem 1rem;
-}
-
-.chartRows > div {
-  display: grid;
-  min-height: 2.25rem;
-  align-items: center;
-  grid-template-columns: 5.5rem minmax(8rem, 1fr) 6rem 4rem;
-  gap: 0.8rem;
-  color: $gray-500;
-  font-size: 0.76rem;
-}
-
-.chartRows i {
-  height: 0.45rem;
-  overflow: hidden;
-  border-radius: $radius-full;
-  background: rgba($white, 0.06);
-}
-
-.chartRows b {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: $primary;
-}
-
-.chartRows strong {
-  color: $white;
-  font-size: 0.8rem;
-}
-
-.activityList {
-  border-radius: $radius-panel;
-  background: $surface;
-}
-
-.activityList article {
-  display: grid;
-  min-height: 4rem;
-  align-items: center;
-  padding: 0.75rem 1.2rem;
-  border-bottom: 1px solid rgba($white, 0.05);
-  grid-template-columns: 0.6rem minmax(0, 1fr) auto;
-  gap: 0.85rem;
-}
-
-.activityList article:last-child {
-  border-bottom: 0;
-}
-
-.activityMark {
-  width: 0.48rem;
-  height: 0.48rem;
-  border-radius: 50%;
-  background: $primary;
-  box-shadow: 0 0 0 0.3rem rgba($primary, 0.08);
-}
-
-.activityList strong {
-  color: $white;
-  font-size: 0.84rem;
-}
-
-.activityList p,
-.activityList article > span:last-child {
-  margin-top: 0.2rem;
-  color: $gray-600;
-  font-size: 0.57rem;
-}
-
 
 @media (max-width: 1050px) {
   .shell {
@@ -2670,13 +2551,11 @@ $gutter: 0.75rem;
   }
 
   .catalogToolbar {
-    grid-template-columns: minmax(12rem, 1fr) 9rem 9rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .catalogResultCount {
-    grid-column: 1 / -1;
-    padding: 0;
-    text-align: left;
+  .catalogSearch {
+    grid-column: span 2;
   }
 
   .formActions {
@@ -2695,8 +2574,7 @@ $gutter: 0.75rem;
     grid-column: 1 / -1;
   }
 
-  .variantForm,
-  .discountForm {
+  .variantForm {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -2704,6 +2582,24 @@ $gutter: 0.75rem;
 @media (max-width: 760px) {
   .shell {
     display: block;
+  }
+
+  .importRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1rem;
+    margin-inline: 0.2rem;
+    padding-inline: 0.85rem;
+
+    > div {
+      flex-basis: 100%;
+      min-width: 0;
+    }
+  }
+
+  .importGuide dl div {
+    grid-template-columns: 6rem minmax(0, 1fr);
   }
 
   // The sidebar becomes a compact bar: logo, then sections as a scrolling row.
@@ -2780,11 +2676,13 @@ $gutter: 0.75rem;
   }
 
   .catalogToolbar {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0.9rem;
   }
 
-  .catalogResultCount {
-    grid-column: auto;
+  .catalogSearch,
+  .catalogSetFilter {
+    grid-column: 1 / -1;
   }
 
   .catalogPagination {
@@ -2830,16 +2728,11 @@ $gutter: 0.75rem;
   .orderSummaryGrid,
   .orderActionGrid,
   .customerControlGrid,
-  .variantForm,
-  .discountForm,
-  .discountGrid,
-  .contentForm,
-  .analyticsMetrics {
+  .variantForm {
     grid-template-columns: 1fr;
   }
 
-  .orderSummaryGrid > section:first-child,
-  .contentForm > .formActions {
+  .orderSummaryGrid > section:first-child {
     grid-column: auto;
   }
 
@@ -2851,13 +2744,6 @@ $gutter: 0.75rem;
     min-width: 59rem;
   }
 
-  .chartRows > div {
-    grid-template-columns: 4.8rem minmax(5rem, 1fr) 4.5rem;
-  }
-
-  .chartRows small {
-    display: none;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2866,144 +2752,193 @@ $gutter: 0.75rem;
   }
 }
 
-.readinessHero {
+// ---------- Launch readiness ----------
+
+.readinessSummary {
+  @include admin-panel;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 3rem;
-  padding: clamp(1.5rem, 4vw, 3.5rem);
-  border-radius: $radius-panel;
-  background: $surface;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+  align-items: center;
+  gap: 1.5rem 3rem;
+  padding: 1.6rem 1.75rem;
+}
 
-  > div:first-child > span {
-    color: $primary-light;
-    font-size: 0.875rem;
-    font-weight: 700;
-  }
-
+.readinessStatus {
   h2 {
-    max-width: 18ch;
-    margin-top: 0.7rem;
-    font-family: $font-display;
-    font-size: clamp(2rem, 4vw, 4.5rem);
-    letter-spacing: -0.05em;
-    line-height: 0.98;
-  }
-
-  p {
-    max-width: 53rem;
-    margin-top: 1.25rem;
-    color: $gray-400;
-    font-size: 0.86rem;
-    line-height: 1.7;
-  }
-}
-
-.readinessScore {
-  display: grid;
-  align-content: center;
-  min-width: 11rem;
-  padding-left: 2.5rem;
-  border-left: 1px solid rgba($white, 0.05);
-
-  strong {
-    color: $primary;
-    font-family: $font-display;
-    font-size: clamp(3.5rem, 7vw, 7rem);
-    letter-spacing: -0.07em;
-    line-height: 0.8;
-  }
-
-  span {
     margin-top: 0.75rem;
-    color: $gray-500;
-    font-size: 0.875rem;
-    font-weight: 700;
-  }
-
-  small {
-    margin-top: 0.4rem;
-    color: $gray-600;
-    font-size: 0.8rem;
-    font-weight: 700;
-  }
-}
-
-.readinessRoles {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  margin-top: 1px;
-  background: rgba($white, 0.1);
-
-  article {
-    padding: 1.5rem;
-    background: $surface;
-  }
-
-  span {
-    color: $gray-600;
-    font-size: 0.8125rem;
-    font-weight: 700;
-  }
-
-  strong {
-    display: block;
-    margin-top: 0.45rem;
     color: $white;
     font-family: $font-display;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    text-wrap: balance;
   }
 
   p {
-    max-width: 46rem;
-    margin-top: 0.55rem;
-    color: $gray-500;
-    font-size: 0.9rem;
-    line-height: 1.6;
+    max-width: 62ch;
+    margin-top: 0.5rem;
+    color: $admin-muted;
+    font-size: 0.875rem;
+    line-height: 1.55;
   }
 }
 
-.readinessGroup {
-  margin-top: 3rem;
+.readinessBadge {
+  @include admin-pill;
+  background: rgba($accent-gold, 0.12);
+  color: $accent-gold;
+
+  &[data-ready] {
+    background: rgba($primary, 0.13);
+    color: $primary-light;
+  }
+}
+
+.readinessProgress {
+  > p {
+    color: $admin-muted;
+    font-size: 0.875rem;
+
+    strong {
+      color: $white;
+      font-family: $font-display;
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+  }
+}
+
+// One whole split into done / required / recommended.
+.readinessBar {
+  display: flex;
+  height: 8px;
+  gap: 2px;
+  margin-top: 0.75rem;
+
+  i {
+    min-width: 0;
+    flex-basis: 0;
+    border-radius: $radius-full;
+  }
+}
+
+.readinessLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin-top: 0.7rem;
+  color: $admin-muted;
+  font-size: 0.8rem;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    &::before {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      content: "";
+    }
+  }
+}
+
+.readinessBar i,
+.readinessLegend li::before {
+  background: $gray-600;
+}
+
+.readinessBar [data-tone="done"],
+.readinessLegend [data-tone="done"]::before {
+  background: $primary;
+}
+
+.readinessBar [data-tone="required"],
+.readinessLegend [data-tone="required"]::before {
+  background: $admin-danger;
+}
+
+.readinessBar [data-tone="recommended"],
+.readinessLegend [data-tone="recommended"]::before {
+  background: $accent-gold;
+}
+
+.readinessFilter {
+  @include admin-segmented;
+  margin: 1rem 0 0.25rem;
 }
 
 .readinessMessage {
-  margin-top: 1rem;
-  padding: 0.85rem 1rem;
-  background: rgba($primary, 0.08);
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: $radius-inner;
+  background: rgba($primary, 0.1);
   color: $primary-light;
   font-size: 0.875rem;
-  font-weight: 700;
+}
+
+.readinessGroup {
+  @include admin-panel;
+  margin-top: 0.75rem;
+  padding-bottom: 0.4rem;
+
+  > header {
+    @include admin-panel-head;
+    align-items: baseline;
+    padding: 1.3rem 1.5rem 0.6rem;
+
+    > span {
+      flex-shrink: 0;
+      color: $admin-muted;
+      font-size: 0.8rem;
+      font-variant-numeric: tabular-nums;
+    }
+  }
 }
 
 .readinessList {
-  border-top: 1px solid rgba($white, 0.05);
+  display: grid;
 
-  article {
+  li {
     display: grid;
-    grid-template-columns: 2.2rem minmax(0, 1fr) minmax(8rem, auto) 6rem;
     align-items: center;
-    gap: 1.25rem;
-    min-height: 5.5rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid rgba($white, 0.05);
+    gap: 0.5rem 1rem;
+    margin-inline: 0.4rem;
+    padding: 0.85rem 1.1rem;
+    border-radius: $radius-tile;
+    grid-template-columns: 2rem minmax(0, 1fr) 8.5rem 6.5rem 7.5rem;
+    transition: background-color 150ms $ease-out;
 
-    > div strong {
-      color: $white;
-      font-size: 0.95rem;
+    & + li {
+      box-shadow: 0 -1px 0 $admin-line;
     }
 
-    > div p {
-      margin-top: 0.3rem;
-      color: $gray-500;
-      font-size: 0.875rem;
-      line-height: 1.5;
+    &:hover {
+      background: $admin-hover;
     }
+  }
+}
 
-    > b {
-      color: #ffb3a7;
-      font-size: 0.82rem;
-      text-align: right;
-    }
+.readinessText {
+  strong {
+    color: $white;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  p {
+    max-width: 70ch;
+    margin-top: 0.2rem;
+    color: $admin-muted;
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  [data-state="done"] & strong {
+    color: $gray-300;
   }
 }
 
@@ -3012,595 +2947,114 @@ $gutter: 0.75rem;
   width: 2rem;
   height: 2rem;
   place-items: center;
-  border: 0;
-  box-shadow: inset 0 0 0 1px rgba(#ff8f7e, 0.262);
-  border-radius: $radius-full;
-  color: #ff9f90;
-  font-size: 0.9rem;
-  font-weight: 800;
+  border-radius: 50%;
+  background: rgba($white, 0.06);
+  color: $gray-400;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  [data-state="done"] & {
+    background: rgba($primary, 0.14);
+    color: $primary-light;
+  }
+
+  [data-state="required"] & {
+    background: rgba($admin-danger, 0.13);
+    color: $admin-danger-ink;
+  }
+
+  [data-state="recommended"] & {
+    background: rgba($accent-gold, 0.12);
+    color: $accent-gold;
+  }
 }
 
 .readinessOwner {
-  color: $gray-400;
-  font-size: 0.875rem;
-  font-weight: 700;
+  color: $admin-muted;
+  font-size: 0.82rem;
+}
+
+.readinessState {
+  @include admin-pill;
+  justify-self: start;
+
+  [data-state="done"] & {
+    background: rgba($primary, 0.13);
+    color: $primary-light;
+  }
+
+  [data-state="required"] & {
+    background: rgba($admin-danger, 0.12);
+    color: $admin-danger-ink;
+  }
+
+  [data-state="recommended"] & {
+    background: rgba($accent-gold, 0.12);
+    color: $accent-gold;
+  }
+}
+
+.readinessAction {
+  justify-self: end;
 }
 
 .readinessConfirm {
-  margin-top: 0.75rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: $primary-light;
-  font-size: 0.84rem;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 0.24rem;
-  cursor: pointer;
-
-  &:disabled {
-    cursor: wait;
-    opacity: 0.55;
-  }
-}
-
-.readinessDone {
-  .readinessMark {
-    box-shadow: inset 0 0 0 1px rgba($primary, 0.45);
-    color: $primary-light;
-  }
-
-  > b {
-    color: $primary-light !important;
-  }
-}
-
-.storeSetupNotice {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 1rem;
-  padding: 1.1rem 1.25rem;
-  margin-bottom: 1rem;
-  border: 0;
-  box-shadow: inset 0 0 0 1px rgba(#f6c85f, 0.18);
-  background: rgba(#f6c85f, 0.055);
-
-  strong {
-    color: #f6d477;
-    font-size: 0.9rem;
-  }
-
-  p {
-    color: $gray-400;
-    font-size: 0.9rem;
-    line-height: 1.55;
-  }
-}
-
-.storeSetupForm {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(24rem, 0.9fr);
-  border-radius: $radius-panel;
-  background: $surface;
-
-  > section {
-    padding: clamp(1.25rem, 3vw, 2.25rem);
-
-    & + section {
-      border-left: 1px solid rgba($white, 0.05);
-    }
-  }
-}
-
-.storeFormHeading {
-  padding-bottom: 1.25rem;
-  margin-bottom: 1.25rem;
-  border-bottom: 1px solid rgba($white, 0.05);
-
-  span {
-    color: $primary-light;
-    font-size: 0.8125rem;
-    font-weight: 700;
-  }
-
-  h3 {
-    margin-top: 0.45rem;
-    color: $white;
-    font-family: $font-display;
-    font-size: 1.35rem;
-  }
-}
-
-.storeFields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-
-  label {
-    display: grid;
-    gap: 0.45rem;
-  }
-
-  label > span {
-    color: $gray-400;
-    font-size: 0.84rem;
-    font-weight: 700;
-  }
-
-  input,
-  textarea {
-    width: 100%;
-    border: 0;
-    box-shadow: inset 0 0 0 1px rgba($white, 0.09);
-    border-radius: $radius-md;
-    background: $background;
-    color: $white;
-    font: inherit;
-
-    &:focus {
-      box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
-      outline: 0;
-    }
-  }
-
-  input {
-    min-height: 3rem;
-    padding: 0 0.8rem;
-  }
-
-  textarea {
-    padding: 0.8rem;
-    resize: vertical;
-  }
-}
-
-.carrierTags {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-
-  span {
-    padding: 0.38rem 0.62rem;
-    border: 0;
-    box-shadow: inset 0 0 0 1px rgba($primary, 0.3);
-    border-radius: $radius-full;
-    color: $primary-light;
-    font-size: 0.82rem;
-    font-weight: 600;
-  }
-}
-
-.shippingRateGrid {
-  display: grid;
-  gap: 0;
-  border-top: 1px solid rgba($white, 0.05);
-
-  label {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 7rem;
-    align-items: center;
-    gap: 0.35rem 1rem;
-    min-height: 4.4rem;
-    border-bottom: 1px solid rgba($white, 0.05);
-
-    > span {
-      color: $gray-200;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    > small {
-      color: $gray-600;
-      font-size: 0.8125rem;
-    }
-
-    > div {
-      display: grid;
-      grid-column: 2;
-      grid-row: 1 / 3;
-      grid-template-columns: auto 1fr;
-      align-items: center;
-      min-height: 2.7rem;
-      border: 0;
-      box-shadow: inset 0 0 0 1px rgba($white, 0.08);
-      border-radius: $radius-md;
-      background: rgba($white, 0.05);
-      overflow: hidden;
-    }
-
-    b {
-      padding-left: 0.7rem;
-      color: $gray-500;
-      font-size: 0.875rem;
-    }
-
-    input {
-      width: 100%;
-      height: 2.6rem;
-      padding: 0 0.65rem 0 0.35rem;
-      border: 0;
-      background: transparent;
-      color: $white;
-      font: inherit;
-      text-align: right;
-      outline: 0;
-    }
-  }
-}
-
-.internationalRateEditor {
-  margin-top: 2.5rem;
-  padding-top: 2rem;
-  border-top: 1px solid rgba($white, 0.05);
-
-  h4 {
-    color: $white;
-    font-family: $font-display;
-    font-size: 1.15rem;
-  }
-
-  > p {
-    max-width: 58ch;
-    margin: 0.45rem 0 1.25rem;
-    color: $gray-500;
-    font-size: 0.875rem;
-    line-height: 1.6;
-  }
-}
-
-.inboxCount {
-  color: $primary-light;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.contactInbox {
-  border-top: 1px solid rgba($white, 0.05);
-}
-
-.contactMessage {
-  padding: 1.4rem 0;
-  border-bottom: 1px solid rgba($white, 0.05);
-
-  > header {
-    display: flex;
-    align-items: start;
-    justify-content: space-between;
-    gap: 1rem;
-
-    > div {
-      display: grid;
-      gap: 0.28rem;
-    }
-
-    > div:last-child {
-      justify-items: end;
-    }
-
-    strong {
-      color: $white;
-      font-family: $font-display;
-      font-size: 0.95rem;
-    }
-
-    a,
-    .contactEmailButton,
-    time {
-      color: $gray-500;
-      font-size: 0.875rem;
-    }
-
-    .contactEmailButton {
-      width: fit-content;
-      padding: 0;
-      border: 0;
-      background: transparent;
-      text-align: left;
-      text-decoration: underline;
-      text-decoration-color: transparent;
-      text-underline-offset: 0.2rem;
-      transition: color 160ms ease, text-decoration-color 160ms ease;
-
-      &:hover,
-      &:focus-visible {
-        color: $primary-light;
-        text-decoration-color: currentColor;
-      }
-    }
-
-    span {
-      padding: 0.25rem 0.5rem;
-      border-radius: $radius-full;
-      background: rgba($white, 0.07);
-      color: $gray-300;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      text-transform: capitalize;
-    }
-
-    span[data-status="unread"] {
-      background: rgba($primary, 0.13);
-      color: $primary-light;
-    }
-  }
-
-  > footer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 1.1rem;
-
-    a,
-    button {
-      min-height: 2.35rem;
-      padding: 0 0.75rem;
-      border: 0;
-      background-color: rgba($white, 0.05);
-      box-shadow: inset 0 0 0 1px rgba($white, 0.08);
-      border-radius: $radius-md;
-      background: transparent;
-      color: $gray-200;
-      font-size: 0.875rem;
-      font-weight: 700;
-    }
-
-    a {
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .contactReplyButton {
-      box-shadow: inset 0 0 0 1px rgba($primary, 0.38);
-      background: rgba($primary, 0.08);
-      color: $primary-light;
-    }
-
-    button:disabled {
-      cursor: wait;
-      opacity: 0.55;
-    }
-
-    .contactDelete {
-      margin-left: auto;
-      border-color: rgba(#ef6b6b, 0.24);
-      color: #f2a1a1;
-    }
-  }
-}
-
-.contactReplyForm {
-  display: grid;
-  gap: 0.7rem;
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 0;
-  box-shadow: inset 0 0 0 1px rgba($primary, 0.195);
-  border-radius: $radius-lg;
-  background: rgba($primary, 0.035);
-
-  label {
-    color: $gray-300;
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-
-  textarea {
-    width: 100%;
-    min-height: 10rem;
-    resize: vertical;
-    padding: 0.9rem 1rem;
-    border: 0;
-    box-shadow: inset 0 0 0 1px rgba($white, 0.105);
-    border-radius: $radius-md;
-    outline: none;
-    background: rgba(#050806, 0.58);
-    color: $white;
-    font: inherit;
-    font-size: 0.95rem;
-    line-height: 1.65;
-
-    &::placeholder {
-      color: $gray-600;
-    }
-
-    &:focus {
-      box-shadow: inset 0 0 0 1px rgba($primary, 0.62);
-      box-shadow: 0 0 0 3px rgba($primary, 0.09);
-    }
-
-    &:disabled {
-      cursor: wait;
-      opacity: 0.65;
-    }
-  }
-}
-
-.contactReplyHeading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 1rem;
-
-  > div {
-    display: grid;
-    gap: 0.22rem;
-  }
-
-  strong {
-    color: $white;
-    font-family: $font-display;
-    font-size: 0.95rem;
-  }
-
-  span {
-    color: $gray-500;
-    font-size: 0.84rem;
-  }
-
-  > span {
-    max-width: 50%;
-    color: $gray-400;
-    overflow-wrap: anywhere;
-    text-align: right;
-  }
-}
-
-.contactReplyActions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.55rem;
-
-  > span {
-    margin-right: auto;
-    color: $gray-600;
-    font-size: 0.8125rem;
-  }
-
-  button {
-    min-height: 2.4rem;
-    padding: 0 0.9rem;
-    border: 0;
-    background-color: rgba($white, 0.05);
-    box-shadow: inset 0 0 0 1px rgba($white, 0.08);
-    border-radius: $radius-md;
-    background: transparent;
-    color: $gray-200;
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-
-  button[type="submit"] {
-    box-shadow: inset 0 0 0 1px rgba($primary, 0.7), 0 0 0 4px rgba($primary, 0.14);
-    background: $primary;
-    color: #04110b;
-  }
-
-  button:disabled {
-    cursor: wait;
-    opacity: 0.55;
-  }
-}
-
-.contactUnread {
-  background: linear-gradient(90deg, rgba($primary, 0.045), transparent 45%);
-}
-
-.contactBody {
-  display: grid;
-  grid-template-columns: minmax(9rem, 0.35fr) minmax(0, 1fr);
-  gap: 1.5rem;
-  margin-top: 1.2rem;
-
-  h3 {
-    color: $gray-200;
-    font-family: $font-display;
-    font-size: 0.88rem;
-  }
-
-  p {
-    max-width: 72ch;
-    color: $gray-300;
-    font-size: 0.95rem;
-    line-height: 1.7;
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
-  }
-}
-
-.storeSetupActions {
-  display: flex;
-  grid-column: 1 / -1;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-top: 1px solid rgba($white, 0.05);
-
-  p {
-    color: $gray-400;
-    font-size: 0.875rem;
+  @include admin-btn-quiet;
+
+  &[data-undo] {
+    @include admin-btn-text;
+    color: $admin-muted;
   }
 }
 
 @media (max-width: 900px) {
-  .readinessHero,
-  .readinessRoles {
+  .readinessSummary {
     grid-template-columns: 1fr;
+    padding: 1.3rem 1.25rem;
   }
 
-  .readinessScore {
-    padding: 1.5rem 0 0;
-    border-top: 1px solid rgba($white, 0.05);
-    border-left: 0;
-  }
-
-  .readinessList article {
-    grid-template-columns: 2.2rem minmax(0, 1fr) auto;
+  .readinessList li {
+    align-items: start;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
 
     .readinessOwner {
       grid-column: 2;
+      grid-row: 2;
     }
 
-    > b {
+    .readinessState {
       grid-column: 3;
-      grid-row: 1 / 3;
+      grid-row: 1;
     }
-  }
 
-  .storeSetupForm {
-    grid-template-columns: 1fr;
-
-    > section + section {
-      border-top: 1px solid rgba($white, 0.05);
-      border-left: 0;
+    .readinessAction {
+      grid-column: 3;
+      grid-row: 2;
     }
   }
 }
 
 @media (max-width: 560px) {
-  .contactMessage > header {
-    align-items: start;
+  .readinessGroup > header {
     flex-direction: column;
-
-    > div:last-child {
-      justify-items: start;
-    }
+    padding-inline: 1.1rem;
   }
 
-  .contactBody {
-    grid-template-columns: 1fr;
-    gap: 0.55rem;
-  }
-
-  .contactMessage > footer .contactDelete {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .contactReplyHeading {
-    flex-direction: column;
-
-    > span {
-      max-width: 100%;
-      text-align: left;
-    }
-  }
-
-  .readinessList article {
+  .readinessList li {
+    margin-inline: 0.2rem;
+    padding-inline: 0.8rem;
     grid-template-columns: 2rem minmax(0, 1fr);
 
+    .readinessState,
     .readinessOwner,
-    > b {
+    .readinessAction {
       grid-column: 2;
       grid-row: auto;
-      text-align: left;
+      justify-self: start;
     }
-  }
-
-  .storeSetupNotice,
-  .storeFields {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -3621,14 +3075,14 @@ $gutter: 0.75rem;
 }
 
 .selectAllBtn {
+  @include admin-btn-text;
+  margin-right: -0.6rem;
   color: $primary-light;
-  font-size: 0.84rem;
-  font-weight: 600;
-  transition: color 180ms ease;
-}
 
-.selectAllBtn:hover {
-  color: $white;
+  &:hover:not(:disabled) {
+    background: rgba($primary, 0.1);
+    color: $primary-light;
+  }
 }
 
 .bulkBar {

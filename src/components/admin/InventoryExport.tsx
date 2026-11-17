@@ -43,7 +43,7 @@ export default function InventoryExport() {
     <form class={styles.panel} onSubmit={download} aria-busy={busy()}>
       <div class={styles.heading}>
         <h3>Export inventory</h3>
-        <p>Export the full catalogue, with one row per variant. Drafts and archived products are included.</p>
+        <p>Download the whole catalogue as a CSV, one row per variant, including drafts and archived products.</p>
       </div>
       <div class={styles.controls}>
         <label class={styles.scope}><span>Category and column layout</span>
@@ -62,12 +62,12 @@ export default function InventoryExport() {
         </Show>
         <label class={styles.images}>
           <input type="checkbox" checked={images()} disabled={busy()} onChange={event => { setImages(event.currentTarget.checked); setMessage(""); }} />
-          <span><strong>Export images</strong><small>Include product and variant URLs, or embedded image data. Files may be large.</small></span>
+          <span><strong>Include images</strong><small>Adds product and variant image URLs, or embedded image data. Files can get large.</small></span>
         </label>
         <button type="submit" disabled={busy()}>{busy() ? "Preparing CSV…" : "Download CSV"}</button>
       </div>
-      <Show when={isSetScope()}><p class={styles.note}>Sets means complete set products, explicitly typed or categorized as sets—not cards that simply belong to an expansion. Sealed products are excluded.</p></Show>
-      <p class={styles.note}>Choose a category for its import-compatible columns. One row per variant, linked by product slug. Search and pagination do not limit this export.</p>
+      <Show when={isSetScope()}><p class={styles.note}>Sets means complete set products, typed or categorised as sets, not every card from an expansion. Sealed products are left out.</p></Show>
+      <p class={styles.note}>Pick a category to get columns you can edit and import again. Catalogue search and filters do not limit this export.</p>
       <Show when={error()}><p class={styles.error} role="alert">{error()}</p></Show>
       <p class={styles.message} role="status">{message()}</p>
     </form>

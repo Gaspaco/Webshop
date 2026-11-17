@@ -46,14 +46,24 @@ const remoteRefunds = new Map<string, any>();
 const paymentKeys = new Map<string, any>();
 let paymentNumber = 0, refundNumber = 0;
 let failPayment: "reject" | "timeout" | null = null;
+let cardProfileCalls = 0, cardCustomers = 0, failCardProfile = false;
+let mandateLookup: () => Promise<any[]> = async () => [];
+let paymentGate: ((payment: any) => Promise<void>) | null = null;
+let immediateCardPaid = false;
 mock.module("../src/lib/mollie.server.ts", () => ({ getMollieClient: () => ({
+  profiles: { getCurrent: async () => { cardProfileCalls++; if (failCardProfile) throw new Error("Fixture profile outage"); return { id: "pfl_fixture" }; } },
+  customers: { create: async () => ({ id: `cst_fixture${++cardCustomers}` }) },
+  customerMandates: { page: async () => mandateLookup() },
   payments: {
     create: async (params: any) => {
       if (failPayment) { const failure = failPayment; failPayment = null; throw Object.assign(new Error("Fixture failure"), failure === "reject" ? { statusCode: 422 } : {}); }
       if (paymentKeys.has(params.idempotencyKey)) return paymentKeys.get(params.idempotencyKey);
       const id = `tr_test${String(++paymentNumber).padStart(8, "0")}`;
-      const payment = { ...params, id, status: "open", getCheckoutUrl: () => "https://mollie.example.invalid/checkout" };
-      remotePayments.set(id, payment); paymentKeys.set(params.idempotencyKey, payment); return payment;
+      const checkoutUrl = immediateCardPaid ? null : "https://mollie.example.invalid/checkout";
+      const payment = { ...params, id, status: immediateCardPaid ? "paid" : "open", getCheckoutUrl: () => checkoutUrl };
+      remotePayments.set(id, payment); paymentKeys.set(params.idempotencyKey, payment);
+      if (paymentGate) await paymentGate(payment);
+      return payment;
     },
     get: async (id: string) => remotePayments.get(id),
     cancel: async (id: string) => { remotePayments.get(id).status = "canceled"; },
@@ -74,7 +84,7 @@ const { GET: accountWallet } = await import("../src/routes/api/account/wallet");
 const { DELETE: removeCustomer } = await import("../src/routes/api/admin/customers");
 const { POST: orderAction, PATCH: updateOrder } = await import("../src/routes/api/admin/orders");
 const { GET: invoice } = await import("../src/routes/api/admin/invoice");
-const { createCheckoutPayment, calculateTrustedCheckout, syncMolliePaymentStatus } = await import("../src/lib/checkout.server");
+const { createCheckoutPayment, calculateTrustedCheckout, syncMolliePaymentStatus, recoverCheckoutPayment } = await import("../src/lib/checkout.server");
 const { requestRefund, syncPaymentRefunds } = await import("../src/lib/refunds.server");
 const { adjustWallet, walletOverview } = await import("../src/lib/wallet.server");
 function event(path: string, body?: unknown, method = body === undefined ? "GET" : "POST", origin = "https://shop.test") {
@@ -128,7 +138,10 @@ assert.equal((await removeCustomer(event("/api/admin/customers", { id: buyer!.id
 console.log("PASS wallet authorization, CSRF checks, identity-scoped reads, adjustment retries and no overdraft");
 
 const creditInput = payload();
-const full = await createCheckoutPayment(creditInput, buyer!.id);
+// A stale card selection must not contact Mollie or block a fully credit-paid order.
+const cardFreeInput = { ...creditInput, savedCardId: "mdt_stalefixture" };
+const full = await createCheckoutPayment(cardFreeInput, buyer!.id);
+assert.equal((await db.select().from(schema.paymentCustomers)).length, 0);
 assert.equal(paymentNumber, 0, "fully covered order must never call Mollie");
 const orderByNumber = async (number: string) => (await db.select().from(schema.orders).where(eq(schema.orders.orderNumber, number)))[0]!;
 const paid = await orderByNumber(full.orderNumber);
@@ -139,7 +152,7 @@ assert.equal((await orderByNumber(full.orderNumber)).shipment!.weightGrams, 620,
 assert.equal((await db.select().from(schema.payments)).length, 0);
 assert.equal((await db.select().from(schema.inventoryMovements).where(eq(schema.inventoryMovements.reference, paid.id))).length, 1);
 assert.equal(deliveredEmails.get(`paid-customer-${paid.id}`), 1); assert.equal(deliveredEmails.get(`paid-owner-${paid.id}`), 1);
-assert.equal((await createCheckoutPayment(creditInput, buyer!.id)).orderNumber, full.orderNumber);
+assert.equal((await createCheckoutPayment(cardFreeInput, buyer!.id)).orderNumber, full.orderNumber);
 assert.equal((await walletOverview(buyer!.id)).balanceCents, 500);
 await assert.rejects(() => createCheckoutPayment({ ...creditInput, customer: { ...customer, city: "Changed" } }, buyer!.id), /different details/);
 const invoiceResponse = await invoice(event(`/api/admin/invoice?id=${paid.id}`));
@@ -275,5 +288,109 @@ assert.equal((await orderByNumber(paid.orderNumber)).labelState, "created");
 assert.equal((await orderAction(event("/api/admin/orders", { action: "postnl_label", id: paid.id }))).status, 409);
 assert.equal(postnlCalls, 4, "replaying label creation must not buy a second label");
 console.log("PASS PostNL order measurements, legacy class estimates, authority guards, package validation and exactly-once label creation");
+
+// Both saved-card choices must be ignored when credit covers the whole order.
+const [cardBuyer] = await db.insert(schema.user).values({ name: "Card fixture", email: "card-fixture@example.invalid", emailVerified: true }).returning();
+await adjustWallet({ ...adjustment, userId: cardBuyer!.id, requestId: crypto.randomUUID(), amountCents: 500 });
+await createCheckoutPayment({ ...payload(), rememberCard: true }, cardBuyer!.id);
+assert.equal(cardProfileCalls, 0); assert.equal(cardCustomers, 0);
+assert.equal((await db.select().from(schema.paymentCustomers)).length, 0);
+
+// Preparation survives a provider outage, with no stock/wallet transaction held
+// across the network and no payment sent until the final payload is persisted.
+const cardInput = { ...payload(), rememberCard: true };
+const paymentCountBefore = paymentNumber;
+failCardProfile = true;
+await assert.rejects(() => createCheckoutPayment(cardInput, cardBuyer!.id), /Fixture profile outage/);
+const preparing = (await db.select().from(schema.orders)).find(row => row.userId === cardBuyer!.id && row.paymentCreationState === "preparing")!;
+assert.ok(preparing); assert.equal(paymentNumber, paymentCountBefore);
+failCardProfile = false;
+const cardOrder = await createCheckoutPayment(cardInput, cardBuyer!.id);
+assert.equal(cardOrder.orderNumber, preparing.orderNumber); assert.equal(paymentNumber, paymentCountBefore + 1);
+const cardPayment = [...remotePayments.values()].at(-1)!;
+assert.equal(cardPayment.customerId, "cst_fixture1"); assert.equal(cardPayment.sequenceType, "oneoff");
+assert.equal(cardPayment.metadata.cardRequest, undefined); assert.ok(cardPayment.metadata.cardConsent.version);
+await createCheckoutPayment(cardInput, cardBuyer!.id); assert.equal(cardCustomers, 1); assert.equal(paymentNumber, paymentCountBefore + 1);
+const { openPaymentParameters } = await import("../src/lib/provider-recovery.server");
+const durable = await orderByNumber(cardOrder.orderNumber);
+assert.equal(openPaymentParameters<any>(durable.paymentParametersEncrypted!).customerId, "cst_fixture1");
+const beforeStaleStock = (await db.select().from(schema.productVariants).where(eq(schema.productVariants.id, variant.id)))[0]!.reservedStock;
+await assert.rejects(() => createCheckoutPayment({ ...payload(), savedCardId: "mdt_missing" }, cardBuyer!.id), /no longer available/);
+assert.equal(paymentNumber, paymentCountBefore + 1);
+assert.equal((await db.select().from(schema.productVariants).where(eq(schema.productVariants.id, variant.id)))[0]!.reservedStock, beforeStaleStock);
+
+// Force a real lease takeover while worker A waits on a mandate list. Worker B
+// has sent its payment but not linked it when A's old rejection arrives.
+await adjustWallet({ ...adjustment, userId: cardBuyer!.id, requestId: crypto.randomUUID(), amountCents: 200 });
+let enterOld!: () => void, releaseOld!: () => void, enterPayment!: () => void, releasePayment!: () => void;
+const oldEntered = new Promise<void>(resolve => { enterOld = resolve; });
+const oldReleased = new Promise<void>(resolve => { releaseOld = resolve; });
+const paymentEntered = new Promise<void>(resolve => { enterPayment = resolve; });
+const paymentReleased = new Promise<void>(resolve => { releasePayment = resolve; });
+let lookupCount = 0;
+mandateLookup = async () => {
+  if (++lookupCount === 1) { enterOld(); await oldReleased; return []; }
+  return [{ id: "mdt_takeover", status: "valid", method: "creditcard", mode: "test", scopes: ["customer-present"], details: { cardNumberLast4: "1234", cardLabel: "Visa" } }];
+};
+paymentGate = async payment => { if (payment.mandateId === "mdt_takeover") { enterPayment(); await paymentReleased; } };
+const takeoverInput = { ...payload(), savedCardId: "mdt_takeover" };
+const oldWorker = createCheckoutPayment(takeoverInput, cardBuyer!.id).then(() => null, error => error);
+await oldEntered;
+const takeoverOrder = (await db.select().from(schema.orders)).find(row => row.creditRequestId === takeoverInput.creditRequestId)!;
+await db.update(schema.providerOperationLeases).set({ leaseUntil: new Date(Date.now() - 1) }).where(eq(schema.providerOperationLeases.key, `checkout-create:${takeoverOrder.id}`));
+const replacement = recoverCheckoutPayment(takeoverOrder.id);
+await paymentEntered;
+releaseOld(); assert.match((await oldWorker).message, /no longer available/);
+const protectedCreating = await orderByNumber(takeoverOrder.orderNumber);
+assert.equal(protectedCreating.paymentCreationState, "creating"); assert.equal(protectedCreating.status, "pending"); assert.equal(protectedCreating.creditState, "reserved");
+assert.equal((await walletOverview(cardBuyer!.id)).balanceCents, 0);
+releasePayment(); await replacement;
+assert.equal((await orderByNumber(takeoverOrder.orderNumber)).paymentCreationState, "linked");
+assert.equal((await orderByNumber(takeoverOrder.orderNumber)).status, "pending");
+mandateLookup = async () => []; paymentGate = null;
+
+// Provider backpressure and customer-setup contention are retryable, not card
+// rejection. Keep preparation/holds intact until a replacement can resume.
+await db.insert(schema.rateLimit).values({ key: "saved-cards:provider:global", count: 300, lastRequest: Date.now() }).onConflictDoUpdate({ target: schema.rateLimit.key, set: { count: 300, lastRequest: Date.now() } });
+const throttledCardInput = { ...payload(), rememberCard: true };
+await assert.rejects(() => createCheckoutPayment(throttledCardInput, cardBuyer!.id), /busy/);
+const throttledOrder = (await db.select().from(schema.orders)).find(row => row.creditRequestId === throttledCardInput.creditRequestId)!;
+assert.equal(throttledOrder.paymentCreationState, "preparing"); assert.equal(throttledOrder.status, "pending");
+await db.delete(schema.rateLimit).where(eq(schema.rateLimit.key, "saved-cards:provider:global"));
+await recoverCheckoutPayment(throttledOrder.id);
+const [contendedBuyer] = await db.insert(schema.user).values({ name: "Contended fixture", email: "contended@example.invalid", emailVerified: true }).returning();
+const { acquireOperationLease, releaseOperationLease } = await import("../src/lib/operation-lease.server");
+const customerLeaseKey = `payment-customer:pfl_fixture:test:${contendedBuyer!.id}`;
+const customerLease = await acquireOperationLease(customerLeaseKey);
+const contendedInput = { ...payload(), rememberCard: true };
+await assert.rejects(() => createCheckoutPayment(contendedInput, contendedBuyer!.id), /being prepared/);
+const contendedOrder = (await db.select().from(schema.orders)).find(row => row.creditRequestId === contendedInput.creditRequestId)!;
+assert.equal(contendedOrder.paymentCreationState, "preparing"); assert.equal(contendedOrder.status, "pending");
+await releaseOperationLease(customerLeaseKey, customerLease!);
+await recoverCheckoutPayment(contendedOrder.id);
+console.log("PASS expired-worker rejection cannot release replacement payment holds; transient card setup remains recoverable");
+
+// A saved card may be paid immediately without a hosted checkout URL. Return
+// the owned confirmation page, and never charge again when that request retries.
+mandateLookup = async () => [{ id: "mdt_immediate", status: "valid", method: "creditcard", mode: "test", scopes: ["customer-present"], details: { cardNumberLast4: "1234" } }];
+immediateCardPaid = true;
+const immediateInput = { ...payload(), useStoreCredit: false, savedCardId: "mdt_immediate" };
+const beforeImmediate = paymentNumber;
+const immediate = await createCheckoutPayment(immediateInput, cardBuyer!.id);
+assert.ok(immediate.checkoutUrl?.includes(`/checkout?order=${immediate.orderNumber}`));
+const immediateRetry = await createCheckoutPayment(immediateInput, cardBuyer!.id);
+assert.equal(immediateRetry.orderNumber, immediate.orderNumber); assert.ok(immediateRetry.checkoutUrl?.includes("/checkout?order="));
+assert.equal(paymentNumber, beforeImmediate + 1);
+await assert.rejects(() => createCheckoutPayment({ ...immediateInput, creditRequestId: undefined }, cardBuyer!.id), /refresh checkout/);
+immediateCardPaid = false; mandateLookup = async () => [];
+
+// A shared API budget cannot be bypassed by changing account or address.
+await db.insert(schema.rateLimit).values({ key: "checkout:create:global", count: 120, lastRequest: Date.now() }).onConflictDoUpdate({ target: schema.rateLimit.key, set: { count: 120, lastRequest: Date.now() } });
+signedIn = null;
+const beforeLimitedOrders = (await db.select().from(schema.orders)).length;
+const limitedCheckout = await checkoutApi(event("/api/checkout/create-payment", { ...payload(), useStoreCredit: false }));
+assert.equal(limitedCheckout.status, 429); assert.equal(limitedCheckout.headers.get("Retry-After"), "60");
+assert.equal((await db.select().from(schema.orders)).length, beforeLimitedOrders);
+console.log("PASS full-credit saved-card bypass, durable card preparation/retry, stale-card release and global checkout budget");
 await pg.close();
 console.log("SHIPPING WALLET INTEGRATION PASSED");

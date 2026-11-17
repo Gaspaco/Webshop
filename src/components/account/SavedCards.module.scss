@@ -1,0 +1,15 @@
+@use "../../styles/variables" as *;
+@use "../../styles/buttons" as *;
+.panel { padding: 1.25rem 0; color: $gray-300; }
+.panel h3 { margin: 0 0 0.5rem; font-size: 1.125rem; color: $white; }
+.panel p { max-width: 65ch; font-size: 0.875rem; line-height: 1.6; margin: 0.5rem 0 1rem; }
+.panel a { color: $primary; text-underline-offset: 0.2em; }
+.panel button { @include btn-secondary; min-height: 2.75rem; }
+.panel button:disabled { opacity: 0.65; cursor: wait; }
+.panel :focus-visible { outline: 2px solid $primary; outline-offset: 3px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; padding: 0.75rem 0; }
+.row strong { color: $white; font-size: 0.9375rem; }
+.row small { display: block; font-size: 0.8125rem; margin-top: 0.25rem; }
+.choice { display: flex; gap: 0.75rem; align-items: center; min-height: 2.75rem; cursor: pointer; font-size: 0.9375rem; }
+.choice input { width: 1.125rem; height: 1.125rem; accent-color: $primary; flex-shrink: 0; }
+.panel .note { margin-left: 1.875rem; font-size: 0.8125rem; }

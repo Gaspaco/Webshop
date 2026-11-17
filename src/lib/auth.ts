@@ -68,12 +68,6 @@ export const auth = betterAuth({
   hooks: {
     before: createAuthMiddleware(async context => {
       if (context.path === "/sign-in/email") await limitAccountPasswordAttempts(context.body?.email);
-      if (["/two-factor/disable", "/two-factor/enable", "/two-factor/get-totp-uri", "/two-factor/generate-backup-codes"].includes(context.path)) {
-        const current = await auth.api.getSession({ headers: context.headers ?? new Headers() });
-        if (current?.user.role === "admin" && context.path !== "/two-factor/disable") {
-          throw new APIError("FORBIDDEN", { message: "Owner accounts use email and password sign-in. Authenticator setup is not enabled for owners." });
-        }
-      }
       const password =
         context.path === "/sign-up/email"
           ? context.body?.password

@@ -1,0 +1,369 @@
+@use "../../styles/variables" as *;
+@use "../../styles/admin" as *;
+
+.storefront {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.toolbar {
+  @include admin-toolbar;
+  margin-bottom: 0.25rem;
+
+  p {
+    color: $admin-muted;
+    font-size: 0.875rem;
+  }
+
+  a {
+    @include admin-btn-quiet;
+  }
+}
+
+.panel {
+  @include admin-panel;
+  min-width: 0;
+}
+
+.head {
+  @include admin-panel-head;
+  padding: 1.35rem 1.5rem 0;
+}
+
+.headCount {
+  flex-shrink: 0;
+  color: $admin-muted;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.fields,
+.socials {
+  display: grid;
+  gap: 1.1rem;
+
+  label {
+    min-width: 0;
+  }
+
+  label > span {
+    @include admin-label;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  input {
+    @include admin-control;
+  }
+
+  textarea {
+    @include admin-textarea;
+  }
+
+  small {
+    @include admin-hint;
+  }
+}
+
+.counter {
+  color: $gray-500;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+
+  &[data-near] {
+    color: $accent-gold;
+  }
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.85fr);
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+// ---------- Live preview ----------
+
+.preview {
+  min-width: 0;
+  margin: 0;
+
+  figcaption {
+    @include admin-label;
+  }
+}
+
+.previewFrame {
+  overflow: hidden;
+  border-radius: $radius-tile;
+  background: $background;
+  box-shadow: inset 0 0 0 1px $admin-line;
+}
+
+.previewBar {
+  padding: 0.5rem 0.9rem;
+  background: $primary;
+  color: #04130c;
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.previewHero {
+  padding: 1.5rem 1.4rem 1.6rem;
+
+  strong {
+    display: block;
+    color: $white;
+    font-family: $font-display;
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    max-width: 40ch;
+    margin-top: 0.6rem;
+    color: $gray-400;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+
+  span {
+    display: inline-flex;
+    margin-top: 1rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: $radius-full;
+    background: $primary;
+    color: #03231a;
+    font-family: $font-display;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+}
+
+// ---------- Featured products ----------
+
+.featured {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.1rem 1.5rem 1.5rem;
+}
+
+.picks {
+  display: grid;
+  overflow: hidden;
+  border-radius: $radius-tile;
+  box-shadow: inset 0 0 0 1px $admin-line;
+
+  li {
+    display: grid;
+    min-height: 3.5rem;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.65rem;
+    grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+
+    & + li {
+      box-shadow: 0 -1px 0 $admin-line;
+    }
+
+    &[data-problem] small {
+      color: $accent-gold;
+    }
+  }
+}
+
+.thumb {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  overflow: hidden;
+  border-radius: $radius-sm;
+  background: rgba($white, 0.06);
+  color: $gray-400;
+  font-family: $font-display;
+  font-size: 0.8rem;
+  font-weight: 700;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.pickText {
+  min-width: 0;
+
+  strong,
+  small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: $white;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  small {
+    margin-top: 0.05rem;
+    color: $admin-muted;
+    font-size: 0.78rem;
+  }
+}
+
+.pickActions {
+  display: flex;
+  gap: 0.1rem;
+
+  button {
+    @include admin-btn-icon;
+    width: 2rem;
+    height: 2rem;
+
+    &:hover:not(:disabled) {
+      background: rgba($white, 0.07);
+      color: $white;
+    }
+  }
+
+  .remove:hover:not(:disabled) {
+    background: rgba($admin-danger, 0.1);
+    color: $admin-danger-ink;
+  }
+}
+
+.search {
+  position: relative;
+
+  > svg {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    width: 1rem;
+    height: 1rem;
+    color: $admin-muted;
+    pointer-events: none;
+  }
+
+  input {
+    @include admin-control;
+    padding-left: 2.3rem;
+  }
+}
+
+.results {
+  display: grid;
+  margin-top: 0.4rem;
+  padding: 0.3rem;
+  border-radius: $radius-tile;
+  background: $surface-raised;
+  box-shadow: 0 0 0 1px rgba($white, 0.08);
+
+  button {
+    display: grid;
+    width: 100%;
+    min-height: 3.1rem;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.35rem 0.6rem;
+    border: 0;
+    border-radius: $radius-inner;
+    background: transparent;
+    grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 150ms $ease-out;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($white, 0.06);
+      outline: none;
+    }
+
+    &:focus-visible {
+      box-shadow: inset 0 0 0 2px rgba($primary-light, 0.6);
+    }
+  }
+}
+
+.add {
+  color: $primary-light;
+  font-family: $font-display;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.noResults {
+  margin-top: 0.5rem;
+  color: $admin-muted;
+  font-size: 0.84rem;
+}
+
+.socials {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem 1rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+// ---------- Publish bar ----------
+
+.saveBar {
+  @include admin-save-bar;
+}
+
+.discard {
+  @include admin-btn-text;
+}
+
+.publish {
+  @include admin-btn-primary;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 1050px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .head {
+    padding: 1.15rem 1.1rem 0;
+  }
+
+  .split,
+  .featured,
+  .socials {
+    padding-inline: 1.1rem;
+  }
+
+  .socials {
+    grid-template-columns: 1fr;
+  }
+
+}

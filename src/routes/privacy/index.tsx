@@ -24,7 +24,7 @@ const SECTIONS = [
 
 const SUMMARY = [
   { title: "Only what the shop needs", text: "Order and account details are used to run the shop and deliver your cards." },
-  { title: "Payments stay with Mollie", text: "Card and bank details are entered at Mollie. We never see or store them." },
+  { title: "Payments stay with Mollie", text: "Full card numbers and security codes stay with Mollie. Saved cards show only a masked reference." },
   { title: "Never sold", text: "Your personal data is not sold or rented to anyone." },
   { title: "You're in control", text: "Ask to see, correct or delete your data and we'll answer within a month." },
 ];
@@ -79,7 +79,12 @@ export default function Privacy() {
               <p>
                 We do not receive or store complete card numbers or online banking
                 credentials. Mollie collects the payment information needed for its
-                payment service.
+                payment service. If you choose saved-card checkout, we keep your
+                Mollie customer reference and the time and version of your consent.
+                We retrieve the card brand, last four digits and expiry from Mollie
+                to help you recognize your card. You can revoke a saved card in
+                Account → Payments. Saved cards are used only for purchases you
+                actively complete, not automatic or subscription charges.
               </p>
             </section>
 

@@ -63,6 +63,21 @@ export const twoFactor = pgTable(
   ],
 );
 
+// Only Mollie's customer reference is retained. Card credentials stay at Mollie.
+export const paymentCustomers = pgTable("payment_customers", {
+  userId: uuid("user_id").notNull().references(() => user.id, { onDelete: "restrict" }),
+  profileId: text("profile_id").notNull(),
+  mode: text("mode").notNull(),
+  customerId: text("customer_id"),
+  creationKey: uuid("creation_key").defaultRandom().notNull(),
+  consentVersion: text("consent_version").notNull(),
+  consentedAt: timestamp("consented_at", { withTimezone: true }).defaultNow().notNull(),
+}, table => [
+  primaryKey({ columns: [table.userId, table.profileId, table.mode] }),
+  uniqueIndex("payment_customers_provider_idx").on(table.profileId, table.mode, table.customerId),
+  check("payment_customers_mode_check", sql`${table.mode} in ('test', 'live')`),
+]);
+
 export const session = pgTable(
   "session",
   {

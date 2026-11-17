@@ -351,7 +351,7 @@ const login = await auth.handler(request("/api/auth/sign-in/email", { email: "ow
 assert.equal(login.status, 200); remember(login);
 assert.ok(!(await login.json()).twoFactorRedirect);
 assert.equal((await requireAdmin(event(request("/api/admin/dashboard", undefined, cookie())))).response, null);
-assert.equal((await auth.handler(request("/api/auth/two-factor/enable", { password }, cookie()))).status, 403);
+// Enrollment is available to owners, but remains opt-in until verified below.
 assert.equal((await auth.handler(request("/api/auth/sign-in/email", { email: "owner@example.invalid", password: "Wrong-password!" }))).status, 401);
 
 assert.equal((await auth.handler(request("/api/auth/sign-up/email", { name: "Test Customer", email: "factor@example.invalid", password }))).status, 200);
@@ -474,9 +474,30 @@ assert.equal((await ownerRemoveCustomer(removeCustomerRequest(""))).status, 401)
 assert.equal((await ownerRemoveCustomer(removeCustomerRequest(oldCookie))).status, 403);
 assert.equal((await ownerRemoveCustomer(removeCustomerRequest(cookie(), "https://untrusted.test"))).status, 403);
 assert.equal((await ownerDashboard(event(request("/api/admin/dashboard", undefined, cookie())))).status, 200);
-// Owner setup is retired; customer setup and challenges were verified above.
-assert.equal((await auth.handler(request("/api/auth/two-factor/get-totp-uri", { password }, cookie()))).status, 403);
-console.log("PASS migrated owner password-only login and dashboard actions; customer 2FA, owner role checks, password validation, and origin protection remain enforced");
+// Repair the exact legacy state reproduced above without disabling active MFA.
+await pg.exec(readFileSync("drizzle/0022_saved_payment_customers.sql", "utf8").split("--> statement-breakpoint").at(-1)!);
+assert.equal((await db.select().from(schema.user).where(eq(schema.user.email, "factor@example.invalid")))[0]!.twoFactorEnabled, true);
+const ownerEnrollment = await auth.handler(request("/api/auth/two-factor/enable", { password, method: "totp" }, cookie()));
+assert.equal(ownerEnrollment.status, 200, await ownerEnrollment.clone().text()); remember(ownerEnrollment);
+const ownerEnrollmentData = await ownerEnrollment.json();
+assert.ok(ownerEnrollmentData.backupCodes.length > 0);
+assert.equal((await db.select().from(schema.user).where(eq(schema.user.id, ownerUser.id)))[0]!.twoFactorEnabled, false);
+assert.equal((await requireAdmin(event(request("/api/admin/dashboard", undefined, cookie())))).response, null, "Starting enrollment must not lock the owner out");
+const ownerSecret = new URL(ownerEnrollmentData.totpURI).searchParams.get("secret")!;
+const ownerBits = [...ownerSecret].map(char => "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".indexOf(char).toString(2).padStart(5, "0")).join("");
+const ownerRaw = new TextDecoder().decode(Uint8Array.from(ownerBits.match(/.{8}/g)!, byte => Number.parseInt(byte, 2)));
+const ownerOtp = (await auth.api.generateTOTP({ body: { secret: ownerRaw } })).code;
+const ownerConfirmed = await auth.handler(request("/api/auth/two-factor/verify-totp", { code: ownerOtp }, cookie()));
+assert.equal(ownerConfirmed.status, 200); remember(ownerConfirmed);
+assert.equal((await db.select().from(schema.user).where(eq(schema.user.id, ownerUser.id)))[0]!.twoFactorEnabled, true);
+// Earlier independent login scenarios exhausted the shared per-IP fixture budget.
+await db.delete(schema.rateLimit);
+const ownerChallenge = await auth.handler(request("/api/auth/sign-in/email", { email: ownerUser.email, password }));
+assert.equal(ownerChallenge.status, 200); assert.equal((await ownerChallenge.json()).twoFactorRedirect, true);
+const challengeCookies = new Map<string, string>(); remember(ownerChallenge, challengeCookies);
+const challengeCookie = [...challengeCookies].map(([name, value]) => `${name}=${value}`).join("; ");
+assert.equal((await requireAdmin(event(request("/api/admin/dashboard", undefined, challengeCookie)))).response?.status, 401);
+console.log("PASS optional owner enrollment and sign-in challenge, customer 2FA, owner role checks, password validation, and origin protection");
 
 await pg.close();
 console.log("SECURITY INTEGRATION PASSED; no production database or provider was contacted");

@@ -20,6 +20,12 @@ import { CATEGORY_LIST } from "~/lib/categories";
 import { matchesSetFilter } from "~/lib/product-sets";
 import CardmarketPriceImport from "~/components/admin/CardmarketPriceImport";
 import InventoryExport from "~/components/admin/InventoryExport";
+import SalesAnalytics from "~/components/admin/SalesAnalytics";
+import ActivityLog from "~/components/admin/ActivityLog";
+import ContactInbox, { type AdminContactMessage } from "~/components/admin/ContactInbox";
+import DiscountManager, { type AdminDiscount } from "~/components/admin/DiscountManager";
+import StorefrontManager, { type StorefrontSettings } from "~/components/admin/StorefrontManager";
+import StoreSetupManager from "~/components/admin/StoreSetupManager";
 import AccessoryFields from "~/components/admin/AccessoryFields";
 import ProductAttributeFilters, { matchesAttributeFilters } from "~/components/admin/ProductAttributeFilters";
 import { ProductTypeSelect, ProductAttributeFields } from "~/components/admin/ProductTypeFields";
@@ -27,19 +33,12 @@ import { PRODUCT_TYPES, isTcgType, hasCardFields, productTypeConfig, typeAttribu
 import { parseProductSpreadsheet, productTemplate, type SpreadsheetRow } from "~/lib/product-spreadsheet";
 import ProductShippingFields from "~/components/admin/ProductShippingFields";
 import ProductImageInput from "~/components/admin/ProductImageInput";
-import ShippingSettingsFields from "~/components/admin/ShippingSettingsFields";
 import StoreCredit from "~/components/account/StoreCredit";
 import { DEFAULT_SHIPPING_SETTINGS, productShipping, type ProductShipping, type Shipment, type ShippingSettings } from "~/lib/product-shipping";
 import { ACCESSORY_BRANDS, accessoryCategory, type AccessoryCategory } from "~/lib/accessories";
 import { authClient } from "~/lib/auth-client";
 import type { RecentYugipediaSet } from "~/lib/yugipedia-sets";
-
-import { INTERNATIONAL_POSTNL_DESTINATIONS } from "~/lib/shipping";
-import {
-  DEFAULT_STORE_PROFILE,
-  parseStoreProfile,
-  type StoreProfile,
-} from "~/lib/store-profile";
+import type { StoreProfile } from "~/lib/store-profile";
 import styles from "./index.module.scss";
 
 type AdminSection =
@@ -167,41 +166,8 @@ type AdminCustomer = {
   createdAt: string;
 };
 
-type AdminContactMessage = {
-  id: string;
-  name: string;
-  email: string;
-  topic: string;
-  message: string;
-  status: "unread" | "read" | "resolved";
-  notificationSent: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
 
-type AdminDiscount = {
-  id: string;
-  code: string;
-  type: "percentage" | "fixed";
-  value: number;
-  minimumOrderCents: number;
-  maximumUses: number | null;
-  usedCount: number;
-  active: boolean;
-  expiresAt: string | null;
-  createdAt: string;
-};
 
-type StorefrontSettings = {
-  announcement: string;
-  heroTitle: string;
-  heroCopy: string;
-  featuredProductSlugs: string[];
-  socialInstagram: string;
-  socialTiktok: string;
-  socialYoutube: string;
-  socialDiscord: string;
-};
 
 type AuditEntry = {
   id: string;
@@ -447,16 +413,16 @@ function createEmptyVariantDraft(): VariantDraft {
 
 const NAV_ITEMS: Array<{ id: AdminSection; label: string; short: string }> = [
   { id: "overview", label: "Overview", short: "Here's what's happening in the shop today." },
-  { id: "products", label: "Catalogue", short: "Products, prices and stock." },
-  { id: "orders", label: "Orders", short: "Pack, ship and track every order." },
-  { id: "contacts", label: "Messages", short: "Questions from customers." },
-  { id: "customers", label: "Customers", short: "Customer accounts and history." },
-  { id: "discounts", label: "Discounts", short: "Discount codes and campaigns." },
+  { id: "products", label: "Catalogue", short: "Products, prices and stock. Drafts stay private until you publish them." },
+  { id: "orders", label: "Orders", short: "Pack, ship, invoice and refund every order." },
+  { id: "contacts", label: "Messages", short: "Questions sent through the contact form, kept even when email is down." },
+  { id: "customers", label: "Customers", short: "Accounts, internal notes, access and order history." },
+  { id: "discounts", label: "Discounts", short: "Checkout codes with limits, minimum totals and expiry dates." },
   { id: "storefront", label: "Storefront", short: "What customers see on the homepage." },
-  { id: "store", label: "Store setup", short: "Business details and shipping rates." },
-  { id: "analytics", label: "Analytics", short: "How sales are doing." },
-  { id: "activity", label: "Activity", short: "Who changed what, and when." },
-  { id: "imports", label: "Bulk import", short: "Add many products at once." },
+  { id: "store", label: "Store setup", short: "Business details, PostNL rates and parcel rules." },
+  { id: "analytics", label: "Analytics", short: "Revenue and orders over the last 30 days." },
+  { id: "activity", label: "Activity", short: "Every change made in this dashboard, newest first." },
+  { id: "imports", label: "Bulk import", short: "Add many products at once from a card library or file." },
   { id: "inventory-files", label: "Inventory files", short: "Category templates, import and export." },
   { id: "readiness", label: "Launch readiness", short: "Everything needed before going live." },
 ];
@@ -468,11 +434,22 @@ const IMPORT_LIBRARIES = [
 ] as const;
 
 const READINESS_CATEGORIES = [
-  ["commerce", "Commerce core"],
-  ["operations", "Operations"],
-  ["legal", "Owner and legal"],
-  ["growth", "Optional growth"],
+  ["commerce", "Commerce core", "Database, payments, stock and the live catalogue."],
+  ["operations", "Operations", "Email, shipping, product images, monitoring and backups."],
+  ["legal", "Business and legal", "Your business identity, VAT, returns and a final legal review."],
+  ["growth", "Optional extras", "Not needed for launch, but worth doing once the shop is live."],
 ] as const;
+
+type ReadinessFilter = "all" | "owner" | "developer";
+
+function readinessMatches(responsible: "developer" | "owner" | "joint", filter: ReadinessFilter) {
+  return filter === "all" || responsible === "joint" || responsible === filter;
+}
+
+// Open required items first, then open recommendations, then finished items.
+function readinessRank(item: { configured: boolean; blocking: boolean }) {
+  return item.configured ? 2 : item.blocking ? 0 : 1;
+}
 
 const ORDER_STATUSES = [
   "pending",
@@ -729,6 +706,18 @@ async function loadDashboard() {
 }
 
 // A count next to a nav item when that section needs the owner.
+function importJobLabel(status: string) {
+  const text = status.replace(/[_-]+/g, " ").trim();
+  return text ? text[0]!.toUpperCase() + text.slice(1) : "Unknown";
+}
+
+function importJobTone(job: ImportJob) {
+  if (job.status === "failed") return "error";
+  if (job.failedRows > 0 || job.status.includes("error")) return "warn";
+  if (job.status === "completed") return "ok";
+  return "pending";
+}
+
 function navBadge(section: AdminSection, data: AdminDashboard) {
   if (section === "contacts") return data.metrics.unreadMessages || undefined;
   if (section === "orders") return data.metrics.openOrders || undefined;
@@ -832,6 +821,11 @@ function ProductRow(props: {
     props.product.variants[0]?.trackInventory ?? true,
   );
   const [status, setStatus] = createSignal(props.product.status);
+  // Price, stock and visibility are edited inline; the row Save only lights up once one changes.
+  const quickDirty = () =>
+    price() !== centsToEuros(props.product.priceCents ?? 0) ||
+    stock() !== String(props.product.stock ?? 0) ||
+    status() !== props.product.status;
   const [saving, setSaving] = createSignal(false);
   const [message, setMessage] = createSignal("");
   const [variantOpen, setVariantOpen] = createSignal(false);
@@ -1148,6 +1142,15 @@ game: isTcgType(productType()) ? game() : undefined,
                   {metadataText("source") === "starter"
                     ? "Starter listing, save once to manage"
                     : sku() || "No SKU"}
+                  <Show when={metadataText("source") !== "starter"}>
+                    <button
+                      type="button"
+                      class={styles.variantsLink}
+                      onClick={() => { setEditing(true); requestAnimationFrame(() => document.getElementById(`variants-${props.product.id}`)?.scrollIntoView({ block: "start" })); }}
+                    >
+                      {props.product.variants.length} {props.product.variants.length === 1 ? "variant" : "variants"}
+                    </button>
+                  </Show>
                 </span>
                 <Show when={(props.product.priceCents ?? 0) <= 0}>
                   <span class={styles.priceReview}>Price needed before publishing</span>
@@ -1193,42 +1196,48 @@ game: isTcgType(productType()) ? game() : undefined,
               <option value="active">Live</option>
               <option value="archived">Archived</option>
             </select>
-            <button
-              type="button"
-              class={styles.visibilitySave}
-              onClick={save}
-              disabled={saving()}
-              aria-label={`Save visibility for ${name()}`}
-            >
-              {saving() ? "Saving" : "Save"}
-            </button>
           </div>
         </td>
         <td>
           <div class={styles.rowActions}>
             <button
               type="button"
-              class={styles.duplicateAction}
-              disabled={saving()}
-              title="Create an editable draft copy"
-              onClick={duplicateProduct}
+              class={styles.rowSave}
+              onClick={save}
+              disabled={saving() || !quickDirty()}
+              title={quickDirty() ? "Save price, stock and visibility" : "No unsaved changes"}
             >
-              Duplicate
+              {saving() ? "Saving…" : "Save"}
             </button>
             <button
               type="button"
               class={styles.editAction}
+              aria-expanded={editing()}
               onClick={() => setEditing(value => !value)}
             >
-              {editing() ? "Close editor" : "Edit details"}
+              {editing() ? "Close" : "Edit"}
             </button>
-            <button type="button" onClick={() => { setEditing(true); requestAnimationFrame(() => document.getElementById(`variants-${props.product.id}`)?.scrollIntoView({ block: "start" })); }}>Variants ({props.product.variants.length})</button>
-            <button type="button" onClick={save} disabled={saving()}>
-              {saving() ? "Saving" : "Save"}
+            <button
+              type="button"
+              class={styles.rowIcon}
+              disabled={saving()}
+              aria-label={`Duplicate ${name()} as a draft`}
+              title="Duplicate as a draft"
+              onClick={duplicateProduct}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
             </button>
-            <A href={`/products/${props.product.slug}`} target="_blank">View</A>
+            <A
+              class={styles.rowIcon}
+              href={`/products/${props.product.slug}`}
+              target="_blank"
+              aria-label={`View ${name()} in the shop`}
+              title="View in shop"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" /></svg>
+            </A>
             <Show when={message()}>
-              <span>{message()}</span>
+              <span class={styles.rowMessage} role="status">{message()}</span>
             </Show>
           </div>
         </td>
@@ -2504,711 +2513,6 @@ function CustomerRow(props: {
   );
 }
 
-function ContactInbox(props: {
-  messages: AdminContactMessage[];
-  onUpdated: () => unknown;
-}) {
-  const [busyId, setBusyId] = createSignal("");
-  const [message, setMessage] = createSignal("");
-  const [replyingTo, setReplyingTo] = createSignal("");
-  const [reply, setReply] = createSignal("");
-
-  const openReply = (item: AdminContactMessage) => {
-    setMessage("");
-    setReply("");
-    setReplyingTo(current => current === item.id ? "" : item.id);
-  };
-
-  const sendReply = async (
-    event: SubmitEvent,
-    item: AdminContactMessage,
-  ) => {
-    event.preventDefault();
-    const replyText = reply().trim();
-    if (replyText.length < 2) {
-      setMessage("Write a reply before sending it.");
-      return;
-    }
-
-    setBusyId(item.id);
-    setMessage("");
-    try {
-      const response = await fetch("/api/admin/contacts", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: item.id, reply: replyText }),
-      });
-      const result = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        setMessage(result.error ?? "The reply could not be sent.");
-        return;
-      }
-
-      setReply("");
-      setReplyingTo("");
-      setMessage(`Reply sent to ${item.email}.`);
-      await Promise.resolve(props.onUpdated());
-    } catch {
-      setMessage("The reply could not be sent. Check your connection and try again.");
-    } finally {
-      setBusyId("");
-    }
-  };
-
-  const updateStatus = async (
-    id: string,
-    status: AdminContactMessage["status"],
-  ) => {
-    setBusyId(id);
-    setMessage("");
-    try {
-      const response = await fetch("/api/admin/contacts", {
-        method: "PATCH",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
-      });
-      const result = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        setMessage(result.error ?? "The message could not be updated.");
-        return;
-      }
-      await Promise.resolve(props.onUpdated());
-    } catch {
-      setMessage("The message could not be updated.");
-    } finally {
-      setBusyId("");
-    }
-  };
-
-  const removeMessage = async (id: string) => {
-    if (!window.confirm("Permanently delete this contact message?")) return;
-    setBusyId(id);
-    setMessage("");
-    try {
-      const response = await fetch("/api/admin/contacts", {
-        method: "DELETE",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, confirmation: "DELETE" }),
-      });
-      const result = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        setMessage(result.error ?? "The message could not be removed.");
-        return;
-      }
-      await Promise.resolve(props.onUpdated());
-    } catch {
-      setMessage("The message could not be removed.");
-    } finally {
-      setBusyId("");
-    }
-  };
-
-  return (
-    <>
-      <section class={styles.sectionIntro}>
-        <div>
-          <h2>Customer inbox</h2>
-          <p>Contact submissions are stored here even when SMTP notifications are unavailable.</p>
-        </div>
-        <span class={styles.inboxCount}>
-          {props.messages.filter(item => item.status === "unread").length} unread
-        </span>
-      </section>
-      <Show when={message()}>
-        <p class={styles.inlineMessage} role="alert">{message()}</p>
-      </Show>
-      <div class={styles.contactInbox}>
-        <For each={props.messages}>
-          {item => (
-            <article
-              class={styles.contactMessage}
-              classList={{ [styles.contactUnread]: item.status === "unread" }}
-            >
-              <header>
-                <div>
-                  <strong>{item.name}</strong>
-                  <button
-                    type="button"
-                    class={styles.contactEmailButton}
-                    title={`Reply to ${item.email}`}
-                    onClick={() => openReply(item)}
-                  >
-                    {item.email}
-                  </button>
-                </div>
-                <div>
-                  <span data-status={item.status}>{item.status}</span>
-                  <time datetime={item.createdAt}>{formatDate(item.createdAt)}</time>
-                </div>
-              </header>
-              <div class={styles.contactBody}>
-                <h3>{item.topic}</h3>
-                <p>{item.message}</p>
-              </div>
-              <footer>
-                <button
-                  type="button"
-                  class={styles.contactReplyButton}
-                  aria-expanded={replyingTo() === item.id}
-                  aria-controls={`contact-reply-${item.id}`}
-                  onClick={() => openReply(item)}
-                >
-                  {replyingTo() === item.id ? "Close reply" : "Reply here"}
-                </button>
-                <a
-                  href={`mailto:${item.email}?subject=${encodeURIComponent(`Re: ${item.topic}`)}`}
-                  title={`Open your mail app and email ${item.email}`}
-                >
-                  Open mail app
-                </a>
-                <Show when={item.status === "unread"}>
-                  <button
-                    type="button"
-                    disabled={busyId() === item.id}
-                    onClick={() => updateStatus(item.id, "read")}
-                  >
-                    Mark as read
-                  </button>
-                </Show>
-                <Show when={item.status !== "resolved"}>
-                  <button
-                    type="button"
-                    disabled={busyId() === item.id}
-                    onClick={() => updateStatus(item.id, "resolved")}
-                  >
-                    Resolve
-                  </button>
-                </Show>
-                <button
-                  type="button"
-                  class={styles.contactDelete}
-                  disabled={busyId() === item.id}
-                  onClick={() => removeMessage(item.id)}
-                >
-                  Delete permanently
-                </button>
-              </footer>
-              <Show when={replyingTo() === item.id}>
-                <form
-                  id={`contact-reply-${item.id}`}
-                  class={styles.contactReplyForm}
-                  onSubmit={event => sendReply(event, item)}
-                >
-                  <div class={styles.contactReplyHeading}>
-                    <div>
-                      <strong>Reply to {item.name}</strong>
-                      <span>{item.email}</span>
-                    </div>
-                    <span>Re: {item.topic}</span>
-                  </div>
-                  <label for={`contact-reply-message-${item.id}`}>Message</label>
-                  <textarea
-                    id={`contact-reply-message-${item.id}`}
-                    value={reply()}
-                    maxLength={5_000}
-                    rows={7}
-                    placeholder={`Write your reply to ${item.name}…`}
-                    disabled={busyId() === item.id}
-                    onInput={event => setReply(event.currentTarget.value)}
-                    required
-                  />
-                  <div class={styles.contactReplyActions}>
-                    <span>{reply().length.toLocaleString()} / 5,000</span>
-                    <button
-                      type="button"
-                      disabled={busyId() === item.id}
-                      onClick={() => setReplyingTo("")}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={busyId() === item.id || reply().trim().length < 2}
-                    >
-                      {busyId() === item.id ? "Sending…" : "Send email"}
-                    </button>
-                  </div>
-                </form>
-              </Show>
-            </article>
-          )}
-        </For>
-        <Show when={!props.messages.length}>
-          <div class={styles.empty}>No contact messages yet.</div>
-        </Show>
-      </div>
-    </>
-  );
-}
-
-function DiscountManager(props: {
-  discounts: AdminDiscount[];
-  onUpdated: () => unknown;
-}) {
-  const [code, setCode] = createSignal("");
-  const [type, setType] = createSignal<"percentage" | "fixed">("percentage");
-  const [value, setValue] = createSignal("");
-  const [minimum, setMinimum] = createSignal("0");
-  const [maximumUses, setMaximumUses] = createSignal("");
-  const [expiresAt, setExpiresAt] = createSignal("");
-  const [busy, setBusy] = createSignal(false);
-  const [message, setMessage] = createSignal("");
-
-  const createDiscount = async (event: SubmitEvent) => {
-    event.preventDefault();
-    setBusy(true);
-    setMessage("");
-    const response = await fetch("/api/admin/discounts", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code: code(),
-        type: type(),
-        value:
-          type() === "percentage"
-            ? Math.round(Number(value()))
-            : Math.round(Number(value()) * 100),
-        minimumOrderCents: Math.round(Number(minimum()) * 100),
-        maximumUses: maximumUses() ? Number(maximumUses()) : null,
-        expiresAt: expiresAt() ? new Date(expiresAt()).toISOString() : null,
-      }),
-    });
-    const result = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setMessage(result.error ?? "Discount could not be created.");
-      setBusy(false);
-      return;
-    }
-    await Promise.resolve(props.onUpdated());
-    setCode("");
-    setValue("");
-    setMaximumUses("");
-    setExpiresAt("");
-    setMessage("Discount code created");
-    setBusy(false);
-  };
-
-  const toggleDiscount = async (discount: AdminDiscount) => {
-    const response = await fetch("/api/admin/discounts", {
-      method: "PATCH",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: discount.id, active: !discount.active }),
-    });
-    const result = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setMessage(result.error ?? "Discount could not be updated.");
-      return;
-    }
-    await Promise.resolve(props.onUpdated());
-  };
-
-  return (
-    <>
-      <section class={styles.sectionIntro}>
-        <div>
-          <h2>Discount campaigns</h2>
-          <p>Create controlled checkout codes with limits, minimum totals, and expiry dates.</p>
-        </div>
-      </section>
-      <form class={styles.discountForm} onSubmit={createDiscount}>
-        <label>
-          <span>Code</span>
-          <input required placeholder="HAVEN10" value={code()} onInput={event => setCode(event.currentTarget.value.toUpperCase())} />
-        </label>
-        <label>
-          <span>Discount type</span>
-          <select value={type()} onChange={event => setType(event.currentTarget.value as "percentage" | "fixed")}>
-            <option value="percentage">Percentage</option>
-            <option value="fixed">Fixed EUR amount</option>
-          </select>
-        </label>
-        <label>
-          <span>{type() === "percentage" ? "Percent" : "Amount in EUR"}</span>
-          <input required type="number" min="1" step={type() === "percentage" ? "1" : "0.01"} value={value()} onInput={event => setValue(event.currentTarget.value)} />
-        </label>
-        <label>
-          <span>Minimum order in EUR</span>
-          <input type="number" min="0" step="0.01" value={minimum()} onInput={event => setMinimum(event.currentTarget.value)} />
-        </label>
-        <label>
-          <span>Maximum uses</span>
-          <input type="number" min="1" step="1" placeholder="Unlimited" value={maximumUses()} onInput={event => setMaximumUses(event.currentTarget.value)} />
-        </label>
-        <label>
-          <span>Expires</span>
-          <input type="datetime-local" value={expiresAt()} onInput={event => setExpiresAt(event.currentTarget.value)} />
-        </label>
-        <button type="submit" class={styles.primaryAction} disabled={busy()}>
-          {busy() ? "Creating code" : "Create discount"}
-        </button>
-        <Show when={message()}><p class={styles.inlineMessage}>{message()}</p></Show>
-      </form>
-      <div class={styles.discountGrid}>
-        <For each={props.discounts}>
-          {discount => (
-            <article>
-              <header>
-                <strong>{discount.code}</strong>
-                <span class={`${styles.status} ${discount.active ? styles.active : styles.cancelled}`}>
-                  {discount.active ? "Active" : "Disabled"}
-                </span>
-              </header>
-              <h3>
-                {discount.type === "percentage"
-                  ? `${discount.value}% off`
-                  : `${formatMoney(discount.value)} off`}
-              </h3>
-              <p>
-                {discount.minimumOrderCents
-                  ? `Minimum ${formatMoney(discount.minimumOrderCents)}`
-                  : "No minimum order"}
-              </p>
-              <small>
-                {discount.usedCount} used
-                {discount.maximumUses ? ` of ${discount.maximumUses}` : ""}
-              </small>
-              <button type="button" onClick={() => toggleDiscount(discount)}>
-                {discount.active ? "Disable code" : "Enable code"}
-              </button>
-            </article>
-          )}
-        </For>
-      </div>
-    </>
-  );
-}
-
-function StorefrontManager(props: {
-  settings?: Partial<StorefrontSettings>;
-  onUpdated: () => unknown;
-}) {
-  const defaults: StorefrontSettings = {
-    announcement: "",
-    heroTitle: "Umbreon VMAX has landed",
-    heroCopy:
-      "Freshly graded cards and collector favourites, ready to ship from our Dutch stock.",
-    featuredProductSlugs: [],
-    socialInstagram: "",
-    socialTiktok: "",
-    socialYoutube: "",
-    socialDiscord: "",
-  };
-  const [settings, setSettings] = createSignal<StorefrontSettings>({
-    ...defaults,
-    ...(props.settings ?? {}),
-    featuredProductSlugs: props.settings?.featuredProductSlugs ?? [],
-  });
-  const [busy, setBusy] = createSignal(false);
-  const [message, setMessage] = createSignal("");
-  const patch = <K extends keyof StorefrontSettings>(
-    key: K,
-    value: StorefrontSettings[K],
-  ) => setSettings(current => ({ ...current, [key]: value }));
-
-  const save = async (event: SubmitEvent) => {
-    event.preventDefault();
-    setBusy(true);
-    setMessage("");
-    const response = await fetch("/api/admin/content", {
-      method: "PUT",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(settings()),
-    });
-    const result = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setMessage(result.error ?? "Storefront settings could not be saved.");
-      setBusy(false);
-      return;
-    }
-    await Promise.resolve(props.onUpdated());
-    setMessage("Storefront content published");
-    setBusy(false);
-  };
-
-  return (
-    <>
-      <section class={styles.sectionIntro}>
-        <div>
-          <h2>Storefront controls</h2>
-          <p>Update homepage messaging and social links without editing code.</p>
-        </div>
-        <A href="/" target="_blank">Preview storefront</A>
-      </section>
-      <form class={styles.contentForm} onSubmit={save}>
-        <section>
-          <h3>Homepage message</h3>
-          <label>
-            <span>Announcement bar</span>
-            <input maxlength="180" placeholder="Free shipping this weekend" value={settings().announcement} onInput={event => patch("announcement", event.currentTarget.value)} />
-          </label>
-          <label>
-            <span>Hero title</span>
-            <input required maxlength="100" value={settings().heroTitle} onInput={event => patch("heroTitle", event.currentTarget.value)} />
-          </label>
-          <label>
-            <span>Hero copy</span>
-            <textarea required rows="4" maxlength="300" value={settings().heroCopy} onInput={event => patch("heroCopy", event.currentTarget.value)} />
-          </label>
-          <label>
-            <span>Featured product slugs</span>
-            <textarea
-              rows="4"
-              placeholder="umbreon-vmax, charizard-base-set"
-              value={settings().featuredProductSlugs.join(", ")}
-              onInput={event => patch(
-                "featuredProductSlugs",
-                event.currentTarget.value.split(",").map(value => value.trim()).filter(Boolean),
-              )}
-            />
-          </label>
-        </section>
-        <section>
-          <h3>Social destinations</h3>
-          <For each={[
-            ["socialInstagram", "Instagram"],
-            ["socialTiktok", "TikTok"],
-            ["socialYoutube", "YouTube"],
-            ["socialDiscord", "Discord"],
-          ] as const}>
-            {([key, label]) => (
-              <label>
-                <span>{label}</span>
-                <input
-                  type="text"
-                  inputmode="url"
-                  placeholder={key === "socialInstagram" ? "@mylittletcghaven or full URL" : "Profile or invite URL"}
-                  value={settings()[key]}
-                  onInput={event => patch(key, event.currentTarget.value)}
-                />
-              </label>
-            )}
-          </For>
-          <div class={styles.publishNote}>
-            <strong>Safe publishing</strong>
-            <p>These values are treated as content only. They cannot expose database or payment credentials.</p>
-          </div>
-        </section>
-        <div class={styles.formActions}>
-          <Show when={message()}><p class={styles.inlineMessage}>{message()}</p></Show>
-          <button type="submit" class={styles.primaryAction} disabled={busy()}>
-            {busy() ? "Publishing changes" : "Publish storefront changes"}
-          </button>
-        </div>
-      </form>
-    </>
-  );
-}
-
-function StoreSetupManager(props: {
-  profile?: StoreProfile;
-  onUpdated: () => unknown;
-}) {
-  const [profile, setProfile] = createSignal<StoreProfile>(
-    parseStoreProfile(props.profile ?? DEFAULT_STORE_PROFILE),
-  );
-  const [busy, setBusy] = createSignal(false);
-  const [message, setMessage] = createSignal("");
-  const patch = <K extends keyof StoreProfile>(
-    key: K,
-    value: StoreProfile[K],
-  ) => setProfile(current => ({ ...current, [key]: value }));
-  const patchInternationalRate = (countryCode: string, value: number) =>
-    setProfile(current => ({
-      ...current,
-      internationalPostnlRates: {
-        ...current.internationalPostnlRates,
-        [countryCode]: value,
-      },
-    }));
-  const euros = (cents: number | null) =>
-    cents === null ? "" : (cents / 100).toFixed(2);
-  const cents = (value: string) => Math.max(0, Math.round(Number(value) * 100));
-
-  const save = async (event: SubmitEvent) => {
-    event.preventDefault();
-    setBusy(true);
-    setMessage("");
-    try {
-      const response = await fetch("/api/admin/store-profile", {
-        method: "PUT",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profile()),
-      });
-      const result = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        setMessage(result.error ?? "Store settings could not be saved.");
-        return;
-      }
-      await Promise.resolve(props.onUpdated());
-      setMessage("Store details and shipping prices saved");
-    } catch {
-      setMessage("Store settings are unavailable right now.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <>
-      <section class={styles.sectionIntro}>
-        <div>
-          <h2>Store setup</h2>
-          <p>Manage public business details and owner-approved PostNL shipping prices.</p>
-        </div>
-        <A href="/shipping" target="_blank">Preview shipping page</A>
-      </section>
-
-      <Show when={!profile().businessAddress || !profile().returnAddress}>
-        <div class={styles.storeSetupNotice}>
-          <strong>Setup is not complete</strong>
-          <p>
-            Add the registered business address and Dutch return address before launch.
-          </p>
-        </div>
-      </Show>
-
-      <form class={styles.storeSetupForm} onSubmit={save}>
-        <section>
-          <div class={styles.storeFormHeading}>
-            <span>Business identity</span>
-            <h3>Public company details</h3>
-          </div>
-          <div class={styles.storeFields}>
-            <label>
-              <span>Company name</span>
-              <input required value={profile().companyName} onInput={event => patch("companyName", event.currentTarget.value)} />
-            </label>
-            <label>
-              <span>KVK number</span>
-              <input required inputmode="numeric" value={profile().kvkNumber} onInput={event => patch("kvkNumber", event.currentTarget.value)} />
-            </label>
-            <label>
-              <span>VAT ID</span>
-              <input required value={profile().vatId} onInput={event => patch("vatId", event.currentTarget.value.toUpperCase())} />
-            </label>
-            <label>
-              <span>Business email</span>
-              <input required type="email" value={profile().businessEmail} onInput={event => patch("businessEmail", event.currentTarget.value)} />
-            </label>
-            <label>
-              <span>Private contact notification email</span>
-              <input required type="email" autocomplete="off" value={profile().contactNotificationEmail} onInput={event => patch("contactNotificationEmail", event.currentTarget.value)} />
-              <small>Receives contact-form copies and is never shown publicly</small>
-            </label>
-            <label>
-              <span>Customer email sender</span>
-              <input required type="email" value={profile().customerEmailFrom} onInput={event => patch("customerEmailFrom", event.currentTarget.value)} />
-            </label>
-            <label>
-              <span>Phone number</span>
-              <input required type="tel" value={profile().phone} onInput={event => patch("phone", event.currentTarget.value)} />
-            </label>
-            <label class={styles.spanTwo}>
-              <span>Registered business address</span>
-              <textarea required rows="3" placeholder="Street, house number, postal code, city, Netherlands" value={profile().businessAddress} onInput={event => patch("businessAddress", event.currentTarget.value)} />
-            </label>
-            <label class={styles.spanTwo}>
-              <span>Dutch return address</span>
-              <textarea required rows="3" placeholder="Street, house number, postal code, city, Netherlands" value={profile().returnAddress} onInput={event => patch("returnAddress", event.currentTarget.value)} />
-            </label>
-          </div>
-        </section>
-
-        <section>
-          <div class={styles.storeFormHeading}>
-            <span>Shipping</span>
-            <h3>PostNL delivery prices</h3>
-          </div>
-          <div class={styles.carrierTags}>
-            <For each={profile().carriers}>{carrier => <span>{carrier}</span>}</For>
-          </div>
-          <div class={styles.shippingRateGrid}>
-            <label>
-              <span>Letter or postcard</span>
-              <div><b>€</b><input type="number" min="0" step="0.01" value={euros(profile().postnlLetterCents)} onInput={event => patch("postnlLetterCents", cents(event.currentTarget.value))} /></div>
-              <small>Up to 2 kg</small>
-            </label>
-            <label>
-              <span>Letterbox parcel</span>
-              <div><b>€</b><input type="number" min="0" step="0.01" value={euros(profile().postnlLetterboxCents)} onInput={event => patch("postnlLetterboxCents", cents(event.currentTarget.value))} /></div>
-              <small>38 × 26.5 × 3 cm</small>
-            </label>
-            <label>
-              <span>Small parcel</span>
-              <div><b>€</b><input type="number" min="0" step="0.01" value={euros(profile().postnlSmallParcelCents)} onInput={event => patch("postnlSmallParcelCents", cents(event.currentTarget.value))} /></div>
-              <small>Up to 3 kg</small>
-            </label>
-            <label>
-              <span>Medium parcel</span>
-              <div><b>€</b><input type="number" min="0" step="0.01" value={euros(profile().postnlParcelCents)} onInput={event => patch("postnlParcelCents", cents(event.currentTarget.value))} /></div>
-              <small>Up to 10 kg</small>
-            </label>
-            <label>
-              <span>Large parcel</span>
-              <div><b>€</b><input type="number" min="0" step="0.01" value={euros(profile().postnlLargeParcelCents)} onInput={event => patch("postnlLargeParcelCents", cents(event.currentTarget.value))} /></div>
-              <small>Up to 23 kg</small>
-            </label>
-            <label>
-              <span>Free shipping from</span>
-              <div><b>€</b><input required type="number" min="0" step="0.01" value={euros(profile().freeShippingThresholdCents)} onInput={event => patch("freeShippingThresholdCents", cents(event.currentTarget.value))} /></div>
-              <small>Based on cart subtotal</small>
-            </label>
-          </div>
-
-          <div class={styles.internationalRateEditor}>
-            <h4>International customer prices</h4>
-            <p>Checkout uses the delivery country and verifies this price on the server.</p>
-            <div class={styles.shippingRateGrid}>
-              <For each={INTERNATIONAL_POSTNL_DESTINATIONS}>
-                {destination => (
-                  <label>
-                    <span>{destination.name}</span>
-                    <div>
-                      <b>€</b>
-                      <input
-                        required
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={euros(
-                          profile().internationalPostnlRates[destination.code] ??
-                            destination.priceCents,
-                        )}
-                        onInput={event =>
-                          patchInternationalRate(
-                            destination.code,
-                            cents(event.currentTarget.value),
-                          )
-                        }
-                      />
-                    </div>
-                    <small>{destination.zone}</small>
-                  </label>
-                )}
-              </For>
-            </div>
-          </div>
-        </section>
-
-        <ShippingSettingsFields value={profile().shippingSettings} onChange={value => patch("shippingSettings", value)} />
-        <div class={styles.storeSetupActions}>
-          <Show when={message()}><p role="status">{message()}</p></Show>
-          <button type="submit" class={styles.primaryAction} disabled={busy()}>
-            {busy() ? "Saving store setup" : "Save store setup"}
-          </button>
-        </div>
-      </form>
-    </>
-  );
-}
-
 export default function Admin() {
   const [clientReady, setClientReady] = createSignal(false);
   const [section, setSection] = createSignal<AdminSection>("overview");
@@ -3283,6 +2587,7 @@ export default function Admin() {
   const [bulkBusy, setBulkBusy] = createSignal(false);
   const [readinessBusy, setReadinessBusy] = createSignal<string | null>(null);
   const [readinessMessage, setReadinessMessage] = createSignal("");
+  const [readinessFilter, setReadinessFilter] = createSignal<ReadinessFilter>("all");
   const filteredProducts = () =>
     (dashboard()?.products ?? []).filter(product =>
       matchesCatalogueFilters(
@@ -4269,6 +3574,7 @@ game: isTcgType(current.productType) ? current.game : undefined,
                   <span>{data().owner.email}</span>
                 </div>
               </div>
+              <A class={styles.signOut} href="/admin/security">Account security</A>
               <button class={styles.signOut} type="button" onClick={signOut}>
                 Sign out
               </button>
@@ -4423,38 +3729,51 @@ game: isTcgType(current.productType) ? current.game : undefined,
                 </Show>
 
                 <Show when={section() === "readiness"}>
-                  <section class={styles.readinessHero}>
-                    <div>
-                      <span>Launch control</span>
+                  <section class={styles.readinessSummary}>
+                    <div class={styles.readinessStatus}>
+                      <span class={styles.readinessBadge} data-ready={data().readiness.ready ? "" : undefined}>
+                        {data().readiness.ready ? "Ready to launch" : "Not ready yet"}
+                      </span>
                       <h2>
                         {data().readiness.ready
-                          ? "The technical checklist is complete."
-                          : `${data().readiness.blockers} required ${data().readiness.blockers === 1 ? "item still needs" : "items still need"} attention.`}
+                          ? "Everything required for launch is done."
+                          : `${data().readiness.blockers} required ${data().readiness.blockers === 1 ? "item is" : "items are"} still open.`}
                       </h2>
                       <p>
-                        Live evidence is checked where possible. Owner approvals remain separate from technical configuration so the dashboard never claims a legal or operational decision was made automatically.
+                        Technical items are checked live where possible. Legal and business items only count once you confirm them yourself, so nothing is ticked off on your behalf.
                       </p>
                     </div>
-                    <div class={styles.readinessScore}>
-                      <strong>{data().readiness.complete}</strong>
-                      <span>of {data().readiness.total} complete</span>
-                      <small>
-                        {data().readiness.blockers} required · {data().readiness.recommendations} recommended
-                      </small>
+                    <div class={styles.readinessProgress}>
+                      <p><strong>{data().readiness.complete}</strong> of {data().readiness.total} done</p>
+                      <div
+                        class={styles.readinessBar}
+                        role="img"
+                        aria-label={`${data().readiness.complete} done, ${data().readiness.blockers} required and ${data().readiness.recommendations} recommended still open`}
+                      >
+                        <Show when={data().readiness.complete}><i data-tone="done" style={{ "flex-grow": data().readiness.complete }} /></Show>
+                        <Show when={data().readiness.blockers}><i data-tone="required" style={{ "flex-grow": data().readiness.blockers }} /></Show>
+                        <Show when={data().readiness.recommendations}><i data-tone="recommended" style={{ "flex-grow": data().readiness.recommendations }} /></Show>
+                      </div>
+                      <ul class={styles.readinessLegend} aria-hidden="true">
+                        <li data-tone="done">{data().readiness.complete} done</li>
+                        <li data-tone="required">{data().readiness.blockers} required</li>
+                        <li data-tone="recommended">{data().readiness.recommendations} recommended</li>
+                      </ul>
                     </div>
                   </section>
 
-                  <div class={styles.readinessRoles}>
-                    <article>
-                      <span>Developer</span>
-                      <strong>Build and configure</strong>
-                      <p>Code, credentials wiring, monitoring, storage, deployment, and restore testing.</p>
-                    </article>
-                    <article>
-                      <span>Shop owner</span>
-                      <strong>Provide and approve</strong>
-                      <p>Legal identity, VAT policy, carrier and payment accounts, rates, policies, and final approval.</p>
-                    </article>
+                  <div class={styles.readinessFilter} role="group" aria-label="Show checklist items for">
+                    <For each={[
+                      ["all", "Everything"],
+                      ["owner", "For you"],
+                      ["developer", "For your developer"],
+                    ] as const}>
+                      {([value, label]) => (
+                        <button type="button" aria-pressed={readinessFilter() === value} onClick={() => setReadinessFilter(value)}>
+                          {label} <span>{data().readiness.items.filter(item => readinessMatches(item.responsible, value) && !item.configured).length} open</span>
+                        </button>
+                      )}
+                    </For>
                   </div>
 
                   <Show when={readinessMessage()}>
@@ -4464,72 +3783,80 @@ game: isTcgType(current.productType) ? current.game : undefined,
                   </Show>
 
                   <For each={READINESS_CATEGORIES}>
-                    {([category, label]) => (
-                      <section class={styles.readinessGroup}>
-                        <div class={styles.sectionHead}>
-                          <div>
-                            <h2>{label}</h2>
-                            <p>Configuration status for this part of the shop.</p>
-                          </div>
-                        </div>
-                        <div class={styles.readinessList}>
-                          <For each={data().readiness.items.filter(item => item.category === category)}>
-                            {item => (
-                              <article classList={{ [styles.readinessDone]: item.configured }}>
-                                <span class={styles.readinessMark} aria-hidden="true">
-                                  {item.configured ? "✓" : "!"}
-                                </span>
-                                <div>
-                                  <strong>{item.label}</strong>
-                                  <p>{item.detail}</p>
-                                  <Show
-                                    when={
-                                      item.confirmationId &&
-                                      (!item.configured || item.manuallyConfirmed)
-                                    }
-                                  >
-                                    <button
-                                      type="button"
-                                      class={styles.readinessConfirm}
-                                      disabled={readinessBusy() === item.confirmationId}
-                                      onClick={() =>
-                                        void updateReadinessConfirmation(
-                                          item.confirmationId!,
-                                          !item.manuallyConfirmed,
-                                        )
-                                      }
-                                    >
-                                      {readinessBusy() === item.confirmationId
-                                        ? "Saving"
-                                        : item.manuallyConfirmed
-                                          ? "Reopen requirement"
-                                          : "Confirm completed"}
-                                    </button>
-                                  </Show>
-                                </div>
-                                <span class={styles.readinessOwner}>
-                                  {item.responsible === "joint"
-                                    ? "Owner and developer"
-                                    : item.responsible === "owner"
-                                      ? "Shop owner"
-                                      : "Developer"}
-                                </span>
-                                <b>{item.configured ? "Verified" : item.blocking ? "Required" : "Recommended"}</b>
-                              </article>
-                            )}
-                          </For>
-                        </div>
-                      </section>
-                    )}
+                    {([category, label, description]) => {
+                      const items = () => data().readiness.items
+                        .filter(item => item.category === category && readinessMatches(item.responsible, readinessFilter()))
+                        .sort((a, b) => readinessRank(a) - readinessRank(b));
+                      return (
+                        <Show when={items().length}>
+                          <section class={styles.readinessGroup}>
+                            <header>
+                              <div>
+                                <h2>{label}</h2>
+                                <p>{description}</p>
+                              </div>
+                              <span>{items().filter(item => item.configured).length} of {items().length} done</span>
+                            </header>
+                            <ol class={styles.readinessList}>
+                              <For each={items()}>
+                                {item => (
+                                  <li data-state={item.configured ? "done" : item.blocking ? "required" : "recommended"}>
+                                    <span class={styles.readinessMark} aria-hidden="true">
+                                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d={item.configured ? "M6 12.5 10 16.5 18 8" : item.blocking ? "M12 7v6M12 16.5v.5" : "M8 12h8"} />
+                                      </svg>
+                                    </span>
+                                    <div class={styles.readinessText}>
+                                      <strong>{item.label}</strong>
+                                      <p>{item.detail}</p>
+                                    </div>
+                                    <span class={styles.readinessOwner}>
+                                      {item.responsible === "joint"
+                                        ? "You and developer"
+                                        : item.responsible === "owner"
+                                          ? "You"
+                                          : "Developer"}
+                                    </span>
+                                    <span class={styles.readinessState}>
+                                      {item.configured
+                                        ? item.manuallyConfirmed ? "Confirmed" : "Verified"
+                                        : item.blocking ? "Required" : "Recommended"}
+                                    </span>
+                                    <span class={styles.readinessAction}>
+                                      <Show when={item.confirmationId && (!item.configured || item.manuallyConfirmed)}>
+                                        <button
+                                          type="button"
+                                          class={styles.readinessConfirm}
+                                          data-undo={item.manuallyConfirmed ? "" : undefined}
+                                          disabled={readinessBusy() === item.confirmationId}
+                                          onClick={() => void updateReadinessConfirmation(item.confirmationId!, !item.manuallyConfirmed)}
+                                        >
+                                          {readinessBusy() === item.confirmationId
+                                            ? "Saving…"
+                                            : item.manuallyConfirmed
+                                              ? "Reopen"
+                                              : "Mark as done"}
+                                        </button>
+                                      </Show>
+                                    </span>
+                                  </li>
+                                )}
+                              </For>
+                            </ol>
+                          </section>
+                        </Show>
+                      );
+                    }}
                   </For>
                 </Show>
 
                 <Show when={section() === "products"}>
                   <section class={styles.sectionIntro}>
-                    <div>
-                      <h2>Catalogue and inventory</h2>
-                      <p>Live listings appear in the customer shop. Drafts remain private.</p>
-                    </div>
+                    <p class={styles.summary}>
+                      <span><strong>{data().products.length}</strong> products</span>
+                      <span><strong>{data().products.filter(product => product.status === "active").length}</strong> live</span>
+                      <span><strong>{data().products.filter(product => product.status === "draft").length}</strong> drafts</span>
+                    </p>
                     <div class={styles.introActions}>
                       <button type="button" onClick={() => { setDraft(current => ({ ...current, productType: "accessory", condition: "New", attributes: {}, variantAttributes: {} })); setComposerOpen(true); }}>
                         Add accessory
@@ -4740,7 +4067,7 @@ game: isTcgType(current.productType) ? current.game : undefined,
                   </Show>
 
                   <section class={styles.catalogToolbar} aria-label="Catalogue filters">
-                    <SetFilter products={(dashboard()?.products ?? []).map(productSetData)} game={catalogGame() === "all" ? undefined : catalogGame()} value={catalogSet()} onChange={value => { setCatalogSet(value); setCatalogPage(1); clearSelection(); }} />
+                    <SetFilter class={styles.catalogSetFilter} products={(dashboard()?.products ?? []).map(productSetData)} game={catalogGame() === "all" ? undefined : catalogGame()} value={catalogSet()} onChange={value => { setCatalogSet(value); setCatalogPage(1); clearSelection(); }} />
                     <div class={styles.catalogAttributeFilters}><ProductAttributeFilters type={catalogType()} products={(dashboard()?.products ?? []).filter(product => product.productType === catalogType()).map(product => ({ attributes: typeAttributes(product.productType, product.metadata.attributes), variants: product.variants }))} value={catalogAttributes()} onChange={value => { setCatalogAttributes(value); setCatalogPage(1); clearSelection(); }} /></div>
                     <label class={styles.catalogSearch}>
                       <span>Search catalogue</span>
@@ -4817,18 +4144,20 @@ game: isTcgType(current.productType) ? current.game : undefined,
                         </For>
                       </select>
                     </label>
-                    <span class={styles.catalogResultCount}>
-                      {catalogRangeStart()} to {catalogRangeEnd()} of {filteredProducts().length} products
-                    </span>
-                    <Show when={selectableProducts().length}>
-                      <button
-                        type="button"
-                        class={styles.selectAllBtn}
-                        onClick={toggleSelectAll}
-                      >
-                        {allSelected() ? "Clear page selection" : "Select this page"}
-                      </button>
-                    </Show>
+                    <div class={styles.catalogMeta}>
+                      <span class={styles.catalogResultCount}>
+                        Showing {catalogRangeStart()} to {catalogRangeEnd()} of {filteredProducts().length} products
+                      </span>
+                      <Show when={selectableProducts().length}>
+                        <button
+                          type="button"
+                          class={styles.selectAllBtn}
+                          onClick={toggleSelectAll}
+                        >
+                          {allSelected() ? "Clear page selection" : "Select this page"}
+                        </button>
+                      </Show>
+                    </div>
                   </section>
 
                   <Show when={selectedVariantIds().size}>
@@ -5063,10 +4392,14 @@ game: isTcgType(current.productType) ? current.game : undefined,
 
                 <Show when={section() === "orders"}>
                   <section class={styles.sectionIntro}>
-                    <div>
-                      <h2>Order fulfilment</h2>
-                      <p>Review items and addresses, dispatch parcels, print invoices, record returns, and issue Mollie refunds.</p>
-                    </div>
+                    <p class={styles.summary}>
+                      <span><strong>{data().orders.length}</strong> orders</span>
+                      <span><strong>{data().orders.filter(order => order.status === "paid" || order.status === "processing").length}</strong> to pack</span>
+                      <span><strong>{data().orders.filter(order => order.status === "pending").length}</strong> awaiting payment</span>
+                      <Show when={data().orders.filter(order => order.returnRequest?.status === "requested" || order.returnRequest?.status === "approved").length}>
+                        {count => <span><strong>{count()}</strong> return {count() === 1 ? "request" : "requests"}</span>}
+                      </Show>
+                    </p>
                     <A href="/api/admin/export?type=orders" target="_blank">Export orders CSV</A>
                   </section>
                   <div class={styles.tableWrap}>
@@ -5088,10 +4421,14 @@ game: isTcgType(current.productType) ? current.game : undefined,
 
                 <Show when={section() === "customers"}>
                   <section class={styles.sectionIntro}>
-                    <div>
-                      <h2>Customer accounts</h2>
-                      <p>Add internal notes and tags, suspend access, revoke sessions, and review customer value.</p>
-                    </div>
+                    <p class={styles.summary}>
+                      <span><strong>{data().customers.length}</strong> accounts</span>
+                      <span><strong>{data().customers.filter(customer => customer.orderCount > 1).length}</strong> returning</span>
+                      <span><strong>{data().customers.filter(customer => !customer.emailVerified).length}</strong> unverified</span>
+                      <Show when={data().customers.filter(customer => customer.suspended).length}>
+                        {count => <span><strong>{count()}</strong> suspended</span>}
+                      </Show>
+                    </p>
                     <A href="/api/admin/export?type=customers" target="_blank">Export customers CSV</A>
                   </section>
                   <div class={styles.tableWrap}>
@@ -5112,7 +4449,7 @@ game: isTcgType(current.productType) ? current.game : undefined,
                 </Show>
 
                 <Show when={section() === "storefront"}>
-                  <StorefrontManager settings={data().content.home} onUpdated={refetch} />
+                  <StorefrontManager settings={data().content.home} products={data().products} onUpdated={refetch} />
                 </Show>
 
                 <Show when={section() === "store"}>
@@ -5120,84 +4457,16 @@ game: isTcgType(current.productType) ? current.game : undefined,
                 </Show>
 
                 <Show when={section() === "analytics"}>
-                  <section class={styles.sectionIntro}>
-                    <div>
-                      <h2>Sales analytics</h2>
-                      <p>A clear view of recent revenue, order value, and repeat customers.</p>
-                    </div>
-                    <A href="/api/admin/export?type=orders" target="_blank">Export source data</A>
-                  </section>
-                  <section class={styles.analyticsMetrics}>
-                    <article>
-                      <span>Revenue</span>
-                      <strong>{formatMoney(data().metrics.revenueCents)}</strong>
-                      <small>Paid and fulfilled orders</small>
-                    </article>
-                    <article>
-                      <span>Average order</span>
-                      <strong>{formatMoney(data().analytics.averageOrderCents)}</strong>
-                      <small>Across loaded order history</small>
-                    </article>
-                    <article>
-                      <span>Returning customers</span>
-                      <strong>{data().analytics.returningCustomers}</strong>
-                      <small>Customers with multiple orders</small>
-                    </article>
-                  </section>
-                  <section class={styles.salesChart}>
-                    <div class={styles.sectionHead}>
-                      <div>
-                        <h2>Recent sales</h2>
-                        <p>Revenue recorded per day.</p>
-                      </div>
-                    </div>
-                    <Show when={data().analytics.salesByDay.length} fallback={<p class={styles.empty}>Sales data will appear after the first paid order.</p>}>
-                      <div class={styles.chartRows}>
-                        <For each={data().analytics.salesByDay.slice(-30)}>
-                          {day => {
-                            const maximum = Math.max(
-                              1,
-                              ...data().analytics.salesByDay.map(point => point.revenueCents),
-                            );
-                            return (
-                              <div>
-                                <span>{formatDate(`${day.date}T12:00:00Z`)}</span>
-                                <i><b style={{ width: `${Math.max(2, day.revenueCents / maximum * 100)}%` }} /></i>
-                                <strong>{formatMoney(day.revenueCents)}</strong>
-                                <small>{day.orders} orders</small>
-                              </div>
-                            );
-                          }}
-                        </For>
-                      </div>
-                    </Show>
-                  </section>
+                  <SalesAnalytics
+                    salesByDay={data().analytics.salesByDay}
+                    averageOrderCents={data().analytics.averageOrderCents}
+                    returningCustomers={data().analytics.returningCustomers}
+                    orders={data().orders}
+                  />
                 </Show>
 
                 <Show when={section() === "activity"}>
-                  <section class={styles.sectionIntro}>
-                    <div>
-                      <h2>Owner activity</h2>
-                      <p>Security history for catalogue, customer, order, discount, and storefront changes.</p>
-                    </div>
-                  </section>
-                  <div class={styles.activityList}>
-                    <For each={data().audit}>
-                      {entry => (
-                        <article>
-                          <span class={styles.activityMark} />
-                          <div>
-                            <strong>{entry.summary}</strong>
-                            <p>{entry.actorName ?? entry.actorEmail ?? "System"} · {entry.entityType}</p>
-                          </div>
-                          <span>{formatDate(entry.createdAt)}</span>
-                        </article>
-                      )}
-                    </For>
-                    <Show when={!data().audit.length}>
-                      <p class={styles.empty}>Admin activity will appear here.</p>
-                    </Show>
-                  </div>
+                  <ActivityLog entries={data().audit} />
                 </Show>
 
                 <Show when={section() === "imports" || section() === "inventory-files"}>
@@ -5211,11 +4480,11 @@ game: isTcgType(current.productType) ? current.game : undefined,
                   <section class={styles.importHero}>
                     <div>
                       <h2>{section() === "inventory-files" ? "Category templates and import" : "Import a full catalogue"}</h2>
-                      <p>Choose a category template, edit it in Excel, then save as CSV UTF-8. Import up to 1,000 variants. Matching SKUs update existing stock and prices; a shared slug groups new variations.</p>
+                      <p>Pick a category, download its template and fill it in with a spreadsheet app. Save it as CSV UTF-8 and upload it here. Up to 1,000 variants per file: matching SKUs update stock and prices, and a shared slug groups new variants.</p>
                     </div>
                     <div class={styles.importActions}>
                       <label><span>Template category</span><select value={templateType()} disabled={importing()} onChange={event => { setTemplateType(event.currentTarget.value as ProductType); setCsvPreview(null); }}><For each={PRODUCT_TYPES}>{type => <option value={type.value}>{type.label}</option>}</For></select></label>
-                      <button type="button" onClick={() => downloadTemplate(templateType())}>Download Excel-compatible CSV template</button>
+                      <button type="button" onClick={() => downloadTemplate(templateType())}>Download template</button>
                       <label class={styles.primaryAction}>
                         Choose CSV file
                         <input
@@ -5774,8 +5043,8 @@ game: isTcgType(current.productType) ? current.game : undefined,
 
                   <section class={styles.importGuide} hidden={section() !== "inventory-files" && libraryView() !== "files"}>
                     <div>
-                      <h3>How the product file works</h3>
-                      <p>Download a category template and keep its header row. Use one row per variant and a unique SKU. Reuse the product slug to group new variants. Blank optional cells keep existing values and photos.</p>
+                      <h2>Template columns</h2>
+                      <p>Keep the header row as it is. Use one row per variant with its own SKU, and reuse a product slug to group variants. Blank optional cells keep the existing values and photos.</p>
                     </div>
                     <dl>
                       <div><dt>game / brand</dt><dd>Game is required for TCGs. Non-TCG products use a brand instead.</dd></div>
@@ -5789,16 +5058,16 @@ game: isTcgType(current.productType) ? current.game : undefined,
 
                   <section class={styles.importHistory} hidden={section() !== "inventory-files" && libraryView() !== "files"}>
                     <div class={styles.sectionHead}>
-                      <div><h2>Import history</h2><p>Recent catalogue jobs and rejected rows.</p></div>
+                      <div><h2>Import history</h2><p>The last 20 file imports.</p></div>
                     </div>
-                    <Show when={data().imports.length} fallback={<p class={styles.empty}>No CSV imports have run yet.</p>}>
+                    <Show when={data().imports.length} fallback={<div class={styles.emptyState}><strong>No imports yet</strong><p>Files you import above are listed here with how many rows went in and how many were rejected.</p></div>}>
                       <For each={data().imports}>
                         {job => (
                           <div class={styles.importRow}>
                             <div><strong>{job.fileName ?? "Catalogue import"}</strong><span>{formatDate(job.createdAt)}</span></div>
-                            <span class={`${styles.status} ${styles[job.status]}`}>{job.status}</span>
-                            <span>{job.processedRows} imported</span>
-                            <span>{job.failedRows} rejected</span>
+                            <span class={styles.importState} data-tone={importJobTone(job)}>{importJobLabel(job.status)}</span>
+                            <span><b>{job.processedRows.toLocaleString("en-GB")}</b> imported</span>
+                            <span data-warn={job.failedRows ? "" : undefined}><b>{job.failedRows.toLocaleString("en-GB")}</b> rejected</span>
                           </div>
                         )}
                       </For>

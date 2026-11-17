@@ -9,6 +9,7 @@ import {
   session,
   user,
   walletEntries,
+  paymentCustomers,
 } from "~/db/schema";
 import {
   apiJson,
@@ -36,15 +37,19 @@ export async function DELETE(event: APIEvent) {
     }
 
     const removal = await db.transaction(async tx => {
-      const [customer] = await tx.select({ id: user.id }).from(user).where(and(eq(user.id, input.id), ne(user.role, "admin")));
+      const [customer] = await tx.select({ id: user.id }).from(user).where(and(eq(user.id, input.id), ne(user.role, "admin"))).for("update");
       if (!customer) return { removed: null, protected: false };
+      const [paymentProfile] = await tx.select({ id: paymentCustomers.customerId }).from(paymentCustomers).where(eq(paymentCustomers.userId, input.id)).limit(1);
+      // Never discard the only provider reference while Mollie still holds a
+      // customer's saved credentials. Provider cleanup needs an audited review.
+      if (paymentProfile) return { removed: null, protected: true };
       await lockWallet(tx, input.id);
       const [history] = await tx.select({ id: walletEntries.id }).from(walletEntries).where(eq(walletEntries.userId, input.id)).limit(1);
       if (history) return { removed: null, protected: true };
       const [removed] = await tx.delete(user).where(and(eq(user.id, input.id), ne(user.role, "admin"))).returning({ id: user.id, email: user.email });
       return { removed, protected: false };
     });
-    if (removal.protected) return apiJson({ error: "This account has financial store-credit history. Suspend access instead; account anonymisation needs an audited review." }, { status: 409 });
+    if (removal.protected) return apiJson({ error: "This account has financial history or a saved-payment profile. Suspend access instead; provider cleanup and account anonymisation need an audited review." }, { status: 409 });
     const removed = removal.removed;
 
     if (!removed) {

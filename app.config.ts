@@ -4,22 +4,8 @@ const isProduction =
   process.env.NODE_ENV === "production" || process.argv.includes("build");
 
 const securityHeaders = {
-  "Content-Security-Policy": [
-    "default-src 'self'",
-    "base-uri 'self'",
-    "object-src 'none'",
-    "frame-ancestors 'none'",
-    "form-action 'self'",
-    "img-src 'self' data: https:",
-    "font-src 'self' data: https://fonts.gstatic.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "script-src 'self' 'unsafe-inline'",
-    "frame-src 'self' https://www.youtube-nocookie.com",
-    `connect-src 'self' https://api.mollie.com${
-      isProduction ? "" : " ws://localhost:* ws://127.0.0.1:*"
-    }`,
-    ...(isProduction ? ["upgrade-insecure-requests"] : []),
-  ].join("; "),
+  // CSP is set by entry-server for each response, not by a static edge rule.
+  // Otherwise a platform header could overwrite the per-request SSR nonce.
   "Cross-Origin-Opener-Policy": "same-origin",
   "Cross-Origin-Resource-Policy": "same-origin",
   "Origin-Agent-Cluster": "?1",

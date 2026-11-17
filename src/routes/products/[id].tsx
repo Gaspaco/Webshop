@@ -1,5 +1,6 @@
 import { Link, Meta, Title } from "@solidjs/meta";
 import { A, useParams, useSearchParams } from "@solidjs/router";
+import { getRequestEvent } from "solid-js/web";
 import {
   createEffect,
   createResource,
@@ -521,7 +522,7 @@ export default function ProductDetail() {
           <Meta property="og:description" content={describe(item())} />
           <Meta property="og:url" content={canonicalProductUrl(item().id)} />
           <Show when={publicProductImageUrl(item().image)}>{image => <Meta property="og:image" content={image()} />}</Show>
-          <script type="application/ld+json" textContent={productJsonLd()} />
+          <script nonce={(getRequestEvent() as { nonce?: string } | undefined)?.nonce} type="application/ld+json" textContent={productJsonLd()} />
 
           <div class={styles.wide}>
             <nav class={styles.breadcrumb} aria-label="Breadcrumb">

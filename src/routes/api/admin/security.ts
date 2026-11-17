@@ -1,11 +1,11 @@
 import type { APIEvent } from "@solidjs/start/server";
 import { apiJson, requireAdmin } from "~/lib/admin.server";
 
-// Compatibility for old dashboard tabs. There is no separate owner challenge.
+// Enrollment uses Better Auth's password-protected two-factor endpoints.
 export async function GET(event: APIEvent) {
   const guard = await requireAdmin(event);
   if (guard.response) return guard.response;
-  return apiJson({ enabled: false, required: false });
+  return apiJson({ enabled: Boolean(guard.session.user.twoFactorEnabled), required: false });
 }
 
 export async function POST(event: APIEvent) {

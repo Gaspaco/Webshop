@@ -28,6 +28,7 @@ import {
 import RouteSkeleton from "~/components/layout/RouteSkeleton";
 import CountrySelect from "~/components/forms/CountrySelect";
 import StoreCredit from "~/components/account/StoreCredit";
+import SavedCards from "~/components/account/SavedCards";
 import styles from "./index.module.scss";
 
 type Section =
@@ -1651,6 +1652,7 @@ export default function Account() {
 
                   <Match when={activeSection() === "credit"}><StoreCredit /></Match>
                   <Match when={activeSection() === "payments"}>
+                    <SavedCards />
                     <div class={styles.paymentLayout}>
                       <section class={styles.paymentHistory}>
                         <div class={styles.panelHead}>
