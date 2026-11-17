@@ -23,7 +23,7 @@ mock.module("../src/db/index.ts", () => ({ db }));
 let calls = 0;
 let handler: () => Promise<Response> = async () => new Response("mock image", { headers: { "Content-Type": "image/png" } });
 globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-  assert.equal(new URL(String(input)).hostname, "ms.yugipedia.com");
+  assert.ok(["ms.yugipedia.com", "img.yugipedia.com"].includes(new URL(String(input)).hostname));
   assert.equal(init?.redirect, "error", "Redirects must not escape the validated host");
   assert.ok(init.signal instanceof AbortSignal);
   calls++;
@@ -32,7 +32,7 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
 const { serveYugipediaImage } = await import("../src/lib/yugipedia-image.server");
 const { GET: cardImage } = await import("../src/routes/card-images/yugipedia/card/[id]");
 const { GET: printingImage } = await import("../src/routes/card-images/yugipedia/[id]");
-const imageUrl = "https://ms.yugipedia.com/test/card.png";
+const imageUrl = "https://img.yugipedia.com/test/card.png";
 const event = (id = "1", ip = "192.0.2.1") => ({
   params: { id }, request: new Request(`https://shop.test/card-images/yugipedia/card/${id}`, { headers: { "x-real-ip": ip } }),
 }) as unknown as APIEvent;

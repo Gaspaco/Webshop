@@ -22,7 +22,7 @@ let calls = 0;
 let handler = async () => new Response(image, { headers: { "Content-Type": "image/jpeg" } });
 globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = new URL(String(input));
-  assert.ok(["cards.scryfall.io", "assets.tcgdex.net", "ms.yugipedia.com", "images.scrydex.com"].includes(url.hostname));
+  assert.ok(["cards.scryfall.io", "assets.tcgdex.net", "ms.yugipedia.com", "img.yugipedia.com", "images.scrydex.com"].includes(url.hostname));
   assert.equal(init?.redirect, "error"); assert.ok(init?.signal instanceof AbortSignal);
   calls++; return handler();
 }) as typeof fetch;
@@ -80,7 +80,7 @@ assert.equal((await serveProductImage(event(row.variantImageUrl!.replace("mtg-te
 const embedded = await product(`data:image/jpeg;base64,${image.toString("base64")}`);
 assert.ok(!JSON.stringify(await paths(embedded.p.slug)).includes("base64"));
 assert.equal((await serveProductImage(event((await paths(embedded.p.slug)).variantImageUrl!))).status, 200);
-await db.insert(schema.yugiohCards).values({ id: 42, name: "Fixture card", cardType: "Effect", frameType: "effect", description: "Fixture", imageSourceUrl: "https://ms.yugipedia.com/fixture.jpg" });
+await db.insert(schema.yugiohCards).values({ id: 42, name: "Fixture card", cardType: "Effect", frameType: "effect", description: "Fixture", imageSourceUrl: "https://img.yugipedia.com/fixture.jpg" });
 const ygo = await product("/card-images/yugipedia/card/42");
 assert.equal((await serveProductImage(event((await paths(ygo.p.slug)).variantImageUrl!))).status, 200);
 assert.equal((await db.select().from(schema.rateLimit).where(eq(schema.rateLimit.key, "yugipedia:image:outbound")))[0]!.count, 1);

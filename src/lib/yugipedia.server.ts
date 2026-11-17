@@ -221,7 +221,9 @@ export async function searchYugipedia(query: string, by: "card" | "set", fresh =
       candidates.set(card.pageId, { card, printings, files });
     }
     const imageUrls = new Map<string, string>();
-    for (const batch of batches(artworkAvailable ? [...allFiles].slice(0, 450) : [], 50)) {
+    // Long scan filenames can make 50-title GET requests exceed the upstream
+    // gateway's URL budget. Keep image-detail batches smaller than card facts.
+    for (const batch of batches(artworkAvailable ? [...allFiles].slice(0, 450) : [], 15)) {
       let response: WikiResponse;
       try { response = await request({ action: "query", titles: batch.map(file => `File:${file}`).join("|"), prop: "imageinfo", iiprop: "url|mime|size", iiurlwidth: "600" }); }
       catch { warnings.push("Some scans were unavailable. The complete available card list is still importable; upload missing images in the catalogue."); break; }

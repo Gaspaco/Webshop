@@ -13,7 +13,7 @@ import { isYugipediaImageUrl } from "~/lib/yugipedia-catalog";
 
 const HOSTS = new Set([
   "assets.tcgdex.net", "images.pokemontcg.io", "cards.scryfall.io", "c1.scryfall.com", "c2.scryfall.com",
-  "yugipedia.com", "ms.yugipedia.com", "images.yugipedia.com", "images.ygoprodeck.com",
+  "yugipedia.com", "ms.yugipedia.com", "images.yugipedia.com", "img.yugipedia.com", "images.ygoprodeck.com",
   "images.scrydex.com", "digimoncard.io", "images.digimoncard.io",
   "optcgapi.com", "api.gatcg.com",
   "product-images.s3.cardmarket.com", "images.cardmarket.com", "tcgplayer-cdn.tcgplayer.com",

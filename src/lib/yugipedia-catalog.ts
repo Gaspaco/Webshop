@@ -101,6 +101,6 @@ export function isYugipediaImageUrl(value: string) {
   try {
     const url = new URL(value);
     return url.protocol === "https:" && !url.username && !url.password && !url.port &&
-      (url.hostname === "yugipedia.com" || url.hostname === "ms.yugipedia.com" || url.hostname === "images.yugipedia.com");
+      (url.hostname === "yugipedia.com" || url.hostname === "ms.yugipedia.com" || url.hostname === "images.yugipedia.com" || url.hostname === "img.yugipedia.com");
   } catch { return false; }
 }

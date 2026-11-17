@@ -25,6 +25,7 @@ describe("Yugipedia reference parsing", () => {
   });
   it("only permits known HTTPS image hosts", () => {
     assert.ok(isYugipediaImageUrl("https://ms.yugipedia.com/1/12/Card.png"));
-    for (const value of ["http://yugipedia.com/x", "https://yugipedia.com.evil.test/x", "https://evil.yugipedia.com/x", "https://user:pass@yugipedia.com/x", "http://127.0.0.1/x"]) assert.equal(isYugipediaImageUrl(value), false);
+    assert.ok(isYugipediaImageUrl("https://img.yugipedia.com/f/f8/BlueEyesWhiteDragontheWhitePhantomBeast-MAMS-EN-UR-1E.png"));
+    for (const value of ["http://yugipedia.com/x", "https://yugipedia.com.evil.test/x", "https://img.yugipedia.com.evil.test/x", "https://evil.yugipedia.com/x", "https://user:pass@yugipedia.com/x", "https://img.yugipedia.com:444/x", "http://127.0.0.1/x"]) assert.equal(isYugipediaImageUrl(value), false);
   });
 });

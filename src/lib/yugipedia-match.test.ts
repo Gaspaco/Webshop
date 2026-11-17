@@ -23,6 +23,8 @@ describe("Yugipedia printing image matching", () => {
     assert.equal(yugipediaCardFilePrefix("D.D. Crow"), "DDCrow");
     assert.equal(isExactCardImageFile("Dark Magician", "DarkMagician-LOB-EN-UR-1E.png"), true);
     assert.equal(isExactCardImageFile("Dark Magician", "DarkMagicianGirl-MFC-EN-SCR-1E.png"), false);
+    assert.equal(isExactCardImageFile("Mind Scan (card)", "MindScan-MAMS-EN-UR-1E.png"), true);
+    assert.equal(isExactCardImageFile("Mind Scan (card)", "MindScanGirl-MAMS-EN-UR-1E.png"), false);
   });
 
   it("matches the API rarity code instead of the loose word rare", () => {
@@ -53,5 +55,14 @@ describe("Yugipedia printing image matching", () => {
 
   it("does not substitute another language when the rarity matches", () => {
     assert.equal(matchYugipediaPrintingFile({ cardName: "Card Name", setCode: "CORI-EN001", rarity: "Secret Rare" }, ["CardName-CORI-JP-ScR.png"]), null);
+  });
+
+  it("keeps Magnificent Maestros extended artwork separate from the regular printing", () => {
+    const printing = { cardName: "Blue-Eyes White Dragon, the White Phantom Beast", setCode: "MAMS-EN001", rarity: "Ultra Rare" };
+    const regular = "BlueEyesWhiteDragontheWhitePhantomBeast-MAMS-EN-UR-1E.png";
+    const extended = "BlueEyesWhiteDragontheWhitePhantomBeast-MAMS-EN-UR-1E-EA.png";
+    assert.equal(matchYugipediaPrintingFile(printing, [extended, regular]), regular);
+    assert.equal(matchYugipediaPrintingFile(printing, [extended]), null);
+    assert.equal(matchYugipediaPrintingFile({ ...printing, rarity: "Starlight Rare" }, [extended, regular]), null);
   });
 });

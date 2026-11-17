@@ -43,6 +43,7 @@ export function normalizedYugipediaToken(value: string) {
 
 export function yugipediaCardFilePrefix(cardName: string) {
   return cardName
+    .replace(/\s+\(card\)$/i, "")
     .normalize("NFKC")
     .replace(/[\s#,.:'"?!&@%=\[\]<>/☆★・-]+/gu, "");
 }
@@ -127,8 +128,9 @@ export function matchYugipediaPrintingFile(
   });
   if (!exact.length) return null;
 
-  // YGOPRODeck does not distinguish first-edition from unlimited variants.
-  // Prefer the first-edition scan deterministically when Yugipedia has both.
-  return exact.find(fileName => fileSegments(fileName).includes("1E")) ??
-    (exact.length === 1 ? exact[0]! : exact.sort()[0]!);
+  // A regular printing must not silently pick the extended-art (EA) scan just
+  // because it is listed first in the set gallery. Do not guess if only EA exists.
+  const regular = exact.filter(fileName => !fileSegments(fileName).includes("EA")).sort();
+  // Prefer the first-edition scan deterministically when both editions exist.
+  return regular.find(fileName => fileSegments(fileName).includes("1E")) ?? regular[0] ?? null;
 }

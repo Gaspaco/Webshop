@@ -54,6 +54,7 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   }
   const titles = url.searchParams.get("titles") ?? "";
   const prop = url.searchParams.get("prop");
+  if (prop === "imageinfo") assert.ok(titles.split("|").length <= 15, "Image details must use bounded URLs for long scan filenames");
   if (largeSet) {
     if (titles.startsWith("Set Card Lists:")) return Response.json({ query: { pages: [{ pageid: 2000000, title: "Set Card Lists:Large Batch Fixture (TCG-EN)", revisions: [{ content: "{{Set list|region=EN|\n" + Array.from({ length: 125 }, (_, i) => `MAMS-EN${String(i + 1).padStart(3, "0")}; Batch Card ${i === 124 ? 99 : i}; Ultra Rare`).join("\n") + "\n}}" }] }] } });
     if (titles.startsWith("Set Card Galleries:")) return Response.json({ query: { pages: [] } });
@@ -66,7 +67,7 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     ...(url.searchParams.has("imcontinue") ? {} : { continue: { continue: "||", imcontinue: "gallery-2" } }),
     query: { pages: [{ title: "Set Card Galleries:Chaos Origins (TCG-EN-1E)", images: (url.searchParams.has("imcontinue") ? imageFiles.slice(1) : imageFiles.slice(0, 1)).map(file => ({ title: `File:${file}` })) }] },
   });
-  const pages = prop === "imageinfo" ? titles.split("|").map(title => ({ title, imageinfo: [{ url: `https://ms.yugipedia.com/${title.slice(5)}`, mime: "image/png", size: 200 }] }))
+  const pages = prop === "imageinfo" ? titles.split("|").map(title => ({ title, imageinfo: [{ url: `https://img.yugipedia.com/${title.slice(5)}`, mime: "image/png", size: 200 }] }))
     : titles.startsWith("Set Card Lists:") ? [{ pageid: 99, title: "Set Card Lists:Chaos Origins (TCG-EN)", revisions: [{ content: setText }] }]
     : titles.startsWith("Set Card Galleries:") ? [{ title: "Set Card Galleries:Chaos Origins (TCG-EN-1E)", images: imageFiles.map(file => ({ title: `File:${file}` })) }]
     : [{ pageid: 1001, title: "Black Chaos", revisions: [{ content: cardText("Black Chaos", "CORI-EN001", "98684220") }] }, ...(!omitCard ? [{ pageid: 1002, title: "New Test Card (card)", revisions: [{ content: cardText("New Test Card", "CORI-EN002") }] }] : [])];

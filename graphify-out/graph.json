@@ -6042,160 +6042,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/admin/security.ts:11"
     },
     {
-      "id": "file::yugipedia_match_test",
-      "label": "yugipedia-match.test.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.test.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.test.ts:1"
-    },
-    {
-      "id": "file::yugipedia_match",
-      "label": "yugipedia-match.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:1"
-    },
-    {
-      "id": "yugipedia_match::normalizedyugipediatoken",
-      "label": "normalizedYugipediaToken",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:40"
-    },
-    {
-      "id": "yugipedia_match::yugipediacardfileprefix",
-      "label": "yugipediaCardFilePrefix",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:44"
-    },
-    {
-      "id": "yugipedia_match::yugipediafilecardprefix",
-      "label": "yugipediaFileCardPrefix",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:50"
-    },
-    {
-      "id": "yugipedia_match::parseinfoboximagefilenames",
-      "label": "parseInfoboxImageFileNames",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:54"
-    },
-    {
-      "id": "yugipedia_match::settoken",
-      "label": "setToken",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:72"
-    },
-    {
-      "id": "yugipedia_match::raritytokens",
-      "label": "rarityTokens",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:76"
-    },
-    {
-      "id": "yugipedia_match::filesegments",
-      "label": "fileSegments",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:82"
-    },
-    {
-      "id": "yugipedia_match::isexactcardimagefile",
-      "label": "isExactCardImageFile",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:91"
-    },
-    {
-      "id": "yugipedia_match::matchyugipediaprintingfile",
-      "label": "matchYugipediaPrintingFile",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:97"
-    },
-    {
-      "id": "file::yugipedia_catalog_test",
-      "label": "yugipedia-catalog.test.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.test.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.test.ts:1"
-    },
-    {
-      "id": "file::yugipedia_catalog",
-      "label": "yugipedia-catalog.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:1"
-    },
-    {
-      "id": "yugipedia-catalog::wikitext",
-      "label": "wikiText",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:10"
-    },
-    {
-      "id": "yugipedia-catalog::wikiurl",
-      "label": "wikiUrl",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:11"
-    },
-    {
-      "id": "yugipedia_catalog::plainwiki",
-      "label": "plainWiki",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:13"
-    },
-    {
-      "id": "yugipedia_catalog::wikifields",
-      "label": "wikiFields",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:21"
-    },
-    {
-      "id": "yugipedia_catalog::rarities",
-      "label": "rarities",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:37"
-    },
-    {
-      "id": "yugipedia_catalog::parsecardprintings",
-      "label": "parseCardPrintings",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:41"
-    },
-    {
-      "id": "yugipedia_catalog::parsesetlist",
-      "label": "parseSetList",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:59"
-    },
-    {
-      "id": "yugipedia_catalog::parsewikicard",
-      "label": "parseWikiCard",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:78"
-    },
-    {
-      "id": "yugipedia_catalog::isyugipediaimageurl",
-      "label": "isYugipediaImageUrl",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:100"
-    },
-    {
       "id": "file::yugipedia_integration_test",
       "label": "yugipedia-integration.test.ts",
       "fileType": "code",
@@ -6404,34 +6250,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/public-security-integration.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/public-security-integration.ts:150"
-    },
-    {
-      "id": "file::yugipedia_image_integration",
-      "label": "yugipedia-image-integration.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:1"
-    },
-    {
-      "id": "yugipedia-image-integration::handler",
-      "label": "handler",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:24"
-    },
-    {
-      "id": "yugipedia-image-integration::event",
-      "label": "event",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:36"
-    },
-    {
-      "id": "yugipedia_image_integration::oversized",
-      "label": "oversized",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:81"
     },
     {
       "id": "file::card_scan_budget_server",
@@ -8163,55 +7981,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/routes/api/catalog/products.ts:5"
     },
     {
-      "id": "file::product_image_cache_integration",
-      "label": "product-image-cache-integration.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:1"
-    },
-    {
-      "id": "product-image-cache-integration::handler",
-      "label": "handler",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:22"
-    },
-    {
-      "id": "product_image_cache_integration::product",
-      "label": "product",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:34"
-    },
-    {
-      "id": "product-image-cache-integration::event",
-      "label": "event",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:40"
-    },
-    {
-      "id": "product_image_cache_integration::paths",
-      "label": "paths",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:42"
-    },
-    {
-      "id": "product_image_cache_integration::pull",
-      "label": "pull",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:119"
-    },
-    {
-      "id": "product_image_cache_integration::cancel",
-      "label": "cancel",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:119"
-    },
-    {
       "id": "file::producttypefields",
       "label": "ProductTypeFields.tsx",
       "fileType": "code",
@@ -8273,76 +8042,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-attributes.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-attributes.ts:7"
-    },
-    {
-      "id": "file::product_image_cache_server",
-      "label": "product-image-cache.server.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:1"
-    },
-    {
-      "id": "product_image_cache_server::allowedproductimagesource",
-      "label": "allowedProductImageSource",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:28"
-    },
-    {
-      "id": "product_image_cache_server::productimagecachelimit",
-      "label": "productImageCacheLimit",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:35"
-    },
-    {
-      "id": "product_image_cache_server::readremoteimage",
-      "label": "readRemoteImage",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:42"
-    },
-    {
-      "id": "product_image_cache_server::optimizeimage",
-      "label": "optimizeImage",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:76"
-    },
-    {
-      "id": "product_image_cache_server::storeimage",
-      "label": "storeImage",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:93"
-    },
-    {
-      "id": "product_image_cache_server::cachedimage",
-      "label": "cachedImage",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:106"
-    },
-    {
-      "id": "product_image_cache_server::resolvestoredsource",
-      "label": "resolveStoredSource",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:158"
-    },
-    {
-      "id": "product_image_cache_server::resolveprovidersource",
-      "label": "resolveProviderSource",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:173"
-    },
-    {
-      "id": "product_image_cache_server::serveproductimage",
-      "label": "serveProductImage",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:196"
     },
     {
       "id": "file::product_image_cache_test",
@@ -10270,41 +9969,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/sync-yugipedia.ts:1"
     },
     {
-      "id": "file::yugipedia_integration",
-      "label": "yugipedia-integration.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:1"
-    },
-    {
-      "id": "yugipedia-integration::cardtext",
-      "label": "cardText",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:24"
-    },
-    {
-      "id": "yugipedia-integration::discoveryrequest",
-      "label": "discoveryRequest",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:107"
-    },
-    {
-      "id": "yugipedia-integration::refreshrequest",
-      "label": "refreshRequest",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:129"
-    },
-    {
-      "id": "yugipedia-integration::appendrequest",
-      "label": "appendRequest",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:142"
-    },
-    {
       "id": "file::hero",
       "label": "Hero.tsx",
       "fileType": "code",
@@ -10394,76 +10058,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:331"
-    },
-    {
-      "id": "file::yugipedia_server",
-      "label": "yugipedia.server.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:1"
-    },
-    {
-      "id": "yugipedia.server::wait",
-      "label": "wait",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:12"
-    },
-    {
-      "id": "yugipedia_server::yugipediabusyerror",
-      "label": "YugipediaBusyError",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:18"
-    },
-    {
-      "id": "yugipedia_server::keyfor",
-      "label": "keyFor",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:20"
-    },
-    {
-      "id": "yugipedia_server::cached",
-      "label": "cached",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:23"
-    },
-    {
-      "id": "yugipedia_server::store",
-      "label": "store",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:27"
-    },
-    {
-      "id": "yugipedia_server::yugipediarequest",
-      "label": "yugipediaRequest",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:37"
-    },
-    {
-      "id": "yugipedia_server::batches",
-      "label": "batches",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:85"
-    },
-    {
-      "id": "yugipedia_server::discoveryugipediasets",
-      "label": "discoverYugipediaSets",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:90"
-    },
-    {
-      "id": "yugipedia_server::searchyugipedia",
-      "label": "searchYugipedia",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:107"
     },
     {
       "id": "file::index",
@@ -11409,6 +11003,412 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-import.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-import.ts:6"
+    },
+    {
+      "id": "file::product_image_cache_integration",
+      "label": "product-image-cache-integration.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:1"
+    },
+    {
+      "id": "product-image-cache-integration::handler",
+      "label": "handler",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:22"
+    },
+    {
+      "id": "product_image_cache_integration::product",
+      "label": "product",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:34"
+    },
+    {
+      "id": "product-image-cache-integration::event",
+      "label": "event",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:40"
+    },
+    {
+      "id": "product_image_cache_integration::paths",
+      "label": "paths",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:42"
+    },
+    {
+      "id": "product_image_cache_integration::pull",
+      "label": "pull",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:119"
+    },
+    {
+      "id": "product_image_cache_integration::cancel",
+      "label": "cancel",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:119"
+    },
+    {
+      "id": "file::yugipedia_image_integration",
+      "label": "yugipedia-image-integration.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:1"
+    },
+    {
+      "id": "yugipedia-image-integration::handler",
+      "label": "handler",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:24"
+    },
+    {
+      "id": "yugipedia-image-integration::event",
+      "label": "event",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:36"
+    },
+    {
+      "id": "yugipedia_image_integration::oversized",
+      "label": "oversized",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:81"
+    },
+    {
+      "id": "file::yugipedia_integration",
+      "label": "yugipedia-integration.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:1"
+    },
+    {
+      "id": "yugipedia-integration::cardtext",
+      "label": "cardText",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:24"
+    },
+    {
+      "id": "yugipedia-integration::discoveryrequest",
+      "label": "discoveryRequest",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:108"
+    },
+    {
+      "id": "yugipedia-integration::refreshrequest",
+      "label": "refreshRequest",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:130"
+    },
+    {
+      "id": "yugipedia-integration::appendrequest",
+      "label": "appendRequest",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:143"
+    },
+    {
+      "id": "file::product_image_cache_server",
+      "label": "product-image-cache.server.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:1"
+    },
+    {
+      "id": "product_image_cache_server::allowedproductimagesource",
+      "label": "allowedProductImageSource",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:28"
+    },
+    {
+      "id": "product_image_cache_server::productimagecachelimit",
+      "label": "productImageCacheLimit",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:35"
+    },
+    {
+      "id": "product_image_cache_server::readremoteimage",
+      "label": "readRemoteImage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:42"
+    },
+    {
+      "id": "product_image_cache_server::optimizeimage",
+      "label": "optimizeImage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:76"
+    },
+    {
+      "id": "product_image_cache_server::storeimage",
+      "label": "storeImage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:93"
+    },
+    {
+      "id": "product_image_cache_server::cachedimage",
+      "label": "cachedImage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:106"
+    },
+    {
+      "id": "product_image_cache_server::resolvestoredsource",
+      "label": "resolveStoredSource",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:158"
+    },
+    {
+      "id": "product_image_cache_server::resolveprovidersource",
+      "label": "resolveProviderSource",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:173"
+    },
+    {
+      "id": "product_image_cache_server::serveproductimage",
+      "label": "serveProductImage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:196"
+    },
+    {
+      "id": "file::yugipedia_catalog_test",
+      "label": "yugipedia-catalog.test.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.test.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.test.ts:1"
+    },
+    {
+      "id": "file::yugipedia_catalog",
+      "label": "yugipedia-catalog.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:1"
+    },
+    {
+      "id": "yugipedia-catalog::wikitext",
+      "label": "wikiText",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:10"
+    },
+    {
+      "id": "yugipedia-catalog::wikiurl",
+      "label": "wikiUrl",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:11"
+    },
+    {
+      "id": "yugipedia_catalog::plainwiki",
+      "label": "plainWiki",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:13"
+    },
+    {
+      "id": "yugipedia_catalog::wikifields",
+      "label": "wikiFields",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:21"
+    },
+    {
+      "id": "yugipedia_catalog::rarities",
+      "label": "rarities",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:37"
+    },
+    {
+      "id": "yugipedia_catalog::parsecardprintings",
+      "label": "parseCardPrintings",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:41"
+    },
+    {
+      "id": "yugipedia_catalog::parsesetlist",
+      "label": "parseSetList",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:59"
+    },
+    {
+      "id": "yugipedia_catalog::parsewikicard",
+      "label": "parseWikiCard",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:78"
+    },
+    {
+      "id": "yugipedia_catalog::isyugipediaimageurl",
+      "label": "isYugipediaImageUrl",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:100"
+    },
+    {
+      "id": "file::yugipedia_match_test",
+      "label": "yugipedia-match.test.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.test.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.test.ts:1"
+    },
+    {
+      "id": "file::yugipedia_match",
+      "label": "yugipedia-match.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:1"
+    },
+    {
+      "id": "yugipedia_match::normalizedyugipediatoken",
+      "label": "normalizedYugipediaToken",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:40"
+    },
+    {
+      "id": "yugipedia_match::yugipediacardfileprefix",
+      "label": "yugipediaCardFilePrefix",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:44"
+    },
+    {
+      "id": "yugipedia_match::yugipediafilecardprefix",
+      "label": "yugipediaFileCardPrefix",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:51"
+    },
+    {
+      "id": "yugipedia_match::parseinfoboximagefilenames",
+      "label": "parseInfoboxImageFileNames",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:55"
+    },
+    {
+      "id": "yugipedia_match::settoken",
+      "label": "setToken",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:73"
+    },
+    {
+      "id": "yugipedia_match::raritytokens",
+      "label": "rarityTokens",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:77"
+    },
+    {
+      "id": "yugipedia_match::filesegments",
+      "label": "fileSegments",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:83"
+    },
+    {
+      "id": "yugipedia_match::isexactcardimagefile",
+      "label": "isExactCardImageFile",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:92"
+    },
+    {
+      "id": "yugipedia_match::matchyugipediaprintingfile",
+      "label": "matchYugipediaPrintingFile",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:98"
+    },
+    {
+      "id": "file::yugipedia_server",
+      "label": "yugipedia.server.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:1"
+    },
+    {
+      "id": "yugipedia.server::wait",
+      "label": "wait",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:12"
+    },
+    {
+      "id": "yugipedia_server::yugipediabusyerror",
+      "label": "YugipediaBusyError",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:18"
+    },
+    {
+      "id": "yugipedia_server::keyfor",
+      "label": "keyFor",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:20"
+    },
+    {
+      "id": "yugipedia_server::cached",
+      "label": "cached",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:23"
+    },
+    {
+      "id": "yugipedia_server::store",
+      "label": "store",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:27"
+    },
+    {
+      "id": "yugipedia_server::yugipediarequest",
+      "label": "yugipediaRequest",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:37"
+    },
+    {
+      "id": "yugipedia_server::batches",
+      "label": "batches",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:85"
+    },
+    {
+      "id": "yugipedia_server::discoveryugipediasets",
+      "label": "discoverYugipediaSets",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:90"
+    },
+    {
+      "id": "yugipedia_server::searchyugipedia",
+      "label": "searchYugipedia",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:107"
     }
   ],
   "edges": [
@@ -17452,168 +17452,6 @@
       "weight": 1
     },
     {
-      "source": "file::yugipedia_match",
-      "target": "yugipedia_match::normalizedyugipediatoken",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:40",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_match",
-      "target": "yugipedia_match::yugipediacardfileprefix",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:44",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_match",
-      "target": "yugipedia_match::yugipediafilecardprefix",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:50",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_match",
-      "target": "yugipedia_match::parseinfoboximagefilenames",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:54",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_match",
-      "target": "yugipedia_match::settoken",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:72",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_match",
-      "target": "yugipedia_match::raritytokens",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:76",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_match",
-      "target": "yugipedia_match::filesegments",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:82",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_match",
-      "target": "yugipedia_match::isexactcardimagefile",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:91",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_match",
-      "target": "yugipedia_match::matchyugipediaprintingfile",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:97",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_catalog",
-      "target": "yugipedia-catalog::wikitext",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:10",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_catalog",
-      "target": "yugipedia-catalog::wikiurl",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:11",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_catalog",
-      "target": "yugipedia_catalog::plainwiki",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:13",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_catalog",
-      "target": "yugipedia_catalog::wikifields",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:21",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_catalog",
-      "target": "yugipedia_catalog::rarities",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:37",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_catalog",
-      "target": "yugipedia_catalog::parsecardprintings",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:41",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_catalog",
-      "target": "yugipedia_catalog::parsesetlist",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:59",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_catalog",
-      "target": "yugipedia_catalog::parsewikicard",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:78",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_catalog",
-      "target": "yugipedia_catalog::isyugipediaimageurl",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:100",
-      "weight": 1
-    },
-    {
       "source": "file::yugipedia",
       "target": "yugipedia::get",
       "relation": "contains",
@@ -17827,33 +17665,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/public-security-integration.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/public-security-integration.ts:150",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_image_integration",
-      "target": "yugipedia-image-integration::handler",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:24",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_image_integration",
-      "target": "yugipedia-image-integration::event",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:36",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_image_integration",
-      "target": "yugipedia_image_integration::oversized",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:81",
       "weight": 1
     },
     {
@@ -19675,60 +19486,6 @@
       "weight": 1
     },
     {
-      "source": "file::product_image_cache_integration",
-      "target": "product-image-cache-integration::handler",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:22",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_integration",
-      "target": "product_image_cache_integration::product",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:34",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_integration",
-      "target": "product-image-cache-integration::event",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:40",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_integration",
-      "target": "product_image_cache_integration::paths",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:42",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_integration",
-      "target": "product_image_cache_integration::pull",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:119",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_integration",
-      "target": "product_image_cache_integration::cancel",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:119",
-      "weight": 1
-    },
-    {
       "source": "file::producttypefields",
       "target": "ProductTypeFields::fields",
       "relation": "contains",
@@ -19780,87 +19537,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-attributes.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-attributes.ts:7",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_server",
-      "target": "product_image_cache_server::allowedproductimagesource",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:28",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_server",
-      "target": "product_image_cache_server::productimagecachelimit",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:35",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_server",
-      "target": "product_image_cache_server::readremoteimage",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:42",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_server",
-      "target": "product_image_cache_server::optimizeimage",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:76",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_server",
-      "target": "product_image_cache_server::storeimage",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:93",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_server",
-      "target": "product_image_cache_server::cachedimage",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:106",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_server",
-      "target": "product_image_cache_server::resolvestoredsource",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:158",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_server",
-      "target": "product_image_cache_server::resolveprovidersource",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:173",
-      "weight": 1
-    },
-    {
-      "source": "file::product_image_cache_server",
-      "target": "product_image_cache_server::serveproductimage",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:196",
       "weight": 1
     },
     {
@@ -21853,42 +21529,6 @@
       "weight": 1
     },
     {
-      "source": "file::yugipedia_integration",
-      "target": "yugipedia-integration::cardtext",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:24",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_integration",
-      "target": "yugipedia-integration::discoveryrequest",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:107",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_integration",
-      "target": "yugipedia-integration::refreshrequest",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:129",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_integration",
-      "target": "yugipedia-integration::appendrequest",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:142",
-      "weight": 1
-    },
-    {
       "source": "file::hero",
       "target": "Hero::paused",
       "relation": "contains",
@@ -21994,87 +21634,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/components/home/Hero.tsx:331",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_server",
-      "target": "yugipedia.server::wait",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:12",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_server",
-      "target": "yugipedia_server::yugipediabusyerror",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:18",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_server",
-      "target": "yugipedia_server::keyfor",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:20",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_server",
-      "target": "yugipedia_server::cached",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:23",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_server",
-      "target": "yugipedia_server::store",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:27",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_server",
-      "target": "yugipedia_server::yugipediarequest",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:37",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_server",
-      "target": "yugipedia_server::batches",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:85",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_server",
-      "target": "yugipedia_server::discoveryugipediasets",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:90",
-      "weight": 1
-    },
-    {
-      "source": "file::yugipedia_server",
-      "target": "yugipedia_server::searchyugipedia",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:107",
       "weight": 1
     },
     {
@@ -23201,12 +22760,453 @@
       "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-import.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-import.ts:6",
       "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_integration",
+      "target": "product-image-cache-integration::handler",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:22",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_integration",
+      "target": "product_image_cache_integration::product",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:34",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_integration",
+      "target": "product-image-cache-integration::event",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:40",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_integration",
+      "target": "product_image_cache_integration::paths",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:42",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_integration",
+      "target": "product_image_cache_integration::pull",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:119",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_integration",
+      "target": "product_image_cache_integration::cancel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/product-image-cache-integration.ts:119",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_image_integration",
+      "target": "yugipedia-image-integration::handler",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:24",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_image_integration",
+      "target": "yugipedia-image-integration::event",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:36",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_image_integration",
+      "target": "yugipedia_image_integration::oversized",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-image-integration.ts:81",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_integration",
+      "target": "yugipedia-integration::cardtext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:24",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_integration",
+      "target": "yugipedia-integration::discoveryrequest",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:108",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_integration",
+      "target": "yugipedia-integration::refreshrequest",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:130",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_integration",
+      "target": "yugipedia-integration::appendrequest",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/scripts/yugipedia-integration.ts:143",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_server",
+      "target": "product_image_cache_server::allowedproductimagesource",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:28",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_server",
+      "target": "product_image_cache_server::productimagecachelimit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:35",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_server",
+      "target": "product_image_cache_server::readremoteimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:42",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_server",
+      "target": "product_image_cache_server::optimizeimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:76",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_server",
+      "target": "product_image_cache_server::storeimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:93",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_server",
+      "target": "product_image_cache_server::cachedimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:106",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_server",
+      "target": "product_image_cache_server::resolvestoredsource",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:158",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_server",
+      "target": "product_image_cache_server::resolveprovidersource",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:173",
+      "weight": 1
+    },
+    {
+      "source": "file::product_image_cache_server",
+      "target": "product_image_cache_server::serveproductimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/product-image-cache.server.ts:196",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_catalog",
+      "target": "yugipedia-catalog::wikitext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:10",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_catalog",
+      "target": "yugipedia-catalog::wikiurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:11",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_catalog",
+      "target": "yugipedia_catalog::plainwiki",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:13",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_catalog",
+      "target": "yugipedia_catalog::wikifields",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:21",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_catalog",
+      "target": "yugipedia_catalog::rarities",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:37",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_catalog",
+      "target": "yugipedia_catalog::parsecardprintings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:41",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_catalog",
+      "target": "yugipedia_catalog::parsesetlist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:59",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_catalog",
+      "target": "yugipedia_catalog::parsewikicard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:78",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_catalog",
+      "target": "yugipedia_catalog::isyugipediaimageurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-catalog.ts:100",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::normalizedyugipediatoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:40",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::yugipediacardfileprefix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:44",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::yugipediafilecardprefix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:51",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::parseinfoboximagefilenames",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:55",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::settoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:73",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::raritytokens",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:77",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::filesegments",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:83",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::isexactcardimagefile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:92",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_match",
+      "target": "yugipedia_match::matchyugipediaprintingfile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia-match.ts:98",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_server",
+      "target": "yugipedia.server::wait",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:12",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_server",
+      "target": "yugipedia_server::yugipediabusyerror",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:18",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_server",
+      "target": "yugipedia_server::keyfor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:20",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_server",
+      "target": "yugipedia_server::cached",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:23",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_server",
+      "target": "yugipedia_server::store",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:27",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_server",
+      "target": "yugipedia_server::yugipediarequest",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:37",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_server",
+      "target": "yugipedia_server::batches",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:85",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_server",
+      "target": "yugipedia_server::discoveryugipediasets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:90",
+      "weight": 1
+    },
+    {
+      "source": "file::yugipedia_server",
+      "target": "yugipedia_server::searchyugipedia",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/Webshop/src/lib/yugipedia.server.ts:107",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 345,
     "nodes": 1630,
     "edges": 1310,
-    "builtAt": "2026-11-11T14:05:18.039Z"
+    "builtAt": "2026-11-17T10:26:15.669Z"
   }
 }
